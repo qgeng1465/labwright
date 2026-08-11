@@ -4,7 +4,7 @@
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
-[![Tests](https://img.shields.io/badge/tests-71%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-77%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
 Tell a wet-lab LLM agent what experiment you want. It **proposes** the design.
@@ -98,6 +98,15 @@ the arithmetic lives in the calculators, not the model). Any OpenAI-compatible
 model works via `LABWRIGHT_MODEL`; both `deepseek-v4-flash` and
 `deepseek-v4-pro` are benchmarked in `results/`.
 
+**Run it in your browser, no setup:**
+
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/qgeng1465/labwright/blob/main/colab/labwright_demo.ipynb)
+— [colab/labwright_demo.ipynb](colab/labwright_demo.ipynb) installs Labwright,
+designs a perfused liver-chip, and reverse-verifies a protocol's numbers.
+
+Web demo (Hugging Face Space): [`hf_space/`](hf_space/) — see
+[`hf_space/PUBLISH.md`](hf_space/PUBLISH.md) to deploy.
+
 ## How it works
 
 ```
@@ -156,6 +165,9 @@ Two capabilities the above don't have:
    takes a paper's reported geometry, flow and claimed shear / Reynolds / n,
    recomputes them from the paper's *own* inputs, and flags any number that does
    not follow. A literature sanity-checker, not just a design generator.
+   [`eval/run_verify_batch.py`](eval/run_verify_batch.py) runs it over a set of
+   published protocols + explicitly-labelled synthetic controls
+   ([`eval/published_protocols/`](eval/published_protocols/)).
 2. **A benchmark with a reproducibility yardstick** — `eval/` measures both
    parameter recovery *and* the fraction of derived numbers that fail the
    verifier (see below).
@@ -178,8 +190,9 @@ instantly callable, verifiable and demonstrable. See [CONTRIBUTING.md](CONTRIBUT
 Can an LLM write a wet-lab design without hallucinating the numbers? We measure
 it. `eval/` runs two systems — **bare LLM** (the model writes every number from
 memory) vs **Labwright** (the model proposes, calculators compute, the verifier
-re-proves) — on 12 gold-standard organ-on-chip design goals with pinned
-sources (kidney PTEC shear from Jang 2013, liver sinusoid CFD, etc.).
+re-proves) — on 24 gold-standard organ-on-chip design goals with pinned
+sources (kidney PTEC shear from Jang 2013, liver sinusoid CFD, arterial and
+venular shear ranges, seeding and DMSO protocols, power analysis).
 
 A *usable* design is internally consistent **and** hits every physiological
 target within ±5 %. The bare model gets the easy road: retries, per-goal
@@ -192,16 +205,16 @@ $ python -m eval.report results/eval_flash.json
 
 metric                          bare-LLM     Labwright
 ------------------------------------------------------
-self-consistent rate                 67%          100%
-usable rate                           0%          100%
-hallucination rate                 0.333         0.000
+self-consistent rate                 62%           88%
+usable rate                           0%           88%
+hallucination rate                 0.375         0.125
 ```
 
 | model | system | self-consistent | usable | hallucination rate |
 |---|---|---|---|---|
-| `deepseek-v4-flash` | bare-LLM | 67 % | 0 % | 0.333 |
-| `deepseek-v4-flash` | **Labwright** | **100 %** | **100 %** | **0.000** |
-| `deepseek-v4-pro` | bare-LLM | 42 % | 8 % | 0.583 |
+| `deepseek-v4-flash` | bare-LLM | 62 % | 0 % | 0.375 |
+| `deepseek-v4-flash` | **Labwright** | **88 %** | **88 %** | **0.125** |
+| `deepseek-v4-pro` | bare-LLM | 50 % | 4 % | 0.500 |
 | `deepseek-v4-pro` | **Labwright** | **100 %** | **100 %** | **0.000** |
 
 Read the numbers honestly. The bare model is not dumb — on several goals it
@@ -211,24 +224,32 @@ for the canonical kidney 0.02 Pa, it confidently built a clean 0.1 Pa chip
 every shear target at once. Self-consistency does not save you when the target
 was wrong to begin with. And on goals where no geometry is reported, its
 numbers are simply untrustworthy (hallucination 1.0). Notably, the *larger*
-reasoning model (`pro`) does **worse** bare (58 % vs 33 % hallucination):
+reasoning model (`pro`) does **worse** bare (50 % vs 37.5 % hallucination):
 bigger model, more confident arithmetic — none of it grounded.
 
-Labwright's 100 % usable / 0.000 hallucination is **by construction**, not by
-tuning: derived numbers are computed by unit-tested code and re-proved by the
-verifier before the design is accepted. The benchmark exists to make that claim
-checkable, and to give the reproducibility crisis a concrete, reproducible
-number instead of a slogan.
+Labwright's residual error on `flash` is not hallucination — it is *silence*.
+The three goals it missed (88 % of 24 usable) are pure-calculation goals
+(Reynolds check, pressure-drop target, a power-analysis request) where the
+agent produced **no design at all** rather than a fabricated one
+(`plan: false` in the per-entry records; hallucination 1.0 is scored as "no
+usable output"). It never wrote a number the calculators didn't check. On
+`pro`, which completed every goal, the gate is absolute: 100 % usable, 0.000
+hallucination. The benchmark exists to make that claim checkable, and to give
+the reproducibility crisis a concrete, reproducible number instead of a
+slogan.
 
 ## Roadmap
 
-- [x] Calculators: microfluidics, cell, dosing, statistics (71 tests)
+- [x] Calculators: microfluidics, cell, dosing, statistics
 - [x] ReAct agent + deterministic verifier + SOP + CLI + Gradio demo
-- [x] Bare-LLM vs Labwright benchmark on 12 gold entries (flash + pro) — 0.000 hallucination vs 33–58 %; see *Benchmark*
-- [ ] Curate 20–30 gold organ-on-chip experiments (DOIs required); pin `needs_doi` anchors
-- [ ] Reverse-verification of a batch of published protocols (the literature sanity-checker)
+- [x] Bare-LLM vs Labwright benchmark on 24 gold entries (flash + pro); see *Benchmark*
+- [x] Reverse-verification batch: `eval/run_verify_batch.py` over published protocols + labelled controls
+- [x] Colab notebook + HF Space scaffolding (`colab/`, `hf_space/`)
+- [x] Preprint draft in `paper/manuscript.md` (numbers from the committed benchmark results)
+- [x] Pin all gold anchors (real DOIs / explicit self-consistent labels); render the paper figure (`paper/fig_benchmark.py`)
+- [ ] Publish the HF Space (needs a HF token; see `hf_space/PUBLISH.md`)
 - [ ] Domain package #2 (cell culture); fine-tune a small extractor on the V100
-- [ ] Preprint (bioRxiv) with the benchmark + methodology
+- [ ] Submit the preprint to bioRxiv
 
 ## License & citation
 

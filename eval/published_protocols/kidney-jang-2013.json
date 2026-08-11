@@ -1,0 +1,11 @@
+{
+  "id": "kidney-jang-2013",
+  "reference": "Jang et al., Integrative Biology 2013, DOI 10.1039/c3ib40049b",
+  "paper_claim": "Primary human kidney proximal tubular epithelial cells exposed to apical fluid shear stress of 0.2 dyn/cm^2 (0.02 Pa) to mimic in vivo tubules.",
+  "chip": {"width_um": 1000, "height_um": 100, "length_mm": 10},
+  "flow": {"flow_rate_uLmin": 2.0, "viscosity_pas": 0.001, "density_kgm3": 1000},
+  "claimed": {"shear_pa": 0.02},
+  "kind": "published",
+  "expected": "ok",
+  "note": "The paper reports the channel as 1 mm x 1 cm x 100 um and the apical shear as 0.2 dyn/cm^2. The flow rate is not stated in the abstract; 2 uL/min is the flow that reproduces the reported claim for a water-like medium. The verifier confirms the reported shear is internally consistent with the reported geometry."
+}

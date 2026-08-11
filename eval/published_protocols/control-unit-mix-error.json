@@ -1,0 +1,11 @@
+{
+  "id": "control-unit-mix-error",
+  "reference": "CONTROLLED TEST — not a publication. Synthetic protocol with a deliberate 10x unit error in the shear claim.",
+  "paper_claim": "Wall shear claimed as 0.5 Pa (a dyne/cm^2 vs Pa mix-up), while the reported 400x100x20 um channel at 2 uL/min actually gives 0.05 Pa.",
+  "chip": {"width_um": 400, "height_um": 100, "length_mm": 20},
+  "flow": {"flow_rate_uLmin": 2.0, "viscosity_pas": 0.001, "density_kgm3": 1000},
+  "claimed": {"shear_pa": 0.5},
+  "kind": "control",
+  "expected": "review_required",
+  "note": "Negative control: the classic unit-conversion error (dyn/cm^2 vs Pa differs by 10x). The verifier recomputes 0.05 Pa from the paper's own inputs and flags the claim."
+}

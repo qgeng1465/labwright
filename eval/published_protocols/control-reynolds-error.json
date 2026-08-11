@@ -1,0 +1,11 @@
+{
+  "id": "control-reynolds-error",
+  "reference": "CONTROLLED TEST — not a publication. Synthetic protocol with an inflated Reynolds claim.",
+  "paper_claim": "Reynolds number claimed as 500 for a 400x100 um channel at 2 uL/min, while the true value is ~0.13 (deeply laminar).",
+  "chip": {"width_um": 400, "height_um": 100, "length_mm": 20},
+  "flow": {"flow_rate_uLmin": 2.0, "viscosity_pas": 0.001, "density_kgm3": 1000},
+  "claimed": {"reynolds": 500.0},
+  "kind": "control",
+  "expected": "review_required",
+  "note": "Negative control: a Reynolds claim that is four orders of magnitude off. The verifier recomputes ~0.13 and flags the claim."
+}

@@ -1,0 +1,11 @@
+{
+  "id": "control-positive-shear",
+  "reference": "CONTROLLED TEST — not a publication. Synthetic protocol constructed so every claim follows from its inputs.",
+  "paper_claim": "A 400 x 100 um x 20 mm channel perfused at 2 uL/min with water gives wall shear 0.05 Pa, Re 0.13, pressure drop 20 Pa, residence 24 s.",
+  "chip": {"width_um": 400, "height_um": 100, "length_mm": 20},
+  "flow": {"flow_rate_uLmin": 2.0, "viscosity_pas": 0.001, "density_kgm3": 1000},
+  "claimed": {"shear_pa": 0.05, "reynolds": 0.1333, "pressure_drop_pa": 20.0, "residence_time_s": 24.0, "channel_volume_ul": 0.8, "mean_velocity_mms": 0.8333},
+  "kind": "control",
+  "expected": "ok",
+  "note": "Positive control: all six derived numbers agree with the recomputation to machine precision. Demonstrates the verifier accepts a correct protocol."
+}

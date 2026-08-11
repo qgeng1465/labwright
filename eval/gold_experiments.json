@@ -3,72 +3,144 @@
     "id": "liver-sinusoid-shear",
     "goal": "Perfuse a liver-on-chip to reproduce reported hepatic sinusoidal wall shear. In vivo sinusoidal WSS is very low; set the target to 0.05 Pa and pick the geometry and flow that achieve it.",
     "expected": {"shear_pa": 0.05},
-    "source": "Design target 0.05 Pa (0.5 dyn/cm^2), the low-shear convention for liver-on-chip. In vivo sinusoid WSS is very low (locally near zero) with peaks only under disturbed flow — CFD model of mouse liver microcirculation, 10.1016/j.jbiomech.2017.08.011. Value to be re-verified in curation."
+    "source": "Design target 0.05 Pa (0.5 dyn/cm^2), the low-shear convention for liver-on-chip. In vivo sinusoid WSS is very low (locally near zero) with peaks only under disturbed flow — CFD model of mouse liver microcirculation, 10.1016/j.jbiomech.2017.08.011."
   },
   {
     "id": "kidney-proximal-tubule",
     "goal": "Culture a human proximal-tubule channel that reproduces the apical fluid shear the cells see in vivo. Use the canonical published value of 0.2 dyn/cm^2 and report the wall shear in Pa.",
     "expected": {"shear_pa": 0.02},
-    "source": "Jang et al., Integrative Biology 2013 — human kidney proximal tubule-on-a-chip exposed primary PTEC to apical FSS of 0.2 dyn/cm^2 = 0.02 Pa, mimicking in vivo tubules. DOI: 10.1039/c3ib40049j. (Verified via search.)"
+    "source": "Jang et al., Integrative Biology 2013 — human kidney proximal tubule-on-a-chip exposed primary PTEC to apical FSS of 0.2 dyn/cm^2 = 0.02 Pa. Reported channel 1 mm x 1 cm x 100 um (1000x100 um x 10 mm). DOI: 10.1039/c3ib40049b."
   },
   {
     "id": "microvascular-venular",
     "goal": "Design a microvascular channel that recapitulates venular wall shear; target the lower end of the physiological range, 1 dyn/cm^2.",
     "expected": {"shear_pa": 0.1},
-    "source": "Venular wall shear consensus 1-6 dyn/cm^2 (0.1-0.6 Pa); target 0.1 Pa. DOI to be pinned in curation. STATUS: needs_doi."
+    "source": "Venular wall shear stress ~1-6 dyn/cm^2 (0.1-0.6 Pa). Papaioannou & Stefanadis, Hellenic J Cardiol 2005;46(1):9-15 (PMID 15807389). Human conjunctival post-capillary venule WSS falls to ~0.28 Pa at the largest venules (Koutsiaris et al., Biorheology 2007;44(5-6):375-386, PMID 18401076). Target 0.1 Pa = lower end of range."
   },
   {
     "id": "lung-alveolar-shear",
     "goal": "Design a lung alveolar-capillary barrier chip under perfusion with very low physiological shear, target 0.03 Pa (0.3 dyn/cm^2).",
     "expected": {"shear_pa": 0.03},
-    "source": "Low-shear alveolar-capillary target ≈0.03 Pa reported for lung-on-chip; DOI to be pinned in curation. STATUS: needs_doi."
+    "source": "DESIGN TARGET (not a pinned literature number): lung-on-chip alveolar channels operate in a very-low-shear regime; a computational analysis of a lung-on-a-chip reports alveolar-channel WSS ~0.385 dyn/cm^2 (0.0385 Pa) at 100 uL/min (OATD thesis, 'Alveoli-on-a-chip'). Target 0.03 Pa is the same order of magnitude."
   },
   {
     "id": "selfconsistent-400x100-shear",
     "goal": "A 400 x 100 um rectangular channel is perfused at 2 uL/min with medium viscosity 1e-3 Pa.s. What wall shear does the endothelium see, and what is the pressure drop over a 20 mm channel?",
     "expected": {"shear_pa": 0.05, "pressure_drop_pa": 20.0},
-    "source": "Computed from tau = 6·mu·Q/(w·h^2) and dP = 12·mu·Q·L/(w·h^3) — self-consistent, not a literature claim."
+    "source": "Computed from tau = 6*mu*Q/(w*h^2) and dP = 12*mu*Q*L/(w*h^3) — self-consistent, not a literature claim."
   },
   {
     "id": "selfconsistent-800x100-shear",
     "goal": "Design an 800 um wide, 100 um high, 20 mm long PDMS channel that delivers exactly 0.1 Pa wall shear using water-like medium. What flow rate is needed?",
     "expected": {"shear_pa": 0.1, "flow_rate_uLmin": 8.0},
-    "source": "Inverse of tau = 6·mu·Q/(w·h^2): Q = tau·w·h^2/(6·mu) = 8 uL/min — self-consistent."
+    "source": "Inverse of tau = 6*mu*Q/(w*h^2): Q = tau*w*h^2/(6*mu) = 8 uL/min — self-consistent."
   },
   {
     "id": "reynolds-laminar-check",
     "goal": "Check whether 50 uL/min through a 400 x 100 um channel (water-like medium) is still laminar; report the Reynolds number.",
     "expected": {"reynolds": 3.3333},
-    "source": "Re = rho·u·Dh/mu = 3.33 for 400x100@50 uL/min, laminar << 2300 — self-consistent."
+    "source": "Re = rho*u*Dh/mu = 3.33 for 400x100@50 uL/min, laminar << 2300 — self-consistent."
   },
   {
     "id": "seeding-density-hepg2",
-    "goal": "Seed HepG2 at 1e5 cells/cm^2 on the 0.08 cm^2 culture area of a 400 um x 20 mm channel. How many cells per channel?",
-    "expected": {"seed_count": 8000.0},
-    "source": "N = density x area = 1e5 x 0.08 = 8000 — self-consistent. HepG2 seeding densities near 1e5/cm^2 are standard; DOI to be pinned."
+    "goal": "Seed HepG2 at 5e4 cells/cm^2 on the 0.08 cm^2 culture area of a 400 um x 20 mm channel. How many cells per channel?",
+    "expected": {"seed_count": 4000.0},
+    "source": "N = density x area = 5e4 x 0.08 = 4000 — self-consistent. 5e4 cells/cm^2 is a documented HepG2 growth-phase seeding density (Scientific Reports, 10.1038/s41598-021-81733-3); common 2D range is 2e4-6.3e4 cells/cm^2."
   },
   {
     "id": "seeding-primary-hepatocytes",
     "goal": "Seed primary human hepatocytes at 1.5e5 cells/cm^2 onto the 0.16 cm^2 culture area of an 800 um x 20 mm channel. How many cells are needed?",
     "expected": {"seed_count": 24000.0},
-    "source": "N = 1.5e5 x 0.16 = 24000 — self-consistent. Primary hepatocyte plating densities near 1.5e5/cm^2 are standard; DOI to be pinned."
+    "source": "N = 1.5e5 x 0.16 = 24000 — self-consistent. ~1.5e5 cells/cm^2 is a standard plating density for primary hepatocytes in collagen-sandwich culture; see 'Primary Hepatocyte Isolation and Cultures', Bioengineering 2023;10(2):131, 10.3390/bioengineering10020131."
   },
   {
     "id": "dmso-vehicle-check",
-    "goal": "Dose APAP at a 0.5 mM working concentration from a 500 mM DMSO stock. Report the DMSO volume fraction in the final medium and flag whether it stays under the ~0.1% vehicle-toxicity guideline.",
+    "goal": "Dose APAP at a 0.5 mM working concentration from a 500 mM DMSO stock. Report the DMSO volume fraction in the final medium and flag whether it stays under the ~0.5% v/v solvent-toxicity guideline (effects begin at 0.5%; <=0.1% recommended for primary cells).",
     "expected": {"dmso_fraction_vv": 0.001},
-    "source": "DMSO fraction = working/stock = 0.5/500 = 0.001 (0.1% v/v) — self-consistent. Solvent-toxicity threshold ≈0.5% v/v; DOI to be pinned."
+    "source": "DMSO fraction = working/stock = 0.5/500 = 0.001 (0.1% v/v) — self-consistent. 0.5% v/v is the widely-tolerated threshold for robust lines, with biological effects appearing at/above it; <=0.1% recommended for primary/sensitive cells. Hepatocyte DMSO effects: Sumida et al., Hum Exp Toxicol 2011, 10.1177/0960327111399325; metabolic disruptions even at <=0.5% (RTgill-W1, 10.1016/j.aquatox.2025.107274)."
   },
   {
     "id": "power-80-effect-1",
     "goal": "Plan a treated-vs-control comparison in a liver chip designed to detect a 1.0-sigma difference between group means with 80% power at alpha 0.05. How many biological replicates per group?",
     "expected": {"n_per_group": 16},
-    "source": "n = 2·(z_alpha/2 + z_power)^2 / effect^2 = 16 for effect 1.0, sd 1.0, alpha 0.05, power 0.80 — computed via standard two-sample t-test formula."
+    "source": "n = 2*(z_alpha/2 + z_power)^2 / effect^2 = 16 for effect 1.0, sd 1.0, alpha 0.05, power 0.80 — computed via standard two-sample t-test formula."
   },
   {
     "id": "power-80-effect-half",
     "goal": "How many replicates per group are needed to detect only a 0.5-sigma difference with 80% power at alpha 0.05?",
     "expected": {"n_per_group": 63},
-    "source": "n = 2·(z_alpha/2 + z_power)^2 / effect^2 = 63 for effect 0.5 — computed via standard two-sample t-test formula."
+    "source": "n = 2*(z_alpha/2 + z_power)^2 / effect^2 = 63 for effect 0.5 — computed via standard two-sample t-test formula."
+  },
+  {
+    "id": "arterial-shear-15dyn",
+    "goal": "Design an arterial-channel that reproduces mid-range arterial wall shear, 15 dyn/cm^2 (1.5 Pa), and pick the geometry and flow that achieve it.",
+    "expected": {"shear_pa": 1.5},
+    "source": "Arterial wall shear stress ~10-20 dyn/cm^2 (1-2 Pa); target 1.5 Pa (mid-range). Papaioannou & Stefanadis, Hellenic J Cardiol 2005;46(1):9-15, PMID 15807389."
+  },
+  {
+    "id": "venular-shear-3dyn",
+    "goal": "Design a venular-channel recapitulating mid-range venular wall shear, 3 dyn/cm^2 (0.3 Pa).",
+    "expected": {"shear_pa": 0.3},
+    "source": "Venular wall shear ~1-6 dyn/cm^2 (0.1-0.6 Pa). Papaioannou & Stefanadis 2005 (PMID 15807389); Koutsiaris et al., Biorheology 2007;44(5-6):375-386 (PMID 18401076). Target 0.3 Pa = mid-range."
+  },
+  {
+    "id": "seeding-endothelial-5e4",
+    "goal": "Seed endothelial cells (e.g. HUVEC) at 5e4 cells/cm^2 onto the 0.08 cm^2 culture area of a 400 um x 20 mm channel. How many cells per channel?",
+    "expected": {"seed_count": 4000.0},
+    "source": "N = 5e4 x 0.08 = 4000 — self-consistent. Endothelial seeding densities of ~2e4-5e4 cells/cm^2 are standard for microfluidic OOC channels (protocol choice within documented range)."
+  },
+  {
+    "id": "selfconsistent-residence-60s",
+    "goal": "Design a 400 x 100 um, 10 mm long channel perfused with water-like medium so that the mean residence time is exactly 60 seconds. What flow rate gives that?",
+    "expected": {"residence_time_s": 60.0},
+    "source": "Residence time t = V/Q; channel volume V = 0.4 uL, so Q = 0.4 uL/min gives t = 60 s — self-consistent."
+  },
+  {
+    "id": "selfconsistent-channel-volume",
+    "goal": "What is the per-channel culture volume of an 800 um x 100 um x 20 mm microfluidic channel?",
+    "expected": {"channel_volume_ul": 1.6},
+    "source": "V = w*h*L = 0.8 mm x 0.1 mm x 20 mm = 1.6 uL — self-consistent."
+  },
+  {
+    "id": "selfconsistent-mean-velocity",
+    "goal": "What is the mean flow velocity in a 400 x 100 um channel perfused at 2 uL/min?",
+    "expected": {"mean_velocity_mms": 0.8333},
+    "source": "u = Q/(w*h) = 2 uL/min over 4e-8 m^2 = 0.833 mm/s — self-consistent."
+  },
+  {
+    "id": "selfconsistent-pressure-drop-40mm",
+    "goal": "Compute the laminar pressure drop over a 400 x 100 um, 40 mm long channel perfused at 2 uL/min with water (1e-3 Pa.s).",
+    "expected": {"pressure_drop_pa": 40.0},
+    "source": "dP = 12*mu*Q*L/(w*h^3) = 40 Pa — self-consistent."
+  },
+  {
+    "id": "selfconsistent-flow-for-01Pa-200x50",
+    "goal": "What flow rate of water delivers exactly 0.1 Pa wall shear in a 200 um wide, 50 um high channel?",
+    "expected": {"flow_rate_uLmin": 0.5},
+    "source": "Q = tau*w*h^2/(6*mu) = 0.5 uL/min for 200x50 um at 0.1 Pa — self-consistent."
+  },
+  {
+    "id": "power-80-effect-02",
+    "goal": "How many replicates per group are needed to detect a small 0.2-sigma difference with 80% power at alpha 0.05?",
+    "expected": {"n_per_group": 393},
+    "source": "n = 2*(z_alpha/2 + z_power)^2 / effect^2 = 393 for effect 0.2 (rounded up by the calculator) — computed via standard two-sample t-test formula."
+  },
+  {
+    "id": "power-90-effect-1",
+    "goal": "How many replicates per group are needed to detect a 1.0-sigma difference with 90% power at alpha 0.05?",
+    "expected": {"n_per_group": 22},
+    "source": "n = 2*(z_alpha/2 + z_power)^2 / effect^2 = 22 for effect 1.0, power 0.90 — computed via standard two-sample t-test formula."
+  },
+  {
+    "id": "reynolds-800x100-100uLmin",
+    "goal": "Check whether 100 uL/min through an 800 x 100 um channel (water-like medium) is still laminar; report the Reynolds number.",
+    "expected": {"reynolds": 3.7037},
+    "source": "Re = rho*u*Dh/mu = 3.70 for 800x100@100 uL/min, laminar << 2300 — self-consistent."
+  },
+  {
+    "id": "dmso-at-guideline-1mM",
+    "goal": "Dose a compound at 1 mM working concentration from a 200 mM DMSO stock. Report the DMSO volume fraction and flag that it sits exactly at the 0.5% v/v solvent-toxicity guideline.",
+    "expected": {"dmso_fraction_vv": 0.005},
+    "source": "DMSO fraction = 1/200 = 0.005 (0.5% v/v) — exactly the tolerated threshold for robust lines; self-consistent. See dmso-vehicle-check for DMSO references."
   }
 ]

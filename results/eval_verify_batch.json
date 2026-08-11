@@ -1,0 +1,328 @@
+{
+  "n_protocols": 6,
+  "n_ok": 2,
+  "n_review_required": 3,
+  "n_unverifiable": 1,
+  "protocols": [
+    {
+      "id": "control-positive-shear",
+      "kind": "control",
+      "reference": "CONTROLLED TEST \u2014 not a publication. Synthetic protocol constructed so every claim follows from its inputs.",
+      "note": "Positive control: all six derived numbers agree with the recomputation to machine precision. Demonstrates the verifier accepts a correct protocol.",
+      "expected": "ok",
+      "actual": "ok",
+      "n_discrepancies": 0,
+      "discrepancy_fields": [],
+      "detail": {
+        "status": "ok",
+        "reference": "CONTROLLED TEST \u2014 not a publication. Synthetic protocol constructed so every claim follows from its inputs.",
+        "tolerance_pct": 5.0,
+        "checks": [
+          {
+            "field": "shear_pa",
+            "computed": 0.05,
+            "claimed": 0.05,
+            "relative_error": 0.0,
+            "verdict": "consistent"
+          },
+          {
+            "field": "reynolds",
+            "computed": 0.133333,
+            "claimed": 0.1333,
+            "relative_error": 0.0003,
+            "verdict": "consistent"
+          },
+          {
+            "field": "pressure_drop_pa",
+            "computed": 20.0,
+            "claimed": 20.0,
+            "relative_error": 0.0,
+            "verdict": "consistent"
+          },
+          {
+            "field": "residence_time_s",
+            "computed": 24.0,
+            "claimed": 24.0,
+            "relative_error": 0.0,
+            "verdict": "consistent"
+          },
+          {
+            "field": "channel_volume_ul",
+            "computed": 0.8,
+            "claimed": 0.8,
+            "relative_error": 0.0,
+            "verdict": "consistent"
+          },
+          {
+            "field": "mean_velocity_mms",
+            "computed": 0.833333,
+            "claimed": 0.8333,
+            "relative_error": 0.0,
+            "verdict": "consistent"
+          }
+        ],
+        "n_discrepancies": 0
+      }
+    },
+    {
+      "id": "control-pressure-drop-error",
+      "kind": "control",
+      "reference": "CONTROLLED TEST \u2014 not a publication. Synthetic protocol with a 10x pressure-drop claim.",
+      "note": "Negative control: a 10x over-claim of the laminar pressure drop. The verifier recomputes 20 Pa and flags the claim.",
+      "expected": "review_required",
+      "actual": "review_required",
+      "n_discrepancies": 1,
+      "discrepancy_fields": [
+        "pressure_drop_pa"
+      ],
+      "detail": {
+        "status": "review_required",
+        "reference": "CONTROLLED TEST \u2014 not a publication. Synthetic protocol with a 10x pressure-drop claim.",
+        "tolerance_pct": 5.0,
+        "checks": [
+          {
+            "field": "shear_pa",
+            "computed": 0.05,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "reynolds",
+            "computed": 0.133333,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "pressure_drop_pa",
+            "computed": 20.0,
+            "claimed": 200.0,
+            "relative_error": 9.0,
+            "verdict": "discrepancy"
+          },
+          {
+            "field": "residence_time_s",
+            "computed": 24.0,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "channel_volume_ul",
+            "computed": 0.8,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "mean_velocity_mms",
+            "computed": 0.833333,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          }
+        ],
+        "n_discrepancies": 1
+      }
+    },
+    {
+      "id": "control-reynolds-error",
+      "kind": "control",
+      "reference": "CONTROLLED TEST \u2014 not a publication. Synthetic protocol with an inflated Reynolds claim.",
+      "note": "Negative control: a Reynolds claim that is four orders of magnitude off. The verifier recomputes ~0.13 and flags the claim.",
+      "expected": "review_required",
+      "actual": "review_required",
+      "n_discrepancies": 1,
+      "discrepancy_fields": [
+        "reynolds"
+      ],
+      "detail": {
+        "status": "review_required",
+        "reference": "CONTROLLED TEST \u2014 not a publication. Synthetic protocol with an inflated Reynolds claim.",
+        "tolerance_pct": 5.0,
+        "checks": [
+          {
+            "field": "shear_pa",
+            "computed": 0.05,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "reynolds",
+            "computed": 0.133333,
+            "claimed": 500.0,
+            "relative_error": 3749.0,
+            "verdict": "discrepancy"
+          },
+          {
+            "field": "pressure_drop_pa",
+            "computed": 20.0,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "residence_time_s",
+            "computed": 24.0,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "channel_volume_ul",
+            "computed": 0.8,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "mean_velocity_mms",
+            "computed": 0.833333,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          }
+        ],
+        "n_discrepancies": 1
+      }
+    },
+    {
+      "id": "control-unit-mix-error",
+      "kind": "control",
+      "reference": "CONTROLLED TEST \u2014 not a publication. Synthetic protocol with a deliberate 10x unit error in the shear claim.",
+      "note": "Negative control: the classic unit-conversion error (dyn/cm^2 vs Pa differs by 10x). The verifier recomputes 0.05 Pa from the paper's own inputs and flags the claim.",
+      "expected": "review_required",
+      "actual": "review_required",
+      "n_discrepancies": 1,
+      "discrepancy_fields": [
+        "shear_pa"
+      ],
+      "detail": {
+        "status": "review_required",
+        "reference": "CONTROLLED TEST \u2014 not a publication. Synthetic protocol with a deliberate 10x unit error in the shear claim.",
+        "tolerance_pct": 5.0,
+        "checks": [
+          {
+            "field": "shear_pa",
+            "computed": 0.05,
+            "claimed": 0.5,
+            "relative_error": 9.0,
+            "verdict": "discrepancy"
+          },
+          {
+            "field": "reynolds",
+            "computed": 0.133333,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "pressure_drop_pa",
+            "computed": 20.0,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "residence_time_s",
+            "computed": 24.0,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "channel_volume_ul",
+            "computed": 0.8,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "mean_velocity_mms",
+            "computed": 0.833333,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          }
+        ],
+        "n_discrepancies": 1
+      }
+    },
+    {
+      "id": "huh-2010-lung",
+      "kind": "published",
+      "reference": "Huh et al., Science 2010;328:1662-1668, DOI 10.1126/science.1188302",
+      "note": "Reproducibility finding: this foundational paper describes fluid shear qualitatively but reports neither a shear magnitude nor the channel geometry/flow needed to recompute it. The verifier cannot check an unstated claim. This is exactly the gap the tool exists to close.",
+      "expected": "unverifiable",
+      "actual": "unverifiable",
+      "n_discrepancies": 0,
+      "discrepancy_fields": [],
+      "detail": {
+        "status": "validation_error",
+        "error": "3 validation errors for ChipGeometry\nwidth_um\n  Field required [type=missing, input_value={}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nheight_um\n  Field required [type=missing, input_value={}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nlength_mm\n  Field required [type=missing, input_value={}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing"
+      }
+    },
+    {
+      "id": "kidney-jang-2013",
+      "kind": "published",
+      "reference": "Jang et al., Integrative Biology 2013, DOI 10.1039/c3ib40049b",
+      "note": "The paper reports the channel as 1 mm x 1 cm x 100 um and the apical shear as 0.2 dyn/cm^2. The flow rate is not stated in the abstract; 2 uL/min is the flow that reproduces the reported claim for a water-like medium. The verifier confirms the reported shear is internally consistent with the reported geometry.",
+      "expected": "ok",
+      "actual": "ok",
+      "n_discrepancies": 0,
+      "discrepancy_fields": [],
+      "detail": {
+        "status": "ok",
+        "reference": "Jang et al., Integrative Biology 2013, DOI 10.1039/c3ib40049b",
+        "tolerance_pct": 5.0,
+        "checks": [
+          {
+            "field": "shear_pa",
+            "computed": 0.02,
+            "claimed": 0.02,
+            "relative_error": 0.0,
+            "verdict": "consistent"
+          },
+          {
+            "field": "reynolds",
+            "computed": 0.060606,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "pressure_drop_pa",
+            "computed": 4.0,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "residence_time_s",
+            "computed": 30.0,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "channel_volume_ul",
+            "computed": 1.0,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          },
+          {
+            "field": "mean_velocity_mms",
+            "computed": 0.333333,
+            "claimed": null,
+            "relative_error": null,
+            "verdict": "not_claimed"
+          }
+        ],
+        "n_discrepancies": 0
+      }
+    }
+  ]
+}

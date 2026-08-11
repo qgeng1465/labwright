@@ -1,0 +1,11 @@
+{
+  "id": "huh-2010-lung",
+  "reference": "Huh et al., Science 2010;328:1662-1668, DOI 10.1126/science.1188302",
+  "paper_claim": "Lung-on-chip exposing the alveolar-capillary barrier to 'fluid dynamic forces that mimic blood flow'; cyclic strain 5-15% at 0.2 Hz reported, but no explicit wall-shear magnitude and no full channel geometry are stated.",
+  "chip": {},
+  "flow": {},
+  "claimed": {},
+  "kind": "published",
+  "expected": "unverifiable",
+  "note": "Reproducibility finding: this foundational paper describes fluid shear qualitatively but reports neither a shear magnitude nor the channel geometry/flow needed to recompute it. The verifier cannot check an unstated claim. This is exactly the gap the tool exists to close."
+}

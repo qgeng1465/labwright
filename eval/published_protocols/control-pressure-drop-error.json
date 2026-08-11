@@ -1,0 +1,11 @@
+{
+  "id": "control-pressure-drop-error",
+  "reference": "CONTROLLED TEST — not a publication. Synthetic protocol with a 10x pressure-drop claim.",
+  "paper_claim": "Pressure drop claimed as 200 Pa over a 400x100 um x 20 mm channel at 2 uL/min, while the true value is 20 Pa.",
+  "chip": {"width_um": 400, "height_um": 100, "length_mm": 20},
+  "flow": {"flow_rate_uLmin": 2.0, "viscosity_pas": 0.001, "density_kgm3": 1000},
+  "claimed": {"pressure_drop_pa": 200.0},
+  "kind": "control",
+  "expected": "review_required",
+  "note": "Negative control: a 10x over-claim of the laminar pressure drop. The verifier recomputes 20 Pa and flags the claim."
+}

@@ -23,9 +23,8 @@ Metrics (from `benchmark.evaluate`):
 - **hallucination rate** — fraction of derived fields that the verifier rejects
   on a design that *parses*. A system that produces no usable JSON at all scores
   1.0 (an unusable output is fully hallucinated).
-- **valid design rate** — fraction of gold entries where the system produced a
-  design with **zero** verifier errors. This is the headline "can it be used?"
-  number.
+- **self-consistent / usable rate** — see *Metrics, carefully* below; these are
+  the headline "can it be used?" numbers.
 
 Expected result to publish: bare-LLM hallucination rate substantially above
 zero (reported figures for unconstrained biomedical LLMs are routinely
@@ -65,16 +64,22 @@ Labwright must match the calculators to 1e-6.
 
 ## Status
 
-- [x] Curate the first gold set: 12 organ-on-chip design goals spanning
-      microfluidics, cell seeding, dosing/DMSO and statistics, with DOIs where
-      pinned (e.g. kidney PTEC 0.2 dyn/cm², `10.1039/c3ib40049j`). A 13th
-      entry (a bare molarity *calculation*) was dropped: it is not a design
-      goal — the tool correctly computes it and refuses to invent a design.
+- [x] Curate the gold set: **24 organ-on-chip design goals** spanning
+      microfluidics, cell seeding, dosing/DMSO and statistics. Every entry
+      carries a provenance rule — a pinned source (e.g. kidney PTEC 0.2 dyn/cm²,
+      Jang 2013, `10.1039/c3ib40049b`; arterial/venular shear from
+      Papaioannou & Stefanadis, PMID 15807389) or an explicit
+      `self-consistent` label. No fabricated literature numbers anywhere.
 - [x] Run the two-system comparison on `deepseek-v4-flash` and `deepseek-v4-pro`
       → `results/eval_flash.json`, `results/eval_pro.json`; `python -m eval.report results/eval_flash.json`.
-- [ ] Expand to 20–30 entries; pin all remaining `needs_doi` anchors.
+      The runner checkpoints after every entry, so a mid-run failure never
+      loses the API spend.
+- [x] Reverse-verify a batch of published protocols + labelled synthetic
+      controls: `eval/run_verify_batch.py` → `results/eval_verify_batch.json`.
+- [x] Preprint draft in `paper/manuscript.md` (numbers from the committed
+      results), Colab notebook, HF Space scaffolding.
 - [ ] Ablations: model size, RAG context on/off, tool-calling on/off.
-- [ ] Write up as a preprint (bioRxiv) with the repo + this benchmark.
+- [ ] Submit the preprint to bioRxiv; publish the HF Space.
 
 ## Run
 

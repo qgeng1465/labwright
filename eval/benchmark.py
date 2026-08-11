@@ -240,6 +240,7 @@ def evaluate(
     agent_factory: Callable,
     chat: Callable,
     progress: Callable[[str], None] | None = None,
+    checkpoint: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     """Run both systems on every gold experiment and aggregate the metrics."""
     summary: dict[str, Any] = {
@@ -295,8 +296,10 @@ def evaluate(
                 },
             }
         )
+        if checkpoint:
+            checkpoint(summary)
 
-    for bucket in (summary["bare"], summary["labwright"]):
+    for bucket, sub in ((summary["bare"], "bare"), (summary["labwright"], "labwright")):
         rates = bucket["hallucination_rate"]
         bucket["recovery"] = {k: _mean(v) for k, v in bucket["recovery"].items()}
         bucket["hallucination_rate"] = _mean(rates)
@@ -304,7 +307,7 @@ def evaluate(
         bucket["self_consistent_rate"] = _mean([1.0 if r == 0.0 else 0.0 for r in rates])
         # usable_rate = self-consistent AND recovers every gold target (±5 %).
         bucket["usable_design_rate"] = _mean(
-            [1.0 if e["valid"] else 0.0 for e in summary["per_entry"]]
+            [1.0 if e[sub]["valid"] else 0.0 for e in summary["per_entry"]]
         )
     return summary
 

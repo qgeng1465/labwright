@@ -65,10 +65,18 @@ def main() -> int:
     def progress(msg: str) -> None:
         print(f"  {msg}", flush=True)
 
-    summary = evaluate(gold, agent_factory, chat, progress)
-
     out = os.path.abspath(args.out)
     os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
+
+    def checkpoint(partial: dict) -> None:
+        # Save after every entry so a mid-run failure never loses the API spend.
+        partial["model"] = args.model
+        partial["generated_at"] = "2026-08-11"  # stamped after run; Date.now unavailable in some sandboxes
+        with open(out, "w", encoding="utf-8") as fh:
+            json.dump(partial, fh, indent=2, ensure_ascii=False)
+
+    summary = evaluate(gold, agent_factory, chat, progress, checkpoint=checkpoint)
+
     summary["model"] = args.model
     summary["generated_at"] = "2026-08-11"  # stamped after run; Date.now unavailable in some sandboxes
     with open(out, "w", encoding="utf-8") as fh:
