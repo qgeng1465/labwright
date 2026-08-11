@@ -1,0 +1,88 @@
+"""Pydantic models describing a complete wet-lab experimental design.
+
+Units are declared in every field name where they are not implicit.
+Derived fields (``DerivedFlowMetrics``) are *always* produced by
+:mod:`labwright.calc` — never by the language model — and are cross-checked by
+the verifier.
+"""
+
+from __future__ import annotations
+
+from pydantic import BaseModel, Field
+
+
+class ChipGeometry(BaseModel):
+    """Microfluidic channel geometry."""
+
+    width_um: float = Field(gt=0, description="Channel width (µm), typical OOC: 400-1000")
+    height_um: float = Field(gt=0, description="Channel height (µm), typical OOC: 50-200")
+    length_mm: float = Field(gt=0, description="Channel length (mm)")
+    channel_count: int = Field(default=1, ge=1, description="Number of parallel channels")
+    material: str = Field(default="PDMS", description="Device material, e.g. PDMS, glass")
+
+
+class FlowParams(BaseModel):
+    """Perfusion inputs."""
+
+    flow_rate_uLmin: float = Field(gt=0, description="Per-channel volumetric flow rate (µL/min)")
+    viscosity_pas: float = Field(default=1e-3, gt=0, description="Dynamic viscosity (Pa·s)")
+    density_kgm3: float = Field(default=1000, gt=0, description="Fluid density (kg/m³)")
+
+
+class DerivedFlowMetrics(BaseModel):
+    """Flow quantities computed deterministically by the calculators."""
+
+    shear_pa: float = Field(description="Wall shear stress (Pa); ×10 = dyn/cm²")
+    reynolds: float = Field(description="Reynolds number (laminar if << 2300)")
+    pressure_drop_pa: float = Field(description="Laminar pressure drop over the channel (Pa)")
+    residence_time_s: float = Field(description="Mean fluid residence time (s)")
+    channel_volume_ul: float = Field(description="Per-channel culture volume (µL)")
+    mean_velocity_mms: float = Field(description="Mean flow velocity (mm/s)")
+
+
+class CellPlan(BaseModel):
+    """Seeding and culture plan."""
+
+    cell_type: str = Field(description="Cell type, e.g. HepG2, primary hepatocytes")
+    seeding_density_cells_cm2: float = Field(gt=0, description="Seeding density (cells/cm²)")
+    culture_area_cm2: float = Field(gt=0, description="Effective culture area (cm²)")
+    seed_count: float = Field(gt=0, description="Total cells to seed")
+    doubling_time_h: float | None = Field(default=None, description="Doubling time if proliferative (h)")
+    culture_duration_h: float | None = Field(default=None, description="Planned culture duration (h)")
+
+
+class DosePlan(BaseModel):
+    """Compound dosing plan."""
+
+    compound: str = Field(description="Compound name")
+    molecular_weight_g_mol: float = Field(gt=0, description="Molecular weight (g/mol)")
+    stock_mM: float = Field(gt=0, description="Stock concentration (mM)")
+    working_mM: float = Field(gt=0, description="Working concentration (mM)")
+    dmso_fraction_vv: float = Field(ge=0, description="DMSO volume fraction in medium (v/v)")
+    vehicle_control: bool = Field(default=True, description="Include matched vehicle control")
+    exposure_h: float | None = Field(default=None, description="Exposure duration (h)")
+
+
+class StatsPlan(BaseModel):
+    """Statistical design of the comparison."""
+
+    effect_size: float = Field(gt=0, description="Expected between-group difference (measurement units)")
+    std_dev: float = Field(gt=0, description="Expected pooled standard deviation")
+    alpha: float = Field(default=0.05, gt=0, lt=1)
+    power: float = Field(default=0.80, gt=0, lt=1)
+    n_per_group: int = Field(ge=1, description="Biological replicates per group")
+    note: str | None = Field(default=None, description="Justification / assumption notes")
+
+
+class DesignPlan(BaseModel):
+    """Top-level output of the Labwright agent."""
+
+    goal: str = Field(description="Restatement of the experimental goal")
+    rationale: str = Field(description="Why this design; key assumptions")
+    chip: ChipGeometry
+    flow: FlowParams
+    derived: DerivedFlowMetrics = Field(description="Deterministically computed flow metrics")
+    cells: CellPlan
+    dosing: DosePlan | None = None
+    stats: StatsPlan | None = None
+    caveats: list[str] = Field(default_factory=list, description="Things to verify in the lab")
