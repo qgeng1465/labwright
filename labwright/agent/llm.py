@@ -28,7 +28,7 @@ class LLMClient:
                 "No API key found. Set LABWRIGHT_API_KEY (or DEEPSEEK_API_KEY), or pass api_key=."
             )
         self.base_url = base_url or os.environ.get("LABWRIGHT_BASE_URL") or "https://api.deepseek.com"
-        self.model = model or os.environ.get("LABWRIGHT_MODEL") or "deepseek-chat"
+        self.model = model or os.environ.get("LABWRIGHT_MODEL") or "deepseek-v4-flash"
         self.temperature = temperature
         self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 

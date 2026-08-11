@@ -108,6 +108,42 @@ def test_agent_refuses_prose_answer():
     assert "0.25" not in result.verification_summary
 
 
+def test_agent_self_corrects_on_validation_error():
+    """A malformed submit_design must be fed back, not crash the loop."""
+
+    class FlakyLLM:
+        def __init__(self):
+            self.calls = 0
+
+        def chat(self, messages, tools=None, **kwargs):
+            self.calls += 1
+            bad = '{"goal":"g","rationale":"r","chip":{"width_um":400,"height_um":100,"length_mm":20},' \
+                  '"flow":{"flow_rate_uLmin":2,"viscosity_pas":0.001},"cells":{"cell_type":"X",' \
+                  '"seeding_density_cells_cm2":100000,"culture_area_cm2":0.08},' \
+                  '"dosing":{"compound":"A","molecular_weight_g_mol":151,"stock_mM":100,"working_mM":0.1,' \
+                  '"vehicle_control":"0.1% v/v DMSO in medium"}}'  # vehicle_control is a string -> invalid
+            if self.calls == 1:
+                return SimpleNamespace(
+                    content=None,
+                    tool_calls=[SimpleNamespace(id="bad", function=SimpleNamespace(name="submit_design", arguments=bad))],
+                )
+            return SimpleNamespace(
+                content=None,
+                tool_calls=[
+                    SimpleNamespace(
+                        id="good",
+                        function=SimpleNamespace(name="submit_design", arguments=_RAW_INPUT_JSON),
+                    )
+                ],
+            )
+
+    agent = DesignAgent(llm=FlakyLLM(), max_iterations=5)
+    result = agent.run("design")
+    assert result.is_verified
+    assert any(s.get("type") == "submit_rejected" for s in result.steps)
+    assert result.design is not None
+
+
 def test_agent_gives_up_without_submit():
     class StubbornLLM:
         def chat(self, messages, tools=None, **kwargs):

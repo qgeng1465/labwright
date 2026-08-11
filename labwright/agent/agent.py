@@ -37,6 +37,9 @@ provided calculator tools.
 (geometry, flow, cell/dose/stat *assumptions*). Derived fields are computed for you.
 4. If `submit_design` returns `status: review_required`, read the verification report and fix \
 the design, then call `submit_design` again with corrected raw inputs.
+5. `submit_design` field types matter: `dosing.vehicle_control` is a JSON boolean (`true`/`false`); \
+do NOT put prose there. Never include derived fields (`dmso_fraction_vv`, `seed_count`, \
+`n_per_group`, any flow metric) in `submit_design` — they are computed for you.
 
 Common physiological anchors (verify against literature before relying on them):
 - Hepatic sinusoidal shear ≈ 0.05-0.15 Pa (0.5-1.5 dyn/cm²); lung alveolar-capillary ≈ 0.03 Pa;
@@ -95,7 +98,10 @@ class DesignAgent:
 
     def _execute_tool(self, name: str, arguments: str) -> str:
         if name == "submit_design":
-            result = submit_design(json.loads(arguments))
+            try:
+                result = submit_design(json.loads(arguments))
+            except Exception as exc:  # noqa: BLE001 - feed the schema error back to the model
+                result = {"status": "validation_error", "error": str(exc)}
             return json.dumps(result, ensure_ascii=False, default=str)
         if name not in REGISTRY:
             return json.dumps({"error": f"unknown tool {name}"})
@@ -134,7 +140,13 @@ class DesignAgent:
                 messages.append({"role": "tool", "tool_call_id": call.id, "content": output})
                 turn_steps.append({"tool": call.function.name, "output": output[:500]})
                 if call.function.name == "submit_design":
-                    final_submission = json.loads(output)
+                    sub = json.loads(output)
+                    if sub.get("status") in ("ok", "review_required"):
+                        final_submission = sub
+                    else:
+                        # Schema/validation failure: the model sees the error as a
+                        # tool result and can correct the submission next turn.
+                        result.steps.append({"type": "submit_rejected", "output": output[:300]})
                     break
             result.steps.extend(turn_steps)
 
