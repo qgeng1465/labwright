@@ -22,6 +22,7 @@ from typing import Any, Callable
 from pydantic import BaseModel, Field
 
 from labwright.calc import cell, dosing, microfluidics as mf, stats
+from labwright.published import verify_published_protocol
 
 # ---------------------------------------------------------------------------
 # Registry primitives
@@ -161,6 +162,28 @@ class ReplicatesParams(BaseModel):
     alpha: float = Field(default=0.05, gt=0, lt=1, description="Confidence level")
 
 
+class ChipClaimParams(BaseModel):
+    width_um: float = Field(gt=0, description="Channel width in micrometres, as reported")
+    height_um: float = Field(gt=0, description="Channel height in micrometres, as reported")
+    length_mm: float = Field(gt=0, description="Channel length in millimetres, as reported")
+
+
+class FlowClaimParams(BaseModel):
+    flow_rate_uLmin: float = Field(gt=0, description="Volumetric flow rate in µL/min, as reported")
+    viscosity_pas: float = Field(default=1e-3, gt=0, description="Dynamic viscosity in Pa·s")
+    density_kgm3: float = Field(default=1000, gt=0, description="Fluid density in kg/m³")
+
+
+class VerifyProtocolParams(BaseModel):
+    chip: ChipClaimParams = Field(description="Channel geometry the paper reports")
+    flow: FlowClaimParams = Field(description="Flow inputs the paper reports")
+    claimed: dict[str, float] = Field(
+        description='Derived values the paper asserts, e.g. {"shear_pa": 0.05, "reynolds": 0.3, '
+        '"channel_volume_ul": 0.8}'
+    )
+    reference: str = Field(description="DOI / journal citation of the paper being checked (required)")
+
+
 # ---------------------------------------------------------------------------
 # Tool declarations
 # ---------------------------------------------------------------------------
@@ -297,6 +320,18 @@ register_tool(
     stats.technical_replicates,
     "stats",
     units_out="n",
+)
+
+register_tool(
+    VerifyProtocolParams,
+    "verify_published_protocol",
+    "Sanity-check a *published* protocol: recompute the derived numbers (shear, Reynolds, pressure drop, "
+    "residence time, channel volume, velocity) from the geometry and flow a paper reports, and flag any "
+    "claimed value that does not follow from the paper's own inputs. Use before copying a chip design "
+    "or a reported shear/flow pair from the literature.",
+    verify_published_protocol,
+    "published",
+    units_out="verdict per field",
 )
 
 

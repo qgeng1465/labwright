@@ -59,6 +59,57 @@ def cmd_design(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_verify_protocol(args: argparse.Namespace) -> int:
+    """Recompute a paper's claimed numbers from a JSON file.
+
+    The file must contain ``chip``, ``flow``, ``claimed`` and ``reference``,
+    e.g.::
+
+        {
+          "chip": {"width_um": 800, "height_um": 100, "length_mm": 20},
+          "flow": {"flow_rate_uLmin": 8, "viscosity_pas": 0.001},
+          "claimed": {"shear_pa": 0.05, "channel_volume_ul": 0.16},
+          "reference": "10.xxxx/journal.yyyy"
+        }
+    """
+    from labwright.published import verify_published_protocol
+
+    try:
+        with open(args.file, encoding="utf-8") as fh:
+            payload = json.load(fh)
+    except OSError as exc:
+        print(f"[error] cannot read {args.file}: {exc}", file=sys.stderr)
+        return 2
+    except json.JSONDecodeError as exc:
+        print(f"[error] invalid JSON in {args.file}: {exc}", file=sys.stderr)
+        return 2
+
+    required = {"chip", "flow", "claimed", "reference"}
+    missing = required - set(payload)
+    if missing:
+        print(f"[error] missing keys {sorted(missing)} in {args.file}", file=sys.stderr)
+        return 2
+
+    result = verify_published_protocol(
+        chip=payload["chip"], flow=payload["flow"], claimed=payload["claimed"], reference=payload["reference"]
+    )
+    if result["status"] == "validation_error":
+        print(f"[error] {result['error']}", file=sys.stderr)
+        return 1
+
+    print(f"reference : {result['reference']}  (tolerance ±{result['tolerance_pct']:.0f}%)")
+    print(f"{'field':<22} {'computed':>12} {'claimed':>12} {'rel.err':>9}  verdict")
+    for c in result["checks"]:
+        claimed = "—" if c["claimed"] is None else f"{c['claimed']:.6g}"
+        rel = "—" if c["relative_error"] is None else f"{c['relative_error']:.3f}"
+        print(f"{c['field']:<22} {c['computed']:>12.6g} {claimed:>12} {rel:>9}  {c['verdict']}")
+    if result["n_discrepancies"]:
+        print(f"\n{result['n_discrepancies']} claimed value(s) do not follow from the reported inputs.")
+        return 0
+    print("\nAll claimed values are internally consistent.")
+    return 0
+
+
 def cmd_tools(args: argparse.Namespace) -> int:
     print(f"{'category':<14} {'tool':<28} description")
     for t in list_tools():
@@ -78,6 +129,13 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("tools", help="List available calculator tools")
     p.set_defaults(func=cmd_tools)
+
+    p = sub.add_parser(
+        "verify-protocol",
+        help="Recompute a published protocol's claimed numbers and flag inconsistencies",
+    )
+    p.add_argument("file", help="JSON file with {chip, flow, claimed, reference}")
+    p.set_defaults(func=cmd_verify_protocol)
 
     args = parser.parse_args(argv)
     return args.func(args)

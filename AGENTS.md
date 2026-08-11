@@ -7,7 +7,7 @@ proposes raw inputs; deterministic calculators in `labwright/calc/` compute
 every derived number; `labwright/verify/` re-checks them. The project's thesis
 (and its paper) is that this fixes LLM hallucination of wet-lab numbers.
 
-- **Author only**: qgeng1465. No Claude/Anthropic attribution anywhere in the
+- **Author only**: qgeng1465. No attribution to any external assistant anywhere in the
   repo, code, or CI.
 - **Real significance rule**: no experiments/training run "for their own
   sake". The `eval/` benchmark is a *reserved window* — run only after the code

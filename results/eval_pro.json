@@ -1,0 +1,362 @@
+{
+  "n_gold": 12,
+  "bare": {
+    "recovery": {
+      "shear_pa": 32.05555555555555,
+      "pressure_drop_pa": 59.0,
+      "flow_rate_uLmin": 11.5,
+      "reynolds": 0.994989949899499,
+      "seed_count": 0.7291666666666667,
+      "dmso_fraction_vv": 0.0,
+      "n_per_group": 0.8824404761904762
+    },
+    "hallucination_rate": 0.5833333333333334,
+    "valid_design_rate": 0.4166666666666667
+  },
+  "labwright": {
+    "recovery": {
+      "shear_pa": 4.606654563982855e-16,
+      "pressure_drop_pa": 3.552713678800501e-16,
+      "flow_rate_uLmin": 0.0,
+      "reynolds": 1.0000100001465207e-05,
+      "seed_count": 0.0,
+      "dmso_fraction_vv": 0.0,
+      "n_per_group": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "valid_design_rate": 1.0
+  },
+  "per_entry": [
+    {
+      "id": "liver-sinusoid-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "recovery": {
+          "shear_pa": 19.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "kidney-proximal-tubule",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 50.0,
+          "shear_pa": 0.1,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "recovery": {
+          "shear_pa": 4.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "microvascular-venular",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "recovery": {
+          "shear_pa": 9.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "lung-alveolar-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "recovery": {
+          "shear_pa": 32.333333
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "selfconsistent-400x100-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "pressure_drop_pa": 1200.0,
+          "shear_pa": 6.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "recovery": {
+          "shear_pa": 119.0,
+          "pressure_drop_pa": 59.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "shear_pa": 0.0,
+          "pressure_drop_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "selfconsistent-800x100-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "recovery": {
+          "shear_pa": 9.0,
+          "flow_rate_uLmin": 11.5
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "shear_pa": 0.0,
+          "flow_rate_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "reynolds-laminar-check",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "reynolds": 0.0167,
+          "viscosity_pas": 0.001,
+          "width_um": 1000.0
+        },
+        "recovery": {
+          "reynolds": 0.99499
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "reynolds": 1e-05
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "seeding-density-hepg2",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 50.0,
+          "seed_count": 1000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "recovery": {
+          "seed_count": 0.875
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "seed_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "seeding-primary-hepatocytes",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 50.0,
+          "seed_count": 10000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "recovery": {
+          "seed_count": 0.583333
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "seed_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "dmso-vehicle-check",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "dmso_fraction_vv": 0.001,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 50.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "recovery": {
+          "dmso_fraction_vv": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "dmso_fraction_vv": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "power-80-effect-1",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "recovery": {
+          "n_per_group": 0.8125
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "n_per_group": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "power-80-effect-half",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "recovery": {
+          "n_per_group": 0.952381
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "recovery": {
+          "n_per_group": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    }
+  ],
+  "model": "deepseek-v4-pro",
+  "generated_at": "2026-08-11"
+}

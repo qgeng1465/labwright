@@ -1,0 +1,6 @@
+{
+  "chip": {"width_um": 400, "height_um": 100, "length_mm": 20},
+  "flow": {"flow_rate_uLmin": 2, "viscosity_pas": 0.001},
+  "claimed": {"shear_pa": 0.5, "reynolds": 0.13, "channel_volume_ul": 0.8},
+  "reference": "10.1000/example-unit-mix (illustrative protocol: reports shear in dyn/cm^2 but labels it Pa)"
+}

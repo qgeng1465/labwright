@@ -1,26 +1,74 @@
 [
   {
     "id": "liver-sinusoid-shear",
-    "goal": "Perfuse a liver-on-chip to reproduce hepatic sinusoidal wall shear for a 7-day drug-toxicity study.",
+    "goal": "Perfuse a liver-on-chip to reproduce reported hepatic sinusoidal wall shear. In vivo sinusoidal WSS is very low; set the target to 0.05 Pa and pick the geometry and flow that achieve it.",
     "expected": {"shear_pa": 0.05},
-    "source": "Physiological liver sinusoidal shear ~0.05 Pa (0.5 dyn/cm^2) — consensus in liver-heamodynamics literature; exact DOI to be pinned in the curation pass. STATUS: needs_doi."
+    "source": "Design target 0.05 Pa (0.5 dyn/cm^2), the low-shear convention for liver-on-chip. In vivo sinusoid WSS is very low (locally near zero) with peaks only under disturbed flow — CFD model of mouse liver microcirculation, 10.1016/j.jbiomech.2017.08.011. Value to be re-verified in curation."
   },
   {
-    "id": "microvascular-shear",
-    "goal": "Culture a microvascular endothelial channel that recapitulates venular wall shear.",
+    "id": "kidney-proximal-tubule",
+    "goal": "Culture a human proximal-tubule channel that reproduces the apical fluid shear the cells see in vivo. Use the canonical published value of 0.2 dyn/cm^2 and report the wall shear in Pa.",
+    "expected": {"shear_pa": 0.02},
+    "source": "Jang et al., Integrative Biology 2013 — human kidney proximal tubule-on-a-chip exposed primary PTEC to apical FSS of 0.2 dyn/cm^2 = 0.02 Pa, mimicking in vivo tubules. DOI: 10.1039/c3ib40049j. (Verified via search.)"
+  },
+  {
+    "id": "microvascular-venular",
+    "goal": "Design a microvascular channel that recapitulates venular wall shear; target the lower end of the physiological range, 1 dyn/cm^2.",
     "expected": {"shear_pa": 0.1},
-    "source": "Venular wall shear ~0.1-0.6 Pa (1-6 dyn/cm^2) — physiology consensus; exact DOI to be pinned. STATUS: needs_doi."
+    "source": "Venular wall shear consensus 1-6 dyn/cm^2 (0.1-0.6 Pa); target 0.1 Pa. DOI to be pinned in curation. STATUS: needs_doi."
   },
   {
-    "id": "selfconsistent-400x100",
-    "goal": "A 400 x 100 um channel perfused at 2 uL/min with medium viscosity 1e-3 Pa.s; what shear does the endothelium see?",
-    "expected": {"shear_pa": 0.05},
-    "source": "Computed from the rectangular-channel equation tau = 6 mu Q / (w h^2) — self-consistent, not a literature claim."
+    "id": "lung-alveolar-shear",
+    "goal": "Design a lung alveolar-capillary barrier chip under perfusion with very low physiological shear, target 0.03 Pa (0.3 dyn/cm^2).",
+    "expected": {"shear_pa": 0.03},
+    "source": "Low-shear alveolar-capillary target ≈0.03 Pa reported for lung-on-chip; DOI to be pinned in curation. STATUS: needs_doi."
   },
   {
-    "id": "seeding-density-check",
-    "goal": "Seed a 400 um wide, 20 mm long channel with HepG2 at 1e5 cells/cm^2 — how many cells per channel?",
+    "id": "selfconsistent-400x100-shear",
+    "goal": "A 400 x 100 um rectangular channel is perfused at 2 uL/min with medium viscosity 1e-3 Pa.s. What wall shear does the endothelium see, and what is the pressure drop over a 20 mm channel?",
+    "expected": {"shear_pa": 0.05, "pressure_drop_pa": 20.0},
+    "source": "Computed from tau = 6·mu·Q/(w·h^2) and dP = 12·mu·Q·L/(w·h^3) — self-consistent, not a literature claim."
+  },
+  {
+    "id": "selfconsistent-800x100-shear",
+    "goal": "Design an 800 um wide, 100 um high, 20 mm long PDMS channel that delivers exactly 0.1 Pa wall shear using water-like medium. What flow rate is needed?",
+    "expected": {"shear_pa": 0.1, "flow_rate_uLmin": 8.0},
+    "source": "Inverse of tau = 6·mu·Q/(w·h^2): Q = tau·w·h^2/(6·mu) = 8 uL/min — self-consistent."
+  },
+  {
+    "id": "reynolds-laminar-check",
+    "goal": "Check whether 50 uL/min through a 400 x 100 um channel (water-like medium) is still laminar; report the Reynolds number.",
+    "expected": {"reynolds": 3.3333},
+    "source": "Re = rho·u·Dh/mu = 3.33 for 400x100@50 uL/min, laminar << 2300 — self-consistent."
+  },
+  {
+    "id": "seeding-density-hepg2",
+    "goal": "Seed HepG2 at 1e5 cells/cm^2 on the 0.08 cm^2 culture area of a 400 um x 20 mm channel. How many cells per channel?",
     "expected": {"seed_count": 8000.0},
-    "source": "Computed from seeding density x culture area — self-consistent. HepG2 seeding densities in the 1e5 range per cm^2 are standard; DOI to be pinned."
+    "source": "N = density x area = 1e5 x 0.08 = 8000 — self-consistent. HepG2 seeding densities near 1e5/cm^2 are standard; DOI to be pinned."
+  },
+  {
+    "id": "seeding-primary-hepatocytes",
+    "goal": "Seed primary human hepatocytes at 1.5e5 cells/cm^2 onto the 0.16 cm^2 culture area of an 800 um x 20 mm channel. How many cells are needed?",
+    "expected": {"seed_count": 24000.0},
+    "source": "N = 1.5e5 x 0.16 = 24000 — self-consistent. Primary hepatocyte plating densities near 1.5e5/cm^2 are standard; DOI to be pinned."
+  },
+  {
+    "id": "dmso-vehicle-check",
+    "goal": "Dose APAP at a 0.5 mM working concentration from a 500 mM DMSO stock. Report the DMSO volume fraction in the final medium and flag whether it stays under the ~0.1% vehicle-toxicity guideline.",
+    "expected": {"dmso_fraction_vv": 0.001},
+    "source": "DMSO fraction = working/stock = 0.5/500 = 0.001 (0.1% v/v) — self-consistent. Solvent-toxicity threshold ≈0.5% v/v; DOI to be pinned."
+  },
+  {
+    "id": "power-80-effect-1",
+    "goal": "Plan a treated-vs-control comparison in a liver chip designed to detect a 1.0-sigma difference between group means with 80% power at alpha 0.05. How many biological replicates per group?",
+    "expected": {"n_per_group": 16},
+    "source": "n = 2·(z_alpha/2 + z_power)^2 / effect^2 = 16 for effect 1.0, sd 1.0, alpha 0.05, power 0.80 — computed via standard two-sample t-test formula."
+  },
+  {
+    "id": "power-80-effect-half",
+    "goal": "How many replicates per group are needed to detect only a 0.5-sigma difference with 80% power at alpha 0.05?",
+    "expected": {"n_per_group": 63},
+    "source": "n = 2·(z_alpha/2 + z_power)^2 / effect^2 = 63 for effect 0.5 — computed via standard two-sample t-test formula."
   }
 ]
