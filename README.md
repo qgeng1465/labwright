@@ -4,7 +4,7 @@
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
-[![Tests](https://img.shields.io/badge/tests-77%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-85%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
 Tell a wet-lab LLM agent what experiment you want. It **proposes** the design.
@@ -148,7 +148,7 @@ Three directly related projects define the space:
 |---|---|---|
 | **Thoth** (ICLR 2026) | 8B reasoning model that generates biological protocol *text*; trained with a SCORE structured-reward mechanism over 12k+ real protocols | Verification is a *learned* reward inside the model — soft and model-internal. It cannot **prove** a number: a protocol that says "shear 0.25 Pa" can score well and still not follow from its own geometry. |
 | **BPL-COGEN** (bioRxiv 2026) | A formal protocol *language* plus a compiler; 95.1% fidelity on 300 Nature Protocols | The compiler checks protocol *structure* (type-safety), not physics. If a protocol asserts "shear 1 Pa", the compiler cannot tell you the stated geometry and flow imply 0.05. |
-| **MMFT OoC Designer** (IEEE TCAD 2025) | Automated organ-chip *geometry* design, validated with CFD + fabrication | Optimizes geometry only — no LLM, no natural-language goals, and no cell biology, dosing or statistics. |
+| **MMFT OoC Designer** (IEEE TCAD 2024) | Automated organ-chip *geometry* design, validated with CFD + fabrication | Optimizes geometry only — no LLM, no natural-language goals, and no cell biology, dosing or statistics. |
 
 Labwright's claim is narrower and sharper: **no number enters a design unless a
 deterministic calculator computed it and the verifier re-proved it.** The LLM
@@ -196,11 +196,16 @@ re-proves) — on two gold sets:
    the answer (geometry, flow, or the physiological target number). This tests
    whether the pipeline extracts the stated numbers and drives the calculators
    to them. It deliberately does *not* test domain knowledge.
-2. **6 "recall" goals** (`eval/gold_blind.json`) — the goal states no number
+2. **12 "recall" goals** (`eval/gold_blind.json`) — the goal states no number
    ("recapitulate physiological venular wall shear"); the model must supply the
-   canonical target itself. Four are `cold` (answer nowhere); two are
+   canonical target itself. Nine are `cold` (answer nowhere); three are
    `prompt-backed` (the system prompt lists a range, but the model must still
    pick the right value).
+
+Four systems are compared. The three LLM-memory systems (bare-LLM, soft-gate,
+self-verify) write numbers from memory and are scored by *identical* rules —
+only the prompt/stage structure differs. Labwright adds the calculators and
+the verifier.
 
 A *usable* design is internally consistent **and** hits every target within
 ±5 %. This is an *ablation*, not an equal-resource race: Labwright's
@@ -221,13 +226,28 @@ hallucination rate                 0.792         0.125
 | set | model | system | self-consistent | usable | hallucination |
 |---|---|---|---|---|---|
 | 24-reading | `flash` | bare-LLM | 21 % | 0 % | 0.792 |
+| 24-reading | `flash` | soft-gate | 17 % | 0 % | 0.833 |
+| 24-reading | `flash` | self-verify | 0 % | 0 % | 0.833 |
 | 24-reading | `flash` | **Labwright** | **88 %** | **88 %** | **0.125** |
 | 24-reading | `pro` | bare-LLM | 8 % | 0 % | 0.917 |
+| 24-reading | `pro` | soft-gate | 12 % | 0 % | 0.875 |
+| 24-reading | `pro` | self-verify | 0 % | 0 % | 0.736 |
 | 24-reading | `pro` | **Labwright** | **100 %** | **100 %** | **0.000** |
-| 6-blind | `flash` | bare-LLM | 33 % | 0 % | 0.667 |
-| 6-blind | `flash` | **Labwright** | **100 %** | **33 %** | **0.000** |
-| 6-blind | `pro` | bare-LLM | 33 % | 0 % | 0.667 |
-| 6-blind | `pro` | **Labwright** | **100 %** | **17 %** | **0.000** |
+| 12-blind | `flash` | bare-LLM | 17 % | 0 % | 0.833 |
+| 12-blind | `flash` | soft-gate | 0 % | 0 % | 1.000 |
+| 12-blind | `flash` | self-verify | 0 % | 0 % | 0.792 |
+| 12-blind | `flash` | **Labwright** | **100 %** | **25 %** | **0.000** |
+| 12-blind | `pro` | bare-LLM | 17 % | 0 % | 0.833 |
+| 12-blind | `pro` | soft-gate | 17 % | 0 % | 0.833 |
+| 12-blind | `pro` | self-verify | 0 % | 0 % | 0.889 |
+| 12-blind | `pro` | **Labwright** | **100 %** | **33 %** | **0.000** |
+
+*bare-LLM and Labwright come from the same committed run; soft-gate and
+self-verify were a separate batch at the same temperature (0.2). Run-to-run,
+the bare self-consistent rate was 17 % and 21 % on the two `flash` batches and
+8 % in both `pro` batches — a few points between memory systems (e.g.
+soft-gate's 12 % on `pro`) is sampling noise; the qualitative ordering is
+not.*
 
 Read the numbers honestly — and the boundary of what they mean.
 
@@ -242,12 +262,21 @@ Read the numbers honestly — and the boundary of what they mean.
   over the answers, and the self-consistent anchors are computed from the same
   equations. The real signal there is number-extraction and tool-calling — a
   genuine capability (bare fails even at this: 0 % usable on both models).
+- **The two naive fixes do not work.** `soft-gate` (a "re-check yourself"
+  prompt) stays within sampling noise of bare — being told to be careful does
+  not make an LLM's arithmetic checkable. `self-verify` (using a second LLM
+  pass as its own verifier) is *worse* than nothing: handed its own raw
+  inputs, the model recomputes them wrong, so the verifier pass overwrites
+  correct numbers with confident wrong ones — 0 % self-consistent on both sets,
+  both models. Only the deterministic calculators + verifier reach usable > 0 %.
 - **The blind set is where target selection is actually tested — and Labwright
-  drops.** `flash` 88 % → 33 %, `pro` 100 % → 17 %. The gate held: every plan
+  drops.** `flash` 88 % → 25 %, `pro` 100 % → 33 %. The gate held: every plan
   was internally verified, hallucination 0.000. But the designs aimed at the
-  wrong physiology. `flash` proposed kidney PTEC shear at 0.50 Pa (target 0.02,
-  25× off); `pro` at 0.20 Pa (10× off, treating dyn/cm² as Pa); both proposed
-  hepatic 0.10 Pa (2× the 0.05 low-shear convention). **The gate stops
+  wrong physiology. On the 12 goals `flash` recovers 3 (arterial 1.5 Pa, lung
+  0.03 Pa, BBB 1.0 Pa), `pro` 4 (venular 0.3 Pa, lung 0.03 Pa, HepG2 seeding
+  4000 cells per channel, BBB 1.0 Pa); both miss the liver (0.10 Pa vs the 0.05
+  Pa convention) and the kidney (`flash` 0.50 Pa, `pro` 0.20 Pa — 24× / 9× off
+  the 0.02 Pa target, the `pro` error reading dyn/cm² as Pa). **The gate stops
   fabricated numbers; it cannot supply domain knowledge the model does not
   have.** That boundary is the honest headline, and it is exactly what a
   wet-lab user must not forget: verify the target, not just the arithmetic.
@@ -263,9 +292,10 @@ Labwright's residual error on `flash` (88 % usable, not 100 %) is *silence*,
 not fabrication: the three goals it missed were pure-calculation goals
 (Reynolds check, pressure-drop target, power analysis) where the agent
 produced **no design at all** (`plan: false`; hallucination 1.0 is scored as
-"no usable output"). The per-entry records now carry the agent's own failure
-reason, so that claim is auditable. It never wrote a number the calculators
-didn't check.
+"no usable output"). The committed reading-set results mark these with
+`plan: false`; the later blind-set runs additionally record the agent's own
+failure reason, so the claim is auditable. It never wrote a number the
+calculators didn't check.
 
 ## Roadmap
 

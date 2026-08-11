@@ -5,6 +5,22 @@ Usage
     python -m eval.run_benchmark                      # all gold entries
     python -m eval.run_benchmark --limit 3 --out /tmp/eval.json
     python -m eval.run_benchmark --model deepseek-chat
+    python -m eval.run_benchmark --systems bare,soft_gate,self_verify,labwright
+
+Each gold experiment is run once per requested system:
+
+* **bare-LLM** — asked once, with the full JSON schema, to produce a complete
+  design and *compute the numbers itself* (no calculators).
+* **soft-gate** — bare + a "check yourself" prompt: re-derive your own derived
+  numbers before finalising. No calculators, no verifier.
+* **self-verify** — two LLM passes: propose, then hand the model back its own
+  raw inputs and ask it to recompute the derived numbers itself. The naive
+  "use the LLM as the verifier" alternative.
+* **Labwright** — the ReAct agent runs its normal tool loop and must end in a
+  verified design.
+
+The default ``--systems`` is ``bare,labwright`` (the historical comparison);
+add ``soft_gate`` and ``self_verify`` for the competitor baselines.
 
 Each gold experiment is run twice:
 
@@ -54,12 +70,22 @@ def main() -> int:
     ap.add_argument("--base-url", default=None)
     ap.add_argument("--max-iterations", type=int, default=12)
     ap.add_argument("--gold", default=None, help="Path to a gold JSON (default: eval/gold_experiments.json)")
+    ap.add_argument(
+        "--systems", default="bare,labwright",
+        help="Comma-separated systems to run (bare, soft_gate, self_verify, labwright)",
+    )
     args = ap.parse_args()
+
+    systems = tuple(s.strip() for s in args.systems.split(",") if s.strip())
+    for name in systems:
+        if name not in ("bare", "soft_gate", "self_verify", "labwright"):
+            print(f"unknown system: {name}", file=sys.stderr)
+            return 2
 
     gold = load_gold(args.gold) if args.gold else load_gold()
     if args.limit:
         gold = gold[: args.limit]
-    print(f"gold entries: {len(gold)}   model: {args.model}")
+    print(f"gold entries: {len(gold)}   model: {args.model}   systems: {','.join(systems)}")
 
     chat = _make_chat(args.model, args.base_url)
     agent_factory = _make_agent_factory(args.model, args.base_url, args.max_iterations)
@@ -77,7 +103,7 @@ def main() -> int:
         with open(out, "w", encoding="utf-8") as fh:
             json.dump(partial, fh, indent=2, ensure_ascii=False)
 
-    summary = evaluate(gold, agent_factory, chat, progress, checkpoint=checkpoint)
+    summary = evaluate(gold, agent_factory, chat, progress, checkpoint=checkpoint, systems=systems)
 
     summary["model"] = args.model
     summary["generated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")

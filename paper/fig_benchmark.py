@@ -1,31 +1,39 @@
 """Render the paper's benchmark figure from the committed result JSONs.
 
 Two gold sets side by side — the 24-reading set (every goal states the target)
-and the 6-blind set (no target stated) — as 3 × 2 small multiples, one row per
+and the 12-blind set (no target stated) — as 3 × 2 small multiples, one row per
 headline metric (self-consistent rate, usable rate, hallucination rate). Within
 each panel the two model families (deepseek-v4-flash, deepseek-v4-pro) are
-grouped; the two systems (bare-LLM vs Labwright) sit as adjacent bars. Color
-follows the *system* — bare-LLM is always slot-1 gray, Labwright always slot-2
-orange — never the rank, so it stays constant across panels.
+grouped; the four systems (bare-LLM, soft-gate, self-verify, Labwright) sit as
+adjacent bars. Color follows the *system*: the three LLM-memory systems are a
+de-emphasized gray family and Labwright is the saturated orange, so the texture
+channel (45° hatch on Labwright) plus the legend keep identity readable in
+print and for CVD.
 
 The blind set is where the honest boundary of the gate shows: self-consistency
-stays high for Labwright while the usable rate collapses, so the figure
-carries the paper's central caveat visually.
+stays high for Labwright while the usable rate collapses, and the naive
+alternatives (soft-gate, self-verify) never reach a usable design at all — so
+the figure carries the paper's central caveat visually.
 
-Palette: the dataviz default categorical slots 1/2, validated in both modes
-against the documented light/dark surfaces (normal-vision ΔE >= 15 and CVD
-ΔE >= 8 both clear; contrast >= 3:1). Text uses ink tokens only — series
-colors never carry text.
+Palette: validated with ``scripts/validate_palette.js`` (light mode) — the gray
+family is lightness-stepped with CVD-separated adjacent pairs, and the orange
+keeps its documented contrast. Text uses ink tokens only — series colors never
+carry text.
 
 Usage::
 
-    python paper/fig_benchmark.py \
-        results/eval_flash.json results/eval_pro.json \
-        results/eval_blind_flash.json results/eval_blind_pro.json
+    python paper/fig_benchmark.py \\
+        results/eval_flash.json results/eval_competitors_flash.json \\
+        results/eval_pro.json results/eval_competitors_pro.json \\
+        results/eval_blind_flash.json results/eval_blind_competitors_flash.json \\
+        results/eval_blind_pro.json results/eval_blind_competitors_pro.json
     # writes paper/fig_benchmark.pdf and paper/fig_benchmark.png
 
-Numbers come from eval/report.derive(), which recomputes every metric from
-per-entry records — the same source as Tables 1 and 2.
+The first of each pair (the "main" file) carries bare-LLM + Labwright; the
+second carries soft-gate + self-verify. Bare-LLM is taken from the main file so
+the bare-vs-Labwright comparison uses the same committed run as the paper's
+Table 1. Numbers come from eval/report.derive(), which recomputes every metric
+from per-entry records.
 """
 
 from __future__ import annotations
@@ -56,38 +64,61 @@ METRICS = [
 #: blind set does not — that is the boundary the figure makes visible.
 SETS = [
     ("24-reading set", "target stated in the goal"),
-    ("6-blind set", "no target stated"),
+    ("12-blind set", "no target stated"),
 ]
-
-BAR = "#b0ada8"          # bare-LLM — de-emphasis gray (identity via legend/labels)
-LW = "#eb6834"           # Labwright — categorical slot 2 (orange), validated
-LW_HATCH = "#c85a22"     # darker step of the orange ramp — the texture channel for print/CVD
+#: (system key, legend label, bar color, edge/hatch color, hatch).
+#: Gray family re-stepped so the minimum OKLab pair distance clears the
+#: normal-vision floor (min ΔE = 17.1); Labwright carries the saturated orange.
+SYSTEMS = [
+    ("bare", "bare-LLM", "#a8a39d", "none", None),
+    ("soft_gate", "soft-gate", "#e0dcd5", "#a8a39d", "o"),
+    ("self_verify", "self-verify", "#74706a", "#a8a39d", "+"),
+    ("labwright", "Labwright", "#eb6834", "#c85a22", "//"),
+]
 INK = "#262522"          # text primary
 MUT = "#8a8782"          # muted text (axis, sub-label)
 GRID = "#d9d7d3"         # hairline grid
 
-BARE_LABEL = "bare LLM"
-LW_LABEL = "Labwright"
+N_SYSTEMS = len(SYSTEMS)
 
 
-def load(path: str) -> tuple[str, dict]:
-    with open(path) as fh:
-        result = json.load(fh)
-    return result.get("model", "?"), derive(result)
+def load_merged(main_path: str, comp_path: str) -> dict:
+    """Merge bare+Labwright (main file) with soft-gate + self-verify (comp file).
+
+    Bare-LLM comes from the main file so its numbers match the paper's Table 1
+    run; soft-gate and self-verify come from the competitor batch.
+    """
+    with open(main_path) as fh:
+        main = derive(json.load(fh))
+    with open(comp_path) as fh:
+        comp = derive(json.load(fh))
+    merged = {key: val for key, val in main.items() if key in ("bare", "labwright")}
+    merged["soft_gate"] = comp["soft_gate"]
+    merged["self_verify"] = comp["self_verify"]
+    merged["n_gold"] = main["n_gold"]
+    return merged
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) < 4:
+    # argv layout: [reading-main flash, reading-comp flash, reading-main pro,
+    # reading-comp pro, blind-main flash, blind-comp flash, blind-main pro,
+    # blind-comp pro]
+    if len(argv) < 8:
         print(__doc__)
         return 1
-    # argv[0:2] = reading set (flash, pro); argv[2:4] = blind set (flash, pro).
+    pairs = [
+        (argv[0], argv[1]),  # reading flash
+        (argv[2], argv[3]),  # reading pro
+        (argv[4], argv[5]),  # blind flash
+        (argv[6], argv[7]),  # blind pro
+    ]
     sets = [
-        [load(p)[1] for p in argv[0:2]],
-        [load(p)[1] for p in argv[2:4]],
+        [load_merged(*pairs[0]), load_merged(*pairs[1])],  # reading: flash, pro
+        [load_merged(*pairs[2]), load_merged(*pairs[3])],  # blind: flash, pro
     ]
 
     fig, axes = plt.subplots(
-        len(METRICS), len(SETS), figsize=(7.2, 4.4),
+        len(METRICS), len(SETS), figsize=(8.6, 4.6),
         constrained_layout=True, sharey="row",
     )
     fig.patch.set_facecolor("white")
@@ -96,40 +127,32 @@ def main(argv: list[str]) -> int:
         for row, (key, title, sub) in enumerate(METRICS):
             ax = axes[row, col]
             data = sets[col]
-            width = 0.30
-            offsets = (-width / 2 - 0.01, width / 2 + 0.01)  # 2 px surface gap
+            # 4 bars per model group; width sized so groups don't collide.
+            width = 0.62 / N_SYSTEMS
+            offsets = [
+                (i - (N_SYSTEMS - 1) / 2) * width for i in range(N_SYSTEMS)
+            ]
             for i, model in enumerate(MODELS):
                 d = data[i]
-                bare_v = d["bare"][key]
-                lw_v = d["labwright"][key]
                 pos = i
-                for off, v, color, ec, hatch in (
-                    (offsets[0], bare_v, BAR, "none", None),
-                    (offsets[1], lw_v, LW, LW_HATCH, "//"),
-                ):
-                    ax.bar(
-                        pos + off, v, width, color=color, edgecolor=ec,
-                        hatch=hatch, zorder=3, linewidth=0.5,
-                    )
+                for (sys_key, _label, color, edge, hatch), off in zip(SYSTEMS, offsets):
+                    v = d[sys_key][key]
+                    ax.bar(pos + off, v, width, color=color, edgecolor=edge,
+                           hatch=hatch, zorder=3, linewidth=0.5)
                     if key != "hallucination_rate":
-                        txt = f"{100*v:.0f}%"
-                        anchor = "top" if v > 0.30 else "bottom"
-                        ha = "center"
-                        if anchor == "top":
-                            ax.text(pos + off, v - 0.015, txt, ha=ha, va="top",
-                                    fontsize=7.5, color="#ffffff" if color != BAR else INK)
-                        else:
-                            ax.text(pos + off, v + 0.015, txt, ha=ha, va="bottom",
-                                    fontsize=7.5, color=INK)
+                        txt = f"{100*v:.0f}%" if v >= 0.005 else ""
+                        if v > 0.30:
+                            ax.text(pos + off, v - 0.015, txt, ha="center", va="top",
+                                    fontsize=6.5, color="#ffffff" if color != "#b0ada8" else INK)
+                        elif v >= 0.005:
+                            ax.text(pos + off, v + 0.015, txt, ha="center", va="bottom",
+                                    fontsize=6.5, color=INK)
                     else:
-                        # hallucination: 0.0 is the win; small values label below the line
-                        txt = f"{v:.3f}" if v > 0 else "0.000"
+                        txt = f"{v:.3f}" if v > 0 else ""
                         if v > 0:
                             ax.text(pos + off, v + 0.015, txt, ha="center", va="bottom",
-                                    fontsize=7.5, color=INK)
-                        else:
-                            ax.text(pos + off, 0.015, txt, ha="center", va="bottom",
-                                    fontsize=7.5, color=INK)
+                                    fontsize=6.5, color=INK)
+                        # v == 0.0: the win is self-evident, skip the label
 
             # axis dressing: recessive, ink-only
             ax.set_xticks(range(len(MODELS)))
@@ -153,17 +176,17 @@ def main(argv: list[str]) -> int:
         )
         axes[1, col].set_xlabel(sub, fontsize=7.5, color=MUT, labelpad=2)
 
-    n_gold = sets[0][0]["n_gold"]
-    axes[0, 0].set_ylabel(f"fraction of goals", fontsize=8, color=MUT)
-    axes[1, 0].set_ylabel(f"fraction of {n_gold} gold goals", fontsize=8, color=MUT)
-    axes[2, 0].set_ylabel(f"fraction of {n_gold} gold goals", fontsize=8, color=MUT)
+    # each panel's denominator is its own set size (24 or 12), so the label
+    # stays set-agnostic.
+    for ax in axes[:, 0]:
+        ax.set_ylabel("fraction of goals", fontsize=8, color=MUT)
 
     handles = [
-        Patch(facecolor=BAR, edgecolor="none", label=BARE_LABEL),
-        Patch(facecolor=LW, edgecolor=LW_HATCH, hatch="//", linewidth=0.5, label=LW_LABEL),
+        Patch(facecolor=color, edgecolor=edge, hatch=hatch, linewidth=0.5, label=label)
+        for (_key, label, color, edge, hatch) in SYSTEMS
     ]
-    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1.01),
-               ncol=2, frameon=False, fontsize=8.5)
+    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1.0),
+               ncol=len(SYSTEMS), frameon=False, fontsize=8)
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_benchmark.pdf", bbox_inches="tight")

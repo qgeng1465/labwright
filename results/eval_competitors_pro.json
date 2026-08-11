@@ -1,0 +1,1489 @@
+{
+  "n_gold": 24,
+  "per_entry": [
+    {
+      "id": "liver-sinusoid-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 19.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 19.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 20.0,
+          "shear_pa": 0.48,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "reynolds": 3.3333333333333335,
+          "pressure_drop_pa": 9600.0,
+          "residence_time_s": 1.2,
+          "channel_volume_ul": 2.0,
+          "mean_velocity_mms": 16.666666666666668
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 8.6
+        },
+        "hallucination_rate": 0.333333,
+        "valid": false
+      }
+    },
+    {
+      "id": "kidney-proximal-tubule",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 50.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 49.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 49.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 50.0,
+          "shear_pa": 0.24,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "reynolds": 3.3333333333333335,
+          "pressure_drop_pa": 6000.0,
+          "residence_time_s": 30.0,
+          "channel_volume_ul": 50.0,
+          "mean_velocity_mms": 1.6666666666666667
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 11.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "microvascular-venular",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 20.0,
+          "shear_pa": 0.1,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 9.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 50.0,
+          "shear_pa": 0.24,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "reynolds": 3.3333333333333335,
+          "pressure_drop_pa": 6000.0,
+          "residence_time_s": 30.0,
+          "channel_volume_ul": 50.0,
+          "mean_velocity_mms": 1.6666666666666667
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 1.4
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "lung-alveolar-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 50.0,
+          "shear_pa": 0.1,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 2.333333
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 32.333333
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 24.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "reynolds": 3.3333333333333335,
+          "pressure_drop_pa": 9600.0,
+          "residence_time_s": 6.0,
+          "channel_volume_ul": 100.0,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 799.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "selfconsistent-400x100-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "pressure_drop_pa": 1000.0,
+          "shear_pa": 1.5,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 29.0,
+          "pressure_drop_pa": 49.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "pressure_drop_pa": 4800.0,
+          "shear_pa": 1.2,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 23.0,
+          "pressure_drop_pa": 239.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "pressure_drop_pa": 38400.0,
+          "shear_pa": 0.48,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "reynolds": 3.3333333333333335,
+          "residence_time_s": 6.0,
+          "channel_volume_ul": 1.0,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 8.6,
+          "pressure_drop_pa": 1919.0
+        },
+        "hallucination_rate": 0.5,
+        "valid": false
+      }
+    },
+    {
+      "id": "selfconsistent-800x100-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 9.0,
+          "flow_rate_uLmin": 11.5
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 9.0,
+          "flow_rate_uLmin": 11.5
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 50.0,
+          "shear_pa": 0.48,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "reynolds": 3.333,
+          "pressure_drop_pa": 2400.0,
+          "residence_time_s": 30.0,
+          "channel_volume_ul": 50.0,
+          "mean_velocity_mms": 1.667
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 3.8,
+          "flow_rate_uLmin": 11.5
+        },
+        "hallucination_rate": 0.833333,
+        "valid": false
+      }
+    },
+    {
+      "id": "reynolds-laminar-check",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "reynolds": 0.333,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "reynolds": 0.900099
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 20.0,
+          "reynolds": 10.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "reynolds": 2.00003
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "reynolds": 3.3333333333333335,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "pressure_drop_pa": 9600.0,
+          "residence_time_s": 6.0,
+          "channel_volume_ul": 1.0,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "reynolds": 1e-05
+        },
+        "hallucination_rate": 0.5,
+        "valid": false
+      }
+    },
+    {
+      "id": "seeding-density-hepg2",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 50.0,
+          "seed_count": 1000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "seed_count": 0.75
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "seed_count": 5000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "seed_count": 0.25
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 50.0,
+          "seed_count": 1000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "reynolds": 0.3333333333333333,
+          "pressure_drop_pa": 4800.0,
+          "residence_time_s": 15.0,
+          "channel_volume_ul": 2.5,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_count": 0.75
+        },
+        "hallucination_rate": 0.5,
+        "valid": false
+      }
+    },
+    {
+      "id": "seeding-primary-hepatocytes",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 50.0,
+          "seed_count": 1000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "seed_count": 0.958333
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "seed_count": 5000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "seed_count": 0.791667
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 50.0,
+          "seed_count": 1000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "reynolds": 0.3333333333333333,
+          "pressure_drop_pa": 48000.0,
+          "residence_time_s": 15.0,
+          "channel_volume_ul": 2.5,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_count": 0.958333
+        },
+        "hallucination_rate": 0.5,
+        "valid": false
+      }
+    },
+    {
+      "id": "dmso-vehicle-check",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "dmso_fraction_vv": 0.001,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "dmso_fraction_vv": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "dmso_fraction_vv": 0.001,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "dmso_fraction_vv": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "dmso_fraction_vv": 0.001,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 50.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "reynolds": 0.3333333333333333,
+          "pressure_drop_pa": 48000.0,
+          "residence_time_s": 15.0,
+          "channel_volume_ul": 2.5,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "dmso_fraction_vv": 0.0
+        },
+        "hallucination_rate": 0.5,
+        "valid": false
+      }
+    },
+    {
+      "id": "power-80-effect-1",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "n_per_group": 0.8125
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "n_per_group": 0.8125
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "reynolds": 3.3333333333333335,
+          "pressure_drop_pa": 19200.0,
+          "residence_time_s": 60.0,
+          "channel_volume_ul": 10.0,
+          "mean_velocity_mms": 333.3333333333333
+        },
+        "verifiable": true,
+        "recovery": {
+          "n_per_group": 0.8125
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "power-80-effect-half",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "n_per_group": 0.952381
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "n_per_group": 0.952381
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "reynolds": 3.3333333333333335,
+          "pressure_drop_pa": 19200.0,
+          "residence_time_s": 6.0,
+          "channel_volume_ul": 1.0,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "n_per_group": 0.952381
+        },
+        "hallucination_rate": 0.5,
+        "valid": false
+      }
+    },
+    {
+      "id": "arterial-shear-15dyn",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 50.0,
+          "shear_pa": 0.1,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 0.933333
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.2,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 0.2
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 4.8,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "reynolds": 6.666666666666667,
+          "pressure_drop_pa": 38400.0,
+          "residence_time_s": 6.0,
+          "channel_volume_ul": 100.0,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 2.2
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "venular-shear-3dyn",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 50.0,
+          "shear_pa": 1.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 2.333333
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 1.2,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 3.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "shear_pa": 0.96,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "reynolds": 13.333333333333334,
+          "pressure_drop_pa": 38400.0,
+          "residence_time_s": 6.0,
+          "channel_volume_ul": 100.0,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 2.2
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "seeding-endothelial-5e4",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "seed_count": 5000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "seed_count": 0.25
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "seed_count": 5000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "seed_count": 0.25
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 50.0,
+          "seed_count": 10000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 4.8,
+          "reynolds": 0.3333333333333333,
+          "pressure_drop_pa": 480000.0,
+          "residence_time_s": 15.0,
+          "channel_volume_ul": 2.5,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_count": 1.5
+        },
+        "hallucination_rate": 0.5,
+        "valid": false
+      }
+    },
+    {
+      "id": "selfconsistent-residence-60s",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "residence_time_s": 1.2,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "residence_time_s": 0.98
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "residence_time_s": 1.2,
+          "viscosity_pas": 0.001,
+          "width_um": 1000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "residence_time_s": 0.98
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "residence_time_s": 6.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "reynolds": 3.3333333333333335,
+          "pressure_drop_pa": 9600.0,
+          "channel_volume_ul": 1.0,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "residence_time_s": 0.9
+        },
+        "hallucination_rate": 0.5,
+        "valid": false
+      }
+    },
+    {
+      "id": "selfconsistent-channel-volume",
+      "bare": {
+        "reported": {
+          "channel_volume_ul": 0.5,
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 50.0,
+          "viscosity_pas": 0.001,
+          "width_um": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "channel_volume_ul": 0.6875
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "channel_volume_ul": 0.8,
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "viscosity_pas": 0.001,
+          "width_um": 400.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "channel_volume_ul": 0.5
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "channel_volume_ul": 500.0,
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 50.0,
+          "length_mm": 20.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "reynolds": 3.3333333333333335,
+          "pressure_drop_pa": 7680.0,
+          "residence_time_s": 3.0,
+          "mean_velocity_mms": 6.666666666666667
+        },
+        "verifiable": true,
+        "recovery": {
+          "channel_volume_ul": 311.5
+        },
+        "hallucination_rate": 0.666667,
+        "valid": false
+      }
+    },
+    {
+      "id": "selfconsistent-mean-velocity",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "mean_velocity_mms": 166.67,
+          "viscosity_pas": 0.001,
+          "width_um": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "mean_velocity_mms": 199.012
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "mean_velocity_mms": 83.33,
+          "viscosity_pas": 0.001,
+          "width_um": 200.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "mean_velocity_mms": 99.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "mean_velocity_mms": 166.66666666666666,
+          "viscosity_pas": 0.001,
+          "width_um": 1000.0,
+          "shear_pa": 0.6,
+          "reynolds": 1.6666666666666667,
+          "pressure_drop_pa": 2400.0,
+          "residence_time_s": 0.12,
+          "channel_volume_ul": 2.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "mean_velocity_mms": 199.008
+        },
+        "hallucination_rate": 0.833333,
+        "valid": false
+      }
+    },
+    {
+      "id": "selfconsistent-pressure-drop-40mm",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "pressure_drop_pa": 1000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "pressure_drop_pa": 24.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "pressure_drop_pa": 4800.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "pressure_drop_pa": 119.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "pressure_drop_pa": 192000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 4.8,
+          "reynolds": 3.3333333333333335,
+          "residence_time_s": 60.0,
+          "channel_volume_ul": 10.0,
+          "mean_velocity_mms": 333.3333333333333
+        },
+        "verifiable": true,
+        "recovery": {
+          "pressure_drop_pa": 4799.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "selfconsistent-flow-for-01Pa-200x50",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "flow_rate_uLmin": 19.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "flow_rate_uLmin": 199.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "reynolds": 3.3333333333333335,
+          "pressure_drop_pa": 9600.0,
+          "residence_time_s": 6.0,
+          "channel_volume_ul": 1.0,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "flow_rate_uLmin": 19.0
+        },
+        "hallucination_rate": 0.5,
+        "valid": false
+      }
+    },
+    {
+      "id": "power-80-effect-02",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "n_per_group": 0.992366
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "n_per_group": 0.992366
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "reynolds": 0.3333333333333333,
+          "pressure_drop_pa": 3840.0,
+          "residence_time_s": 60.0,
+          "channel_volume_ul": 10.0,
+          "mean_velocity_mms": 0.3333333333333333
+        },
+        "verifiable": true,
+        "recovery": {
+          "n_per_group": 0.992366
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "power-90-effect-1",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "n_per_group": 0.863636
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 200.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "n_per_group": 0.863636
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "n_per_group": 3.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "reynolds": 0.3333333333333333,
+          "pressure_drop_pa": 3840.0,
+          "residence_time_s": 60.0,
+          "channel_volume_ul": 10.0,
+          "mean_velocity_mms": 0.3333333333333333
+        },
+        "verifiable": true,
+        "recovery": {
+          "n_per_group": 0.863636
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "reynolds-800x100-100uLmin",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "reynolds": 0.0333,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "reynolds": 0.991009
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "reynolds": 10.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "reynolds": 1.700003
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "reynolds": 3.3333333333333335,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "pressure_drop_pa": 3840.0,
+          "residence_time_s": 6.0,
+          "channel_volume_ul": 100.0,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "reynolds": 0.099999
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "dmso-at-guideline-1mM",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "dmso_fraction_vv": 0.001,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "dmso_fraction_vv": 0.8
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "dmso_fraction_vv": 0.001,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 20.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "dmso_fraction_vv": 0.8
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "dmso_fraction_vv": 0.001,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 50.0,
+          "viscosity_pas": 0.001,
+          "width_um": 500.0,
+          "shear_pa": 0.48,
+          "reynolds": 0.3333333333333333,
+          "pressure_drop_pa": 48000.0,
+          "residence_time_s": 15.0,
+          "channel_volume_ul": 2.5,
+          "mean_velocity_mms": 3.3333333333333335
+        },
+        "verifiable": true,
+        "recovery": {
+          "dmso_fraction_vv": 0.8
+        },
+        "hallucination_rate": 0.5,
+        "valid": false
+      }
+    }
+  ],
+  "bare": {
+    "recovery": {
+      "shear_pa": 13.949999875,
+      "pressure_drop_pa": 36.5,
+      "flow_rate_uLmin": 15.25,
+      "reynolds": 0.945554,
+      "seed_count": 0.6527776666666667,
+      "dmso_fraction_vv": 0.4,
+      "n_per_group": 0.90522075,
+      "residence_time_s": 0.98,
+      "channel_volume_ul": 0.6875,
+      "mean_velocity_mms": 199.012
+    },
+    "hallucination_rate": 0.9166666666666666,
+    "self_consistent_rate": 0.08333333333333333,
+    "usable_design_rate": 0.0
+  },
+  "soft_gate": {
+    "recovery": {
+      "shear_pa": 18.066666625,
+      "pressure_drop_pa": 179.0,
+      "flow_rate_uLmin": 105.25,
+      "reynolds": 1.8500165000000002,
+      "seed_count": 0.4305556666666666,
+      "dmso_fraction_vv": 0.4,
+      "n_per_group": 0.90522075,
+      "residence_time_s": 0.98,
+      "channel_volume_ul": 0.5,
+      "mean_velocity_mms": 99.0
+    },
+    "hallucination_rate": 0.875,
+    "self_consistent_rate": 0.125,
+    "usable_design_rate": 0.0
+  },
+  "self_verify": {
+    "recovery": {
+      "shear_pa": 104.60000000000001,
+      "pressure_drop_pa": 3359.0,
+      "flow_rate_uLmin": 15.25,
+      "reynolds": 0.0500045,
+      "seed_count": 1.0694443333333334,
+      "dmso_fraction_vv": 0.4,
+      "n_per_group": 0.90522075,
+      "residence_time_s": 0.9,
+      "channel_volume_ul": 311.5,
+      "mean_velocity_mms": 199.008
+    },
+    "hallucination_rate": 0.7361110833333333,
+    "self_consistent_rate": 0.0,
+    "usable_design_rate": 0.0
+  },
+  "model": "deepseek-v4-pro",
+  "generated_at": "2026-08-11T14:46:41+00:00"
+}

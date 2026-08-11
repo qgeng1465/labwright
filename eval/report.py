@@ -35,13 +35,18 @@ def derive(result: dict) -> dict:
       recover every gold target within ±5 %. A clean but off-target design is
       not usable.
 
-    Applied uniformly to both systems: a Labwright entry counts as usable only
-    when the plan exists, has zero verifier errors and matches the gold within
-    tolerance (in practice machine precision).
+    Applied uniformly to every system present in the records: bare, soft-gate,
+    self-verify and Labwright. A Labwright entry counts as usable only when the
+    plan exists, has zero verifier errors and matches the gold within tolerance
+    (in practice machine precision); the LLM-memory systems are usable only when
+    their reported numbers are self-consistent *and* recover the gold target.
     """
+    per_entry = result["per_entry"]
+    systems = [s for s in ("bare", "soft_gate", "self_verify", "labwright")
+               if per_entry and s in per_entry[0]]
     out: dict = {}
-    for system in ("bare", "labwright"):
-        entries = [e[system] for e in result["per_entry"]]
+    for system in systems:
+        entries = [e[system] for e in per_entry]
         hall = [e["hallucination_rate"] for e in entries]
         self_consistent = [h == 0.0 for h in hall]
         usable = [
@@ -60,23 +65,39 @@ def derive(result: dict) -> dict:
             "hallucination_rate": _mean(hall),
             "recovery": {k: _mean(v) for k, v in recovery.items()},
         }
-    # Bare answers that report geometry+flow and at least one derived number can
-    # be cross-checked; the rest are unverifiable and scored hallucination 1.0.
-    out["bare"]["verifiable_rate"] = _mean(
-        [1.0 if e["bare"].get("verifiable") else 0.0 for e in result["per_entry"]]
-    )
+        # Systems that report numbers from memory (bare, soft-gate, self-verify)
+        # carry a verifiable_rate: answers that report geometry+flow and at least
+        # one derived number can be cross-checked; the rest are unverifiable and
+        # scored hallucination 1.0.
+        if system in ("bare", "soft_gate", "self_verify"):
+            out[system]["verifiable_rate"] = _mean(
+                [1.0 if e[system].get("verifiable") else 0.0 for e in per_entry]
+            )
     out["n_gold"] = result["n_gold"]
     out["model"] = result.get("model")
+    out["systems"] = systems
     return out
+
+
+_LABELS = {
+    "bare": "bare-LLM",
+    "soft_gate": "soft-gate",
+    "self_verify": "self-verify",
+    "labwright": "Labwright",
+}
 
 
 def render(result: dict) -> str:
     d = derive(result)
+    systems = d["systems"]
     lines = []
     model = d.get("model") or "unknown"
-    lines.append(f"Benchmark: bare-LLM vs Labwright on {d['n_gold']} gold entries (model {model})")
+    lines.append(
+        f"Benchmark on {d['n_gold']} gold entries (model {model}): "
+        + " vs ".join(_LABELS[s] for s in systems)
+    )
     lines.append("")
-    header = f"{'metric':<26}{'bare-LLM':>14}{'Labwright':>14}"
+    header = f"{'metric':<26}" + "".join(f"{_LABELS[s]:>14}" for s in systems)
     lines.append(header)
     lines.append("-" * len(header))
     rows = [
@@ -85,29 +106,35 @@ def render(result: dict) -> str:
         ("hallucination rate", "hallucination_rate"),
     ]
     for label, key in rows:
-        b = _pct(d["bare"][key]) if key != "hallucination_rate" else f"{d['bare'][key]:.3f}"
-        l = _pct(d["labwright"][key]) if key != "hallucination_rate" else f"{d['labwright'][key]:.3f}"
-        lines.append(f"{label:<26}{b:>14}{l:>14}")
-    lines.append(f"{'bare answers verifiable':<26}{_pct(d['bare']['verifiable_rate']):>14}")
+        cells = []
+        for s in systems:
+            v = d[s][key]
+            cells.append(_pct(v) if key != "hallucination_rate" else f"{v:.3f}")
+        lines.append(f"{label:<26}" + "".join(f"{c:>14}" for c in cells))
+    if "bare" in systems:
+        lines.append(f"{'bare answers verifiable':<26}" + "".join(
+            f"{_pct(d[s]['verifiable_rate']):>14}" for s in ("bare",) if s in systems))
     lines.append("")
     lines.append("Parameter recovery (mean relative error):")
-    for key in sorted(set(d["bare"]["recovery"]) | set(d["labwright"]["recovery"])):
-        b = d["bare"]["recovery"].get(key, float("nan"))
-        l = d["labwright"]["recovery"].get(key, float("nan"))
-        b = "n/a" if b != b else f"{b:.4g}"
-        l = "n/a" if l != l else f"{l:.4g}"
-        lines.append(f"  {key:<26}{b:>14}{l:>14}")
+    all_keys = set()
+    for s in systems:
+        all_keys |= set(d[s]["recovery"])
+    for key in sorted(all_keys):
+        cells = []
+        for s in systems:
+            v = d[s]["recovery"].get(key, float("nan"))
+            cells.append("n/a" if v != v else f"{v:.4g}")
+        lines.append(f"  {key:<26}" + "".join(f"{c:>14}" for c in cells))
     lines.append("")
     lines.append("Per entry:")
     for e in result["per_entry"]:
-        b = e["bare"]
-        l = e["labwright"]
-        verif = "ver" if b.get("verifiable") else "n/a"
-        lines.append(
-            f"  {e['id']:<26} bare {verif} h={b['hallucination_rate']:.2f} "
-            f"valid={str(b['valid']).lower():<5} | lw h={l['hallucination_rate']:.2f} "
-            f"valid={str(l['valid']).lower():<5}"
-        )
+        parts = []
+        for s in systems:
+            rec = e[s]
+            tag = "ver" if rec.get("verifiable") else "n/a"
+            parts.append(f"{_LABELS[s]} {tag} h={rec['hallucination_rate']:.2f} "
+                         f"valid={str(rec['valid']).lower():<5}")
+        lines.append(f"  {e['id']:<26} " + " | ".join(parts))
     return "\n".join(lines)
 
 

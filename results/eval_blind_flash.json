@@ -1,23 +1,5 @@
 {
-  "n_gold": 6,
-  "bare": {
-    "recovery": {
-      "shear_pa": 1.7866666666666666,
-      "seed_count": 0.75
-    },
-    "hallucination_rate": 0.6666666666666666,
-    "self_consistent_rate": 0.3333333333333333,
-    "usable_design_rate": 0.0
-  },
-  "labwright": {
-    "recovery": {
-      "shear_pa": 5.066666666666667,
-      "seed_count": 0.5
-    },
-    "hallucination_rate": 0.0,
-    "self_consistent_rate": 1.0,
-    "usable_design_rate": 0.3333333333333333
-  },
+  "n_gold": 12,
   "per_entry": [
     {
       "id": "blind-liver-sinusoid",
@@ -29,17 +11,18 @@
           "length_mm": 10.0,
           "shear_pa": 0.1,
           "viscosity_pas": 0.001,
-          "width_um": 100.0
+          "width_um": 1000.0
         },
         "verifiable": true,
         "recovery": {
           "shear_pa": 1.0
         },
-        "hallucination_rate": 1.0,
+        "hallucination_rate": 0.0,
         "valid": false
       },
       "labwright": {
         "plan": true,
+        "error": null,
         "recovery": {
           "shear_pa": 1.0
         },
@@ -57,17 +40,18 @@
           "length_mm": 10.0,
           "shear_pa": 0.1,
           "viscosity_pas": 0.001,
-          "width_um": 1000.0
+          "width_um": 100.0
         },
         "verifiable": true,
         "recovery": {
           "shear_pa": 4.0
         },
-        "hallucination_rate": 0.0,
+        "hallucination_rate": 1.0,
         "valid": false
       },
       "labwright": {
         "plan": true,
+        "error": null,
         "recovery": {
           "shear_pa": 24.0
         },
@@ -85,17 +69,18 @@
           "length_mm": 10.0,
           "shear_pa": 0.1,
           "viscosity_pas": 0.001,
-          "width_um": 1000.0
+          "width_um": 100.0
         },
         "verifiable": true,
         "recovery": {
           "shear_pa": 0.933333
         },
-        "hallucination_rate": 0.0,
+        "hallucination_rate": 1.0,
         "valid": false
       },
       "labwright": {
         "plan": true,
+        "error": null,
         "recovery": {
           "shear_pa": 0.0
         },
@@ -124,8 +109,9 @@
       },
       "labwright": {
         "plan": true,
+        "error": null,
         "recovery": {
-          "shear_pa": 0.333333
+          "shear_pa": 0.666667
         },
         "hallucination_rate": 0.0,
         "valid": false
@@ -152,6 +138,7 @@
       },
       "labwright": {
         "plan": true,
+        "error": null,
         "recovery": {
           "shear_pa": 0.0
         },
@@ -180,14 +167,207 @@
       },
       "labwright": {
         "plan": true,
+        "error": null,
         "recovery": {
           "seed_count": 0.5
         },
         "hallucination_rate": 0.0,
         "valid": false
       }
+    },
+    {
+      "id": "blind-phh-seed",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 10.0,
+          "seed_count": 1000.0,
+          "viscosity_pas": 0.001,
+          "width_um": 100.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "seed_count": 0.916667
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 0.333333
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "blind-bbb-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 10.0,
+          "shear_pa": 0.1,
+          "viscosity_pas": 0.001,
+          "width_um": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 0.9
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "blind-pulmonary-artery-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 10.0,
+          "shear_pa": 0.1,
+          "viscosity_pas": 0.001,
+          "width_um": 1000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 0.95
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.5
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "blind-gut-epithelial-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 10.0,
+          "shear_pa": 0.1,
+          "viscosity_pas": 0.001,
+          "width_um": 1000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 49.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 4.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "blind-retinal-arteriole-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 10.0,
+          "shear_pa": 0.1,
+          "viscosity_pas": 0.001,
+          "width_um": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 0.981481
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.074074
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      }
+    },
+    {
+      "id": "blind-lymphatic-shear",
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 10.0,
+          "height_um": 100.0,
+          "length_mm": 10.0,
+          "shear_pa": 0.1,
+          "viscosity_pas": 0.001,
+          "width_um": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "shear_pa": 0.5
+        },
+        "hallucination_rate": 1.0,
+        "valid": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.75
+        },
+        "hallucination_rate": 0.0,
+        "valid": false
+      }
     }
   ],
+  "bare": {
+    "recovery": {
+      "shear_pa": 6.1264814,
+      "seed_count": 0.8333335
+    },
+    "hallucination_rate": 0.8333333333333334,
+    "self_consistent_rate": 0.16666666666666666,
+    "usable_design_rate": 0.0
+  },
+  "labwright": {
+    "recovery": {
+      "shear_pa": 3.0990741,
+      "seed_count": 0.4166665
+    },
+    "hallucination_rate": 0.0,
+    "self_consistent_rate": 1.0,
+    "usable_design_rate": 0.25
+  },
   "model": "deepseek-v4-flash",
-  "generated_at": "2026-08-11T14:05:37+00:00"
+  "generated_at": "2026-08-11T14:50:47+00:00"
 }
