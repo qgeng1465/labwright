@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "labwright"
+version = "0.1.0"
+description = "Labwright — the AI bench copilot that gets your numbers right. Verifiable wet-lab experimental design: organ-on-chip geometry, fluidics, dosing and statistics that an LLM can reason over without hallucinating."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "qgeng1465" }]
+keywords = ["organ-on-chip", "microfluidics", "bioinformatics", "llm", "agent", "wet-lab", "experimental-design"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dependencies = [
+    "pint>=0.23",
+    "pydantic>=2.5",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+# LLM agent brain (calls any OpenAI-compatible API, e.g. DeepSeek)
+agent = ["openai>=1.30"]
+# Knowledge base / retrieval
+kb = ["chromadb>=0.5", "sentence-transformers>=2.7"]
+# Web demo
+ui = ["gradio>=4.44"]
+# Everything for development
+dev = ["pytest>=8", "ruff>=0.4"]
+
+[project.urls]
+Homepage = "https://github.com/qgeng1465/labwright"
+Repository = "https://github.com/qgeng1465/labwright"
+Documentation = "https://github.com/qgeng1465/labwright/blob/main/README.md"
+
+[tool.setuptools.packages.find]
+include = ["labwright*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
