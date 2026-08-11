@@ -35,6 +35,9 @@ ui = ["gradio>=4.44"]
 # Everything for development
 dev = ["pytest>=8", "ruff>=0.4"]
 
+[project.scripts]
+labwright = "labwright.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/qgeng1465/labwright"
 Repository = "https://github.com/qgeng1465/labwright"

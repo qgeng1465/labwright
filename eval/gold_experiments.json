@@ -1,0 +1,26 @@
+[
+  {
+    "id": "liver-sinusoid-shear",
+    "goal": "Perfuse a liver-on-chip to reproduce hepatic sinusoidal wall shear for a 7-day drug-toxicity study.",
+    "expected": {"shear_pa": 0.05},
+    "source": "Physiological liver sinusoidal shear ~0.05 Pa (0.5 dyn/cm^2) — consensus in liver-heamodynamics literature; exact DOI to be pinned in the curation pass. STATUS: needs_doi."
+  },
+  {
+    "id": "microvascular-shear",
+    "goal": "Culture a microvascular endothelial channel that recapitulates venular wall shear.",
+    "expected": {"shear_pa": 0.1},
+    "source": "Venular wall shear ~0.1-0.6 Pa (1-6 dyn/cm^2) — physiology consensus; exact DOI to be pinned. STATUS: needs_doi."
+  },
+  {
+    "id": "selfconsistent-400x100",
+    "goal": "A 400 x 100 um channel perfused at 2 uL/min with medium viscosity 1e-3 Pa.s; what shear does the endothelium see?",
+    "expected": {"shear_pa": 0.05},
+    "source": "Computed from the rectangular-channel equation tau = 6 mu Q / (w h^2) — self-consistent, not a literature claim."
+  },
+  {
+    "id": "seeding-density-check",
+    "goal": "Seed a 400 um wide, 20 mm long channel with HepG2 at 1e5 cells/cm^2 — how many cells per channel?",
+    "expected": {"seed_count": 8000.0},
+    "source": "Computed from seeding density x culture area — self-consistent. HepG2 seeding densities in the 1e5 range per cm^2 are standard; DOI to be pinned."
+  }
+]
