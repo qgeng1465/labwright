@@ -152,6 +152,7 @@ def bare_prompt_for(gold: GoldExperiment) -> str:
         + ", ".join(keys)
         + ".\n"
         "Return ONLY the JSON object (no prose, no markdown fences).\n\nGoal: "
+        + gold.goal
     )
 
 
@@ -175,6 +176,7 @@ def soft_gate_prompt_for(gold: GoldExperiment) -> str:
         "length_mm/flow_rate_uLmin/viscosity_pas/density_kgm3 using the standard "
         "rectangular-channel formulas, and correct any value that does not match.\n"
         "Return ONLY the JSON object (no prose, no markdown fences).\n\nGoal: "
+        + gold.goal
     )
 
 
