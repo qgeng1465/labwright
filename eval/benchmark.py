@@ -155,6 +155,48 @@ def bare_prompt_for(gold: GoldExperiment) -> str:
     )
 
 
+def soft_gate_prompt_for(gold: GoldExperiment) -> str:
+    """The bare prompt plus a 'check yourself' instruction — the soft gate.
+
+    This is the naive thing a user actually tries instead of Labwright: ask the
+    LLM to re-derive its own numbers before finalising. No calculators, no
+    deterministic verifier. If this works, the whole hard-gate machinery is
+    unnecessary; the benchmark exists to show it does not.
+    """
+    keys = sorted(set(gold.expected) | set(_CONSISTENCY_KEYS))
+    return (
+        "You are a wet-lab design expert. For the goal below, compute the design "
+        "numbers yourself and return a single flat JSON object with ONLY these keys "
+        "(use exactly these names; do the arithmetic; omit nothing):\n"
+        + ", ".join(keys)
+        + ".\n"
+        "BEFORE you finalize: re-derive every derived flow number "
+        f"({', '.join(_DERIVED_KEYS)}) from your own width_um/height_um/"
+        "length_mm/flow_rate_uLmin/viscosity_pas/density_kgm3 using the standard "
+        "rectangular-channel formulas, and correct any value that does not match.\n"
+        "Return ONLY the JSON object (no prose, no markdown fences).\n\nGoal: "
+    )
+
+
+def self_verify_prompt_for(raw: dict[str, float | None], derived_keys: list[str]) -> str:
+    """Stage-2 prompt: hand the model its own raw inputs and ask it to recompute.
+
+    The second LLM pass plays the role of verifier. It sees only the raw inputs
+    the first pass reported — never the deterministic answers — so any agreement
+    is the model's own arithmetic, not a leak.
+    """
+    present = {k: raw[k] for k in _CONSISTENCY_KEYS if raw.get(k) is not None}
+    rendered = ", ".join(f"{k}={present[k]}" for k in _CONSISTENCY_KEYS if k in present)
+    return (
+        "A design proposed these raw inputs: " + rendered + ".\n"
+        "Using the standard rectangular-channel microfluidic formulas, recompute "
+        "EXACTLY these derived values yourself (" + ", ".join(derived_keys) + ") "
+        "from those inputs, and return a single flat JSON object with ONLY those "
+        "keys (use exactly these names; do the arithmetic):\n"
+        "Return ONLY the JSON object (no prose, no markdown fences)."
+    )
+
+
 def _find_key(data: Any, key: str, depth: int = 0) -> float | None:
     """Recursively find a numeric field by exact name anywhere in a JSON tree."""
     if depth > 12:
@@ -204,6 +246,62 @@ def run_bare_llm(gold: GoldExperiment, chat: Callable, attempts: int = 3) -> dic
     return empty
 
 
+def run_soft_gate(gold: GoldExperiment, chat: Callable, attempts: int = 3) -> dict[str, float | None]:
+    """Ask the raw LLM for the design numbers under a 'check yourself' prompt.
+
+    Identical retry/extraction logic to :func:`run_bare_llm`; only the prompt
+    changes. So any measured difference between bare and soft-gate is caused by
+    the instruction to self-check, not by parsing or scoring.
+    """
+    keys = sorted(set(gold.expected) | set(_CONSISTENCY_KEYS))
+    prompt = soft_gate_prompt_for(gold)
+    empty = {k: None for k in keys}
+    for _ in range(attempts):
+        text = chat(prompt) or ""
+        if not text.strip():
+            continue
+        try:
+            data = _extract_json(text)
+        except Exception:
+            continue
+        extracted = {k: _find_key(data, k) for k in keys}
+        if any(v is not None for v in extracted.values()):
+            return extracted
+    return empty
+
+
+def run_self_verify(gold: GoldExperiment, chat: Callable, attempts: int = 2) -> dict[str, float | None]:
+    """Two-stage 'LLM as its own verifier': propose, then recompute.
+
+    Stage 1 is exactly the bare prompt (propose numbers from memory). Stage 2
+    hands the model its own reported raw inputs back and asks it to recompute the
+    derived flow numbers *itself*. The final answer is the stage-2 numbers where
+    returned; if the verifier pass returns nothing checkable, the proposal stands
+    unverified (scored exactly like a bare answer). This is the naive alternative
+    to Labwright's deterministic verifier: can a second LLM pass correct the
+    first LLM's arithmetic? The benchmark shows it cannot reliably.
+    """
+    extracted = run_bare_llm(gold, chat, attempts=attempts)
+    raw = {k: extracted.get(k) for k in _CONSISTENCY_KEYS}
+    if None in raw.values():
+        return extracted  # no geometry+flow → nothing for a verifier to check
+    prompt = self_verify_prompt_for(raw, _DERIVED_KEYS)
+    for _ in range(attempts):
+        text = chat(prompt) or ""
+        if not text.strip():
+            continue
+        try:
+            data = _extract_json(text)
+        except Exception:
+            continue
+        stage2 = {k: _find_key(data, k) for k in _DERIVED_KEYS}
+        if any(v is not None for v in stage2.values()):
+            merged = dict(extracted)
+            merged.update(stage2)
+            return merged
+    return extracted  # verifier returned nothing checkable → proposal stands
+
+
 def bare_recovery(extracted: dict[str, float | None], gold: GoldExperiment) -> dict[str, float]:
     """Relative error of the *reported* numbers vs the gold standard."""
     return {key: relative_error(extracted.get(key), expected) for key, expected in gold.expected.items()}
@@ -241,14 +339,22 @@ def bare_hallucination(extracted: dict[str, float | None]) -> float:
     viscosity = extracted.get("viscosity_pas") or 1e-3
     density = extracted.get("density_kgm3") or 1000.0
     w, h, L = chip[0], chip[1], chip[2]
-    computed = {
-        "shear_pa": mf.wall_shear_stress(flow_rate, w, h, viscosity),
-        "reynolds": mf.reynolds_number(flow_rate, w, h, viscosity, density),
-        "pressure_drop_pa": mf.pressure_drop(flow_rate, w, h, L, viscosity),
-        "residence_time_s": mf.residence_time(flow_rate, w, h, L),
-        "channel_volume_ul": mf.channel_volume(w, h, L),
-        "mean_velocity_mms": mf.mean_velocity(flow_rate, w, h),
-    }
+    try:
+        computed = {
+            "shear_pa": mf.wall_shear_stress(flow_rate, w, h, viscosity),
+            "reynolds": mf.reynolds_number(flow_rate, w, h, viscosity, density),
+            "pressure_drop_pa": mf.pressure_drop(flow_rate, w, h, L, viscosity),
+            "residence_time_s": mf.residence_time(flow_rate, w, h, L),
+            "channel_volume_ul": mf.channel_volume(w, h, L),
+            "mean_velocity_mms": mf.mean_velocity(flow_rate, w, h),
+        }
+    except ValueError:
+        # Degenerate reported inputs (flow 0, or negative / non-finite geometry
+        # or flow) cannot be cross-checked against the model's own inputs — the
+        # same unverifiable=1.0 convention as a design with no derived numbers.
+        return 1.0
+    if not all(math.isfinite(v) for v in computed.values()):
+        return 1.0
     claimed = {k: extracted.get(k) for k in _DERIVED_KEYS}
     present = [k for k in _DERIVED_KEYS if claimed[k] is not None]
     if not present:
@@ -281,6 +387,58 @@ def _extract_json(text: str) -> dict[str, Any]:
 # Evaluation driver
 # ---------------------------------------------------------------------------
 
+#: Which system names the generic evaluate() loop knows how to run. Each returns
+#: a flat ``reported`` dict (bare, soft-gate, self-verify) scored with the same
+#: lenient bare metrics, or a verified design path (Labwright).
+_SYSTEM_RUNNERS: dict[str, Callable] = {
+    "bare": lambda g, chat, af: run_bare_llm(g, chat),
+    "soft_gate": lambda g, chat, af: run_soft_gate(g, chat),
+    "self_verify": lambda g, chat, af: run_self_verify(g, chat),
+}
+
+
+def _score_reported(reported: dict[str, float | None], gold: GoldExperiment) -> dict[str, Any]:
+    """Score a flat 'reported numbers' answer with the bare-LLM convention.
+
+    Shared by bare, soft-gate and self-verify so the three competitors are
+    judged by identical extraction, tolerance and verifiability rules — only the
+    prompt/stage structure differs.
+    """
+    rec = bare_recovery(reported, gold)
+    hall = bare_hallucination(reported)
+    return {
+        "reported": {k: v for k, v in reported.items() if v is not None},
+        "verifiable": bare_checkable(reported),
+        "recovery": {k: round(v, 6) for k, v in rec.items()},
+        "hallucination_rate": round(hall, 6),
+        "valid": hall == 0.0 and all(err <= 0.05 for err in rec.values()),
+    }
+
+
+def _run_system(name: str, gold: GoldExperiment, chat: Callable, agent_factory: Callable) -> dict[str, Any]:
+    """Run one named system on one gold entry and return its scored record."""
+    if name == "labwright":
+        lw, lw_error = run_labwright(gold.goal, agent_factory)
+        lw_rec: dict[str, float] = {}
+        lw_hall = 1.0
+        if lw is not None:
+            lw_rec = parameter_recovery(gold, lw)
+            lw_hall = hallucination_rate(lw)
+        return {
+            "plan": lw is not None,
+            "error": lw_error,
+            "recovery": {k: round(v, 6) for k, v in lw_rec.items()},
+            "hallucination_rate": round(lw_hall, 6),
+            # usable: a plan that verifies AND recovers every gold target.
+            "valid": (
+                lw is not None
+                and lw_hall == 0.0
+                and bool(lw_rec)
+                and all(err <= 0.05 for err in lw_rec.values())
+            ),
+        }
+    return _score_reported(_SYSTEM_RUNNERS[name](gold, chat, agent_factory), gold)
+
 
 def evaluate(
     gold: list[GoldExperiment],
@@ -288,67 +446,35 @@ def evaluate(
     chat: Callable,
     progress: Callable[[str], None] | None = None,
     checkpoint: Callable[[dict[str, Any]], None] | None = None,
+    systems: tuple[str, ...] = ("bare", "labwright"),
 ) -> dict[str, Any]:
-    """Run both systems on every gold experiment and aggregate the metrics."""
-    summary: dict[str, Any] = {
-        "n_gold": len(gold),
-        "bare": {"recovery": {}, "hallucination_rate": []},
-        "labwright": {"recovery": {}, "hallucination_rate": []},
-        "per_entry": [],
-    }
+    """Run the requested systems on every gold experiment and aggregate metrics.
+
+    ``systems`` names which systems to run (bare / soft_gate / self_verify /
+    labwright, any subset). The default keeps the historical bare-vs-Labwright
+    comparison; the competitor baselines are extra systems scored by the same
+    rules.
+    """
+    summary: dict[str, Any] = {"n_gold": len(gold), "per_entry": []}
+    for name in systems:
+        summary[name] = {"recovery": {}, "hallucination_rate": []}
 
     for g in gold:
-        if progress:
-            progress(f"[{g.id}] bare-LLM ...")
-        extracted = run_bare_llm(g, chat)
-        if progress:
-            progress(f"[{g.id}] Labwright ...")
-        lw, lw_error = run_labwright(g.goal, agent_factory)
-
-        bare_rec = bare_recovery(extracted, g)
-        bare_hall = bare_hallucination(extracted)
-        for key, err in bare_rec.items():
-            summary["bare"]["recovery"].setdefault(key, []).append(err)
-        summary["bare"]["hallucination_rate"].append(bare_hall)
-
-        lw_rec: dict[str, float] = {}
-        lw_hall = 1.0
-        if lw is not None:
-            lw_rec = parameter_recovery(g, lw)
-            lw_hall = hallucination_rate(lw)
-        for key, err in lw_rec.items():
-            summary["labwright"]["recovery"].setdefault(key, []).append(err)
-        summary["labwright"]["hallucination_rate"].append(lw_hall)
-
-        summary["per_entry"].append(
-            {
-                "id": g.id,
-                "bare": {
-                    "reported": {k: v for k, v in extracted.items() if v is not None},
-                    "verifiable": bare_checkable(extracted),
-                    "recovery": {k: round(v, 6) for k, v in bare_rec.items()},
-                    "hallucination_rate": round(bare_hall, 6),
-                    "valid": bare_hall == 0.0 and all(err <= 0.05 for err in bare_rec.values()),
-                },
-                "labwright": {
-                    "plan": lw is not None,
-                    "error": lw_error,
-                    "recovery": {k: round(v, 6) for k, v in lw_rec.items()},
-                    "hallucination_rate": round(lw_hall, 6),
-                    # usable: a plan that verifies AND recovers every gold target.
-                    "valid": (
-                        lw is not None
-                        and lw_hall == 0.0
-                        and bool(lw_rec)
-                        and all(err <= 0.05 for err in lw_rec.values())
-                    ),
-                },
-            }
-        )
+        entry: dict[str, Any] = {"id": g.id}
+        for name in systems:
+            if progress:
+                progress(f"[{g.id}] {name} ...")
+            rec = _run_system(name, g, chat, agent_factory)
+            entry[name] = rec
+            summary[name]["hallucination_rate"].append(rec["hallucination_rate"])
+            for key, err in rec["recovery"].items():
+                summary[name]["recovery"].setdefault(key, []).append(err)
+        summary["per_entry"].append(entry)
         if checkpoint:
             checkpoint(summary)
 
-    for bucket, sub in ((summary["bare"], "bare"), (summary["labwright"], "labwright")):
+    for name in systems:
+        bucket = summary[name]
         rates = bucket["hallucination_rate"]
         bucket["recovery"] = {k: _mean(v) for k, v in bucket["recovery"].items()}
         bucket["hallucination_rate"] = _mean(rates)
@@ -356,7 +482,7 @@ def evaluate(
         bucket["self_consistent_rate"] = _mean([1.0 if r == 0.0 else 0.0 for r in rates])
         # usable_rate = self-consistent AND recovers every gold target (±5 %).
         bucket["usable_design_rate"] = _mean(
-            [1.0 if e[sub]["valid"] else 0.0 for e in summary["per_entry"]]
+            [1.0 if e[name]["valid"] else 0.0 for e in summary["per_entry"]]
         )
     return summary
 
@@ -374,6 +500,10 @@ __all__ = [
     "bare_recovery",
     "bare_hallucination",
     "run_bare_llm",
+    "run_soft_gate",
+    "run_self_verify",
     "bare_prompt_for",
+    "soft_gate_prompt_for",
+    "self_verify_prompt_for",
     "BARE_CONSISTENCY_TOL",
 ]

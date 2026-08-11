@@ -50,3 +50,135 @@ def test_parameter_recovery_relative_error():
     gold = GoldExperiment(id="x", goal="g", expected={"shear_pa": 0.25}, source="s")
     errs = parameter_recovery(gold, _verified_plan(shear=0.5))  # 2x high
     assert errs["shear_pa"] == pytest.approx(1.0)
+
+
+# --- competitor baselines (no LLM — prompt structure and scoring are pure) ---
+
+from eval.benchmark import (  # noqa: E402
+    bare_hallucination,
+    bare_prompt_for,
+    evaluate,
+    run_self_verify,
+    run_soft_gate,
+    soft_gate_prompt_for,
+)
+
+_GOLD = GoldExperiment(
+    id="g1",
+    goal="Perfuse a 400x100 um channel at 2 uL/min (water-like) and report shear.",
+    expected={"shear_pa": 0.05},
+    source="self-consistent",
+)
+
+
+def _derived_for(w=400, h=100, L=20, Q=2.0, mu=1e-3, rho=1000.0) -> dict:
+    return {
+        "shear_pa": mf.wall_shear_stress(Q, w, h, mu),
+        "reynolds": mf.reynolds_number(Q, w, h, mu, rho),
+        "pressure_drop_pa": mf.pressure_drop(Q, w, h, L, mu),
+        "residence_time_s": mf.residence_time(Q, w, h, L),
+        "channel_volume_ul": mf.channel_volume(w, h, L),
+        "mean_velocity_mms": mf.mean_velocity(Q, w, h),
+    }
+
+
+def test_bare_hallucination_tolerates_zero_flow():
+    """A reported flow of 0 (produced with thinking ON by pro on the blind
+    retinal goal) must not crash the scorer — it is unverifiable → 1.0."""
+    extracted = {
+        "width_um": 400, "height_um": 100, "length_mm": 20, "flow_rate_uLmin": 0.0,
+        "shear_pa": 0.05,  # claimed, but cannot follow from flow 0
+    }
+    assert bare_hallucination(extracted) == 1.0
+
+
+def test_bare_hallucination_tolerates_non_finite_flow():
+    extracted = {
+        "width_um": 400, "height_um": 100, "length_mm": 20,
+        "flow_rate_uLmin": float("inf"), "shear_pa": 0.05,
+    }
+    assert bare_hallucination(extracted) == 1.0
+
+
+def test_soft_gate_prompt_demands_self_check():
+    prompt = soft_gate_prompt_for(_GOLD)
+    assert "re-derive every derived flow number" in prompt
+    assert "shear_pa" in prompt
+
+
+def test_soft_gate_prompt_differs_from_bare_only_by_instruction():
+    bare = bare_prompt_for(_GOLD)
+    soft = soft_gate_prompt_for(_GOLD)
+    # the added instruction is the *only* difference — parsing/scoring stay shared
+    assert soft.startswith(bare.split("\n")[0])
+
+
+def test_run_soft_gate_uses_soft_prompt_and_extracts():
+    ok = {
+        "width_um": 400, "height_um": 100, "length_mm": 20, "flow_rate_uLmin": 2.0,
+        "viscosity_pas": 1e-3, "density_kgm3": 1000.0,
+        **_derived_for(), "shear_pa": 0.05,
+    }
+    seen = []
+
+    def chat(prompt: str) -> str:
+        seen.append(prompt)
+        return "{" + ",".join(f'"{k}":{v}' for k, v in ok.items()) + "}"
+
+    out = run_soft_gate(_GOLD, chat)
+    assert soft_gate_prompt_for(_GOLD) in seen  # the soft prompt, not the bare one
+    assert out["shear_pa"] == pytest.approx(0.05)
+
+
+def test_run_self_verify_merges_stage2_over_stage1():
+    stage1 = {
+        "width_um": 400, "height_um": 100, "length_mm": 20, "flow_rate_uLmin": 2.0,
+        "viscosity_pas": 1e-3, "density_kgm3": 1000.0, "shear_pa": 99.0,  # invented
+    }
+    stage2 = _derived_for()  # the "verifier" recomputes correctly
+
+    def chat(prompt: str) -> str:
+        if "Goal:" in prompt:
+            data = stage1
+        else:
+            data = stage2  # verify pass
+        return "{" + ",".join(f'"{k}":{v}' for k, v in data.items()) + "}"
+
+    out = run_self_verify(_GOLD, chat)
+    # stage-2 recompute replaces the invented stage-1 number
+    assert out["shear_pa"] == pytest.approx(stage2["shear_pa"])
+    assert out["shear_pa"] != pytest.approx(99.0)
+    # raw inputs survive the merge unchanged
+    assert out["width_um"] == pytest.approx(400.0)
+
+
+def test_run_self_verify_proposal_stands_when_verifier_is_silent():
+    def chat(prompt: str) -> str:
+        return "I cannot compute this."  # both stages return prose
+
+    out = run_self_verify(_GOLD, chat)
+    assert all(v is None for v in out.values())
+
+
+def test_evaluate_supports_competitor_systems():
+    """evaluate() runs each requested system and scores it with bare metrics."""
+    stage1 = {
+        "width_um": 400, "height_um": 100, "length_mm": 20, "flow_rate_uLmin": 2.0,
+        "viscosity_pas": 1e-3, "density_kgm3": 1000.0, "shear_pa": 0.05,
+    }
+
+    def chat(prompt: str) -> str:
+        data = stage1 if "Goal:" in prompt else _derived_for()
+        return "{" + ",".join(f'"{k}":{v}' for k, v in data.items()) + "}"
+
+    def agent_factory():
+        raise AssertionError("labwright should not run when excluded")
+
+    summary = evaluate([_GOLD], agent_factory, chat,
+                       systems=("bare", "soft_gate", "self_verify"))
+    for sys in ("bare", "soft_gate", "self_verify"):
+        assert sys in summary
+        assert summary[sys]["usable_design_rate"] == 1.0
+        assert summary[sys]["hallucination_rate"] == 0.0
+    assert summary["per_entry"][0]["bare"]["valid"] is True
+    assert "labwright" not in summary
