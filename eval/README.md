@@ -179,7 +179,7 @@ reasoning-budget gap. Labwright self-consistency / usable / hallucination:
 | model | set | thinking | self-consistent | usable | hallucination |
 |---|---|---|---|---|---|
 | `flash` | 24-reading | off | 88 % | 88 % | 0.125 |
-| `flash` | 24-reading | on | — | — | — |
+| `flash` | 24-reading | on | 100 % | 100 % | 0.000 |
 | `flash` | 12-blind | off | 100 % | 25 % | 0.000 |
 | `flash` | 12-blind | on | 100 % | 17 % | 0.000 |
 | `pro` | 24-reading | off | 100 % | 100 % | 0.000 |
@@ -187,13 +187,15 @@ reasoning-budget gap. Labwright self-consistency / usable / hallucination:
 | `pro` | 12-blind | off | 100 % | 33 % | 0.000 |
 | `pro` | 12-blind | on | 100 % | 42 % | 0.000 |
 
-The `flash` 24-reading thinking row is pending (`results/eval_flash_thinking.json`
-is still running). The three completed rows show the blind misses persist with
-thinking on (17 % / 42 % vs 25 % / 33 % off — within a goal of each other):
-thinking neither recovers targets the model does not know (`flash` lost its one
-prompt-backed hit, BBB; `pro` picked up one cold goal, arterial) nor breaks
-the gate's 100 % self-consistency. The misses are a domain-knowledge gap, not
-an effort one.
+The blind misses persist with thinking on (17 % / 42 % vs 25 % / 33 % off —
+within a goal of each other): thinking neither recovers targets the model does
+not know (`flash` lost its one prompt-backed hit, BBB; `pro` picked up one cold
+goal, arterial) nor breaks the gate's 100 % self-consistency. The misses are a
+domain-knowledge gap, not an effort one. The one row where thinking *helps* is
+the `flash` 24-reading set (88 % → 100 % usable): the three silent
+non-completions of the thinking-off run each submitted a verified design under
+thinking — effort recovers goals the answer is handed over, not physiology the
+model does not know.
 
 ### Benchmarking scope: why these systems, and not the named ones
 
