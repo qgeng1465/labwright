@@ -13,9 +13,9 @@
       "channel_volume_ul": 0.6875,
       "mean_velocity_mms": 99.0
     },
-    "hallucination_rate": 0.5,
-    "self_consistent_rate": 0.5,
-    "usable_design_rate": 0.041666666666666664
+    "hallucination_rate": 0.9166666666666666,
+    "self_consistent_rate": 0.08333333333333333,
+    "usable_design_rate": 0.0
   },
   "labwright": {
     "recovery": {
@@ -51,7 +51,8 @@
           "shear_pa": 19.0
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -78,7 +79,8 @@
           "shear_pa": 49.0
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -105,7 +107,8 @@
           "shear_pa": 9.0
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -132,7 +135,8 @@
           "shear_pa": 2.333333
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -161,7 +165,8 @@
           "pressure_drop_pa": 24.0
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -190,7 +195,8 @@
           "flow_rate_uLmin": 11.5
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -218,7 +224,8 @@
           "reynolds": 0.99499
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -244,8 +251,9 @@
         "recovery": {
           "seed_count": 0.75
         },
-        "hallucination_rate": 0.0,
-        "valid": false
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "verifiable": false
       },
       "labwright": {
         "plan": true,
@@ -271,8 +279,9 @@
         "recovery": {
           "seed_count": 0.958333
         },
-        "hallucination_rate": 0.0,
-        "valid": false
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "verifiable": false
       },
       "labwright": {
         "plan": true,
@@ -298,8 +307,9 @@
         "recovery": {
           "dmso_fraction_vv": 0.0
         },
-        "hallucination_rate": 0.0,
-        "valid": true
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "verifiable": false
       },
       "labwright": {
         "plan": true,
@@ -325,8 +335,9 @@
         "recovery": {
           "n_per_group": 0.8125
         },
-        "hallucination_rate": 0.0,
-        "valid": false
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "verifiable": false
       },
       "labwright": {
         "plan": true,
@@ -352,8 +363,9 @@
         "recovery": {
           "n_per_group": 0.952381
         },
-        "hallucination_rate": 0.0,
-        "valid": false
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "verifiable": false
       },
       "labwright": {
         "plan": true,
@@ -380,7 +392,8 @@
           "shear_pa": 0.933333
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -407,7 +420,8 @@
           "shear_pa": 2.333333
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -433,8 +447,9 @@
         "recovery": {
           "seed_count": 0.75
         },
-        "hallucination_rate": 0.0,
-        "valid": false
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "verifiable": false
       },
       "labwright": {
         "plan": true,
@@ -461,7 +476,8 @@
           "residence_time_s": 0.98
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -488,7 +504,8 @@
           "channel_volume_ul": 0.6875
         },
         "hallucination_rate": 0.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -515,7 +532,8 @@
           "mean_velocity_mms": 99.0
         },
         "hallucination_rate": 0.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -542,7 +560,8 @@
           "pressure_drop_pa": 124.0
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -567,8 +586,9 @@
         "recovery": {
           "flow_rate_uLmin": 19.0
         },
-        "hallucination_rate": 0.0,
-        "valid": false
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "verifiable": false
       },
       "labwright": {
         "plan": true,
@@ -594,8 +614,9 @@
         "recovery": {
           "n_per_group": 0.992366
         },
-        "hallucination_rate": 0.0,
-        "valid": false
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "verifiable": false
       },
       "labwright": {
         "plan": true,
@@ -621,8 +642,9 @@
         "recovery": {
           "n_per_group": 0.863636
         },
-        "hallucination_rate": 0.0,
-        "valid": false
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "verifiable": false
       },
       "labwright": {
         "plan": true,
@@ -649,7 +671,8 @@
           "reynolds": 0.973
         },
         "hallucination_rate": 1.0,
-        "valid": false
+        "valid": false,
+        "verifiable": true
       },
       "labwright": {
         "plan": true,
@@ -675,8 +698,9 @@
         "recovery": {
           "dmso_fraction_vv": 0.8
         },
-        "hallucination_rate": 0.0,
-        "valid": false
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "verifiable": false
       },
       "labwright": {
         "plan": true,

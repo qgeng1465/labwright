@@ -190,53 +190,82 @@ instantly callable, verifiable and demonstrable. See [CONTRIBUTING.md](CONTRIBUT
 Can an LLM write a wet-lab design without hallucinating the numbers? We measure
 it. `eval/` runs two systems — **bare LLM** (the model writes every number from
 memory) vs **Labwright** (the model proposes, calculators compute, the verifier
-re-proves) — on 24 gold-standard organ-on-chip design goals with pinned
-sources (kidney PTEC shear from Jang 2013, liver sinusoid CFD, arterial and
-venular shear ranges, seeding and DMSO protocols, power analysis).
+re-proves) — on two gold sets:
 
-A *usable* design is internally consistent **and** hits every physiological
-target within ±5 %. The bare model gets the easy road: retries, per-goal
-prompts, and a ±5 % consistency tolerance, against Labwright's 1e-6 verifier.
-Full protocol and per-entry records: [`eval/README.md`](eval/README.md),
-`results/eval_flash.json`, `results/eval_pro.json`.
+1. **24 "reading" goals** (`eval/gold_experiments.json`) — every goal states
+   the answer (geometry, flow, or the physiological target number). This tests
+   whether the pipeline extracts the stated numbers and drives the calculators
+   to them. It deliberately does *not* test domain knowledge.
+2. **6 "recall" goals** (`eval/gold_blind.json`) — the goal states no number
+   ("recapitulate physiological venular wall shear"); the model must supply the
+   canonical target itself. Four are `cold` (answer nowhere); two are
+   `prompt-backed` (the system prompt lists a range, but the model must still
+   pick the right value).
+
+A *usable* design is internally consistent **and** hits every target within
+±5 %. This is an *ablation*, not an equal-resource race: Labwright's
+iteration budget, tools and anchor prompt are the treatment under test; the
+one asymmetry favouring bare is a ±5 % tolerance and 3 retries. Full protocol,
+fairness notes and per-entry records: [`eval/README.md`](eval/README.md).
 
 ```
 $ python -m eval.report results/eval_flash.json
 
 metric                          bare-LLM     Labwright
 ------------------------------------------------------
-self-consistent rate                 62%           88%
+self-consistent rate                 21%           88%
 usable rate                           0%           88%
-hallucination rate                 0.375         0.125
+hallucination rate                 0.792         0.125
 ```
 
-| model | system | self-consistent | usable | hallucination rate |
-|---|---|---|---|---|
-| `deepseek-v4-flash` | bare-LLM | 62 % | 0 % | 0.375 |
-| `deepseek-v4-flash` | **Labwright** | **88 %** | **88 %** | **0.125** |
-| `deepseek-v4-pro` | bare-LLM | 50 % | 4 % | 0.500 |
-| `deepseek-v4-pro` | **Labwright** | **100 %** | **100 %** | **0.000** |
+| set | model | system | self-consistent | usable | hallucination |
+|---|---|---|---|---|---|
+| 24-reading | `flash` | bare-LLM | 21 % | 0 % | 0.792 |
+| 24-reading | `flash` | **Labwright** | **88 %** | **88 %** | **0.125** |
+| 24-reading | `pro` | bare-LLM | 8 % | 0 % | 0.917 |
+| 24-reading | `pro` | **Labwright** | **100 %** | **100 %** | **0.000** |
+| 6-blind | `flash` | bare-LLM | 33 % | 0 % | 0.667 |
+| 6-blind | `flash` | **Labwright** | **100 %** | **33 %** | **0.000** |
+| 6-blind | `pro` | bare-LLM | 33 % | 0 % | 0.667 |
+| 6-blind | `pro` | **Labwright** | **100 %** | **17 %** | **0.000** |
 
-Read the numbers honestly. The bare model is not dumb — on several goals it
-reports a *self-consistent* design that is still physiologically wrong: asked
-for the canonical kidney 0.02 Pa, it confidently built a clean 0.1 Pa chip
-(5× off), because the same 1000×100 µm @ 10 µL/min "default chip" satisfies
-every shear target at once. Self-consistency does not save you when the target
-was wrong to begin with. And on goals where no geometry is reported, its
-numbers are simply untrustworthy (hallucination 1.0). Notably, the *larger*
-reasoning model (`pro`) does **worse** bare (50 % vs 37.5 % hallucination):
-bigger model, more confident arithmetic — none of it grounded.
+Read the numbers honestly — and the boundary of what they mean.
 
-Labwright's residual error on `flash` is not hallucination — it is *silence*.
-The three goals it missed (88 % of 24 usable) are pure-calculation goals
-(Reynolds check, pressure-drop target, a power-analysis request) where the
-agent produced **no design at all** rather than a fabricated one
-(`plan: false` in the per-entry records; hallucination 1.0 is scored as "no
-usable output"). It never wrote a number the calculators didn't check. On
-`pro`, which completed every goal, the gate is absolute: 100 % usable, 0.000
-hallucination. The benchmark exists to make that claim checkable, and to give
-the reproducibility crisis a concrete, reproducible number instead of a
-slogan.
+- **"0.000 hallucination" is an architectural guarantee, not a measured win.**
+  Labwright's derived numbers come from the calculators, and the verifier
+  recomputes them from the *same* calculators, so a submitted design always
+  verifies. What the number actually says: **no number entered a design unless
+  a calculator produced it and the verifier re-proved it.** That is the whole
+  claim — and it is a strong one. It does **not** say "every design is
+  physiologically correct".
+- **Recovery ≈ 0 on the 24-reading set is by construction**: the goals hand
+  over the answers, and the self-consistent anchors are computed from the same
+  equations. The real signal there is number-extraction and tool-calling — a
+  genuine capability (bare fails even at this: 0 % usable on both models).
+- **The blind set is where target selection is actually tested — and Labwright
+  drops.** `flash` 88 % → 33 %, `pro` 100 % → 17 %. The gate held: every plan
+  was internally verified, hallucination 0.000. But the designs aimed at the
+  wrong physiology. `flash` proposed kidney PTEC shear at 0.50 Pa (target 0.02,
+  25× off); `pro` at 0.20 Pa (10× off, treating dyn/cm² as Pa); both proposed
+  hepatic 0.10 Pa (2× the 0.05 low-shear convention). **The gate stops
+  fabricated numbers; it cannot supply domain knowledge the model does not
+  have.** That boundary is the honest headline, and it is exactly what a
+  wet-lab user must not forget: verify the target, not just the arithmetic.
+
+The bare model's own numbers are worse than earlier commits reported. The
+first figures (62 %/50 % self-consistent) counted unverifiable answers —
+geometry and flow with no derived numbers to check — as consistent. Under the
+same rule Labwright uses for a run that never submits (unverifiable = 1.0),
+the honest figures are 21 %/8 %. `eval/recompute_honest.py` applies the rule
+without re-running anything; the recorded `reported` values are unchanged.
+
+Labwright's residual error on `flash` (88 % usable, not 100 %) is *silence*,
+not fabrication: the three goals it missed were pure-calculation goals
+(Reynolds check, pressure-drop target, power analysis) where the agent
+produced **no design at all** (`plan: false`; hallucination 1.0 is scored as
+"no usable output"). The per-entry records now carry the agent's own failure
+reason, so that claim is auditable. It never wrote a number the calculators
+didn't check.
 
 ## Roadmap
 

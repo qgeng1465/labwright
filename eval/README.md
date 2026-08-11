@@ -14,80 +14,142 @@ On every gold-standard experiment, run two systems:
 | bare-LLM | the model is given the full design JSON schema and asked to write the complete design *including derived numbers*, from memory |
 | Labwright | the model proposes raw inputs; derived numbers come from `labwright.calc` and pass `labwright.verify` |
 
-Metrics (from `benchmark.evaluate`):
+Two gold sets:
 
-- **parameter recovery** — mean relative error of the design vs the gold
-  standard on `shear_pa`, `reynolds`, `pressure_drop_pa`, `residence_time_s`,
-  `channel_volume_ul`, `mean_velocity_mms`, `flow_rate_uLmin`, `seed_count`,
-  `dmso_fraction_vv`, `n_per_group`.
-- **hallucination rate** — fraction of derived fields that the verifier rejects
-  on a design that *parses*. A system that produces no usable JSON at all scores
-  1.0 (an unusable output is fully hallucinated).
-- **self-consistent / usable rate** — see *Metrics, carefully* below; these are
-  the headline "can it be used?" numbers.
+1. **`gold_experiments.json` — 24 "reading" goals.** Every goal states the
+   answer (the geometry/flow/density/effect-size, or the physiological target
+   number). These test whether the pipeline can *extract the stated numbers and
+   drive the calculators to them*. They do **not** test domain knowledge.
+2. **`gold_blind.json` — 6 "recall" goals.** The goal states no number at all
+   ("recapitulate physiological venular wall shear"); the model must supply the
+   canonical target from its own knowledge. Four are `cold` (answer in neither
+   goal nor the system prompt: kidney, arterial, venular, HepG2 density); two
+   are `prompt-backed` (liver, lung — the Labwright system prompt lists a range
+   that contains the answer, so the model must still select the right value).
 
-Expected result to publish: bare-LLM hallucination rate substantially above
-zero (reported figures for unconstrained biomedical LLMs are routinely
-30–60% on numerical protocol details); Labwright rate ≈ 0 by construction.
-Recovery accuracy should also improve because the model is told the actual
-tool outputs mid-loop. Note the *parroting* subtlety: a bare LLM can "name" a
-target shear from the goal text while its own geometry/flow imply something
-else — recovery then looks perfect while hallucination is high. That is
-precisely why the two metrics are reported together.
+### Fairness, honestly stated
 
-## Provenance rules (hard requirements)
+This is **not** a head-to-head of equal-resource systems; it is an *ablation*:
+the bare condition is an LLM writing numbers from memory (the status quo), and
+Labwright is the same LLM plus tools, a 12-iteration loop, the verifier, and a
+physiological-anchor system prompt. Those are the treatment, and they favour
+Labwright on iteration budget and anchor hints. The one asymmetry that favours
+the bare model is scoring: it is retried up to 3×, allowed a ±5 % consistency
+tolerance, and not required to prove its numbers. We do not claim the systems
+are matched; we claim the comparison isolates what the calculators and the
+verifier add to the bare model.
 
-- **Every gold entry must carry a verifiable source** (DOI or paper reference).
-- `STATUS: needs_doi` entries are placeholders: their physiology anchor is
-  common knowledge, but the *exact* source must be pinned by hand **before**
-  any number enters the paper.
-- Self-consistent entries (derived purely from the governing equations) are
-  allowed — label them as such.
+## Metrics (from `benchmark.evaluate`)
 
-## Metrics, carefully
-
-- **hallucination rate** — fraction of a design's derived numbers that the
-  verifier rejects. A bare-LLM number that doesn't follow from its own
-  geometry/flow is a hallucination; Labwright's derived numbers come from the
-  calculators, so this is ≈ 0 by construction.
+- **hallucination rate** — fraction of a system's derived numbers the verifier
+  rejects. A system that produces no checkable output scores 1.0.
+  - Labwright: derived numbers come from the calculators and the verifier
+    recomputes them from the *same* calculators, so for any plan that submits,
+    this is **0 by construction**. That is the point: it is an architectural
+    guarantee, not a measured win — the metric exists to *make* the guarantee
+    checkable. The only way it is non-zero is a `plan: false` run (the agent
+    produced no design), scored 1.0.
+  - bare-LLM: a number that does not follow from the model's own geometry/flow
+    is a hallucination. A bare answer that reports geometry+flow but **no
+    derived flow numbers** is *unverifiable* and scored 1.0 — the same
+    convention as a Labwright run that never submits ("numbers you type are not
+    trusted"). The committed results were recomputed with this rule in
+    `recompute_honest.py`; earlier commits scored unverifiable silence as 0.0
+    and over-stated the bare self-consistent rate.
 - **self-consistent rate** — fraction of gold entries with hallucination rate 0.
 - **usable rate** — fraction of gold entries that are self-consistent **and**
-  recover every gold target parameter within ±5 %. A design that is internally
-  consistent but misses the physiological target (e.g. builds a clean 0.1 Pa
-  chip when the goal demanded 0.05 Pa) is not usable.
+  recover every gold target within ±5 %. A design that is internally consistent
+  but misses the physiological target is not usable.
 
-The bare-LLM asymmetry is deliberate and favours the bare model: it is retried
-up to 3× on empty responses, given reasoning disabled (else the v4 models spend
-the whole output budget thinking and emit nothing), asked for a *minimal*
-per-goal key set, and allowed a generous ±5 % consistency tolerance, while
-Labwright must match the calculators to 1e-6.
+### What the numbers do — and do not — mean
+
+- **"0.000 hallucination"** means *no number entered a design unless a
+  calculator produced it and the verifier re-proved it*. It does **not** mean
+  "every design is physiologically correct". The gate cannot tell the model
+  which target to aim at.
+- **Recovery ≈ 0 on the 24-reading set** is *by construction*: every goal
+  states the answer, and the self-consistent anchors are computed from the same
+  equations Labwright uses. The real signal there is number-extraction and
+  tool-calling.
+- **The blind set is where target selection is actually tested.** There the
+  usable rate collapses: `flash` 88 % → 33 %, `pro` 100 % → 17 % (see below).
+  The gate held (hallucination 0.000 on every submitted plan) — Labwright
+  produced clean, verified designs that aimed at the *wrong physiology*. That
+  is the honest boundary of the guarantee.
 
 ## Status
 
-- [x] Curate the gold set: **24 organ-on-chip design goals** spanning
-      microfluidics, cell seeding, dosing/DMSO and statistics. Every entry
-      carries a provenance rule — a pinned source (e.g. kidney PTEC 0.2 dyn/cm²,
-      Jang 2013, `10.1039/c3ib40049b`; arterial/venular shear from
-      Papaioannou & Stefanadis, PMID 15807389) or an explicit
-      `self-consistent` label. No fabricated literature numbers anywhere.
-- [x] Run the two-system comparison on `deepseek-v4-flash` and `deepseek-v4-pro`
-      → `results/eval_flash.json`, `results/eval_pro.json`; `python -m eval.report results/eval_flash.json`.
-      The runner checkpoints after every entry, so a mid-run failure never
-      loses the API spend.
-- [x] Reverse-verify a batch of published protocols + labelled synthetic
-      controls: `eval/run_verify_batch.py` → `results/eval_verify_batch.json`.
-- [x] Preprint draft in `paper/manuscript.md` (numbers from the committed
-      results), Colab notebook, HF Space scaffolding.
-- [ ] Ablations: model size, RAG context on/off, tool-calling on/off.
+- [x] Curate the 24-reading gold set. Every entry carries a provenance rule — a
+      pinned source or an explicit `self-consistent` label. All anchors
+      hand-checked against the governing equations.
+- [x] Curate the 6-blind gold set (`gold_blind.json`), labelled
+      `cold`/`prompt-backed`.
+- [x] Run both systems on `deepseek-v4-flash` and `deepseek-v4-pro` on the
+      24-reading set → `results/eval_flash.json`, `results/eval_pro.json`.
+      `python -m eval.report results/eval_flash.json`. The runner checkpoints
+      after every entry.
+- [x] Recompute bare metrics with the unverifiable=1.0 rule:
+      `python -m eval.recompute_honest results/eval_flash.json results/eval_pro.json`.
+- [x] Run both systems on the 6-blind set → `results/eval_blind_flash.json`,
+      `results/eval_blind_pro.json`.
+- [x] Reverse-verify published protocols + labelled synthetic controls:
+      `eval/run_verify_batch.py` → `results/eval_verify_batch.json`.
+- [x] Ablation: thinking on/off on the blind set
+      (`results/eval_blind_flash_thinking.json`; see "Ablation" below).
+- [x] Preprint draft, Colab notebook, HF Space scaffolding.
 - [ ] Submit the preprint to bioRxiv; publish the HF Space.
+
+## Results (honest)
+
+| model | set | system | self-consistent | usable | hallucination |
+|---|---|---|---|---|---|
+| `flash` | 24-reading | bare-LLM | 21 % | 0 % | 0.792 |
+| `flash` | 24-reading | **Labwright** | **88 %** | **88 %** | **0.125** |
+| `pro` | 24-reading | bare-LLM | 8 % | 0 % | 0.917 |
+| `pro` | 24-reading | **Labwright** | **100 %** | **100 %** | **0.000** |
+| `flash` | 6-blind | bare-LLM | 33 % | 0 % | 0.667 |
+| `flash` | 6-blind | **Labwright** | **100 %** | **33 %** | **0.000** |
+| `pro` | 6-blind | bare-LLM | 33 % | 0 % | 0.667 |
+| `pro` | 6-blind | **Labwright** | **100 %** | **17 %** | **0.000** |
+
+The blind-set drop is the honest headline: when the goal does not hand over the
+target, Labwright's verified designs hit the wrong physiology. `flash` proposed
+kidney PTEC shear at 0.50 Pa (target 0.02 — 25× off) and `pro` at 0.20 Pa
+(target 0.02 — 10× off, treating dyn/cm² as Pa); both proposed hepatic 0.10 Pa
+(2× the 0.05 low-shear convention) and venular 0.40 Pa (in the 0.1–0.6 Pa range
+but off the 0.3 anchor). The gate never failed — every plan was internally
+verified — it just could not supply domain knowledge the model did not have.
+
+Bare-LLM's honest self-consistent numbers (21 %/8 %) are much lower than the
+first committed figures (62 %/50 %). The earlier figures counted unverifiable
+answers as consistent; `recompute_honest.py` applies the same
+unverifiable=1.0 rule the Labwright path already used, and the recorded
+`reported` values were not re-run or changed.
+
+### Ablation: thinking on vs off
+
+`deepseek-v4-flash` normally runs with thinking disabled (the arithmetic lives
+in the calculators, not the model). Re-running the 6-blind set with thinking
+enabled (`LABWRIGHT_DISABLE_THINKING=0`) changes nothing: **33 % usable either
+way** — the same two entries correct (arterial 1.5 Pa, lung 0.03 Pa), the same
+four wrong (liver 0.10 Pa, kidney 0.10 Pa, venular 0.40 Pa, seed 8000). With
+thinking on the model converged harder on the "default chip" (1000×100 µm @
+10 µL/min → 0.1 Pa), fixing kidney from 0.5 → 0.10 Pa but still 5× off. The
+blind-set failures are a *domain-knowledge* gap — the model does not know the
+canonical targets — not a reasoning-budget one, and no amount of thinking
+recovers them. That is the honest headline for a tool whose entire point is
+the hard gate: **the gate holds regardless of model effort; it cannot supply
+knowledge the model does not have.**
 
 ## Run
 
 ```bash
-python -m eval.run_benchmark                     # all gold entries
+python -m eval.run_benchmark                                  # 24-reading, flash
+python -m eval.run_benchmark --gold eval/gold_blind.json --out results/eval_blind_flash.json
 python -m eval.run_benchmark --limit 3 --out /tmp/eval.json
-python -m eval.run_benchmark --model deepseek-chat
-python -m eval.report results/eval_flash.json    # render the comparison table
+python -m eval.run_benchmark --model deepseek-v4-pro --out results/eval_pro.json
+python -m eval.recompute_honest results/eval_*.json          # after any run
+python -m eval.report results/eval_flash.json                # render the comparison
 ```
 
 Requires `LABWRIGHT_API_KEY`/`DEEPSEEK_API_KEY`. Results are written to

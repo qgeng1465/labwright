@@ -60,6 +60,11 @@ def derive(result: dict) -> dict:
             "hallucination_rate": _mean(hall),
             "recovery": {k: _mean(v) for k, v in recovery.items()},
         }
+    # Bare answers that report geometry+flow and at least one derived number can
+    # be cross-checked; the rest are unverifiable and scored hallucination 1.0.
+    out["bare"]["verifiable_rate"] = _mean(
+        [1.0 if e["bare"].get("verifiable") else 0.0 for e in result["per_entry"]]
+    )
     out["n_gold"] = result["n_gold"]
     out["model"] = result.get("model")
     return out
@@ -83,21 +88,23 @@ def render(result: dict) -> str:
         b = _pct(d["bare"][key]) if key != "hallucination_rate" else f"{d['bare'][key]:.3f}"
         l = _pct(d["labwright"][key]) if key != "hallucination_rate" else f"{d['labwright'][key]:.3f}"
         lines.append(f"{label:<26}{b:>14}{l:>14}")
+    lines.append(f"{'bare answers verifiable':<26}{_pct(d['bare']['verifiable_rate']):>14}")
     lines.append("")
     lines.append("Parameter recovery (mean relative error):")
     for key in sorted(set(d["bare"]["recovery"]) | set(d["labwright"]["recovery"])):
         b = d["bare"]["recovery"].get(key, float("nan"))
         l = d["labwright"]["recovery"].get(key, float("nan"))
-        lines.append(
-            f"  {key:<26}{b if b == b else 'n/a':>14}{l if l == l else 'n/a':>14}"
-        )
+        b = "n/a" if b != b else f"{b:.4g}"
+        l = "n/a" if l != l else f"{l:.4g}"
+        lines.append(f"  {key:<26}{b:>14}{l:>14}")
     lines.append("")
     lines.append("Per entry:")
     for e in result["per_entry"]:
         b = e["bare"]
         l = e["labwright"]
+        verif = "ver" if b.get("verifiable") else "n/a"
         lines.append(
-            f"  {e['id']:<26} bare h={b['hallucination_rate']:.2f} "
+            f"  {e['id']:<26} bare {verif} h={b['hallucination_rate']:.2f} "
             f"valid={str(b['valid']).lower():<5} | lw h={l['hallucination_rate']:.2f} "
             f"valid={str(l['valid']).lower():<5}"
         )

@@ -52,6 +52,10 @@ class GoldExperiment:
     goal: str
     expected: dict[str, float]  # e.g. {"shear_pa": 0.05, "flow_rate_uLmin": 2.0}
     source: str  # DOI / paper reference — mandatory for inclusion
+    # Blind-set only: "cold" = target not in goal text nor the system prompt
+    # (pure domain recall); "prompt-backed" = the Labwright system prompt lists a
+    # range containing the answer, so the model must still select the right value.
+    blind_strength: str | None = None
 
 
 def load_gold(path: str = GOLD_PATH) -> list[GoldExperiment]:
@@ -97,17 +101,33 @@ def parameter_recovery(gold: GoldExperiment, plan: DesignPlan) -> dict[str, floa
     return errs
 
 
+#: Every derived field the verifier can reject, across all domains. The flow
+#: six plus cell seeding, dosing and statistics. ``hallucination_rate`` counts
+#: errors on whichever of these the plan actually carries.
+_DERIVED_FIELDS = [
+    "derived.shear_pa", "derived.reynolds", "derived.pressure_drop_pa",
+    "derived.residence_time_s", "derived.channel_volume_ul", "derived.mean_velocity_mms",
+    "cells.seed_count", "dosing.dmso_fraction_vv", "stats.n_per_group",
+]
+
+
 def hallucination_rate(plan: DesignPlan) -> float:
-    """Fraction of derived fields that the verifier rejects (Labwright path).
+    """Fraction of the plan's derived fields that the verifier rejects (Labwright path).
 
     A Labwright design's derived numbers come from the calculators, so this is
-    0 by construction; the metric is what makes that checkable.
+    0 by construction; the metric is what makes that checkable. Fields the plan
+    does not carry (no dosing/stats) are excluded from the denominator.
     """
     issues = verify_design(plan)
     if not has_errors(issues):
         return 0.0
-    errored = {i.field.split(".")[-1] for i in issues if i.level == "error"}
-    return len(errored & set(_DERIVED_KEYS)) / len(_DERIVED_KEYS)
+    errored = {i.field for i in issues if i.level == "error"}
+    present = set(_DERIVED_FIELDS)
+    if plan.dosing is None:
+        present.discard("dosing.dmso_fraction_vv")
+    if plan.stats is None:
+        present.discard("stats.n_per_group")
+    return len(errored & present) / max(len(present), 1)
 
 
 # ---------------------------------------------------------------------------
@@ -189,9 +209,31 @@ def bare_recovery(extracted: dict[str, float | None], gold: GoldExperiment) -> d
     return {key: relative_error(extracted.get(key), expected) for key, expected in gold.expected.items()}
 
 
+def bare_checkable(extracted: dict[str, float | None]) -> bool:
+    """Whether the bare answer reported enough to cross-check any derived number.
+
+    Verifiable = geometry + flow *and* at least one derived flow metric. A bare
+    answer that only states the goal's headline number (e.g. ``seed_count``)
+    without the raw inputs that produce it cannot be cross-checked.
+    """
+    chip = (extracted.get("width_um"), extracted.get("height_um"), extracted.get("length_mm"))
+    flow_rate = extracted.get("flow_rate_uLmin")
+    if None in chip or flow_rate is None:
+        return False
+    return any(extracted.get(k) is not None for k in _DERIVED_KEYS)
+
+
 def bare_hallucination(extracted: dict[str, float | None]) -> float:
     """Fraction of reported derived numbers inconsistent with the model's own
-    geometry/flow. No geometry+flow → 1.0 (numbers cannot be trusted)."""
+    geometry/flow.
+
+    No geometry+flow, or geometry+flow but **no derived flow numbers at all**,
+    → 1.0. The second case matters: a design whose every number is typed from
+    memory and cannot be re-derived from the model's own inputs is exactly the
+    case Labwright refuses to trust ("numbers you type are not trusted"). This
+    mirrors the Labwright convention where a run that never submits a plan is
+    scored hallucination 1.0.
+    """
     chip = (extracted.get("width_um"), extracted.get("height_um"), extracted.get("length_mm"))
     flow_rate = extracted.get("flow_rate_uLmin")
     if None in chip or flow_rate is None:
@@ -210,7 +252,7 @@ def bare_hallucination(extracted: dict[str, float | None]) -> float:
     claimed = {k: extracted.get(k) for k in _DERIVED_KEYS}
     present = [k for k in _DERIVED_KEYS if claimed[k] is not None]
     if not present:
-        return 0.0  # nothing claimed → nothing to contradict (recovery catches silence)
+        return 1.0  # no derived number reported → nothing checkable → untrustworthy
     wrong = sum(
         1 for k in present
         if abs(claimed[k] - computed[k]) > BARE_CONSISTENCY_TOL * max(abs(computed[k]), 1e-12)
@@ -218,10 +260,15 @@ def bare_hallucination(extracted: dict[str, float | None]) -> float:
     return wrong / len(present)
 
 
-def run_labwright(goal: str, agent_factory: Callable) -> DesignPlan | None:
-    """Run the real Labwright pipeline."""
+def run_labwright(goal: str, agent_factory: Callable) -> tuple[DesignPlan | None, str | None]:
+    """Run the real Labwright pipeline.
+
+    Returns ``(design, error)``. When the agent produced no design (``plan:
+    false``), ``error`` carries the agent's own failure reason so a silent
+    refusal is auditable rather than an unexplained blank.
+    """
     result = agent_factory().run(goal)
-    return result.design
+    return result.design, result.error
 
 
 def _extract_json(text: str) -> dict[str, Any]:
@@ -256,7 +303,7 @@ def evaluate(
         extracted = run_bare_llm(g, chat)
         if progress:
             progress(f"[{g.id}] Labwright ...")
-        lw = run_labwright(g.goal, agent_factory)
+        lw, lw_error = run_labwright(g.goal, agent_factory)
 
         bare_rec = bare_recovery(extracted, g)
         bare_hall = bare_hallucination(extracted)
@@ -278,12 +325,14 @@ def evaluate(
                 "id": g.id,
                 "bare": {
                     "reported": {k: v for k, v in extracted.items() if v is not None},
+                    "verifiable": bare_checkable(extracted),
                     "recovery": {k: round(v, 6) for k, v in bare_rec.items()},
                     "hallucination_rate": round(bare_hall, 6),
                     "valid": bare_hall == 0.0 and all(err <= 0.05 for err in bare_rec.values()),
                 },
                 "labwright": {
                     "plan": lw is not None,
+                    "error": lw_error,
                     "recovery": {k: round(v, 6) for k, v in lw_rec.items()},
                     "hallucination_rate": round(lw_hall, 6),
                     # usable: a plan that verifies AND recovers every gold target.

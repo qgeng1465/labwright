@@ -19,6 +19,7 @@ Output is written as JSON (results/<name>.json) and printed.
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import os
 import sys
@@ -52,9 +53,10 @@ def main() -> int:
     ap.add_argument("--model", default=os.environ.get("LABWRIGHT_MODEL", "deepseek-v4-flash"))
     ap.add_argument("--base-url", default=None)
     ap.add_argument("--max-iterations", type=int, default=12)
+    ap.add_argument("--gold", default=None, help="Path to a gold JSON (default: eval/gold_experiments.json)")
     args = ap.parse_args()
 
-    gold = load_gold()
+    gold = load_gold(args.gold) if args.gold else load_gold()
     if args.limit:
         gold = gold[: args.limit]
     print(f"gold entries: {len(gold)}   model: {args.model}")
@@ -71,14 +73,14 @@ def main() -> int:
     def checkpoint(partial: dict) -> None:
         # Save after every entry so a mid-run failure never loses the API spend.
         partial["model"] = args.model
-        partial["generated_at"] = "2026-08-11"  # stamped after run; Date.now unavailable in some sandboxes
+        partial["generated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
         with open(out, "w", encoding="utf-8") as fh:
             json.dump(partial, fh, indent=2, ensure_ascii=False)
 
     summary = evaluate(gold, agent_factory, chat, progress, checkpoint=checkpoint)
 
     summary["model"] = args.model
-    summary["generated_at"] = "2026-08-11"  # stamped after run; Date.now unavailable in some sandboxes
+    summary["generated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
     with open(out, "w", encoding="utf-8") as fh:
         json.dump(summary, fh, indent=2, ensure_ascii=False)
     print("\n=== summary ===")
