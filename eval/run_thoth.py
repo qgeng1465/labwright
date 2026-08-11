@@ -52,7 +52,17 @@ def _build_chat(model_dir: str, max_new_tokens: int = 2048):
 
     def chat(prompt: str) -> str:
         msgs = [{"role": "user", "content": prompt}]
-        text = tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+        if tokenizer.chat_template is not None:
+            text = tokenizer.apply_chat_template(
+                msgs, tokenize=False, add_generation_prompt=True
+            )
+        else:
+            # The Thoth tokenizer defines <|im_start|>/<|im_end|> (Qwen-style
+            # ChatML) but ships no `chat_template` field, so apply_chat_template
+            # raises. Render the same template by hand.
+            text = "".join(
+                f"<|im_start|>{m['role']}\n{m['content']}<|im_end|>\n" for m in msgs
+            ) + "<|im_start|>assistant\n"
         inputs = tokenizer(text, return_tensors="pt")
         if dev == "cuda":
             inputs = {k: v.to("cuda") for k, v in inputs.items()}

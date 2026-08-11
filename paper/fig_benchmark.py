@@ -23,17 +23,18 @@ carry text.
 Usage::
 
     python paper/fig_benchmark.py \\
-        results/eval_flash.json results/eval_competitors_flash.json \\
-        results/eval_pro.json results/eval_competitors_pro.json \\
-        results/eval_blind_flash.json results/eval_blind_competitors_flash.json \\
-        results/eval_blind_pro.json results/eval_blind_competitors_pro.json
+        results/eval_flash.json results/eval_flash.json \\
+        results/eval_pro.json results/eval_pro.json \\
+        results/eval_blind_flash.json results/eval_blind_flash.json \\
+        results/eval_blind_pro.json results/eval_blind_pro.json \\
+        results/eval_thoth.json results/eval_blind_thoth.json
     # writes paper/fig_benchmark.pdf and paper/fig_benchmark.png
 
-The first of each pair (the "main" file) carries bare-LLM + Labwright; the
-second carries soft-gate + self-verify. Bare-LLM is taken from the main file so
-the bare-vs-Labwright comparison uses the same committed run as the paper's
-Table 1. Numbers come from eval/report.derive(), which recomputes every metric
-from per-entry records.
+After the post-fix re-run the soft-gate + self-verify rows live in the same
+file as bare + Labwright, so the main and comp args point at the same file.
+The optional final two args add a thoth-8b group (three memory-system bars, no
+Labwright bar) from the prompt-only Thoth run. Numbers come from
+eval/report.derive(), which recomputes every metric from per-entry records.
 """
 
 from __future__ import annotations
@@ -52,8 +53,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from eval.report import derive  # noqa: E402
 
 # --- data ---
-MODELS = ["deepseek-v4-flash", "deepseek-v4-pro"]
-MODEL_SHORT = ["flash", "pro"]
+# A third group (thoth-8b) is added when the optional Thoth result files are
+# passed (argv[8] = reading, argv[9] = blind). Thoth is run through the bare
+# harness only — it has no Labwright mode — so its group carries just the three
+# memory-system bars.
+MODELS = ["deepseek-v4-flash", "deepseek-v4-pro", "thoth-8b"]
+MODEL_SHORT = ["flash", "pro", "thoth-8b"]
 #: (metric key, row title, row subtitle) — one row per headline metric.
 METRICS = [
     ("self_consistent_rate", "Self-consistent rate", "higher is better"),
@@ -99,10 +104,16 @@ def load_merged(main_path: str, comp_path: str) -> dict:
     return merged
 
 
+def load_thoth(path: str) -> dict:
+    """A Thoth group: derive the three memory systems from a single file."""
+    with open(path) as fh:
+        return derive(json.load(fh))
+
+
 def main(argv: list[str]) -> int:
     # argv layout: [reading-main flash, reading-comp flash, reading-main pro,
     # reading-comp pro, blind-main flash, blind-comp flash, blind-main pro,
-    # blind-comp pro]
+    # blind-comp pro, thoth-reading (optional), thoth-blind (optional)]
     if len(argv) < 8:
         print(__doc__)
         return 1
@@ -116,6 +127,9 @@ def main(argv: list[str]) -> int:
         [load_merged(*pairs[0]), load_merged(*pairs[1])],  # reading: flash, pro
         [load_merged(*pairs[2]), load_merged(*pairs[3])],  # blind: flash, pro
     ]
+    if len(argv) >= 10 and argv[8] and argv[9]:
+        sets[0].append(load_thoth(argv[8]))  # reading: thoth-8b
+        sets[1].append(load_thoth(argv[9]))  # blind: thoth-8b
 
     fig, axes = plt.subplots(
         len(METRICS), len(SETS), figsize=(8.6, 4.6),
@@ -133,9 +147,13 @@ def main(argv: list[str]) -> int:
                 (i - (N_SYSTEMS - 1) / 2) * width for i in range(N_SYSTEMS)
             ]
             for i, model in enumerate(MODELS):
+                if i >= len(data):
+                    break
                 d = data[i]
                 pos = i
                 for (sys_key, _label, color, edge, hatch), off in zip(SYSTEMS, offsets):
+                    if sys_key not in d:  # e.g. thoth-8b has no Labwright bar
+                        continue
                     v = d[sys_key][key]
                     ax.bar(pos + off, v, width, color=color, edgecolor=edge,
                            hatch=hatch, zorder=3, linewidth=0.5)
@@ -155,8 +173,8 @@ def main(argv: list[str]) -> int:
                         # v == 0.0: the win is self-evident, skip the label
 
             # axis dressing: recessive, ink-only
-            ax.set_xticks(range(len(MODELS)))
-            ax.set_xticklabels(MODEL_SHORT, fontsize=8, color=INK)
+            ax.set_xticks(range(len(data)))
+            ax.set_xticklabels(MODEL_SHORT[:len(data)], fontsize=8, color=INK)
             ax.set_ylim(0, 1.0)
             ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
             ax.set_yticklabels(["0%", "25%", "50%", "75%", "100%"], fontsize=7.5, color=MUT)

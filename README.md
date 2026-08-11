@@ -4,7 +4,7 @@
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
-[![Tests](https://img.shields.io/badge/tests-85%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-88%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
 Tell a wet-lab LLM agent what experiment you want. It **proposes** the design.
@@ -205,7 +205,11 @@ re-proves) — on two gold sets:
 Four systems are compared. The three LLM-memory systems (bare-LLM, soft-gate,
 self-verify) write numbers from memory and are scored by *identical* rules —
 only the prompt/stage structure differs. Labwright adds the calculators and
-the verifier.
+the verifier. On top of the two DeepSeek models, the open-weights 8B protocol
+generator **thoth-8b** (the one runnable competitor from the related work) is
+run through the same three memory systems as a prompt-only comparison — it has
+no Labwright mode — and scores 0 % usable on every row (see the `thoth-8b`
+rows below).
 
 A *usable* design is internally consistent **and** hits every target within
 ±5 %. This is an *ablation*, not an equal-resource race: Labwright's
@@ -218,36 +222,49 @@ $ python -m eval.report results/eval_flash.json
 
 metric                          bare-LLM     Labwright
 ------------------------------------------------------
-self-consistent rate                 21%           88%
+self-consistent rate                  0%           88%
 usable rate                           0%           88%
-hallucination rate                 0.792         0.125
+hallucination rate                 1.000         0.125
 ```
 
 | set | model | system | self-consistent | usable | hallucination |
 |---|---|---|---|---|---|
-| 24-reading | `flash` | bare-LLM | 21 % | 0 % | 0.792 |
-| 24-reading | `flash` | soft-gate | 17 % | 0 % | 0.833 |
-| 24-reading | `flash` | self-verify | 0 % | 0 % | 0.833 |
+| 24-reading | `flash` | bare-LLM | 0 % | 0 % | 1.000 |
+| 24-reading | `flash` | soft-gate | 12 % | 12 % | 0.875 |
+| 24-reading | `flash` | self-verify | 0 % | 0 % | 0.792 |
 | 24-reading | `flash` | **Labwright** | **88 %** | **88 %** | **0.125** |
-| 24-reading | `pro` | bare-LLM | 8 % | 0 % | 0.917 |
-| 24-reading | `pro` | soft-gate | 12 % | 0 % | 0.875 |
-| 24-reading | `pro` | self-verify | 0 % | 0 % | 0.736 |
+| 24-reading | `pro` | bare-LLM | 12 % | 12 % | 0.875 |
+| 24-reading | `pro` | soft-gate | 8 % | 8 % | 0.917 |
+| 24-reading | `pro` | self-verify | 0 % | 0 % | 0.750 |
 | 24-reading | `pro` | **Labwright** | **100 %** | **100 %** | **0.000** |
-| 12-blind | `flash` | bare-LLM | 17 % | 0 % | 0.833 |
-| 12-blind | `flash` | soft-gate | 0 % | 0 % | 1.000 |
-| 12-blind | `flash` | self-verify | 0 % | 0 % | 0.792 |
+| 12-blind | `flash` | bare-LLM | 8 % | 0 % | 0.917 |
+| 12-blind | `flash` | soft-gate | 8 % | 0 % | 0.917 |
+| 12-blind | `flash` | self-verify | 0 % | 0 % | 0.750 |
 | 12-blind | `flash` | **Labwright** | **100 %** | **25 %** | **0.000** |
-| 12-blind | `pro` | bare-LLM | 17 % | 0 % | 0.833 |
-| 12-blind | `pro` | soft-gate | 17 % | 0 % | 0.833 |
-| 12-blind | `pro` | self-verify | 0 % | 0 % | 0.889 |
+| 12-blind | `pro` | bare-LLM | 8 % | 0 % | 0.917 |
+| 12-blind | `pro` | soft-gate | 0 % | 0 % | 1.000 |
+| 12-blind | `pro` | self-verify | 0 % | 0 % | 0.806 |
 | 12-blind | `pro` | **Labwright** | **100 %** | **33 %** | **0.000** |
+| 24-reading | `thoth-8b` | bare-LLM | 0 % | 0 % | 1.000 |
+| 24-reading | `thoth-8b` | soft-gate | 0 % | 0 % | 1.000 |
+| 24-reading | `thoth-8b` | self-verify | 0 % | 0 % | 1.000 |
+| 12-blind | `thoth-8b` | bare-LLM | 0 % | 0 % | 1.000 |
+| 12-blind | `thoth-8b` | soft-gate | 0 % | 0 % | 1.000 |
+| 12-blind | `thoth-8b` | self-verify | 0 % | 0 % | 1.000 |
 
-*bare-LLM and Labwright come from the same committed run; soft-gate and
-self-verify were a separate batch at the same temperature (0.2). Run-to-run,
-the bare self-consistent rate was 17 % and 21 % on the two `flash` batches and
-8 % in both `pro` batches — a few points between memory systems (e.g.
-soft-gate's 12 % on `pro`) is sampling noise; the qualitative ordering is
-not.*
+*All memory-system rows come from a single re-run at temperature 0.2 after a
+prompt regression that dropped the goal text was found and fixed (see the
+transparency note in [`eval/README.md`](eval/README.md)); Labwright rows are
+the committed run, preserved verbatim — Labwright's agent always receives the
+goal, so the bug never touched it. The only usable memory-system entries on
+either set are the three single-arithmetic-step goals on the 24-reading set
+(12 % for `pro` bare / `flash` soft-gate): goals with no design choice. A point
+or two between memory systems is sampling noise; the qualitative ordering is
+not. The `thoth-8b` rows are the prompt-only comparison against the open-weights
+8B protocol generator ([§3.4 in the manuscript](paper/manuscript.md)): it has no
+Labwright mode (its native output is protocol prose), and run through the
+identical harness it produces nothing checkable — 0 % usable on every memory
+system on both sets.*
 
 Read the numbers honestly — and the boundary of what they mean.
 
@@ -261,14 +278,17 @@ Read the numbers honestly — and the boundary of what they mean.
 - **Recovery ≈ 0 on the 24-reading set is by construction**: the goals hand
   over the answers, and the self-consistent anchors are computed from the same
   equations. The real signal there is number-extraction and tool-calling — a
-  genuine capability (bare fails even at this: 0 % usable on both models).
+  genuine capability (bare reaches usable > 0 only on the three
+  single-arithmetic-step goals, and only as 12 %; on every goal that requires
+  choosing geometry and flow it is 0 % on both models).
 - **The two naive fixes do not work.** `soft-gate` (a "re-check yourself"
-  prompt) stays within sampling noise of bare — being told to be careful does
-  not make an LLM's arithmetic checkable. `self-verify` (using a second LLM
-  pass as its own verifier) is *worse* than nothing: handed its own raw
-  inputs, the model recomputes them wrong, so the verifier pass overwrites
-  correct numbers with confident wrong ones — 0 % self-consistent on both sets,
-  both models. Only the deterministic calculators + verifier reach usable > 0 %.
+  prompt) occasionally completes a single-arithmetic-step goal but never
+  rescues a design — being told to be careful does not make an LLM's arithmetic
+  checkable. `self-verify` (using a second LLM pass as its own verifier) is
+  *worse* than nothing: handed its own raw inputs, the model recomputes them
+  wrong, so the verifier pass overwrites correct numbers with confident wrong
+  ones — 0 % self-consistent on both sets, both models. Only the deterministic
+  calculators + verifier reach usable > 0 % on design goals.
 - **The blind set is where target selection is actually tested — and Labwright
   drops.** `flash` 88 % → 25 %, `pro` 100 % → 33 %. The gate held: every plan
   was internally verified, hallucination 0.000. But the designs aimed at the
@@ -281,12 +301,19 @@ Read the numbers honestly — and the boundary of what they mean.
   have.** That boundary is the honest headline, and it is exactly what a
   wet-lab user must not forget: verify the target, not just the arithmetic.
 
-The bare model's own numbers are worse than earlier commits reported. The
-first figures (62 %/50 % self-consistent) counted unverifiable answers —
-geometry and flow with no derived numbers to check — as consistent. Under the
-same rule Labwright uses for a run that never submits (unverifiable = 1.0),
-the honest figures are 21 %/8 %. `eval/recompute_honest.py` applies the rule
-without re-running anything; the recorded `reported` values are unchanged.
+The bare model's own numbers are worse than the earliest commits reported, for
+two reasons, both reported honestly. First, the earliest figures (62 %/50 %
+self-consistent) counted unverifiable answers — geometry and flow with no
+derived numbers to check — as consistent; under the same rule Labwright uses
+for a run that never submits (unverifiable = 1.0) the honest reading-set
+figures drop to 0 %/12 % for `flash`/`pro`. Second, a prompt regression briefly
+dropped the goal text from the bare-family prompts; it is caught by three
+regression tests (`tests/test_benchmark_prompts.py`), and **all memory-system
+numbers here are from a single post-fix re-run** while the Labwright numbers
+are the committed run, preserved verbatim (Labwright's agent always received
+the goal through a separate path). The recorded `reported` values are
+unchanged; only the honest scoring rule and the prompt fix move the
+headlines.
 
 Labwright's residual error on `flash` (88 % usable, not 100 %) is *silence*,
 not fabrication: the three goals it missed were pure-calculation goals

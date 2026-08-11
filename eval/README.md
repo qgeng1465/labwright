@@ -112,40 +112,57 @@ verifier add to the bare model.
 
 ## Results (honest)
 
-All four systems, both sets, both models. Self-consistent = zero verifier
-errors; usable = self-consistent *and* recovers every gold target within ±5 %.
-The memory systems (bare, soft-gate, self-verify) are scored by identical
-extraction/tolerance/unverifiable=1.0 rules — only the prompt/stage structure
-differs.
+All systems, both sets, three models (`flash`, `pro`, and the open-weights
+protocol generator `thoth-8b` run as a prompt-only comparison — no Labwright
+mode, because its native output is protocol prose). Self-consistent = zero
+verifier errors; usable = self-consistent *and* recovers every gold target
+within ±5 %. The memory systems (bare, soft-gate, self-verify) are scored by
+identical extraction/tolerance/unverifiable=1.0 rules — only the prompt/stage
+structure differs.
 
 | model | set | system | self-consistent | usable | hallucination |
 |---|---|---|---|---|---|
-| `flash` | 24-reading | bare-LLM | 21 % | 0 % | 0.792 |
-| `flash` | 24-reading | soft-gate | 17 % | 0 % | 0.833 |
-| `flash` | 24-reading | self-verify | 0 % | 0 % | 0.833 |
+| `flash` | 24-reading | bare-LLM | 0 % | 0 % | 1.000 |
+| `flash` | 24-reading | soft-gate | 12 % | 12 % | 0.875 |
+| `flash` | 24-reading | self-verify | 0 % | 0 % | 0.792 |
 | `flash` | 24-reading | **Labwright** | **88 %** | **88 %** | **0.125** |
-| `pro` | 24-reading | bare-LLM | 8 % | 0 % | 0.917 |
-| `pro` | 24-reading | soft-gate | 12 % | 0 % | 0.875 |
-| `pro` | 24-reading | self-verify | 0 % | 0 % | 0.736 |
+| `pro` | 24-reading | bare-LLM | 12 % | 12 % | 0.875 |
+| `pro` | 24-reading | soft-gate | 8 % | 8 % | 0.917 |
+| `pro` | 24-reading | self-verify | 0 % | 0 % | 0.750 |
 | `pro` | 24-reading | **Labwright** | **100 %** | **100 %** | **0.000** |
-| `flash` | 12-blind | bare-LLM | 17 % | 0 % | 0.833 |
-| `flash` | 12-blind | soft-gate | 0 % | 0 % | 1.000 |
-| `flash` | 12-blind | self-verify | 0 % | 0 % | 0.792 |
+| `flash` | 12-blind | bare-LLM | 8 % | 0 % | 0.917 |
+| `flash` | 12-blind | soft-gate | 8 % | 0 % | 0.917 |
+| `flash` | 12-blind | self-verify | 0 % | 0 % | 0.750 |
 | `flash` | 12-blind | **Labwright** | **100 %** | **25 %** | **0.000** |
-| `pro` | 12-blind | bare-LLM | 17 % | 0 % | 0.833 |
-| `pro` | 12-blind | soft-gate | 17 % | 0 % | 0.833 |
-| `pro` | 12-blind | self-verify | 0 % | 0 % | 0.889 |
+| `pro` | 12-blind | bare-LLM | 8 % | 0 % | 0.917 |
+| `pro` | 12-blind | soft-gate | 0 % | 0 % | 1.000 |
+| `pro` | 12-blind | self-verify | 0 % | 0 % | 0.806 |
 | `pro` | 12-blind | **Labwright** | **100 %** | **33 %** | **0.000** |
+| `thoth-8b` | 24-reading | bare-LLM | 0 % | 0 % | 1.000 |
+| `thoth-8b` | 24-reading | soft-gate | 0 % | 0 % | 1.000 |
+| `thoth-8b` | 24-reading | self-verify | 0 % | 0 % | 1.000 |
+| `thoth-8b` | 12-blind | bare-LLM | 0 % | 0 % | 1.000 |
+| `thoth-8b` | 12-blind | soft-gate | 0 % | 0 % | 1.000 |
+| `thoth-8b` | 12-blind | self-verify | 0 % | 0 % | 1.000 |
 
-The memory systems never produce a usable design on either set, and the two
-naive "fixes" do not help — soft-gate (a "re-check yourself" prompt) stays
-within run-to-run sampling noise of bare (at temperature 0.2 the bare
-self-consistent rate was 17 % and 21 % on the two `flash` batches and 8 % in
-both `pro` batches, so a few points between memory systems — e.g. soft-gate's
-12 % on `pro` — is noise), and self-verify (using the LLM as its
-own verifier) collapses to **0 %** everywhere: handed its own raw inputs, the
-model recomputes them wrong, so the second pass actively corrupts the proposal.
-Only Labwright's deterministic calculators + verifier reach usable > 0 %.
+The memory systems never produce a usable *design* on either set, and the two
+naive "fixes" do not help. The only usable memory-system entries anywhere are
+the three single-arithmetic-step goals on the 24-reading set — a residence time
+with geometry given, a channel volume, a mean velocity — where the goal supplies
+every input and no design choice remains (`pro` bare and `flash` soft-gate both
+reach 12 % there, `pro` soft-gate 8 %). On every goal that requires choosing
+geometry and flow to hit a target, all memory systems score 0 % usable, both
+sets, all three models. Soft-gate (a "re-check yourself" prompt) occasionally
+completes one of those three single-step goals but never rescues a design;
+self-verify (using the LLM as its own verifier) collapses to **0 %**
+everywhere: handed its own raw inputs, the model recomputes them wrong, so the
+second pass actively corrupts the proposal. Only Labwright's deterministic
+calculators + verifier reach usable > 0 % on design goals. thoth-8b — the one
+open-weights competitor runnable on this hardware — sits at the very bottom of
+the table: 0 % usable on every memory system on both sets, mostly because its
+trained protocol *prose* fails structured extraction (23/24 reading goals under
+soft-gate unverifiable). Training on protocol text does not teach arithmetic
+checkability.
 
 The blind-set drop is the honest headline: when the goal does not hand over the
 target, Labwright's verified designs hit the wrong physiology. On the expanded
@@ -153,8 +170,8 @@ target, Labwright's verified designs hit the wrong physiology. On the expanded
 `pro` recovers 4 (venular 0.3 Pa, lung 0.03 Pa, HepG2 seeding 4000, BBB 1.0 Pa).
 Both models correctly select the two prompt-backed entries they are primed for
 (lung, BBB) yet both miss the third prompt-backed entry (liver, 0.05 Pa): they
-propose the "default chip" 0.10 Pa — inside the prompt's 0.05–0.15 Pa range but
-not the low-shear convention. Cold entries are mostly wrong (recovery = relative
+propose the mid-range 0.10 Pa — inside the prompt's 0.05–0.15 Pa range but not
+the low-shear convention. Cold entries are mostly wrong (recovery = relative
 error of the proposed shear vs the target): kidney PTEC 0.02 Pa is proposed at
 0.50 Pa (`flash`, recovery 24) / 0.20 Pa (`pro`, recovery 9 — treating
 dyn/cm² as Pa), gut epithelium 0.002 Pa at 0.01 Pa (recovery 4), retinal
@@ -164,11 +181,19 @@ off by 75 %, and both seeding densities off by a third to a half. The gate
 never failed — every plan was internally verified — it just could not supply
 domain knowledge the model did not have.
 
-Bare-LLM's honest self-consistent numbers (21 %/8 % reading) are much lower
-than the first committed figures (62 %/50 %). The earlier figures counted
-unverifiable answers as consistent; `recompute_honest.py` applies the same
-unverifiable=1.0 rule the Labwright path already used, and the recorded
-`reported` values were not re-run or changed.
+Two corrections make these numbers what they are, both reported honestly. First,
+earlier committed figures counted unverifiable answers (geometry and flow with
+no derived numbers to check) as consistent; `recompute_honest.py` applies the
+same unverifiable=1.0 rule the Labwright path already used, dropping the
+reading-set self-consistent figures to 0 %/12 % (`flash`/`pro`). Second, a
+prompt regression briefly dropped the *goal text* from the bare-family prompts
+(a `+ goal` suffix was lost in a refactor), so memory-system runs from that
+period asked the model "Goal: " with nothing after it; the model emitted the
+same template chip for every goal. The regression is pinned by three targeted
+tests (`../tests/test_benchmark_prompts.py`), and **every memory-system number
+in this table is from a single post-fix re-run** at temperature 0.2. The
+Labwright numbers are the committed run, preserved verbatim — Labwright's agent
+always received the goal through a separate code path and was never affected.
 
 ### Ablation: thinking on vs off
 
@@ -222,8 +247,12 @@ Labwright) are benchmarked and not the published systems named in the manuscript
   protocol text with a structured reward. We run it through the **identical
   harness** (same gold goals, same bare prompt, same JSON extraction, same
   scoring — `eval/run_thoth.py`), a prompt-only comparison because Thoth's native
-  output is protocol prose, not design JSON. The run is queued on the GPU; a
-  `thoth-8b` row lands in the tables when it completes.
+  output is protocol prose, not design JSON. The result is the cleanest row in
+  the tables: thoth-8b scores 0 %/0 %/1.000 on all three memory systems. Its
+  trained output is prose, and forced through the same schema it mostly emits
+  nothing checkable (on the reading set 18/24 bare goals unverifiable, 23/24
+  under soft-gate) and the rest contradicts its own geometry. Training on
+  protocol text does not teach arithmetic checkability.
 
 ## Run
 
