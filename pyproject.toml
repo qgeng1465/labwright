@@ -47,7 +47,7 @@ Documentation = "https://github.com/qgeng1465/labwright/blob/main/README.md"
 include = ["labwright*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "eval"]
 addopts = "-q"
 
 [tool.ruff]
