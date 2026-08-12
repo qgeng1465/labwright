@@ -18,6 +18,9 @@ data/embeddings/
 *.key
 token.txt
 
+# Paper (kept local only — submission in progress, not public)
+paper/manuscript.md
+
 # Models & caches (large)
 models/
 *.gguf

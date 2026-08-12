@@ -261,7 +261,8 @@ either set are the three single-arithmetic-step goals on the 24-reading set
 (12 % for `pro` bare / `flash` soft-gate): goals with no design choice. A point
 or two between memory systems is sampling noise; the qualitative ordering is
 not. The `thoth-8b` rows are the prompt-only comparison against the open-weights
-8B protocol generator ([§3.4 in the manuscript](paper/manuscript.md)): it has no
+8B protocol generator (why Thoth is the only runnable competitor, and why MMFT
+and BPL-COGEN are not, is on the ground in [`eval/README.md`](eval/README.md#benchmarking-scope-why-these-systems-and-not-the-named-ones)): it has no
 Labwright mode (its native output is protocol prose), and run through the
 identical harness it produces nothing checkable — 0 % usable on every memory
 system on both sets.*
@@ -331,7 +332,7 @@ calculators didn't check.
 - [x] Bare-LLM vs Labwright benchmark on 24 gold entries (flash + pro); see *Benchmark*
 - [x] Reverse-verification batch: `eval/run_verify_batch.py` over published protocols + labelled controls
 - [x] Colab notebook + HF Space scaffolding (`colab/`, `hf_space/`)
-- [x] Preprint draft in `paper/manuscript.md` (numbers from the committed benchmark results)
+- [x] Preprint drafted (kept local-only while in submission; the benchmark evidence and figures ship in this repo)
 - [x] Pin all gold anchors (real DOIs / explicit self-consistent labels); render the paper figure (`paper/fig_benchmark.py`)
 - [ ] Publish the HF Space (needs a HF token; see `hf_space/PUBLISH.md`)
 - [ ] Domain package #2 (cell culture); fine-tune a small extractor on the V100
