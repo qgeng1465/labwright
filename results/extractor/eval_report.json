@@ -1,0 +1,16 @@
+{
+  "n_eval_rows": 400,
+  "n_blind": 12,
+  "systems": {
+    "fine-tuned-1.5B": {
+      "n_rows": 400,
+      "n_blind": 12,
+      "json_parse_rate": 1.0,
+      "schema_ok_rate": 0.9976,
+      "consistency_rate": 0.9976,
+      "field_recovery_ok_rate": 0.72,
+      "mean_field_rel_error": 0.00586,
+      "target_recovery_rate": 0.0
+    }
+  }
+}
