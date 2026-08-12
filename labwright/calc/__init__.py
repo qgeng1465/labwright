@@ -9,12 +9,13 @@ Submodules
 ----------
 microfluidics : channel geometry, flow, shear stress, pressure, oxygen delivery
 cell          : seeding, growth, expansion, confluence
+culture       : plate-based culture (wells, seeding, counting, viability)
 dosing        : molarity, dilution, drug preparation
 stats         : sample size, power, replicates, effect size
 units         : pint-based unit registry and conversion helpers
 """
 
-from labwright.calc import cell, dosing, microfluidics, stats  # noqa: F401
+from labwright.calc import cell, culture, dosing, microfluidics, stats  # noqa: F401
 from labwright.calc.units import Q, ureg  # noqa: F401
 
-__all__ = ["cell", "dosing", "microfluidics", "stats", "Q", "ureg"]
+__all__ = ["cell", "culture", "dosing", "microfluidics", "stats", "Q", "ureg"]

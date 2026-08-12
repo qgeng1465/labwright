@@ -8,7 +8,8 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from labwright.calc import microfluidics as mf  # noqa: E402
-from labwright.schema.design import DesignPlan  # noqa: E402
+from labwright.design import derive_culture  # noqa: E402
+from labwright.schema.design import CulturePlan, DesignPlan  # noqa: E402
 from eval.benchmark import GoldExperiment, hallucination_rate, parameter_recovery  # noqa: E402
 
 
@@ -55,6 +56,7 @@ def test_parameter_recovery_relative_error():
 # --- competitor baselines (no LLM — prompt structure and scoring are pure) ---
 
 from eval.benchmark import (  # noqa: E402
+    bare_checkable,
     bare_hallucination,
     bare_prompt_for,
     evaluate,
@@ -182,3 +184,64 @@ def test_evaluate_supports_competitor_systems():
         assert summary[sys]["hallucination_rate"] == 0.0
     assert summary["per_entry"][0]["bare"]["valid"] is True
     assert "labwright" not in summary
+
+
+# --- plate-culture domain: bare metrics are culture-aware, not flow-only ---
+
+_CULTURE_GOLD = GoldExperiment(
+    id="c1",
+    goal="Seed a 96-well plate at 1e4 cells/cm^2; report cells per well and "
+    "the standard medium volume per well.",
+    expected={"seed_per_well": 3200.0, "medium_volume_per_well_ml": 0.17},
+    source="Corning plate table",
+)
+
+
+def test_bare_prompt_for_culture_uses_plate_keys():
+    prompt = bare_prompt_for(_CULTURE_GOLD)
+    assert "plate_format" in prompt
+    assert "seed_per_well" in prompt
+    assert "width_um" not in prompt  # no flow keys for a culture goal
+
+
+def test_bare_hallucination_culture_consistent():
+    extracted = {
+        "plate_format": "96", "seeding_density_cells_cm2": 1e4, "wells": 1,
+        "seed_per_well": 3200.0, "medium_volume_per_well_ml": 0.17,
+    }
+    assert bare_hallucination(extracted) == 0.0
+    assert bare_checkable(extracted) is True
+
+
+def test_bare_hallucination_culture_wrong():
+    extracted = {
+        "plate_format": "96", "seeding_density_cells_cm2": 1e4, "wells": 1,
+        "seed_per_well": 9999.0,  # does not equal 1e4 × 0.32
+    }
+    assert bare_hallucination(extracted) > 0
+
+
+def test_bare_hallucination_culture_no_derived_is_unverifiable():
+    # plate+density but no culture derived number → nothing checkable → 1.0
+    extracted = {"plate_format": "96", "seeding_density_cells_cm2": 1e4}
+    assert bare_hallucination(extracted) == 1.0
+    assert bare_checkable(extracted) is False
+
+
+def test_parameter_recovery_culture_exact():
+    plan = _verified_plan()
+    plan.culture = CulturePlan(**derive_culture(
+        dict(plate_format="96", wells=1, cell_type="HepG2",
+             seeding_density_cells_cm2=1e4)
+    ))
+    errs = parameter_recovery(_CULTURE_GOLD, plan)
+    assert errs["seed_per_well"] == pytest.approx(0.0)
+    assert errs["medium_volume_per_well_ml"] == pytest.approx(0.0)
+
+
+def test_hallucination_rate_ignores_culture_when_absent():
+    # A chip-only plan must not be scored against culture fields.
+    plan = _verified_plan(shear=1.0)  # flow error present
+    plan.culture = None
+    rate = hallucination_rate(plan)
+    assert 0 < rate < 1  # flow fields counted, culture fields not in denominator

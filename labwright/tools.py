@@ -21,7 +21,7 @@ from typing import Any, Callable
 
 from pydantic import BaseModel, Field
 
-from labwright.calc import cell, dosing, microfluidics as mf, stats
+from labwright.calc import cell, culture, dosing, microfluidics as mf, stats
 from labwright.published import verify_published_protocol
 
 # ---------------------------------------------------------------------------
@@ -129,6 +129,53 @@ class ConfluenceTimeParams(BaseModel):
     seed_count: float = Field(gt=0, description="Seeded cell count")
     confluence_count: float = Field(gt=0, description="Cell count at desired confluence")
     doubling_time_h: float = Field(gt=0, description="Doubling time in hours")
+
+
+class PlateCellPerWellParams(BaseModel):
+    seed_density_cells_cm2: float = Field(gt=0, description="Seeding density in cells/cm^2 (HepG2 growth-phase 2e4-6.3e4, primary hepatocyte sandwich 1.5e5)")
+    plate_format: str = Field(description="Plate format: 6, 12, 24, 48 or 96 (e.g. '96-well')")
+
+
+class PlateMediumVolumeParams(BaseModel):
+    plate_format: str = Field(description="Plate format: 6, 12, 24, 48 or 96")
+    volume_per_area_ml_cm2: float | None = Field(
+        default=None, gt=0,
+        description="Optional override: mL of medium per cm^2 of growth area (for shallow-well / low-volume protocols)",
+    )
+
+
+class HemocytometerParams(BaseModel):
+    avg_cells_per_square: float = Field(gt=0, description="Mean cells per 1 mm^2 corner square of the hemocytometer")
+    dilution_factor: float = Field(ge=1, description="Sample dilution factor (1 = neat)")
+
+
+class TrypanViabilityParams(BaseModel):
+    live_cells: float = Field(ge=0, description="Live (unstained) cell count")
+    dead_cells: float = Field(ge=0, description="Dead (blue-stained) cell count")
+
+
+class ConfluenceToCellsParams(BaseModel):
+    confluence_pct: float = Field(gt=0, le=100, description="Target confluence in percent")
+    confluent_density_cells_cm2: float = Field(gt=0, description="Cells/cm^2 at 100% confluence for this cell type")
+    area_cm2: float = Field(gt=0, description="Culture area in cm^2")
+
+
+class CellsToConfluenceParams(BaseModel):
+    cell_count: float = Field(gt=0, description="Observed/predicted cell count")
+    confluent_density_cells_cm2: float = Field(gt=0, description="Cells/cm^2 at 100% confluence for this cell type")
+    area_cm2: float = Field(gt=0, description="Culture area in cm^2")
+
+
+class PassageSplitParams(BaseModel):
+    cells_at_harvest: float = Field(gt=0, description="Cells harvested per well at passage")
+    seed_density_cells_cm2: float = Field(gt=0, description="Reseeding density in cells/cm^2")
+    plate_format: str = Field(description="Plate format for reseeding (6/12/24/48/96)")
+
+
+class MoiVirusParams(BaseModel):
+    moi: float = Field(gt=0, description="Multiplicity of infection (PFU/cell)")
+    cell_count: float = Field(gt=0, description="Cells at infection")
+    titer_pfu_ml: float = Field(gt=0, description="Virus titer in PFU/mL")
 
 
 class MolarityParams(BaseModel):
@@ -273,6 +320,86 @@ register_tool(
     cell.time_to_confluence,
     "cell",
     units_out="h",
+)
+
+register_tool(
+    PlateCellPerWellParams,
+    "cells_per_well",
+    "Cells to seed per well on a standard multi-well plate at a given density: N = density × well area. "
+    "Plan plate-based seeding (6/12/24/48/96-well).",
+    culture.cells_per_well,
+    "cell",
+    units_out="cells/well",
+)
+
+register_tool(
+    PlateMediumVolumeParams,
+    "medium_volume_per_well",
+    "Standard working medium volume for one well of a multi-well plate (Corning/Falcon recommended "
+    "volume), or area × a custom mL/cm^2 override for low-volume protocols.",
+    culture.medium_volume_per_well,
+    "cell",
+    units_out="mL",
+)
+
+register_tool(
+    HemocytometerParams,
+    "hemocytometer_count",
+    "Cell concentration from a hemocytometer: mean cells per corner square × dilution × 1e4 (each "
+    "square holds 0.1 µL). Use when a protocol states a hemocytometer or Neubauer count.",
+    culture.hemocytometer_count,
+    "cell",
+    units_out="cells/mL",
+)
+
+register_tool(
+    TrypanViabilityParams,
+    "trypan_blue_viability",
+    "Viability percent from a trypan-blue live/dead count: live/(live+dead) × 100. Use when a thawed "
+    "or passaged suspension is checked before plating.",
+    culture.trypan_blue_viability,
+    "cell",
+    units_out="%",
+)
+
+register_tool(
+    ConfluenceToCellsParams,
+    "confluence_to_cell_count",
+    "Cell count implied by a target confluence: (pct/100) × confluent density × area. Convert a "
+    "percent-confluence harvest goal into the cell number it requires.",
+    culture.confluence_to_cell_count,
+    "cell",
+    units_out="cells",
+)
+
+register_tool(
+    CellsToConfluenceParams,
+    "cell_count_to_confluence",
+    "Confluence percent implied by a cell count: N/(confluent density × area) × 100. Predict whether "
+    "a culture will be over-confluent at harvest.",
+    culture.cell_count_to_confluence,
+    "cell",
+    units_out="%",
+)
+
+register_tool(
+    PassageSplitParams,
+    "passage_split_ratio",
+    "Split ratio (fold) when passaging a harvested culture onto a plate at a reseeding density. "
+    "Use to plan subculture from a counted harvest.",
+    culture.passage_split_ratio,
+    "cell",
+    units_out="fold",
+)
+
+register_tool(
+    MoiVirusParams,
+    "moi_virus_volume",
+    "Virus stock volume for a target multiplicity of infection: MOI × cells / titer. Plan "
+    "transduction / infection volumes from a stated MOI.",
+    culture.moi_virus_volume,
+    "cell",
+    units_out="mL",
 )
 
 register_tool(

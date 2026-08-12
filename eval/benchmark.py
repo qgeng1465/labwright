@@ -41,7 +41,21 @@ _DERIVED_KEYS = ["shear_pa", "reynolds", "pressure_drop_pa", "residence_time_s",
                  "channel_volume_ul", "mean_velocity_mms"]
 _RAW_KEYS = ["width_um", "height_um", "length_mm", "flow_rate_uLmin", "viscosity_pas",
              "density_kgm3", "seed_count", "seeding_density_cells_cm2",
-             "culture_area_cm2", "dmso_fraction_vv", "n_per_group"]
+             "culture_area_cm2", "dmso_fraction_vv", "n_per_group",
+             "plate_format", "wells"]
+
+#: Plate-culture raw inputs and derived fields (WS1 domain).
+_CULTURE_RAW_KEYS = [
+    "plate_format", "wells", "seeding_density_cells_cm2", "viability_pct",
+    "confluent_density_cells_cm2", "doubling_time_h", "culture_duration_h",
+]
+_CULTURE_DERIVED_KEYS = [
+    "seed_per_well", "total_seed_count", "medium_volume_per_well_ml",
+    "total_medium_ml", "expected_confluence_pct",
+]
+#: The minimal raw set a bare model must report for its culture numbers to be
+#: cross-checkable (analogue of _CONSISTENCY_KEYS for the plate domain).
+_CULTURE_CONSISTENCY_KEYS = ["plate_format", "seeding_density_cells_cm2", "wells"]
 
 
 @dataclass
@@ -98,16 +112,33 @@ def parameter_recovery(gold: GoldExperiment, plan: DesignPlan) -> dict[str, floa
         errs["dmso_fraction_vv"] = relative_error(plan.dosing.dmso_fraction_vv, gold.expected["dmso_fraction_vv"])
     if "n_per_group" in gold.expected and plan.stats is not None:
         errs["n_per_group"] = relative_error(float(plan.stats.n_per_group), gold.expected["n_per_group"])
+    # Plate-culture domain (WS1): expected keys map onto CulturePlan fields.
+    if plan.culture is not None:
+        culture_map = {
+            "seed_per_well": plan.culture.seed_per_well,
+            "total_seed_count": plan.culture.total_seed_count,
+            "medium_volume_per_well_ml": plan.culture.medium_volume_per_well_ml,
+            "total_medium_ml": plan.culture.total_medium_ml,
+            "expected_confluence_pct": plan.culture.expected_confluence_pct,
+            "wells": float(plan.culture.wells),
+        }
+        for key, value in culture_map.items():
+            if key in gold.expected and value is not None:
+                errs[key] = relative_error(value, gold.expected[key])
     return errs
 
 
 #: Every derived field the verifier can reject, across all domains. The flow
-#: six plus cell seeding, dosing and statistics. ``hallucination_rate`` counts
-#: errors on whichever of these the plan actually carries.
+#: six plus cell seeding, dosing, statistics and the plate-culture set.
+#: ``hallucination_rate`` counts errors on whichever of these the plan actually
+#: carries.
 _DERIVED_FIELDS = [
     "derived.shear_pa", "derived.reynolds", "derived.pressure_drop_pa",
     "derived.residence_time_s", "derived.channel_volume_ul", "derived.mean_velocity_mms",
     "cells.seed_count", "dosing.dmso_fraction_vv", "stats.n_per_group",
+    "culture.seed_per_well", "culture.total_seed_count",
+    "culture.medium_volume_per_well_ml", "culture.total_medium_ml",
+    "culture.expected_confluence_pct",
 ]
 
 
@@ -116,7 +147,8 @@ def hallucination_rate(plan: DesignPlan) -> float:
 
     A Labwright design's derived numbers come from the calculators, so this is
     0 by construction; the metric is what makes that checkable. Fields the plan
-    does not carry (no dosing/stats) are excluded from the denominator.
+    does not carry (no dosing/stats, no plate culture) are excluded from the
+    denominator.
     """
     issues = verify_design(plan)
     if not has_errors(issues):
@@ -127,6 +159,11 @@ def hallucination_rate(plan: DesignPlan) -> float:
         present.discard("dosing.dmso_fraction_vv")
     if plan.stats is None:
         present.discard("stats.n_per_group")
+    if plan.culture is None:
+        for f in ("culture.seed_per_well", "culture.total_seed_count",
+                  "culture.medium_volume_per_well_ml", "culture.total_medium_ml",
+                  "culture.expected_confluence_pct"):
+            present.discard(f)
     return len(errored & present) / max(len(present), 1)
 
 
@@ -138,13 +175,30 @@ def hallucination_rate(plan: DesignPlan) -> float:
 _CONSISTENCY_KEYS = ["width_um", "height_um", "length_mm", "flow_rate_uLmin", "viscosity_pas", "density_kgm3"]
 
 
+def _is_culture_gold(gold: GoldExperiment) -> bool:
+    """True when the gold's expected keys are plate-culture derived numbers."""
+    return bool(set(gold.expected) & set(_CULTURE_DERIVED_KEYS))
+
+
+def _prompt_keys_for(gold: GoldExperiment) -> list[str]:
+    """Key set a bare model must report, chosen per gold domain.
+
+    Flow goals need geometry+flow raws (``_CONSISTENCY_KEYS``); plate-culture
+    goals need plate_format + seeding density + wells to make the derived
+    culture numbers re-checkable. Everything else is the goal's own targets.
+    """
+    if _is_culture_gold(gold):
+        return sorted(set(gold.expected) | set(_CULTURE_CONSISTENCY_KEYS))
+    return sorted(set(gold.expected) | set(_CONSISTENCY_KEYS))
+
+
 def bare_prompt_for(gold: GoldExperiment) -> str:
     """A tailored prompt asking for exactly the numbers this goal needs.
 
     Keep the key set minimal so the model's reasoning stays short enough to
     finish within the token budget — a light prompt is fairer than a 17-key one.
     """
-    keys = sorted(set(gold.expected) | set(_CONSISTENCY_KEYS))
+    keys = _prompt_keys_for(gold)
     return (
         "You are a wet-lab design expert. For the goal below, compute the design "
         "numbers yourself and return a single flat JSON object with ONLY these keys "
@@ -164,17 +218,30 @@ def soft_gate_prompt_for(gold: GoldExperiment) -> str:
     deterministic verifier. If this works, the whole hard-gate machinery is
     unnecessary; the benchmark exists to show it does not.
     """
-    keys = sorted(set(gold.expected) | set(_CONSISTENCY_KEYS))
+    keys = _prompt_keys_for(gold)
+    if _is_culture_gold(gold):
+        check = (
+            "BEFORE you finalize: re-derive every derived culture number "
+            f"({', '.join(_CULTURE_DERIVED_KEYS)}) from your own plate_format/"
+            "seeding_density_cells_cm2/wells using the standard multi-well plate "
+            "dimensions, hemocytometer and viability formulas, and correct any "
+            "value that does not match."
+        )
+    else:
+        check = (
+            "BEFORE you finalize: re-derive every derived flow number "
+            f"({', '.join(_DERIVED_KEYS)}) from your own width_um/height_um/"
+            "length_mm/flow_rate_uLmin/viscosity_pas/density_kgm3 using the standard "
+            "rectangular-channel formulas, and correct any value that does not match."
+        )
     return (
         "You are a wet-lab design expert. For the goal below, compute the design "
         "numbers yourself and return a single flat JSON object with ONLY these keys "
         "(use exactly these names; do the arithmetic; omit nothing):\n"
         + ", ".join(keys)
         + ".\n"
-        "BEFORE you finalize: re-derive every derived flow number "
-        f"({', '.join(_DERIVED_KEYS)}) from your own width_um/height_um/"
-        "length_mm/flow_rate_uLmin/viscosity_pas/density_kgm3 using the standard "
-        "rectangular-channel formulas, and correct any value that does not match.\n"
+        + check
+        + "\n"
         "Return ONLY the JSON object (no prose, no markdown fences).\n\nGoal: "
         + gold.goal
     )
@@ -231,7 +298,7 @@ def run_bare_llm(gold: GoldExperiment, chat: Callable, attempts: int = 3) -> dic
     budget artifact, not a competence verdict). Returns a dict mapping every
     key to a float, or ``None`` when the model never reported it.
     """
-    keys = sorted(set(gold.expected) | set(_CONSISTENCY_KEYS))
+    keys = _prompt_keys_for(gold)
     prompt = bare_prompt_for(gold)
     empty = {k: None for k in keys}
     for _ in range(attempts):
@@ -255,7 +322,7 @@ def run_soft_gate(gold: GoldExperiment, chat: Callable, attempts: int = 3) -> di
     changes. So any measured difference between bare and soft-gate is caused by
     the instruction to self-check, not by parsing or scoring.
     """
-    keys = sorted(set(gold.expected) | set(_CONSISTENCY_KEYS))
+    keys = _prompt_keys_for(gold)
     prompt = soft_gate_prompt_for(gold)
     empty = {k: None for k in keys}
     for _ in range(attempts):
@@ -312,32 +379,32 @@ def bare_recovery(extracted: dict[str, float | None], gold: GoldExperiment) -> d
 def bare_checkable(extracted: dict[str, float | None]) -> bool:
     """Whether the bare answer reported enough to cross-check any derived number.
 
-    Verifiable = geometry + flow *and* at least one derived flow metric. A bare
-    answer that only states the goal's headline number (e.g. ``seed_count``)
-    without the raw inputs that produce it cannot be cross-checked.
+    Flow-verifiable = geometry + flow *and* at least one derived flow metric.
+    Culture-verifiable = plate_format + seeding density (+ wells) *and* at
+    least one derived culture number. A bare answer that only states a headline
+    number (e.g. ``seed_count``) without the raw inputs that produce it cannot
+    be cross-checked.
+    """
+    chip = (extracted.get("width_um"), extracted.get("height_um"), extracted.get("length_mm"))
+    flow_rate = extracted.get("flow_rate_uLmin")
+    if None not in chip and flow_rate is not None:
+        return any(extracted.get(k) is not None for k in _DERIVED_KEYS)
+    if extracted.get("plate_format") and extracted.get("seeding_density_cells_cm2") is not None:
+        return any(extracted.get(k) is not None for k in _CULTURE_DERIVED_KEYS)
+    return False
+
+
+def _flow_hallucination(extracted: dict[str, float | None]) -> float | None:
+    """Cross-check reported flow numbers against the model's own geometry/flow.
+
+    Returns the error fraction, or ``None`` when the answer is not
+    flow-verifiable (no geometry+flow, or geometry+flow but no derived flow
+    numbers at all — the "nothing checkable" convention maps to 1.0 upstream).
     """
     chip = (extracted.get("width_um"), extracted.get("height_um"), extracted.get("length_mm"))
     flow_rate = extracted.get("flow_rate_uLmin")
     if None in chip or flow_rate is None:
-        return False
-    return any(extracted.get(k) is not None for k in _DERIVED_KEYS)
-
-
-def bare_hallucination(extracted: dict[str, float | None]) -> float:
-    """Fraction of reported derived numbers inconsistent with the model's own
-    geometry/flow.
-
-    No geometry+flow, or geometry+flow but **no derived flow numbers at all**,
-    → 1.0. The second case matters: a design whose every number is typed from
-    memory and cannot be re-derived from the model's own inputs is exactly the
-    case Labwright refuses to trust ("numbers you type are not trusted"). This
-    mirrors the Labwright convention where a run that never submits a plan is
-    scored hallucination 1.0.
-    """
-    chip = (extracted.get("width_um"), extracted.get("height_um"), extracted.get("length_mm"))
-    flow_rate = extracted.get("flow_rate_uLmin")
-    if None in chip or flow_rate is None:
-        return 1.0
+        return None
     viscosity = extracted.get("viscosity_pas") or 1e-3
     density = extracted.get("density_kgm3") or 1000.0
     w, h, L = chip[0], chip[1], chip[2]
@@ -352,20 +419,79 @@ def bare_hallucination(extracted: dict[str, float | None]) -> float:
         }
     except ValueError:
         # Degenerate reported inputs (flow 0, or negative / non-finite geometry
-        # or flow) cannot be cross-checked against the model's own inputs — the
-        # same unverifiable=1.0 convention as a design with no derived numbers.
-        return 1.0
+        # or flow) cannot be cross-checked — unverifiable.
+        return None
     if not all(math.isfinite(v) for v in computed.values()):
-        return 1.0
+        return None
     claimed = {k: extracted.get(k) for k in _DERIVED_KEYS}
     present = [k for k in _DERIVED_KEYS if claimed[k] is not None]
     if not present:
-        return 1.0  # no derived number reported → nothing checkable → untrustworthy
+        return None  # no derived flow number reported → nothing to check
     wrong = sum(
         1 for k in present
         if abs(claimed[k] - computed[k]) > BARE_CONSISTENCY_TOL * max(abs(computed[k]), 1e-12)
     )
     return wrong / len(present)
+
+
+def _culture_hallucination(extracted: dict[str, float | None]) -> float | None:
+    """Cross-check reported plate-culture numbers against the model's own raws.
+
+    Recomputes seed_per_well / total_seed_count / medium_volume_per_well_ml /
+    total_medium_ml from the reported plate_format + seeding density (+ wells)
+    with the culture calculators. Returns the error fraction, or ``None`` when
+    the answer is not culture-verifiable.
+    """
+    from labwright.calc import culture as calc_culture
+
+    plate = extracted.get("plate_format")
+    density = extracted.get("seeding_density_cells_cm2")
+    if not plate or density is None:
+        return None
+    try:
+        wells = extracted.get("wells") if extracted.get("wells") is not None else 1
+        per_well = calc_culture.cells_per_well(density, plate)
+        med = calc_culture.medium_volume_per_well(plate)
+        computed = {
+            "seed_per_well": per_well,
+            "total_seed_count": per_well * wells,
+            "medium_volume_per_well_ml": med,
+            "total_medium_ml": med * wells,
+        }
+    except (ValueError, TypeError):
+        return None
+    if not all(math.isfinite(v) for v in computed.values()):
+        return None
+    claimed = {k: extracted.get(k) for k in _CULTURE_DERIVED_KEYS}
+    present = [k for k in _CULTURE_DERIVED_KEYS if claimed[k] is not None]
+    if not present:
+        return None  # no derived culture number reported → nothing to check
+    wrong = sum(
+        1 for k in present
+        if abs(claimed[k] - computed[k]) > BARE_CONSISTENCY_TOL * max(abs(computed[k]), 1e-12)
+    )
+    return wrong / len(present)
+
+
+def bare_hallucination(extracted: dict[str, float | None]) -> float:
+    """Fraction of reported derived numbers inconsistent with the model's own raw inputs.
+
+    Checks whichever domain the answer is verifiable in (flow, then culture).
+    An answer that is not verifiable in either — no geometry+flow, or
+    geometry+flow but **no derived flow numbers at all**, or no plate+density
+    and no culture numbers — is scored 1.0. The second case matters: a design
+    whose every number is typed from memory and cannot be re-derived from the
+    model's own inputs is exactly the case Labwright refuses to trust ("numbers
+    you type are not trusted"). This mirrors the Labwright convention where a
+    run that never submits a plan is scored hallucination 1.0.
+    """
+    rate = _flow_hallucination(extracted)
+    if rate is not None:
+        return rate
+    rate = _culture_hallucination(extracted)
+    if rate is not None:
+        return rate
+    return 1.0
 
 
 def run_labwright(goal: str, agent_factory: Callable) -> tuple[DesignPlan | None, str | None]:

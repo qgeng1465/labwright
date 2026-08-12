@@ -1,0 +1,90 @@
+[
+  {
+    "id": "plate-96well-hepg2-seed",
+    "goal": "Seed HepG2 cells in a 96-well plate at a moderate growth-phase seeding density of 1e4 cells/cm^2. How many cells go into each well, and what is the standard recommended working medium volume per well?",
+    "expected": {"seed_per_well": 3200, "medium_volume_per_well_ml": 0.17},
+    "source": "96-well growth area 0.32 cm^2 and recommended working volume 0.17 mL — standard Corning/Falcon multi-well plate table. HepG2 growth-phase seeding window 2e4-6.3e4 cells/cm^2 — Sci Rep 2021, doi:10.1038/s41598-021-81733-3; 1e4 cells/cm^2 is a moderate low-density choice below that window (goal-stated density). seed_per_well = density × well area = 1e4 × 0.32."
+  },
+  {
+    "id": "plate-6well-phh-seed",
+    "goal": "Primary human hepatocytes in collagen-sandwich culture are plated in a 6-well plate at 1.5e5 cells/cm^2 across 6 wells. How many cells per well, and what is the total medium volume needed for all 6 wells?",
+    "expected": {"seed_per_well": 1.44e6, "total_medium_ml": 16.2},
+    "source": "Primary human hepatocyte sandwich-culture plating density 1.5e5 cells/cm^2 — Bioengineering 2023;10(2):131, doi:10.3390/bioengineering10020131. 6-well area 9.6 cm^2 and recommended working volume 2.7 mL — Corning/Falcon plate table. seed_per_well = 1.5e5 × 9.6 = 1.44e6; total medium = 2.7 × 6 = 16.2 mL."
+  },
+  {
+    "id": "plate-hemocytometer-seed-96well",
+    "goal": "A thawed cell suspension is counted on a hemocytometer: a mean of 32 cells per 1 mm^2 corner square at a 1:2 dilution. With 0.45 mL of this suspension, how many wells of a 96-well plate can be seeded at 1e4 cells/cm^2?",
+    "expected": {"wells": 90},
+    "source": "Hemocytometer concentration = mean cells/square × dilution × 1e4 — CSH Protocols 2008, doi:10.1101/pdb.prot4498 (each corner square is 0.1 uL). conc = 32 × 2 × 1e4 = 6.4e5 cells/mL; total = 6.4e5 × 0.45 = 2.88e5; per well at 1e4 cells/cm^2 on 96-well (0.32 cm^2) = 3200; wells = 2.88e5 / 3200 = 90."
+  },
+  {
+    "id": "plate-confluence-hepg2-72h",
+    "goal": "HepG2 is seeded in a 96-well plate at 2e4 cells/cm^2 (doubling time 30 h; confluence density 1e6 cells/cm^2) and cultured for 72 h. What confluence (%) is predicted at harvest?",
+    "expected": {"expected_confluence_pct": 10.556063},
+    "source": "Exponential growth N(t) = N0 · 2^(t/td) and confluence = N / (confluent density × area) × 100 — computed from the goal's stated inputs (self-consistent; confluence density is an input, never assumed). per well = 2e4 × 0.32 = 6400; N(72) = 6400 × 2^2.4 = 33779.4; confluence = 33779.4 / (1e6 × 0.32) × 100 = 10.556%."
+  },
+  {
+    "id": "plate-24well-seed-from-count",
+    "goal": "A suspension is resuspended and counted; you decide to reseed a 24-well plate at 8e4 cells/cm^2 (a subconfluent recovery density). How many cells per well, and what is the standard recommended working medium volume per well?",
+    "expected": {"seed_per_well": 152000, "medium_volume_per_well_ml": 0.68},
+    "source": "24-well growth area 1.9 cm^2 and recommended working volume 0.68 mL — Corning/Falcon plate table. seed_per_well = 8e4 × 1.9 = 152000."
+  },
+  {
+    "id": "plate-split-replating",
+    "goal": "At passage you harvest a confluent 6-well and plate four fresh 6-well wells at 2e4 cells/cm^2. What total number of cells is reseeded across the four wells?",
+    "expected": {"total_seed_count": 768000},
+    "source": "6-well area 9.6 cm^2 — Corning/Falcon plate table. Per fresh well = 2e4 × 9.6 = 1.92e5; across 4 wells = 1.92e5 × 4 = 7.68e5."
+  },
+  {
+    "id": "plate-48well-medium",
+    "goal": "A protocol calls for a 48-well plate. What is the standard recommended working medium volume per well?",
+    "expected": {"medium_volume_per_well_ml": 0.34},
+    "source": "48-well recommended working volume 0.34 mL — Corning/Falcon plate table."
+  },
+  {
+    "id": "plate-thaw-viability-6well",
+    "goal": "A vial of HepG2 banks 1e6 cells and thaws at 96% viability. Using every viable cell, how many wells of a 6-well plate can be seeded at 1e4 cells/cm^2?",
+    "expected": {"wells": 10},
+    "source": "Viable = 1e6 × 0.96 = 9.6e5; 6-well area 9.6 cm^2 — Corning/Falcon plate table; per well at 1e4 cells/cm^2 = 96000; wells = 9.6e5 / 96000 = 10."
+  },
+  {
+    "id": "plate-12well-seed-hepg2",
+    "goal": "Seed HepG2 cells in a 12-well plate at 1e5 cells/cm^2. How many cells per well, and what is the standard recommended working medium volume per well?",
+    "expected": {"seed_per_well": 380000, "medium_volume_per_well_ml": 1.35},
+    "source": "12-well growth area 3.8 cm^2 and recommended working volume 1.35 mL — Corning/Falcon plate table. seed_per_well = 1e5 × 3.8 = 3.8e5."
+  },
+  {
+    "id": "plate-96well-total-medium",
+    "goal": "A screening assay uses all 96 wells of a 96-well plate at the standard recommended working volume. What is the total medium volume across the plate?",
+    "expected": {"total_medium_ml": 16.32},
+    "source": "96-well recommended working volume 0.17 mL — Corning/Falcon plate table. Total = 0.17 × 96 = 16.32 mL."
+  },
+  {
+    "id": "blind-6well-phh-sandwich-seed",
+    "goal": "Seed primary human hepatocytes in collagen-sandwich culture on a 6-well plate at the standard published plating density, across 6 wells. How many cells per well, and what is the total medium volume for the 6 wells?",
+    "expected": {"seed_per_well": 1.44e6, "total_medium_ml": 16.2},
+    "blind_strength": "cold",
+    "source": "Blind design target: the standard primary human hepatocyte sandwich-culture plating density 1.5e5 cells/cm^2 — Bioengineering 2023;10(2):131, doi:10.3390/bioengineering10020131 (goal text does NOT state the density; not in the system prompt either). 6-well area 9.6 cm^2 and volume 2.7 mL — Corning/Falcon plate table. seed_per_well = 1.5e5 × 9.6 = 1.44e6; total medium = 2.7 × 6 = 16.2 mL."
+  },
+  {
+    "id": "blind-24well-phh-seed",
+    "goal": "Plate primary human hepatocytes in collagen-sandwich culture in a single well of a 24-well plate at the standard published plating density. How many cells per well?",
+    "expected": {"seed_per_well": 285000},
+    "blind_strength": "cold",
+    "source": "Blind design target: primary human hepatocyte sandwich-culture plating density 1.5e5 cells/cm^2 — Bioengineering 2023;10(2):131, doi:10.3390/bioengineering10020131. 24-well area 1.9 cm^2 — Corning/Falcon plate table. seed_per_well = 1.5e5 × 1.9 = 2.85e5."
+  },
+  {
+    "id": "blind-96well-area-and-medium",
+    "goal": "A plate-based assay will use a 96-well plate. Report the standard recommended working medium volume per well.",
+    "expected": {"medium_volume_per_well_ml": 0.17},
+    "blind_strength": "cold",
+    "source": "Blind design target: 96-well recommended working volume 0.17 mL — standard Corning/Falcon plate table (goal text does NOT state the volume)."
+  },
+  {
+    "id": "blind-hemocytometer-phh-96well",
+    "goal": "A suspension of primary human hepatocytes is counted on a hemocytometer: a mean of 40 cells per 1 mm^2 corner square at a 1:2 dilution. From 0.36 mL of this suspension, how many wells of a 96-well plate can be plated at the standard sandwich-culture plating density?",
+    "expected": {"wells": 6},
+    "blind_strength": "cold",
+    "source": "Blind design target: primary human hepatocyte sandwich-culture plating density 1.5e5 cells/cm^2 — Bioengineering 2023;10(2):131, doi:10.3390/bioengineering10020131 (goal text does NOT state the density). Hemocytometer formula (mean cells/square × dilution × 1e4) — CSH Protocols 2008, doi:10.1101/pdb.prot4498. conc = 40 × 2 × 1e4 = 8e5; total = 8e5 × 0.36 = 2.88e5; per well = 1.5e5 × 0.32 (96-well) = 48000; wells = 2.88e5 / 48000 = 6."
+  }
+]

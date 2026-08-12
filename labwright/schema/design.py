@@ -51,6 +51,31 @@ class CellPlan(BaseModel):
     culture_duration_h: float | None = Field(default=None, description="Planned culture duration (h)")
 
 
+class CulturePlan(BaseModel):
+    """Plate-based culture plan.
+
+    Derived fields (``seed_per_well``, ``total_seed_count``,
+    ``medium_volume_per_well_ml``, ``total_medium_ml``,
+    ``expected_confluence_pct``) are *always* computed by
+    :mod:`labwright.calc.culture` — never proposed by the LLM — and re-checked
+    by the verifier.
+    """
+
+    plate_format: str = Field(description="Plate format: 6/12/24/48/96-well")
+    wells: int = Field(default=1, ge=1, description="Number of wells plated")
+    cell_type: str = Field(description="Cell type")
+    seeding_density_cells_cm2: float = Field(gt=0, description="Seeding density (cells/cm²)")
+    seed_per_well: float = Field(gt=0, description="DERIVED: density × well surface area")
+    total_seed_count: float = Field(gt=0, description="DERIVED: seed_per_well × wells")
+    medium_volume_per_well_ml: float = Field(gt=0, description="DERIVED: standard working volume for the format")
+    total_medium_ml: float = Field(gt=0, description="DERIVED: per-well volume × wells")
+    viability_pct: float | None = Field(default=None, ge=0, le=100, description="Thawed/passaged viability (%)")
+    confluent_density_cells_cm2: float | None = Field(default=None, gt=0, description="Cells/cm² at 100% confluence (cell-type dependent — an input)")
+    doubling_time_h: float | None = Field(default=None, gt=0, description="Population doubling time (h)")
+    culture_duration_h: float | None = Field(default=None, ge=0, description="Culture duration (h)")
+    expected_confluence_pct: float | None = Field(default=None, ge=0, description="DERIVED: predicted confluence at harvest (may exceed 100 for over-confluent cultures)")
+
+
 class DosePlan(BaseModel):
     """Compound dosing plan."""
 
@@ -83,6 +108,7 @@ class DesignPlan(BaseModel):
     flow: FlowParams
     derived: DerivedFlowMetrics = Field(description="Deterministically computed flow metrics")
     cells: CellPlan
+    culture: CulturePlan | None = Field(default=None, description="Plate-based culture plan (only when plating on multi-well plates)")
     dosing: DosePlan | None = None
     stats: StatsPlan | None = None
     caveats: list[str] = Field(default_factory=list, description="Things to verify in the lab")

@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from labwright.calc import cell as calc_cell
+from labwright.calc import culture as calc_culture
 from labwright.calc import dosing as calc_dosing
 from labwright.calc import microfluidics as mf
 from labwright.schema.design import DesignPlan
@@ -121,6 +122,126 @@ def check_dosing(plan: DesignPlan, issues: list[Issue]) -> None:
         )
 
 
+def check_culture(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the plate-culture plan when present.
+
+    Re-runs :mod:`labwright.calc.culture` on the raw inputs and verifies every
+    derived field; warns on over-confluence, low viability and missing growth
+    inputs that make the confluence prediction impossible.
+    """
+    c = plan.culture
+    if c is None:
+        return
+    area = calc_culture.well_surface_area_cm2(c.plate_format)
+
+    expected_seed = calc_culture.cells_per_well(c.seeding_density_cells_cm2, c.plate_format)
+    if not _close(expected_seed, c.seed_per_well):
+        issues.append(
+            Issue(
+                level="error",
+                field="culture.seed_per_well",
+                message="seed_per_well does not equal density × well surface area",
+                expected=expected_seed,
+                found=c.seed_per_well,
+            )
+        )
+    expected_total = c.seed_per_well * c.wells
+    if not _close(expected_total, c.total_seed_count):
+        issues.append(
+            Issue(
+                level="error",
+                field="culture.total_seed_count",
+                message="total_seed_count does not equal seed_per_well × wells",
+                expected=expected_total,
+                found=c.total_seed_count,
+            )
+        )
+    expected_med = calc_culture.medium_volume_per_well(c.plate_format)
+    if not _close(expected_med, c.medium_volume_per_well_ml):
+        issues.append(
+            Issue(
+                level="error",
+                field="culture.medium_volume_per_well_ml",
+                message="medium_volume_per_well_ml does not equal the standard working volume",
+                expected=expected_med,
+                found=c.medium_volume_per_well_ml,
+            )
+        )
+    expected_total_med = c.medium_volume_per_well_ml * c.wells
+    if not _close(expected_total_med, c.total_medium_ml):
+        issues.append(
+            Issue(
+                level="error",
+                field="culture.total_medium_ml",
+                message="total_medium_ml does not equal per-well volume × wells",
+                expected=expected_total_med,
+                found=c.total_medium_ml,
+            )
+        )
+
+    can_predict = (
+        c.doubling_time_h is not None
+        and c.confluent_density_cells_cm2 is not None
+        and c.culture_duration_h is not None
+    )
+    if c.expected_confluence_pct is not None:
+        if not can_predict:
+            issues.append(
+                Issue(
+                    level="warning",
+                    field="culture.expected_confluence_pct",
+                    message="expected_confluence_pct present but growth inputs "
+                    "(doubling_time_h / confluent_density_cells_cm2 / culture_duration_h) "
+                    "are missing — it cannot be re-derived",
+                )
+            )
+        else:
+            final_cells = calc_cell.cell_count_after_time(
+                c.seed_per_well, c.doubling_time_h, c.culture_duration_h
+            )
+            expected_conf = calc_culture.cell_count_to_confluence(
+                final_cells, c.confluent_density_cells_cm2, area
+            )
+            if not _close(expected_conf, c.expected_confluence_pct):
+                issues.append(
+                    Issue(
+                        level="error",
+                        field="culture.expected_confluence_pct",
+                        message="expected_confluence_pct does not match the growth prediction",
+                        expected=expected_conf,
+                        found=c.expected_confluence_pct,
+                    )
+                )
+            if c.expected_confluence_pct > 100:
+                issues.append(
+                    Issue(
+                        level="warning",
+                        field="culture.expected_confluence_pct",
+                        message=f"predicted confluence {c.expected_confluence_pct:.1f}% exceeds "
+                        "100% — over-confluent at harvest",
+                    )
+                )
+    else:
+        if can_predict:
+            issues.append(
+                Issue(
+                    level="warning",
+                    field="culture.expected_confluence_pct",
+                    message="growth inputs are present but expected_confluence_pct is not predicted",
+                )
+            )
+
+    if c.viability_pct is not None and c.viability_pct < 70:
+        issues.append(
+            Issue(
+                level="warning",
+                field="culture.viability_pct",
+                message=f"viability {c.viability_pct:.1f}% is below the ~70% pass threshold "
+                "commonly used for primary/sensitive cells",
+            )
+        )
+
+
 def check_stats(plan: DesignPlan, issues: list[Issue]) -> None:
     """Cross-check the replicate count against the stated effect/power."""
     if plan.stats is None:
@@ -152,6 +273,7 @@ def verify_design(plan: DesignPlan) -> list[Issue]:
     issues: list[Issue] = []
     check_flow(plan, issues)
     check_seeding(plan, issues)
+    check_culture(plan, issues)
     check_dosing(plan, issues)
     check_stats(plan, issues)
     return issues
