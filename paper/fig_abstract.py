@@ -35,8 +35,11 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 INK = "#262522"
 MUT = "#8a8782"
 GRID = "#d9d7d3"
-ORANGE = "#eb6834"
-ORANGE_EDGE = "#c85a22"
+# Labwright main path — the paper's deep academic blue, shared with the
+# pipeline and benchmark figures so the system's identity is one colour
+# everywhere (was orange before the palette was unified).
+BLUE = "#2E5598"
+BLUE_EDGE = "#1f3f70"
 GRAY = "#a8a39d"
 GRAY_LIGHT = "#e0dcd5"
 GRAY_DARK = "#74706a"
@@ -113,7 +116,7 @@ def main() -> int:
            fs=9.0, color=INK, va="center")
     _label(ax, 11.60, 4.59,
            "Labwright  88–100 % usable  ·  hallucination 0.000", fs=10.0,
-           color=ORANGE_EDGE, va="center", weight="bold", ha="right")
+           color=BLUE_EDGE, va="center", weight="bold", ha="right")
 
     # ------------------------------------------------------------------
     # Main pipeline row
@@ -124,11 +127,11 @@ def main() -> int:
     _box(ax, 0.30, row_y, 1.35, row_h, "goal\n(natural\nlanguage)", GRAY_LIGHT,
          GRAY, fs=8.5)
     _box(ax, 2.05, row_y, 1.75, row_h, "LLM agent\nproposes\nraw inputs",
-         ORANGE, ORANGE_EDGE, tc="white", weight="bold", fs=9.5)
+         BLUE, BLUE_EDGE, tc="white", weight="bold", fs=9.5)
     _box(ax, 4.20, row_y, 1.75, row_h, "deterministic\ncalculators\n(physics)",
-         ORANGE, ORANGE_EDGE, tc="white", weight="bold", fs=9.5)
+         BLUE, BLUE_EDGE, tc="white", weight="bold", fs=9.5)
     _box(ax, 6.35, row_y, 2.00, row_h, "verifier\nre-proves\nevery number",
-         ORANGE, ORANGE_EDGE, tc="white", weight="bold", fs=9.5)
+         BLUE, BLUE_EDGE, tc="white", weight="bold", fs=9.5)
     _box(ax, 9.00, row_y, 2.55, row_h, "SOP + design JSON\nverified",
          GRAY_DARK, GRAY_DARK, tc="white", weight="bold", fs=8.5)
 
@@ -137,7 +140,7 @@ def main() -> int:
     box_lefts = [0.30, 2.05, 4.20, 6.35, 9.00]
     for i in range(4):
         _arrow(ax, box_rights[i] + 0.06, row_y + row_h / 2,
-               box_lefts[i + 1] - 0.06, row_y + row_h / 2, color=ORANGE_EDGE)
+               box_lefts[i + 1] - 0.06, row_y + row_h / 2, color=BLUE_EDGE)
 
     # raw / derived lane labels under the row
     _label(ax, 2.925, row_y - 0.30, "the model never writes a derived number",

@@ -4,7 +4,7 @@ Each row is one of the 12 blind goals (no target stated in the goal); each
 column is a system/model family: bare-LLM and Labwright on flash and pro. The
 cell colour encodes the recovery error (relative error of the reported target
 parameter vs the gold value, log-scaled and clamped at 10×; the two seeding
-goals are scored on seed-count recovery). A white cell with "✓" means the
+goals are scored on cell-count recovery). A white cell with "√" means the
 reported value lands within 5% of the physical target; colour deepens with the
 miss; a gray cell with "·" means the system reported nothing recoverable at all
 (unverifiable — scored hallucination 1.0 under the paper's convention).
@@ -32,9 +32,17 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
+import numpy as np
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Patch
+
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _font import setup_font  # noqa: E402
+
+setup_font()
 
 INK = "#262522"
 MUT = "#8a8782"
@@ -49,6 +57,17 @@ CMAP = LinearSegmentedColormap.from_list(
     ["#ffffff", "#cfe6d2", "#7fb98c", "#3a7d44", "#14432a"],
 )
 VMAX = 10.0  # clamp: 10x or worse all read as max green
+
+#: cells are coloured on log(1+v), not v, so the realistic sub-2x misses still
+#: occupy visible colour steps instead of a wash of near-white. The colourbar
+#: uses the same norm, so the ticks line up with what the cells show.
+ERR_NORM = mcolors.FuncNorm(
+    (
+        lambda v: np.log10(1 + np.clip(v, 0, VMAX)) / np.log10(1 + VMAX),
+        lambda t: (1 + VMAX) ** t - 1,
+    ),
+    vmin=0, vmax=VMAX,
+)
 
 GOAL_LABELS = {
     "blind-liver-sinusoid": "liver sinusoid",
@@ -100,8 +119,9 @@ def main(argv: list[str]) -> int:
     files = [flash, pro]
     gold = [pe["id"] for pe in flash["per_entry"]]
 
-    fig, ax = plt.subplots(figsize=(7.6, 5.2))
+    fig, ax = plt.subplots(figsize=(7.6, 5.6))
     fig.patch.set_facecolor("white")
+    fig.subplots_adjust(top=0.84, bottom=0.09, left=0.17, right=0.90)
 
     n_rows = len(gold)
     n_cols = 4  # flash-bare, flash-lab, pro-bare, pro-lab
@@ -123,53 +143,70 @@ def main(argv: list[str]) -> int:
             else:
                 vc = min(v, VMAX)
                 ax.add_patch(plt.Rectangle((x - 0.45, y - 0.4), 0.9, 0.8,
-                                           fc=CMAP(vc / VMAX), ec="none", zorder=2))
-                label = f"{v:.1f}×" if v >= 0.1 else ""
+                                           fc=CMAP(ERR_NORM(vc)), ec="none", zorder=2))
+                # every non-hit cell carries its own error value so a near-miss
+                # (say 7% off) is legible even though its colour is near-white;
+                # hits get a √. (√ is Times-safe; ✓ is not in the face.)
                 if v <= 0.05:
-                    label = "✓"
-                if label:
-                    ax.text(x, y, label, ha="center", va="center", fontsize=7.5,
-                            color=INK, zorder=4, fontweight="bold" if v <= 0.05 else "normal")
+                    label = "√"
+                elif v < 1.0:
+                    label = f"{v:.2f}"
+                elif v < 10.0:
+                    label = f"{v:.1f}×"
+                else:
+                    label = f"{v:.0f}×"
+                ax.text(x, y, label, ha="center", va="center", fontsize=8,
+                        color=INK, zorder=4,
+                        fontweight="bold" if v <= 0.05 else "normal")
 
     # row labels
     ax.set_yticks(range(n_rows))
     ax.set_yticklabels(
         [GOAL_LABELS.get(g, g) + ("†" if g in PROMPT_BACKED else "") for g in gold],
-        fontsize=8, color=INK,
+        fontsize=8.5, color=INK,
     )
     # column labels (model family on top, system under)
     ax.set_xticks(range(n_cols))
     ax.set_xticklabels(["", "", "", ""])
     for ci, name in enumerate(["flash", "flash", "pro", "pro"]):
-        ax.text(ci, -0.75, name, ha="center", va="top", fontsize=9, color=INK,
+        ax.text(ci, -0.75, name, ha="center", va="top", fontsize=9.5, color=INK,
                 fontweight="bold")
     for ci, sys_name in enumerate(["bare", "Lab", "bare", "Lab"]):
-        ax.text(ci, -1.15, sys_name, ha="center", va="top", fontsize=7.5, color=MUT)
+        ax.text(ci, -1.15, sys_name, ha="center", va="top", fontsize=8, color=MUT)
 
     ax.set_xlim(-0.5, n_cols - 0.5)
     ax.set_ylim(n_rows - 0.5, -0.5)
     ax.tick_params(length=0)
     for spine in ax.spines.values():
         spine.set_visible(False)
-    ax.set_title("blind-set shear recovery per goal (12 goals; † = target hinted in system prompt)",
-                 fontsize=9.5, color=INK, pad=22)
+    ax.set_title("blind-set recovery per goal",
+                 fontsize=10, color=INK, pad=22)
 
-    # colourbar
-    sm = plt.cm.ScalarMappable(cmap=CMAP, norm=matplotlib.colors.Normalize(0, VMAX))
+    # column grouping: a hairline between the flash and pro families, so the
+    # two model families read as two blocks rather than four loose columns.
+    ax.plot([1.5, 1.5], [-0.35, n_rows - 0.35], color=GRID, lw=1.0, zorder=1)
+
+    # colourbar — same log norm as the cells, so ticks line up with colours
+    sm = plt.cm.ScalarMappable(cmap=CMAP, norm=ERR_NORM)
     cbar = fig.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
-    cbar.set_label("|relative shear error| (clamped at 10×)",
-                   fontsize=7.5, color=MUT)
+    cbar.set_label("|relative recovery error| (clamped at 10×)",
+                   fontsize=8, color=MUT)
     cbar.set_ticks([0, 0.5, 1, 5, 10])
     cbar.set_ticklabels(["hit", "0.5×", "1×", "5×", "≥10×"])
-    cbar.ax.tick_params(labelsize=7, colors=MUT)
+    cbar.ax.tick_params(labelsize=7.5, colors=MUT)
 
-    # legend for NA + check
+    # legend for NA + hit; the white swatch needs an edge to be visible on the
+    # white figure background
     handles = [
-        Patch(facecolor=NA_COLOR, label="no shear reported (unverifiable)"),
-        Patch(facecolor=CMAP(0.0), label="✓ shear within 5% of target"),
+        Patch(facecolor=NA_COLOR, label="no recovery reported (unverifiable)"),
+        Patch(facecolor=CMAP(0.0), edgecolor=GRID, linewidth=0.8,
+              label="√ recovery within 5% of target"),
     ]
-    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1.0),
-               ncol=2, frameon=False, fontsize=7.5)
+    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 0.90),
+               ncol=2, frameon=False, fontsize=8)
+    fig.text(0.02, 0.015,
+             "† = target hinted in system prompt · the two seeding goals are scored on cell-count recovery",
+             fontsize=7.5, color=MUT, ha="left", va="bottom")
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_blind_goals.pdf", bbox_inches="tight", facecolor="white")

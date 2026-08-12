@@ -172,8 +172,11 @@ The goal goes in; a design whose every number was computed by
 `labwright.calc` and re-proved by `labwright.verify` comes out. The agent
 writes the narrative; the arithmetic is exiled to unit-tested code.
 
-- **`calc/`** — pure, unit-tested engineering math (microfluidics, cell, dosing,
-  stats). The moat: an LLM cannot compute these reliably, but a calculator can.
+- **`calc/`** — pure, unit-tested engineering math (microfluidics, cell, plate
+  cell culture, dosing, stats). The moat: an LLM cannot compute these reliably,
+  but a calculator can. A second domain — well-format geometry, seeding density,
+  hemocytometer counts, viability, passaging — ships as `calc/culture.py` with
+  its own gold set (`eval/gold_cell_culture.json`).
 - **`agent/`** — a ReAct loop over the tool registry. It may call any
   calculator and must finish by calling `submit_design`. Prose answers are
   refused: *"numbers you type are not trusted."*
@@ -184,7 +187,9 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
   `extract/pipeline.py`): the natural-language goal seeds the raw inputs the
   calculators then check, so a design can be generated without an agent
   round-trip. Eval (`extract/eval.py`): JSON parse **1.0**, extract→verify
-  consistency **0.998**, field recovery **0.72** on 400 rows + 12 blind goals.
+  consistency **0.998**, field recovery **0.72** on 400 rows + 12 blind goals —
+  against **0.40** consistency for the untuned `deepseek-v4-flash`/`pro`
+  baselines on the same rows (results are in `results/extractor/eval_report.json`).
 - **`schema/` + `published.py`** — the verified design plan types
   (`DesignPlan`, `CulturePlan`, …); `published.py` runs the *same* calculators
   backwards over a published protocol's own inputs. A new domain is a
@@ -213,7 +218,12 @@ Two capabilities the above don't have:
    not follow. A literature sanity-checker, not just a design generator.
    [`eval/run_verify_batch.py`](eval/run_verify_batch.py) runs it over a set of
    published protocols + explicitly-labelled synthetic controls
-   ([`eval/published_protocols/`](eval/published_protocols/)).
+   ([`eval/published_protocols/`](eval/published_protocols/)). Scaled to the
+   literature, `eval/run_scirecipe_audit.py` ran the same check over **21,094**
+   real SciRecipe protocol summaries (14,589 numeric → 5,700 audited): **655**
+   internally consistent, **74** contradicted by the papers' own numbers, the
+   rest too vague to check — the reproducibility-gap measurement behind the
+   audit figure in `paper/fig_scirecipe.py`.
 2. **A benchmark with a reproducibility yardstick** — `eval/` measures both
    parameter recovery *and* the fraction of derived numbers that fail the
    verifier (see below).
@@ -253,7 +263,7 @@ systems (bare-LLM, soft-gate, self-verify) write numbers from memory and are
 scored by *identical* rules — only the prompt/stage structure differs.
 Labwright adds the calculators and the verifier.
 
-![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading and 12-blind sets (flash & pro). The memory systems (gray) never reach a usable design; Labwright (orange) holds the gate but misses the blind-set physiology.](paper/fig_benchmark.png)
+![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading and 12-blind sets (flash & pro). The memory systems (gray) never reach a usable design; Labwright (deep blue) holds the gate but misses the blind-set physiology.](paper/fig_benchmark.png)
 
 A *usable* design is internally consistent **and** hits every target within
 ±5 %. This is an *ablation*, not an equal-resource race: Labwright's
@@ -363,21 +373,6 @@ produced **no design at all** (`plan: false`; hallucination 1.0 is scored as
 `plan: false`; the later blind-set runs additionally record the agent's own
 failure reason, so the claim is auditable. It never wrote a number the
 calculators didn't check.
-
-## Roadmap
-
-- [x] Calculators: microfluidics, cell, dosing, statistics
-- [x] ReAct agent + deterministic verifier + SOP + CLI + Gradio demo
-- [x] Bare-LLM vs Labwright benchmark on 24 gold entries (flash + pro); see *Benchmark*
-- [x] Reverse-verification batch: `eval/run_verify_batch.py` over published protocols + labelled controls
-- [x] Colab notebook + HF Space scaffolding (`colab/`, `hf_space/`)
-- [x] Preprint drafted (kept local-only while in submission; the benchmark evidence and figures ship in this repo)
-- [x] Pin all gold anchors (real DOIs / explicit self-consistent labels); render the paper figure (`paper/fig_benchmark.py`)
-- [ ] Publish the HF Space (needs a HF token; see `hf_space/PUBLISH.md`)
-- [x] Domain package #2 — plate cell culture (`calc/culture.py` + gold set `eval/gold_cell_culture.json`)
-- [x] Fine-tuned goal→raw-inputs extractor (`extract/`, Qwen2.5-1.5B LoRA on the V100; JSON parse 1.0, consistency 0.998)
-- [ ] SciRecipe large-scale reverse-verification audit (`eval/run_scirecipe_audit.py`, ~5.7k numeric protocol summaries)
-- [ ] Submit the preprint to bioRxiv
 
 ## License & citation
 

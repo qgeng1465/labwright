@@ -30,6 +30,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _font import setup_font  # noqa: E402
+
+setup_font()
+
 INK = "#262522"
 MUT = "#8a8782"
 GRID = "#d9d7d3"
@@ -37,16 +43,16 @@ GOOD = "#3a7d44"    # status: consistent / ok
 SERIOUS = "#b3261e"  # status: discrepancy
 WARN = "#b26a00"     # status: not claimed
 NEUTRAL = "#a8a39d"  # status: unverifiable
-ROW_ALT = "#f4f2ee"
+ROW_ALT = "#f1f0ed"
 
-#: display names for the six derived flow numbers
+#: display names (with units) for the six derived flow numbers
 FIELDS = [
-    ("shear_pa", "shear"),
+    ("shear_pa", "shear (Pa)"),
     ("reynolds", "Re"),
-    ("pressure_drop_pa", "ΔP"),
-    ("residence_time_s", "t_res"),
-    ("channel_volume_ul", "V_ch"),
-    ("mean_velocity_mms", "ū"),
+    ("pressure_drop_pa", "ΔP (Pa)"),
+    ("residence_time_s", "t_res (s)"),
+    ("channel_volume_ul", "V_ch (µL)"),
+    ("mean_velocity_mms", "ū (mm/s)"),
 ]
 FIELD_KEYS = [k for k, _ in FIELDS]
 FIELD_LABELS = [lbl for _, lbl in FIELDS]
@@ -68,6 +74,14 @@ def verdict_color(v: str) -> str:
             "not_claimed": WARN,
             "review_required": WARN,
             "unverifiable": NEUTRAL}.get(v, NEUTRAL)
+
+
+#: prose labels for the overall verdicts shown in the left panel
+VERDICT_LABELS = {
+    "ok": "verified",
+    "review_required": "needs review",
+    "unverifiable": "unverifiable",
+}
 
 
 def main(argv: list[str]) -> int:
@@ -92,22 +106,26 @@ def main(argv: list[str]) -> int:
                              constrained_layout=True, width_ratios=[1.25, 3.4])
     fig.patch.set_facecolor("white")
 
-    # ---- left: overall verdict ----
+    # ---- left: overall verdict (categorical, not a fake bar scale) ----
     ax = axes[0]
     y_positions = list(range(len(PROTOCOLS)))
     for y, (pid, label, _kind) in zip(y_positions, PROTOCOLS):
         ax.add_patch(plt.Rectangle((-0.5, y - 0.45), 3.4, 0.9,
                                    fc=ROW_ALT, ec="none", zorder=0))
-        ax.barh(y, 1.0, height=0.55, color=verdict_color(overall[pid]),
-                zorder=3, edgecolor="none")
+        # a verdict is a category, so it gets a categorical mark — a coloured
+        # chip plus prose — not a bar whose length would pretend to be a number.
+        ax.add_patch(plt.Rectangle((0.15, y - 0.20), 0.40, 0.40,
+                                   fc=verdict_color(overall[pid]), ec="none", zorder=3))
+        ax.text(0.68, y, VERDICT_LABELS[overall[pid]], ha="left", va="center",
+                fontsize=8, color=INK, zorder=4)
     ax.set_yticks(y_positions)
-    ax.set_yticklabels([lbl for _, lbl, _ in PROTOCOLS], fontsize=7.5, color=INK)
+    ax.set_yticklabels([lbl for _, lbl, _ in PROTOCOLS], fontsize=8, color=INK)
     ax.invert_yaxis()
-    ax.set_xlim(0, 1)
+    ax.set_xlim(0, 2.0)
     ax.set_xticks([])
     for spine in ax.spines.values():
         spine.set_visible(False)
-    ax.set_title("overall verdict", fontsize=8.5, color=INK, pad=4)
+    ax.set_title("overall verdict", fontsize=9.5, color=INK, pad=4)
     ax.tick_params(length=0)
 
     # ---- right: per-field matrix ----
@@ -119,25 +137,45 @@ def main(argv: list[str]) -> int:
             v = matrix.get(pid, {}).get(fk, "not_claimed")
             ax.add_patch(plt.Rectangle((x - 0.45, y - 0.34), 0.9, 0.68,
                                        fc=verdict_color(v), ec="none", zorder=3))
-    ax.set_xlim(-0.5, len(FIELDS) - 0.5)
+            # CVD channel: a discrepancy carries a × so colour-blind readers
+            # read shape, not hue. (× is Times-safe; ✓ is not in the face.)
+            if v == "discrepancy":
+                ax.text(x, y, "×", ha="center", va="center", fontsize=12,
+                        color="#ffffff", fontweight="bold", zorder=5)
+    ax.set_xlim(-0.5, len(FIELDS) + 1.4)
     ax.set_ylim(-0.5, len(PROTOCOLS) - 0.5)
+    # invert so row 0 (the first protocol) is at the top, matching the left
+    # panel — otherwise the two panels' rows run in opposite order and the
+    # matrix reads as the wrong protocol having each discrepancy.
+    ax.invert_yaxis()
     ax.set_xticks(range(len(FIELDS)))
-    ax.set_xticklabels(FIELD_LABELS, fontsize=7.5, color=INK)
+    ax.set_xticklabels(FIELD_LABELS, fontsize=8, color=INK)
     ax.set_yticks([])
     for spine in ax.spines.values():
         spine.set_visible(False)
-    ax.set_title("per-field verdict", fontsize=8.5, color=INK, pad=4)
+    ax.set_title("per-field verdict", fontsize=9.5, color=INK, pad=4)
     ax.tick_params(length=0)
 
-    # legend
+    # separator between the published protocols and the synthetic controls
+    for panel in axes:
+        panel.plot([-0.5, panel.get_xlim()[1]], [1.5, 1.5], color=GRID, lw=1.0,
+                   zorder=2, clip_on=False)
+    # group labels, rotated at the far right of the matrix
+    for y, name in ((0.5, "published protocols"), (3.5, "synthetic controls")):
+        ax.text(len(FIELDS) + 0.4, y, name, ha="left", va="center",
+                rotation=90, fontsize=8, color=MUT)
+
+    # one legend for both panels: the left verdicts and the right cells share
+    # the same status colours (ok = consistent, review-needed = amber).
     handles = [
-        Patch(facecolor=GOOD, label="consistent"),
+        Patch(facecolor=GOOD, label="consistent / ok"),
         Patch(facecolor=SERIOUS, label="discrepancy"),
-        Patch(facecolor=WARN, label="not claimed"),
+        Patch(facecolor=WARN, label="not claimed / needs review"),
         Patch(facecolor=NEUTRAL, label="unverifiable"),
     ]
-    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1.02),
-               ncol=4, frameon=False, fontsize=8)
+    fig.subplots_adjust(top=0.82)
+    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 0.93),
+               ncol=4, frameon=False, fontsize=8.5)
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_verify.pdf", bbox_inches="tight", facecolor="white")

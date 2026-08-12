@@ -7,8 +7,8 @@ Right: the verdict distribution over audited rows (ok / review_required /
 unverifiable) plus the top contradictions quoted verbatim, so "the numbers don't
 follow" is shown with the exact text, not a count.
 
-Status colours are reserved for their meaning: ok/consistent=good (green),
-review_required=warning (amber), unverifiable=neutral (gray). Text is ink
+Status colours are reserved for their meaning: verified/ok=good (green),
+needs-review=warning (amber), unverifiable=neutral (gray). Text is ink
 tokens only.
 
 Usage::
@@ -28,6 +28,12 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, Patch
+
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _font import setup_font  # noqa: E402
+
+setup_font()
 
 INK = "#262522"
 MUT = "#8a8782"
@@ -55,24 +61,24 @@ def main(argv: list[str]) -> int:
     n_unv = verdicts.get("unverifiable", 0)
     n_check = n_ok + n_review
 
-    fig, axes = plt.subplots(1, 2, figsize=(9.2, 4.1),
+    fig, axes = plt.subplots(1, 2, figsize=(9.2, 4.4),
                              constrained_layout=True, width_ratios=[1.2, 1.7])
     fig.patch.set_facecolor("white")
+    fig.subplots_adjust(top=0.80)
 
-    # ---- left: funnel ----
+    # ---- left: funnel (each % states its denominator) ----
     ax = axes[0]
     stages = [
         (f"all protocols  {total:,}", total),
-        (f"numeric  {numeric:,}  ({100.0 * numeric / total:.0f}%)", numeric),
-        (f"culture + flow  {dom:,}  ({100.0 * dom / numeric:.0f}%)", dom),
-        (f"checkable  {n_check:,}  ({100.0 * n_check / audited:.0f}%)", n_check),
+        (f"numeric  {numeric:,}  · {100.0 * numeric / total:.0f}% of all", numeric),
+        (f"audited (culture + flow)  {dom:,}  · {100.0 * dom / numeric:.0f}% of numeric", dom),
+        (f"checkable  {n_check:,}  · {100.0 * n_check / audited:.0f}% of audited", n_check),
     ]
     ymax = stages[0][1]
     for i, (label, value) in enumerate(stages):
         w = value / ymax
-        ax.barh(i, w, height=0.62, color=BLUE, alpha=0.35 + 0.55 * w, ec="none")
-        ax.text(w + 0.008, i, label, va="center", ha="left", fontsize=8.5, color=INK)
-        ax.text(-0.008, i, f"{value:,}", va="center", ha="right", fontsize=8, color=MUT)
+        ax.barh(i, w, height=0.62, color=BLUE, ec="none")
+        ax.text(w + 0.01, i, label, va="center", ha="left", fontsize=8.5, color=INK)
     for i in range(len(stages) - 1):
         y0 = i - 0.31
         y1 = i + 1 + 0.31
@@ -85,50 +91,63 @@ def main(argv: list[str]) -> int:
     ax.set_yticks([])
     for spine in ax.spines.values():
         spine.set_visible(False)
-    ax.set_title("funnel", fontsize=8.5, color=INK, pad=4)
+    ax.set_title("protocol audit funnel", fontsize=9.5, color=INK, pad=4)
 
-    # ---- right: verdicts ----
+    # ---- right: verdicts over the audited rows (the funnel's audited stage) ----
     ax = axes[1]
-    counts = [(n_ok, GOOD, "ok"), (n_review, WARN, "review_required"), (n_unv, NEUTRAL, "unverifiable")]
+    counts = [(n_ok, GOOD, "verified"), (n_review, WARN, "needs review"),
+              (n_unv, NEUTRAL, "unverifiable")]
     bottom = 0
     for value, color, label in counts:
-        ax.barh([0], [value], left=[bottom], color=color, height=0.5, ec="white", lw=0.5)
+        ax.barh([0], [value], left=[bottom], color=color, height=0.7, ec="white", lw=1.0)
         if value:
             ax.text(bottom + value / 2, 0, f"{value:,}", va="center", ha="center",
                     fontsize=9, color="white" if color in (GOOD, WARN) else INK, zorder=3)
+            ax.text(bottom + value / 2, 0.47, label, ha="center", va="bottom",
+                    fontsize=8, color=INK)
         bottom += value
-    ax.text(bottom + max(audited * 0.01, 3), 0,
-            f"of {audited:,} audited", va="center", ha="left", fontsize=8, color=MUT)
-    ax.set_ylim(-0.55, 0.55)
-    ax.set_xlim(0, audited * 1.18)
+    ax.set_ylim(-1.5, 0.72)
+    ax.set_xlim(0, audited * 1.15)
     ax.set_yticks([])
     ax.set_xticks([])
     for spine in ax.spines.values():
         spine.set_visible(False)
-    ax.set_title("verdicts over audited rows", fontsize=8.5, color=INK, pad=4)
+    ax.set_title(f"verdicts over the {audited:,} audited", fontsize=9.5, color=INK, pad=4)
 
-    # contradiction quotes under the verdict bar
+    # contradiction quotes under the verdict bar, in a bounded block with prose
+    # field names and an ellipsis where the text was cut.
     rows = d.get("rows", [])
     disc = [r for r in rows if r.get("verdict") == "review_required"]
     disc.sort(key=lambda r: len(r.get("discrepancy_fields", [])), reverse=True)
-    quote_y = -0.35
+    FIELD_NAMES = {
+        "shear_pa": "shear", "reynolds": "Re", "pressure_drop_pa": "ΔP",
+        "residence_time_s": "t_res", "channel_volume_ul": "V_ch",
+        "mean_velocity_mms": "ū", "seed_per_well": "seed count",
+        "medium_volume_per_well_ml": "medium volume",
+        "expected_confluence_pct": "confluence",
+    }
+
+    def _ellipsis(s: str, n: int = 74) -> str:
+        return s if len(s) <= n else s[: n - 1].rstrip() + "…"
+
     quote_lines = []
     for r in disc[:3]:
-        fields = ",".join(r.get("discrepancy_fields", []))
-        q = (r.get("quote") or "")[:88]
-        quote_lines.append(f"  {fields}: {q}")
+        names = ", ".join(FIELD_NAMES.get(f, f) for f in r.get("discrepancy_fields", []))
+        q = _ellipsis(r.get("quote") or "")
+        quote_lines.append(f"{names}: {q}")
     if quote_lines:
-        ax.text(0, quote_y, "contradictions (verbatim):\n" + "\n".join(quote_lines),
-                fontsize=6.8, color=WARN, va="top", ha="left", linespacing=1.4)
+        ax.text(0, -0.55, "contradictions, verbatim:\n" + "\n".join(quote_lines),
+                fontsize=8, color=WARN, va="top", ha="left", linespacing=1.5,
+                bbox=dict(boxstyle="round,pad=0.35", fc="#faf8f5", ec=GRID, lw=0.8))
 
     # legend
     handles = [
-        Patch(facecolor=GOOD, label="ok (numbers follow)"),
-        Patch(facecolor=WARN, label="review_required"),
+        Patch(facecolor=GOOD, label="verified (numbers follow)"),
+        Patch(facecolor=WARN, label="needs review"),
         Patch(facecolor=NEUTRAL, label="unverifiable"),
     ]
-    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1.0),
-               ncol=3, frameon=False, fontsize=8)
+    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 0.90),
+               ncol=3, frameon=False, fontsize=8.5)
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_scirecipe.pdf", bbox_inches="tight", facecolor="white")

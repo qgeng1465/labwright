@@ -6,7 +6,7 @@ headline metric (self-consistent rate, usable rate, hallucination rate). Within
 each panel the two model families (deepseek-v4-flash, deepseek-v4-pro) are
 grouped; the four systems (bare-LLM, soft-gate, self-verify, Labwright) sit as
 adjacent bars. Color follows the *system*: the three LLM-memory systems are a
-de-emphasized gray family and Labwright is the saturated orange, so the texture
+de-emphasized gray family and Labwright is the deep academic blue, so the texture
 channel (45° hatch on Labwright) plus the legend keep identity readable in
 print and for CVD.
 
@@ -15,24 +15,24 @@ stays high for Labwright while the usable rate collapses, and the naive
 alternatives (soft-gate, self-verify) never reach a usable design at all — so
 the figure carries the paper's central caveat visually.
 
-Palette: validated with ``scripts/validate_palette.js`` (light mode) — the gray
-family is lightness-stepped with CVD-separated adjacent pairs, and the orange
-keeps its documented contrast. Text uses ink tokens only — series colors never
-carry text.
+Data source: each result file (``eval_flash.json`` / ``eval_pro.json`` /
+``eval_blind_*.json``) already contains all four systems after the post-fix
+re-run, so the figure reads straight from the per-entry records of one file per
+set × model — no competitor-file merging. Numbers are recomputed by
+``eval.report.derive()`` from the raw per-entry records, never re-typed.
+
+Layout: the set headers live in a reserved band above the panels (not as axes
+text at y>1, which collided with the first-row titles), and each panel keeps
+its own metric title. Value labels are drawn inside/above bars with per-bar
+logic so they
+never overlap a neighbour.
 
 Usage::
 
     python paper/fig_benchmark.py \\
-        results/eval_flash.json results/eval_flash.json \\
-        results/eval_pro.json results/eval_pro.json \\
-        results/eval_blind_flash.json results/eval_blind_flash.json \\
-        results/eval_blind_pro.json results/eval_blind_pro.json
+        results/eval_flash.json results/eval_pro.json \\
+        results/eval_blind_flash.json results/eval_blind_pro.json
     # writes paper/fig_benchmark.pdf and paper/fig_benchmark.png
-
-After the post-fix re-run the soft-gate + self-verify rows live in the same
-file as bare + Labwright, so the main and comp args point at the same file.
-Numbers come from eval/report.derive(), which recomputes every metric from
-per-entry records.
 """
 
 from __future__ import annotations
@@ -47,20 +47,25 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _font import setup_font  # noqa: E402
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from eval.report import derive  # noqa: E402
 
+setup_font()
+
 # --- data ---
 # Two model families, each carrying the four systems (bare / soft-gate /
-# self-verify as a de-emphasized gray family, Labwright as the saturated
-# orange).
+# self-verify as a de-emphasized gray family, Labwright as the deep academic
+# blue).
 MODELS = ["deepseek-v4-flash", "deepseek-v4-pro"]
 MODEL_SHORT = ["flash", "pro"]
-#: (metric key, row title, row subtitle) — one row per headline metric.
+#: (metric key, row title) — one row per headline metric.
 METRICS = [
-    ("self_consistent_rate", "Self-consistent rate", "higher is better"),
-    ("usable_rate", "Usable rate", "higher is better"),
-    ("hallucination_rate", "Hallucination rate", "lower is better"),
+    ("self_consistent_rate", "Self-consistent rate"),
+    ("usable_rate", "Usable rate"),
+    ("hallucination_rate", "Hallucination rate"),
 ]
 #: (column title, column subtitle). The reading set hands over the answer; the
 #: blind set does not — that is the boundary the figure makes visible.
@@ -69,14 +74,28 @@ SETS = [
     ("12-blind set", "no target stated"),
 ]
 #: (system key, legend label, bar color, edge/hatch color, hatch).
-#: Gray family re-stepped so the minimum OKLab pair distance clears the
-#: normal-vision floor (min ΔE = 17.1); Labwright carries the saturated orange.
+#: The three LLM-memory systems are a neutral gray family, monotonic
+#: light→dark in bar order (bare, soft-gate, self-verify); Labwright is the
+#: paper's deep academic blue. Pairwise OKLab ΔE verified ≥ 15 normal-vision
+#: and ≥ 8 under CVD simulation (bare→soft 20.3, soft→self 24.5, self→lab 15.5;
+#: CVD 22.0/26.4/25.2).
 SYSTEMS = [
-    ("bare", "bare-LLM", "#a8a39d", "none", None),
-    ("soft_gate", "soft-gate", "#e0dcd5", "#a8a39d", "o"),
-    ("self_verify", "self-verify", "#74706a", "#a8a39d", "+"),
-    ("labwright", "Labwright", "#eb6834", "#c85a22", "//"),
+    ("bare", "bare-LLM", "#c8c4bd", "none", None),
+    ("soft_gate", "soft-gate", "#8a857e", "#c8c4bd", "o"),
+    ("self_verify", "self-verify", "#454039", "#c8c4bd", "+"),
+    ("labwright", "Labwright", "#2E5598", "#1f3f70", "//"),
 ]
+INK = "#262522"          # text primary
+MUT = "#8a8782"          # muted text (axis, sub-label)
+GRID = "#d9d7d3"         # hairline grid
+WHITE = "#ffffff"
+
+
+def _label_color(hexc: str) -> str:
+    """Dark text on light bars, white on dark bars — never a fixed label color."""
+    c = [int(hexc[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    lum = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+    return WHITE if lum < 0.45 else INK
 INK = "#262522"          # text primary
 MUT = "#8a8782"          # muted text (axis, sub-label)
 GRID = "#d9d7d3"         # hairline grid
@@ -84,49 +103,34 @@ GRID = "#d9d7d3"         # hairline grid
 N_SYSTEMS = len(SYSTEMS)
 
 
-def load_merged(main_path: str, comp_path: str) -> dict:
-    """Merge bare+Labwright (main file) with soft-gate + self-verify (comp file).
-
-    Bare-LLM comes from the main file so its numbers match the paper's Table 1
-    run; soft-gate and self-verify come from the competitor batch.
-    """
-    with open(main_path) as fh:
-        main = derive(json.load(fh))
-    with open(comp_path) as fh:
-        comp = derive(json.load(fh))
-    merged = {key: val for key, val in main.items() if key in ("bare", "labwright")}
-    merged["soft_gate"] = comp["soft_gate"]
-    merged["self_verify"] = comp["self_verify"]
-    merged["n_gold"] = main["n_gold"]
-    return merged
+def _load_set(path: str) -> dict:
+    """Read one set×model file and return its four-system derived metrics."""
+    with open(path) as fh:
+        return derive(json.load(fh))
 
 
 def main(argv: list[str]) -> int:
-    # argv layout: [reading-main flash, reading-comp flash, reading-main pro,
-    # reading-comp pro, blind-main flash, blind-comp flash, blind-main pro,
-    # blind-comp pro]
-    if len(argv) < 8:
+    # argv: [reading-flash, reading-pro, blind-flash, blind-pro]
+    if len(argv) < 4:
         print(__doc__)
         return 1
-    pairs = [
-        (argv[0], argv[1]),  # reading flash
-        (argv[2], argv[3]),  # reading pro
-        (argv[4], argv[5]),  # blind flash
-        (argv[6], argv[7]),  # blind pro
-    ]
     sets = [
-        [load_merged(*pairs[0]), load_merged(*pairs[1])],  # reading: flash, pro
-        [load_merged(*pairs[2]), load_merged(*pairs[3])],  # blind: flash, pro
+        [_load_set(argv[0]), _load_set(argv[1])],  # reading: flash, pro
+        [_load_set(argv[2]), _load_set(argv[3])],  # blind: flash, pro
     ]
 
+    # Reserved top band for the set headers + legend so they never collide
+    # with the first row of panels.
     fig, axes = plt.subplots(
-        len(METRICS), len(SETS), figsize=(8.6, 4.6),
-        constrained_layout=True, sharey="row",
+        len(METRICS), len(SETS), figsize=(8.6, 5.1),
+        sharey="row",
     )
     fig.patch.set_facecolor("white")
+    fig.subplots_adjust(top=0.72, bottom=0.09, left=0.09, right=0.985,
+                        hspace=0.42, wspace=0.22)
 
     for col in range(len(SETS)):
-        for row, (key, title, sub) in enumerate(METRICS):
+        for row, (key, title) in enumerate(METRICS):
             ax = axes[row, col]
             data = sets[col]
             # 4 bars per model group; width sized so groups don't collide.
@@ -145,58 +149,57 @@ def main(argv: list[str]) -> int:
                     v = d[sys_key][key]
                     ax.bar(pos + off, v, width, color=color, edgecolor=edge,
                            hatch=hatch, zorder=3, linewidth=0.5)
-                    if key != "hallucination_rate":
-                        txt = f"{100*v:.0f}%" if v >= 0.005 else ""
-                        if v > 0.30:
-                            ax.text(pos + off, v - 0.015, txt, ha="center", va="top",
-                                    fontsize=6.5, color="#ffffff" if color != "#b0ada8" else INK)
-                        elif v >= 0.005:
-                            ax.text(pos + off, v + 0.015, txt, ha="center", va="bottom",
-                                    fontsize=6.5, color=INK)
-                    else:
-                        txt = f"{v:.3f}" if v > 0 else ""
-                        if v > 0:
-                            ax.text(pos + off, v + 0.015, txt, ha="center", va="bottom",
-                                    fontsize=6.5, color=INK)
-                        # v == 0.0: the win is self-evident, skip the label
+                    # One label format (percent) for every row; a tall bar puts
+                    # the label inside with a per-bar ink color, a short bar
+                    # floats it above in dark ink. v == 0.0 needs no label.
+                    txt = f"{100 * v:.0f}%" if v >= 0.005 else ""
+                    if v >= 0.85:
+                        ax.text(pos + off, v - 0.015, txt, ha="center", va="top",
+                                fontsize=7.2, color=_label_color(color))
+                    elif v > 0.30:
+                        ax.text(pos + off, v - 0.015, txt, ha="center", va="top",
+                                fontsize=7.2, color=_label_color(color))
+                    elif v >= 0.005:
+                        ax.text(pos + off, v + 0.015, txt, ha="center", va="bottom",
+                                fontsize=7.2, color=INK)
 
             # axis dressing: recessive, ink-only
             ax.set_xticks(range(len(data)))
-            ax.set_xticklabels(MODEL_SHORT[:len(data)], fontsize=8, color=INK)
+            ax.set_xticklabels(MODEL_SHORT[:len(data)], fontsize=8.5, color=INK)
             ax.set_ylim(0, 1.0)
             ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
-            ax.set_yticklabels(["0%", "25%", "50%", "75%", "100%"], fontsize=7.5, color=MUT)
+            ax.set_yticklabels(["0%", "25%", "50%", "75%", "100%"], fontsize=8, color=MUT)
             ax.yaxis.grid(True, color=GRID, linewidth=0.6)
             ax.set_axisbelow(True)
             for spine in ax.spines.values():
                 spine.set_color(GRID)
                 spine.set_linewidth(0.6)
             ax.tick_params(length=0)
-            ax.set_title(f"{title}\n{sub}", fontsize=8.5, color=INK, pad=4)
+            ax.set_title(title, fontsize=9.5, color=INK, pad=3)
 
-    # column headers name the set and make its subtitle explicit
+    # column headers sit in the reserved top band, centered on their panel
+    # (axes positions, not hard-coded fractions — keeps both headers aligned
+    # even when the panels are not symmetric about the figure centre).
     for col, (name, sub) in enumerate(SETS):
-        axes[0, col].text(
-            0.5, 1.06, name, transform=axes[0, col].transAxes,
-            ha="center", va="bottom", fontsize=9.5, color=INK, fontweight="bold",
-        )
-        axes[1, col].set_xlabel(sub, fontsize=7.5, color=MUT, labelpad=2)
+        pos = axes[0, col].get_position()
+        cx = pos.x0 + pos.width / 2
+        fig.text(cx, 0.865, name, ha="center", va="bottom", fontsize=10.5,
+                 color=INK, fontweight="bold")
+        fig.text(cx, 0.825, sub, ha="center", va="top", fontsize=8, color=MUT)
 
-    # each panel's denominator is its own set size (24 or 12), so the label
-    # stays set-agnostic.
     for ax in axes[:, 0]:
-        ax.set_ylabel("fraction of goals", fontsize=8, color=MUT)
+        ax.set_ylabel("fraction of goals", fontsize=8.5, color=MUT)
 
     handles = [
         Patch(facecolor=color, edgecolor=edge, hatch=hatch, linewidth=0.5, label=label)
         for (_key, label, color, edge, hatch) in SYSTEMS
     ]
-    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1.0),
-               ncol=len(SYSTEMS), frameon=False, fontsize=8)
+    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 0.90),
+               ncol=len(SYSTEMS), frameon=False, fontsize=8.5)
 
     out = Path(__file__).resolve().parent
-    fig.savefig(out / "fig_benchmark.pdf", bbox_inches="tight")
-    fig.savefig(out / "fig_benchmark.png", dpi=300, bbox_inches="tight")
+    fig.savefig(out / "fig_benchmark.pdf", bbox_inches="tight", facecolor="white")
+    fig.savefig(out / "fig_benchmark.png", dpi=300, bbox_inches="tight", facecolor="white")
     print(f"wrote {out / 'fig_benchmark.pdf'} and {out / 'fig_benchmark.png'}")
     return 0
 
