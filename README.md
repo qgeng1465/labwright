@@ -20,6 +20,8 @@ before the design is accepted. One yardstick, one rule for every row
 | "check yourself" / LLM-as-verifier | self-derived (soft-gate, self-verify) | **0 %** — the second pass actively corrupts the first | ~0.75–1.0 |
 | **Labwright** | calculators compute; verifier re-proves | **88–100 %** | **0.000** |
 
+![Labwright graphical abstract: goal → LLM proposes raw inputs → deterministic calculators → verifier re-proves every number → SOP + design JSON; naive alternatives rejected at the hard gate](paper/fig_abstract.png)
+
 **Built for organ-on-chip and perfused cell culture first. General wet-lab by design.**
 
 👉 **Try it:** `pip install -e .[agent]` (PyPI release pending) ·

@@ -62,6 +62,11 @@ class Extractor:
     ):
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        # Decoder-only generation must be left-padded: with right padding the
+        # shorter prompts' pad tokens sit between the prompt and the new tokens,
+        # and the model attends over them — corrupting the decoded output (this
+        # was the cause of the 19.9 % JSON parse rate in the first eval run).
+        self.tokenizer.padding_side = "left"
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.model = AutoModelForCausalLM.from_pretrained(
