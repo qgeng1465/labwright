@@ -104,10 +104,10 @@ class DesignPlan(BaseModel):
 
     goal: str = Field(description="Restatement of the experimental goal")
     rationale: str = Field(description="Why this design; key assumptions")
-    chip: ChipGeometry
-    flow: FlowParams
-    derived: DerivedFlowMetrics = Field(description="Deterministically computed flow metrics")
-    cells: CellPlan
+    chip: ChipGeometry | None = Field(default=None, description="Channel geometry (absent for plate-only culture designs)")
+    flow: FlowParams | None = Field(default=None, description="Perfusion inputs (absent for plate-only culture designs)")
+    derived: DerivedFlowMetrics | None = Field(default=None, description="Deterministically computed flow metrics")
+    cells: CellPlan | None = Field(default=None, description="Channel-based cell plan (absent for plate-only culture designs)")
     culture: CulturePlan | None = Field(default=None, description="Plate-based culture plan (only when plating on multi-well plates)")
     dosing: DosePlan | None = None
     stats: StatsPlan | None = None

@@ -42,11 +42,16 @@ class DesignInput(BaseModel):
 
     goal: str = Field(description="Experimental goal in one sentence")
     rationale: str = Field(description="Why this design; assumptions and references")
-    chip: ChipGeometry
-    flow: FlowParams
-    cells: dict[str, Any] = Field(
+    chip: ChipGeometry | None = Field(
+        default=None, description="Channel geometry (omit for plate-only culture designs)"
+    )
+    flow: FlowParams | None = Field(
+        default=None, description="Perfusion inputs (omit for plate-only culture designs)"
+    )
+    cells: dict[str, Any] | None = Field(
+        default=None,
         description="cell_type, seeding_density_cells_cm2, culture_area_cm2, "
-        "doubling_time_h, culture_duration_h (no seed_count)"
+        "doubling_time_h, culture_duration_h (no seed_count)",
     )
     dosing: dict[str, Any] | None = Field(
         default=None,
@@ -121,37 +126,47 @@ def derive_culture(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_design(inp: DesignInput) -> DesignPlan:
-    """Derive every computed field from the agent's raw inputs."""
-    # Flow metrics — all recomputed here, never accepted from the LLM.
-    derived = DerivedFlowMetrics(
-        shear_pa=mf.wall_shear_stress(
-            inp.flow.flow_rate_uLmin, inp.chip.width_um, inp.chip.height_um, inp.flow.viscosity_pas
-        ),
-        reynolds=mf.reynolds_number(
-            inp.flow.flow_rate_uLmin, inp.chip.width_um, inp.chip.height_um,
-            inp.flow.viscosity_pas, inp.flow.density_kgm3,
-        ),
-        pressure_drop_pa=mf.pressure_drop(
-            inp.flow.flow_rate_uLmin, inp.chip.width_um, inp.chip.height_um,
-            inp.chip.length_mm, inp.flow.viscosity_pas,
-        ),
-        residence_time_s=mf.residence_time(
-            inp.flow.flow_rate_uLmin, inp.chip.width_um, inp.chip.height_um, inp.chip.length_mm
-        ),
-        channel_volume_ul=mf.channel_volume(
-            inp.chip.width_um, inp.chip.height_um, inp.chip.length_mm
-        ),
-        mean_velocity_mms=mf.mean_velocity(
-            inp.flow.flow_rate_uLmin, inp.chip.width_um, inp.chip.height_um
-        ),
-    )
+    """Derive every computed field from the agent's raw inputs.
 
-    cells = CellPlan(
-        **inp.cells,
-        seed_count=calc_cell.seeding_cell_count(
-            inp.cells["seeding_density_cells_cm2"], inp.cells["culture_area_cm2"]
-        ),
-    )
+    A design carries the flow/cell block when a chip + flow + cell inputs are
+    given, and/or the culture block for plate-based culture. Blocks the agent
+    did not propose are left ``None`` — a plate-only design is never forced to
+    invent a chip.
+    """
+    # Flow metrics — all recomputed here, never accepted from the LLM.
+    derived = None
+    if inp.chip is not None and inp.flow is not None:
+        derived = DerivedFlowMetrics(
+            shear_pa=mf.wall_shear_stress(
+                inp.flow.flow_rate_uLmin, inp.chip.width_um, inp.chip.height_um, inp.flow.viscosity_pas
+            ),
+            reynolds=mf.reynolds_number(
+                inp.flow.flow_rate_uLmin, inp.chip.width_um, inp.chip.height_um,
+                inp.flow.viscosity_pas, inp.flow.density_kgm3,
+            ),
+            pressure_drop_pa=mf.pressure_drop(
+                inp.flow.flow_rate_uLmin, inp.chip.width_um, inp.chip.height_um,
+                inp.chip.length_mm, inp.flow.viscosity_pas,
+            ),
+            residence_time_s=mf.residence_time(
+                inp.flow.flow_rate_uLmin, inp.chip.width_um, inp.chip.height_um, inp.chip.length_mm
+            ),
+            channel_volume_ul=mf.channel_volume(
+                inp.chip.width_um, inp.chip.height_um, inp.chip.length_mm
+            ),
+            mean_velocity_mms=mf.mean_velocity(
+                inp.flow.flow_rate_uLmin, inp.chip.width_um, inp.chip.height_um
+            ),
+        )
+
+    cells = None
+    if inp.cells is not None:
+        cells = CellPlan(
+            **inp.cells,
+            seed_count=calc_cell.seeding_cell_count(
+                inp.cells["seeding_density_cells_cm2"], inp.cells["culture_area_cm2"]
+            ),
+        )
 
     dosing = None
     if inp.dosing is not None:

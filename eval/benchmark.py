@@ -92,21 +92,22 @@ def relative_error(got: float | None, expected: float) -> float:
 def parameter_recovery(gold: GoldExperiment, plan: DesignPlan) -> dict[str, float]:
     """Relative error of the design vs the gold standard on key parameters."""
     errs: dict[str, float] = {}
-    d = plan.derived
-    derived_map = {
-        "shear_pa": d.shear_pa,
-        "reynolds": d.reynolds,
-        "pressure_drop_pa": d.pressure_drop_pa,
-        "residence_time_s": d.residence_time_s,
-        "channel_volume_ul": d.channel_volume_ul,
-        "mean_velocity_mms": d.mean_velocity_mms,
-    }
-    for key, value in derived_map.items():
-        if key in gold.expected:
-            errs[key] = relative_error(value, gold.expected[key])
-    if "flow_rate_uLmin" in gold.expected:
+    if plan.derived is not None:
+        d = plan.derived
+        derived_map = {
+            "shear_pa": d.shear_pa,
+            "reynolds": d.reynolds,
+            "pressure_drop_pa": d.pressure_drop_pa,
+            "residence_time_s": d.residence_time_s,
+            "channel_volume_ul": d.channel_volume_ul,
+            "mean_velocity_mms": d.mean_velocity_mms,
+        }
+        for key, value in derived_map.items():
+            if key in gold.expected:
+                errs[key] = relative_error(value, gold.expected[key])
+    if "flow_rate_uLmin" in gold.expected and plan.flow is not None:
         errs["flow_rate_uLmin"] = relative_error(plan.flow.flow_rate_uLmin, gold.expected["flow_rate_uLmin"])
-    if "seed_count" in gold.expected:
+    if "seed_count" in gold.expected and plan.cells is not None:
         errs["seed_count"] = relative_error(plan.cells.seed_count, gold.expected["seed_count"])
     if "dmso_fraction_vv" in gold.expected and plan.dosing is not None:
         errs["dmso_fraction_vv"] = relative_error(plan.dosing.dmso_fraction_vv, gold.expected["dmso_fraction_vv"])
@@ -155,6 +156,13 @@ def hallucination_rate(plan: DesignPlan) -> float:
         return 0.0
     errored = {i.field for i in issues if i.level == "error"}
     present = set(_DERIVED_FIELDS)
+    if plan.derived is None or plan.chip is None or plan.flow is None:
+        for f in ("derived.shear_pa", "derived.reynolds", "derived.pressure_drop_pa",
+                  "derived.residence_time_s", "derived.channel_volume_ul",
+                  "derived.mean_velocity_mms"):
+            present.discard(f)
+    if plan.cells is None:
+        present.discard("cells.seed_count")
     if plan.dosing is None:
         present.discard("dosing.dmso_fraction_vv")
     if plan.stats is None:

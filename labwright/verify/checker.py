@@ -40,6 +40,8 @@ def _close(a: float, b: float, tol: float = _TOL) -> bool:
 
 def check_flow(plan: DesignPlan, issues: list[Issue]) -> None:
     """Recompute every derived flow metric from the raw inputs."""
+    if plan.chip is None or plan.flow is None or plan.derived is None:
+        return
     w, h, L = plan.chip.width_um, plan.chip.height_um, plan.chip.length_mm
     q, mu = plan.flow.flow_rate_uLmin, plan.flow.viscosity_pas
     d = plan.derived
@@ -67,6 +69,8 @@ def check_flow(plan: DesignPlan, issues: list[Issue]) -> None:
 
 def check_seeding(plan: DesignPlan, issues: list[Issue]) -> None:
     """Cross-check cell seeding against the culture area and density."""
+    if plan.cells is None or plan.chip is None:
+        return
     expected = calc_cell.seeding_cell_count(
         plan.cells.seeding_density_cells_cm2, plan.cells.culture_area_cm2
     )

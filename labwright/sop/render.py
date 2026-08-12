@@ -12,43 +12,72 @@ from labwright.schema.design import DesignPlan
 
 def design_to_sop(plan: DesignPlan) -> str:
     """Full markdown protocol for a verified design plan."""
-    d = plan.derived
     lines: list[str] = [
         f"# SOP: {plan.goal}",
         "",
         f"_{plan.rationale}_",
         "",
-        "## 1. Device & channel",
-        f"- Geometry: {plan.chip.width_um:.0f} µm wide × {plan.chip.height_um:.0f} µm high × "
-        f"{plan.chip.length_mm:.0f} mm long, material {plan.chip.material}",
-        f"- Culture volume per channel: **{d.channel_volume_ul:.2f} µL**",
-        "",
-        "## 2. Perfusion",
-        f"- Flow rate: **{plan.flow.flow_rate_uLmin:.2f} µL/min** per channel",
-        f"- Wall shear stress: **{d.shear_pa:.3f} Pa** ({d.shear_pa * 10:.2f} dyn/cm²)",
-        f"- Reynolds number: {d.reynolds:.2f} (laminar, Re << 2300)",
-        f"- Pressure drop: {d.pressure_drop_pa:.1f} Pa — verify the pump can hold this",
-        f"- Mean residence time: {d.residence_time_s:.1f} s",
-        f"- Mean velocity: {d.mean_velocity_mms:.2f} mm/s",
-        "",
-        "## 3. Cell seeding",
-        f"- Cell type: {plan.cells.cell_type}",
-        f"- Seeding density: {plan.cells.seeding_density_cells_cm2:g} cells/cm² over "
-        f"{plan.cells.culture_area_cm2:.3f} cm²",
-        f"- **Seed {plan.cells.seed_count:g} cells** per channel",
     ]
+    section = 1
 
-    if plan.cells.doubling_time_h:
+    if plan.chip is not None and plan.flow is not None and plan.derived is not None and plan.cells is not None:
+        d = plan.derived
         lines += [
-            f"- Doubling time {plan.cells.doubling_time_h:g} h; culture duration "
-            f"{plan.cells.culture_duration_h or '—'} h",
+            f"## {section}. Device & channel",
+            "",
+            f"- Geometry: {plan.chip.width_um:.0f} µm wide × {plan.chip.height_um:.0f} µm high × "
+            f"{plan.chip.length_mm:.0f} mm long, material {plan.chip.material}",
+            f"- Culture volume per channel: **{d.channel_volume_ul:.2f} µL**",
+            "",
+            f"## {section + 1}. Perfusion",
+            "",
+            f"- Flow rate: **{plan.flow.flow_rate_uLmin:.2f} µL/min** per channel",
+            f"- Wall shear stress: **{d.shear_pa:.3f} Pa** ({d.shear_pa * 10:.2f} dyn/cm²)",
+            f"- Reynolds number: {d.reynolds:.2f} (laminar, Re << 2300)",
+            f"- Pressure drop: {d.pressure_drop_pa:.1f} Pa — verify the pump can hold this",
+            f"- Mean residence time: {d.residence_time_s:.1f} s",
+            f"- Mean velocity: {d.mean_velocity_mms:.2f} mm/s",
+            "",
+            f"## {section + 2}. Cell seeding",
+            "",
+            f"- Cell type: {plan.cells.cell_type}",
+            f"- Seeding density: {plan.cells.seeding_density_cells_cm2:g} cells/cm² over "
+            f"{plan.cells.culture_area_cm2:.3f} cm²",
+            f"- **Seed {plan.cells.seed_count:g} cells** per channel",
         ]
+        if plan.cells.doubling_time_h:
+            lines.append(
+                f"- Doubling time {plan.cells.doubling_time_h:g} h; culture duration "
+                f"{plan.cells.culture_duration_h or '—'} h",
+            )
+        section += 3
+
+    if plan.culture is not None:
+        cu = plan.culture
+        lines += [
+            f"## {section}. Plate culture",
+            "",
+            f"- Format: **{cu.plate_format}-well plate**, {cu.wells} well(s), {cu.cell_type}",
+            f"- Seeding density: {cu.seeding_density_cells_cm2:g} cells/cm²",
+            f"- **Seed {cu.seed_per_well:g} cells per well** ({cu.total_seed_count:g} total)",
+            f"- Medium: **{cu.medium_volume_per_well_ml:g} mL per well** "
+            f"({cu.total_medium_ml:g} mL total)",
+        ]
+        if cu.viability_pct is not None:
+            lines.append(f"- Post-thaw/passage viability: {cu.viability_pct:g}%")
+        if cu.expected_confluence_pct is not None:
+            lines.append(f"- Predicted confluence at harvest: **{cu.expected_confluence_pct:.1f}%**"
+                         + (" ⚠ over-confluent" if cu.expected_confluence_pct > 100 else ""))
+        elif cu.doubling_time_h is not None and cu.confluent_density_cells_cm2 is not None:
+            lines.append("- Confluence prediction: need culture_duration_h (add it to plan the harvest day)")
+        section += 1
 
     if plan.dosing is not None:
         dos = plan.dosing
         lines += [
             "",
-            "## 4. Compound dosing",
+            f"## {section}. Compound dosing",
+            "",
             f"- Compound: {dos.compound} (MW {dos.molecular_weight_g_mol:g} g/mol)",
             f"- Stock: {dos.stock_mM:g} mM",
             f"- Working dose: **{dos.working_mM:g} mM**",
@@ -58,20 +87,23 @@ def design_to_sop(plan: DesignPlan) -> str:
         ]
         if dos.exposure_h:
             lines.append(f"- Exposure: {dos.exposure_h:g} h")
+        section += 1
 
     if plan.stats is not None:
         st = plan.stats
         lines += [
             "",
-            "## 5. Statistical design",
+            f"## {section}. Statistical design",
+            "",
             f"- Assumed effect {st.effect_size:g} (σ = {st.std_dev:g}); α = {st.alpha:g}, target power {st.power:g}",
             f"- **{st.n_per_group} biological replicates per group**",
         ]
         if st.note:
             lines.append(f"- Note: {st.note}")
+        section += 1
 
     if plan.caveats:
-        lines += ["", "## 6. Caveats to check in the lab"] + [f"- {c}" for c in plan.caveats]
+        lines += ["", f"## {section}. Caveats to check in the lab"] + [f"- {c}" for c in plan.caveats]
 
     lines += [
         "",
