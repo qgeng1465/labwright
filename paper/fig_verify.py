@@ -102,8 +102,9 @@ def main(argv: list[str]) -> int:
             cells[c["field"]] = c["verdict"]
         matrix[pid] = cells
 
-    fig, axes = plt.subplots(1, 2, figsize=(8.8, 3.6),
-                             constrained_layout=True, width_ratios=[1.25, 3.4])
+    # No constrained_layout: it silently ignores the subplots_adjust below (which
+    # would leave the legend overlapping the panels). Manual fractions instead.
+    fig, axes = plt.subplots(1, 2, figsize=(8.8, 3.6), width_ratios=[1.25, 3.4])
     fig.patch.set_facecolor("white")
 
     # ---- left: overall verdict (categorical, not a fake bar scale) ----

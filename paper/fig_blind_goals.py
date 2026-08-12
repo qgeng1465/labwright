@@ -121,7 +121,7 @@ def main(argv: list[str]) -> int:
 
     fig, ax = plt.subplots(figsize=(7.6, 5.6))
     fig.patch.set_facecolor("white")
-    fig.subplots_adjust(top=0.84, bottom=0.09, left=0.17, right=0.90)
+    fig.subplots_adjust(top=0.82, bottom=0.09, left=0.17, right=0.90)
 
     n_rows = len(gold)
     n_cols = 4  # flash-bare, flash-lab, pro-bare, pro-lab

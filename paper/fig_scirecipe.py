@@ -61,8 +61,9 @@ def main(argv: list[str]) -> int:
     n_unv = verdicts.get("unverifiable", 0)
     n_check = n_ok + n_review
 
-    fig, axes = plt.subplots(1, 2, figsize=(9.2, 4.4),
-                             constrained_layout=True, width_ratios=[1.2, 1.7])
+    # No constrained_layout: it silently ignores the subplots_adjust below (which
+    # would leave the legend overlapping the panels). Manual fractions instead.
+    fig, axes = plt.subplots(1, 2, figsize=(9.2, 4.4), width_ratios=[1.2, 1.7])
     fig.patch.set_facecolor("white")
     fig.subplots_adjust(top=0.80)
 

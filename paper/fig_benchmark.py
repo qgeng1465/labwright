@@ -155,13 +155,13 @@ def main(argv: list[str]) -> int:
                     txt = f"{100 * v:.0f}%" if v >= 0.005 else ""
                     if v >= 0.85:
                         ax.text(pos + off, v - 0.015, txt, ha="center", va="top",
-                                fontsize=7.2, color=_label_color(color))
+                                fontsize=8.0, color=_label_color(color))
                     elif v > 0.30:
                         ax.text(pos + off, v - 0.015, txt, ha="center", va="top",
-                                fontsize=7.2, color=_label_color(color))
+                                fontsize=8.0, color=_label_color(color))
                     elif v >= 0.005:
                         ax.text(pos + off, v + 0.015, txt, ha="center", va="bottom",
-                                fontsize=7.2, color=INK)
+                                fontsize=8.0, color=INK)
 
             # axis dressing: recessive, ink-only
             ax.set_xticks(range(len(data)))
