@@ -171,9 +171,9 @@ def harvest_quote(orc: str, claims: dict[str, Any]) -> str:
 
 
 def audit_row(
-    orc: str, extract_fn: Callable[[str], dict[str, Any] | None], reference: str
+    orc: str, raw: dict[str, Any] | None, reference: str
 ) -> dict[str, Any]:
-    """Audit one protocol summary. Returns a per-row record."""
+    """Audit one protocol summary with its pre-extracted raw. Returns a record."""
     domain = route_domain(orc)
     claimed = harvest_claims(orc)
     record: dict[str, Any] = {
@@ -187,9 +187,6 @@ def audit_row(
         record["verdict"] = "unverifiable"
         record["reason"] = "no_domain"
         return record
-    t0 = time.time()
-    raw = extract_fn(orc)
-    record["extract_s"] = round(time.time() - t0, 3)
     if not raw:
         record["verdict"] = "unverifiable"
         record["reason"] = "extract_failed"
@@ -234,14 +231,22 @@ def run_audit(
     extract_fn: Callable[[str], dict[str, Any] | None],
     parquet_path: str = DEFAULT_PARQUET,
     limit: int | None = None,
+    batch_size: int = 1,
+    batch_extract_fn: Callable[[list[str]], list[dict[str, Any] | None]] | None = None,
 ) -> dict[str, Any]:
-    """Funnel the SciRecipe corpus, audit numeric rows, return the report."""
+    """Funnel the SciRecipe corpus, audit numeric rows, return the report.
+
+    ``extract_fn`` scores rows one at a time; when ``batch_size > 1`` and a
+    ``batch_extract_fn`` is supplied, in-scope orcs are extracted in chunks so
+    the GPU decode is batched (left-padded) and the model stays warm.
+    """
     df = pd.read_parquet(parquet_path, columns=["exp_goal", "key", "orc", "note"])
     if limit:
         df = df.head(limit)
     t0 = time.time()
     rows: list[dict[str, Any]] = []
     n_numeric = n_culture = n_flow = n_none = 0
+    in_scope: list[tuple[int, str, str]] = []  # (row_idx, orc, reference)
     for i, row in df.iterrows():
         orc = str(row.get("orc") or "").strip()
         if not orc or not has_numbers(orc):
@@ -256,7 +261,17 @@ def run_audit(
             n_none += 1
             continue  # not in scope: no checkable domain, not deep-audited
         reference = (str(row.get("exp_goal") or row.get("note") or f"SciRecipe-row-{i}"))[:120]
-        rows.append(audit_row(orc, extract_fn, reference))
+        in_scope.append((i, orc, reference))
+
+    if batch_size > 1 and batch_extract_fn is not None:
+        for start in range(0, len(in_scope), batch_size):
+            chunk = in_scope[start:start + batch_size]
+            raws = batch_extract_fn([o for _, o, _ in chunk])
+            for (i, orc, reference), raw in zip(chunk, raws):
+                rows.append(audit_row(orc, raw, reference))
+    else:
+        for i, orc, reference in in_scope:
+            rows.append(audit_row(orc, extract_fn(orc), reference))
 
     verdicts = {}
     for r in rows:
@@ -285,6 +300,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="deterministic funnel + harvest only, no extractor")
     parser.add_argument("--adapter", default="results/extractor/lora")
     parser.add_argument("--model", default="/data/hf_models/Qwen/Qwen2.5-1.5B-Instruct")
+    parser.add_argument("--batch-size", type=int, default=1,
+                        help="left-padded GPU batch decode (e.g. 6); 1 = sequential")
     args = parser.parse_args(argv)
 
     def no_extract(_orc: str) -> dict[str, Any] | None:
@@ -296,7 +313,11 @@ def main(argv: list[str] | None = None) -> int:
         from labwright.extract.pipeline import Extractor
 
         ext = Extractor(model_path=args.model, adapter_path=args.adapter)
-        report = run_audit(ext.extract, args.parquet, args.limit)
+        report = run_audit(
+            ext.extract, args.parquet, args.limit,
+            batch_size=args.batch_size,
+            batch_extract_fn=ext.extract_batch if args.batch_size > 1 else None,
+        )
 
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as fh:

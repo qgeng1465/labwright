@@ -109,7 +109,38 @@ class Extractor:
         return plan, issues, None
 
     def extract_batch(self, goals: list[str], max_new_tokens: int = 384) -> list[dict[str, Any] | None]:
-        return [self.extract(g, max_new_tokens=max_new_tokens) for g in goals]
+        """Decode a batch of goals in one generate call (left-padded).
+
+        The single-row :meth:`extract` dominates wall time on the V100 (a 1.5B
+        fp16 decode of ~300 tokens is ~3 s/row); batching raises GPU utilization
+        so the SciRecipe audit over thousands of rows stays tractable. Outputs
+        are parsed back to their row order after un-padding.
+        """
+        if not goals:
+            return []
+        msgs = [[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": g},
+        ] for g in goals]
+        prompts = [self.tokenizer.apply_chat_template(
+            m, tokenize=False, add_generation_prompt=True) for m in msgs]
+        inputs = self.tokenizer(
+            prompts, return_tensors="pt", padding=True, truncation=True,
+            max_length=1024, return_token_type_ids=False)
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+        # Left-padding makes per-row prompt lengths unequal to the batch width;
+        # the mask sum recovers each row's own prompt length for un-padding.
+        prompt_lens = inputs["attention_mask"].sum(dim=1)
+        with torch.no_grad():
+            out = self.model.generate(
+                **inputs, max_new_tokens=max_new_tokens, do_sample=False,
+                pad_token_id=self.tokenizer.pad_token_id,
+            )
+        texts = [
+            self.tokenizer.decode(out[i, prompt_lens[i]:], skip_special_tokens=True)
+            for i in range(len(goals))
+        ]
+        return [parse_json(t) for t in texts]
 
 
 def format_audit(goal: str, plan, issues: list[Issue] | None, error: str | None) -> str:

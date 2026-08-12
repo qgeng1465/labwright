@@ -63,16 +63,10 @@ def test_harvest_reynolds_and_culture():
 # ---------------------------------------------------------------------------
 
 
-def _stub_extract(raw):
-    def fn(_orc):
-        return raw
-    return fn
-
-
 def test_audit_culture_consistent_row():
     orc = "Seed 1e4 cells/cm2 in a 96-well plate; seeded 3200 cells per well."
     raw = {"culture": {"plate_format": "96-well", "seeding_density_cells_cm2": 1e4}}
-    rec = audit_row(orc, _stub_extract(raw), reference="ref-1")
+    rec = audit_row(orc, raw, reference="ref-1")
     assert rec["verdict"] == "ok"
     assert rec["domain"] == "culture"
     assert rec["computed"]["seed_per_well"] == pytest.approx(3200, rel=1e-6)
@@ -81,7 +75,7 @@ def test_audit_culture_consistent_row():
 def test_audit_culture_contradiction_row():
     orc = "Seed 1e4 cells/cm2 in a 96-well plate; seeded 6400 cells per well."
     raw = {"culture": {"plate_format": "96-well", "seeding_density_cells_cm2": 1e4}}
-    rec = audit_row(orc, _stub_extract(raw), reference="ref-2")
+    rec = audit_row(orc, raw, reference="ref-2")
     assert rec["verdict"] == "review_required"
     assert rec["discrepancy_fields"] == ["seed_per_well"]
 
@@ -90,7 +84,7 @@ def test_audit_flow_row():
     orc = "400 µm channel, shear 0.05 Pa."
     raw = {"chip": {"width_um": 400, "height_um": 100, "length_mm": 20},
            "flow": {"flow_rate_uLmin": 2, "viscosity_pas": 0.001}}
-    rec = audit_row(orc, _stub_extract(raw), reference="ref-3")
+    rec = audit_row(orc, raw, reference="ref-3")
     assert rec["verdict"] == "ok"
     assert rec["domain"] == "flow"
     assert rec["computed"]["shear_pa"] == pytest.approx(0.05, rel=1e-3)
@@ -98,14 +92,14 @@ def test_audit_flow_row():
 
 def test_audit_no_domain_unverifiable():
     orc = "Grind samples and vortex for 5 min."
-    rec = audit_row(orc, _stub_extract({}), reference="ref-4")
+    rec = audit_row(orc, {}, reference="ref-4")
     assert rec["verdict"] == "unverifiable"
     assert rec["reason"] == "no_domain"
 
 
 def test_audit_extract_failure_unverifiable():
     orc = "Seed 1e4 cells/cm2 in a 96-well plate."
-    rec = audit_row(orc, lambda _: None, reference="ref-5")
+    rec = audit_row(orc, None, reference="ref-5")
     assert rec["verdict"] == "unverifiable"
     assert rec["reason"] == "extract_failed"
 
@@ -114,6 +108,6 @@ def test_audit_domain_raw_mismatch_unverifiable():
     # routed culture, but the extractor returned only flow raws
     orc = "Seed 1e4 cells/cm2 in a 96-well plate."
     raw = {"chip": {"width_um": 400}, "flow": {"flow_rate_uLmin": 2}}
-    rec = audit_row(orc, _stub_extract(raw), reference="ref-6")
+    rec = audit_row(orc, raw, reference="ref-6")
     assert rec["verdict"] == "unverifiable"
     assert rec["reason"] == "no_culture_raw"
