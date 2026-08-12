@@ -117,6 +117,24 @@ def cmd_tools(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_audit(args: argparse.Namespace) -> int:
+    """Extract raw inputs from a goal prose with the fine-tuned extractor, then
+    derive and verify. This is the local, calculator-backed fast path."""
+    from labwright.extract.pipeline import Extractor, format_audit
+    from labwright.verify.checker import has_errors
+
+    try:
+        ext = Extractor(model_path=args.model, adapter_path=args.adapter)
+    except Exception as exc:  # noqa: BLE001 - surface model/adapter load failure
+        print(f"[error] cannot load extractor: {exc}", file=sys.stderr)
+        return 2
+    plan, issues, error = ext.extract_plan(args.goal)
+    print(format_audit(args.goal, plan, issues, error))
+    if error is not None or (issues is not None and has_errors(issues)):
+        return 1
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="labwright", description=f"Labwright v{__version__}")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -129,6 +147,15 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("tools", help="List available calculator tools")
     p.set_defaults(func=cmd_tools)
+
+    p = sub.add_parser(
+        "audit",
+        help="Extract raw inputs from a goal with the fine-tuned extractor, derive and verify",
+    )
+    p.add_argument("goal", help="Experimental goal prose")
+    p.add_argument("--model", default="/data/hf_models/Qwen/Qwen2.5-1.5B-Instruct")
+    p.add_argument("--adapter", default="results/extractor/lora")
+    p.set_defaults(func=cmd_audit)
 
     p = sub.add_parser(
         "verify-protocol",
