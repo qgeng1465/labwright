@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from labwright.design import DesignInput, build_design
-from labwright.extract.data import SYSTEM_PROMPT
+from labwright.extract.data import SCHEMA_PROMPT, SYSTEM_PROMPT
 from labwright.extract.pipeline import Extractor, parse_json
 from labwright.verify.checker import has_errors, verify_design
 
@@ -182,11 +182,17 @@ def score_batch(
     }
 
 
-def api_extract(chat: Callable[[str], str]):
-    """Wrap an LLMClient.chat-style callable into an extract function."""
+def api_extract(chat: Callable[[str], str], system_prompt: str = SYSTEM_PROMPT):
+    """Wrap an LLMClient.chat-style callable into an extract function.
+
+    ``system_prompt`` defaults to the bare SYSTEM_PROMPT; API baselines pass
+    :data:`SCHEMA_PROMPT` so the exact raw-input key contract is spelled out
+    (the fine-tuned model learned it during training, so a bare prompt would
+    test key-name guessing instead of value extraction).
+    """
     def _fn(goal: str) -> dict | None:
         try:
-            text = chat(SYSTEM_PROMPT + "\n\nGoal: " + goal)
+            text = chat(system_prompt + "\n\nGoal: " + goal)
         except Exception:
             return None
         return parse_json(text or "")
@@ -246,7 +252,8 @@ def main() -> int:
         for name in args.api:
             client = LLMClient(model=name)
             chat = lambda prompt, _c=client: (_c.chat([{"role": "user", "content": prompt}], max_tokens=512).content or "")
-            report["systems"][name] = score_batch(api_extract(chat), eval_rows, blind)
+            report["systems"][name] = score_batch(
+                api_extract(chat, system_prompt=SCHEMA_PROMPT), eval_rows, blind)
             print(name, ":", report["systems"][name])
 
     out = Path(args.out)

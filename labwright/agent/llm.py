@@ -8,8 +8,22 @@ The API key is read from ``LABWRIGHT_API_KEY`` or ``DEEPSEEK_API_KEY``.
 from __future__ import annotations
 
 import os
+import time
 
+import openai
 from openai import OpenAI
+
+#: Transient failures worth retrying — rate limits (429), timeouts, 5xx and
+#: connection errors. Without retries a rate-limited row silently scores as a
+#: failure, biasing the benchmark and the API comparison down.
+_RETRYABLE = (
+    openai.RateLimitError,
+    openai.APITimeoutError,
+    openai.APIConnectionError,
+    openai.InternalServerError,
+    openai.APIStatusError,
+)
+_MAX_RETRIES = 3
 
 
 class LLMClient:
@@ -40,14 +54,22 @@ class LLMClient:
         self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
     def chat(self, messages: list[dict], tools: list[dict] | None = None, max_tokens: int = 8192):
-        """One chat-completion call; returns the raw assistant message."""
+        """One chat-completion call, with exponential-backoff retry; returns the raw assistant message."""
         kwargs: dict = {"model": self.model, "messages": messages, "temperature": self.temperature}
         if tools:
             kwargs["tools"] = tools
         kwargs["max_tokens"] = max_tokens
         if self.disable_thinking:
             kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
-        return self._client.chat.completions.create(**kwargs).choices[0].message
+        last: Exception | None = None
+        for attempt in range(_MAX_RETRIES):
+            try:
+                return self._client.chat.completions.create(**kwargs).choices[0].message
+            except _RETRYABLE as exc:
+                last = exc
+                if attempt < _MAX_RETRIES - 1:
+                    time.sleep(1.5 * (2 ** attempt))  # 1.5s, 3s, then give up
+        raise last  # type: ignore[misc]
 
 
 __all__ = ["LLMClient"]

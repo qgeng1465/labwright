@@ -24,6 +24,23 @@ SYSTEM_PROMPT = (
     "return. Return ONLY the JSON object."
 )
 
+#: The same contract, with the exact key names spelled out. The fine-tuned
+#: extractor learned this from its training rows; untrained API baselines are
+#: told it here so the comparison tests value extraction, not key-name guessing.
+SCHEMA_PROMPT = SYSTEM_PROMPT + (
+    "\n\nUse EXACTLY these key names and units in the JSON:\n"
+    "  chip (microfluidic channel): width_um (µm), height_um (µm), length_mm (mm)\n"
+    "  flow (perfusion): flow_rate_uLmin (µL/min per channel), viscosity_pas (Pa·s), "
+    "density_kgm3 (kg/m³)\n"
+    "  cells: cell_type, seeding_density_cells_cm2 (cells/cm²), culture_area_cm2 (cm²)\n"
+    "  culture (plate design; omit chip/flow/cells): plate_format "
+    "('6-well'|'12-well'|'24-well'|'48-well'|'96-well'), wells (integer), cell_type, "
+    "seeding_density_cells_cm2 (cells/cm²), and optionally viability_pct, "
+    "confluent_density_cells_cm2, doubling_time_h, culture_duration_h\n"
+    "Emit chip+flow (+cells) for a microfluidic design, or culture for a "
+    "plate design — never both."
+)
+
 #: ChatML assistant-turn opener, as rendered by the Qwen2.5 template. The loss
 #: mask boundary is found by locating this marker in the rendered text.
 _ASSISTANT_MARKER = "<|im_start|>assistant\n"
