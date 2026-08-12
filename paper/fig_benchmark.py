@@ -183,9 +183,12 @@ def main(argv: list[str]) -> int:
     for col, (name, sub) in enumerate(SETS):
         pos = axes[0, col].get_position()
         cx = pos.x0 + pos.width / 2
-        fig.text(cx, 0.865, name, ha="center", va="bottom", fontsize=10.5,
+        # Headers sit below the legend's rendered bbox (legend is centred on
+        # the whole figure, so its left entries overlap a left-panel-centred
+        # header unless the header is dropped far enough).
+        fig.text(cx, 0.85, name, ha="center", va="bottom", fontsize=10.5,
                  color=INK, fontweight="bold")
-        fig.text(cx, 0.825, sub, ha="center", va="top", fontsize=8, color=MUT)
+        fig.text(cx, 0.80, sub, ha="center", va="top", fontsize=8, color=MUT)
 
     for ax in axes[:, 0]:
         ax.set_ylabel("fraction of goals", fontsize=8.5, color=MUT)
@@ -194,7 +197,7 @@ def main(argv: list[str]) -> int:
         Patch(facecolor=color, edgecolor=edge, hatch=hatch, linewidth=0.5, label=label)
         for (_key, label, color, edge, hatch) in SYSTEMS
     ]
-    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 0.90),
+    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 0.95),
                ncol=len(SYSTEMS), frameon=False, fontsize=8.5)
 
     out = Path(__file__).resolve().parent

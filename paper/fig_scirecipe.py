@@ -117,10 +117,10 @@ def main(argv: list[str]) -> int:
             else:
                 # thin slice: count floats above the bar, clear of the neighbours
                 ax.text(cx, 0.58, f"{value:,}", va="center", ha="center",
-                        fontsize=7.5, color=WARN, zorder=3)
+                        fontsize=8, color=WARN, zorder=3)
             if frac >= 0.055 and color in (GOOD, WARN):
                 # coloured slice wide enough for the name, under the count
-                ax.text(cx, -0.15, label, ha="center", va="center", fontsize=7.5,
+                ax.text(cx, -0.15, label, ha="center", va="center", fontsize=8,
                         color="white", zorder=3)
             elif frac >= 0.045:
                 # light/wide slice: name above the bar

@@ -121,6 +121,10 @@ def main(argv: list[str]) -> int:
                 fontsize=8, color=INK, zorder=4)
     ax.set_yticks(y_positions)
     ax.set_yticklabels([lbl for _, lbl, _ in PROTOCOLS], fontsize=8, color=INK)
+    # Explicit ylim before invert, matching the right panel exactly. Without it
+    # matplotlib adds a default 5% margin and the two panels' rows drift apart
+    # (top row left-high/right-low, bottom row left-low/right-high).
+    ax.set_ylim(-0.5, len(PROTOCOLS) - 0.5)
     ax.invert_yaxis()
     ax.set_xlim(0, 2.0)
     ax.set_xticks([])

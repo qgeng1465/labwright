@@ -88,13 +88,6 @@ GOAL_LABELS = {
 #: Marked with † so the cold-only recovery is countable from the figure.
 PROMPT_BACKED = {"blind-liver-sinusoid", "blind-lung-alveolar", "blind-bbb-shear"}
 
-#: (column title, [system, model-file])
-COLUMNS = [
-    ("flash", [("bare", 0), ("labwright", 1)]),
-    ("pro", [("bare", 0), ("labwright", 1)]),
-]
-
-
 def _val(rec: dict | None, key: str) -> float | None:
     if not rec:
         return None
@@ -193,12 +186,11 @@ def main(argv: list[str]) -> int:
                    fontsize=8, color=MUT)
     cbar.set_ticks([0, 0.5, 1, 5, 10])
     cbar.set_ticklabels(["hit", "0.5×", "1×", "5×", "≥10×"])
-    cbar.ax.tick_params(labelsize=7.5, colors=MUT)
+    cbar.ax.tick_params(labelsize=8, colors=MUT)
 
     # legend for NA + hit; the white swatch needs an edge to be visible on the
     # white figure background
     handles = [
-        Patch(facecolor=NA_COLOR, label="no recovery reported (unverifiable)"),
         Patch(facecolor=CMAP(0.0), edgecolor=GRID, linewidth=0.8,
               label="√ recovery within 5% of target"),
     ]
@@ -206,7 +198,7 @@ def main(argv: list[str]) -> int:
                ncol=2, frameon=False, fontsize=8)
     fig.text(0.02, 0.015,
              "† = target hinted in system prompt · the two seeding goals are scored on cell-count recovery",
-             fontsize=7.5, color=MUT, ha="left", va="bottom")
+             fontsize=8, color=MUT, ha="left", va="bottom")
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_blind_goals.pdf", bbox_inches="tight", facecolor="white")
