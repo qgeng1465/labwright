@@ -11,6 +11,26 @@
       "field_recovery_ok_rate": 0.72,
       "mean_field_rel_error": 0.00586,
       "target_recovery_rate": 0.0
+    },
+    "deepseek-v4-flash": {
+      "n_rows": 400,
+      "n_blind": 12,
+      "json_parse_rate": 1.0,
+      "schema_ok_rate": 0.4005,
+      "consistency_rate": 0.4005,
+      "field_recovery_ok_rate": 0.3875,
+      "mean_field_rel_error": 0.000227,
+      "target_recovery_rate": 0.0
+    },
+    "deepseek-v4-pro": {
+      "n_rows": 400,
+      "n_blind": 12,
+      "json_parse_rate": 1.0,
+      "schema_ok_rate": 0.4005,
+      "consistency_rate": 0.4005,
+      "field_recovery_ok_rate": 0.3875,
+      "mean_field_rel_error": 0.002976,
+      "target_recovery_rate": 0.2
     }
   }
 }
