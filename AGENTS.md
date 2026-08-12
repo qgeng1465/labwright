@@ -7,22 +7,17 @@ proposes raw inputs; deterministic calculators in `labwright/calc/` compute
 every derived number; `labwright/verify/` re-checks them. The project's thesis
 (and its paper) is that this fixes LLM hallucination of wet-lab numbers.
 
-- **Author only**: qgeng1465. No attribution to any external assistant anywhere in the
-  repo, code, or CI.
-- **Real significance rule**: no experiments/training run "for their own
-  sake". The `eval/` benchmark is a *reserved window* — run only after the code
-  and demo have traction, and only with DOI-verifiable gold data.
-- Target: real use + a good paper (scGPT-style: usable tool + benchmark +
-  preprint). Stars come from people being able to use it.
+All commits are authored by qgeng1465. Target: real use plus a good paper — a
+usable tool + benchmark + preprint. Stars come from people being able to use it.
 
 ## Commands
 
-- venv: `/data/qiushuogeng/projects/labwright/.venv/bin/python` (absolute path;
-  shell cwd resets between calls)
+- venv: `.venv/bin/python` (activate the repo venv first)
 - tests: `.venv/bin/python -m pytest tests/`
-- run: `.venv/bin/python -m labwright.cli design "..."` (needs API key)
+- run: `.venv/bin/python -m labwright.cli design "..."` (needs an API key)
 - pip index: TUNA mirror (`PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple`)
-- GitHub: no `gh` CLI — use curl + token at `/home/qiushuogeng/token.txt`
+- GitHub: no `gh` CLI — use `curl` + a PAT supplied through `GIT_ASKPASS`
+  (read the token from a local file; never put it in argv or a command line)
 - HF downloads: `HF_ENDPOINT=https://hf-mirror.com`
 
 ## Architecture
@@ -37,7 +32,7 @@ labwright/
   agent/        llm.py (OpenAI-compatible, DeepSeek default) + agent.py (ReAct)
   sop/          design_to_sop(): deterministic markdown protocol
   ui/           gradio demo; cli.py commands: design / tools
-eval/           benchmark harness + gold experiments (reserved window)
+eval/           benchmark harness + gold experiments
 ```
 
 ## Golden rule

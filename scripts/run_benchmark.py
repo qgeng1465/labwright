@@ -4,7 +4,7 @@
 Usage:
     python scripts/run_benchmark.py [--gold path] [--max-iterations N]
 
-Requires LABWRIGHT_API_KEY / DEEPSEEK_API_KEY (reserved experiment window).
+Requires LABWRIGHT_API_KEY / DEEPSEEK_API_KEY.
 """
 
 import argparse
@@ -37,7 +37,7 @@ def main() -> int:
     def progress(msg: str) -> None:
         print("  " + msg, flush=True)
 
-    print(f"Benchmarking {len(gold)} gold experiments (reserved experiment window)...")
+    print(f"Benchmarking {len(gold)} gold experiments...")
     results = evaluate(gold, agent_factory, chat, progress)
     print(json.dumps(results, indent=2))
     return 0

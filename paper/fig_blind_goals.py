@@ -65,6 +65,10 @@ GOAL_LABELS = {
     "blind-lymphatic-shear": "lymphatic",
 }
 
+#: goals whose target is hinted (as a range) in the Labwright system prompt.
+#: Marked with † so the cold-only recovery is countable from the figure.
+PROMPT_BACKED = {"blind-liver-sinusoid", "blind-lung-alveolar", "blind-bbb-shear"}
+
 #: (column title, [system, model-file])
 COLUMNS = [
     ("flash", [("bare", 0), ("labwright", 1)]),
@@ -129,7 +133,10 @@ def main(argv: list[str]) -> int:
 
     # row labels
     ax.set_yticks(range(n_rows))
-    ax.set_yticklabels([GOAL_LABELS.get(g, g) for g in gold], fontsize=8, color=INK)
+    ax.set_yticklabels(
+        [GOAL_LABELS.get(g, g) + ("†" if g in PROMPT_BACKED else "") for g in gold],
+        fontsize=8, color=INK,
+    )
     # column labels (model family on top, system under)
     ax.set_xticks(range(n_cols))
     ax.set_xticklabels(["", "", "", ""])
@@ -144,7 +151,7 @@ def main(argv: list[str]) -> int:
     ax.tick_params(length=0)
     for spine in ax.spines.values():
         spine.set_visible(False)
-    ax.set_title("blind-set shear recovery per goal (12 goals, target not stated)",
+    ax.set_title("blind-set shear recovery per goal (12 goals; † = target hinted in system prompt)",
                  fontsize=9.5, color=INK, pad=22)
 
     # colourbar

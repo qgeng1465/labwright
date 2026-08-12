@@ -34,6 +34,43 @@ Labwright inverts the responsibility:
 > **The model proposes raw inputs. The calculators produce and verify every
 > derived number. The model cannot write a number the calculators didn't check.**
 
+## The gap today's wet-lab LLMs haven't closed
+
+An LLM can write you a beautiful protocol. But **every number in it** — shear
+stress, flow rate, seeding density, DMSO carry-over, replicate count — is a
+*derived* quantity: it only exists once you choose a geometry, a flow, a cell
+density. Models write these from memory, and memory can't do arithmetic.
+
+We looked at every closely-related system we could run. None of them closes
+this gap:
+
+| System | How it handles protocol numbers | Can it *prove* a number follows from its own inputs? |
+|---|---|---|
+| **Thoth** (ICLR 2026) | 8B model trained on 12k+ real protocols with a structured reward to write *plausible* protocol text | No — verification is a learned, model-internal reward |
+| **BPL-COGEN** (bioRxiv 2026) | compiler gives 95.1% *type* fidelity on 300 Nature Protocols | No — checks structure, not physics |
+| **ChemCrow** (Nature Mach. Intell.) | LLM agent for chemistry; verification delegated to the LLM as judge | No — the judge can't be trusted for arithmetic |
+| **LLM self-check** ("check yourself") | the model re-derives its own numbers | No — we measured it: the second pass actively corrupts the first |
+| **MMFT OoC Designer** (IEEE TCAD 2024) | deterministic organ-chip *geometry* synthesis | No LLM, no natural language, no cell/dosing/stats layer |
+
+**Labwright inverts the responsibility: the model proposes raw inputs; the
+calculators compute every derived number; the verifier re-derives each one
+before a design is accepted.** The model cannot type a number the calculators
+didn't check — a hard gate, not a soft reward. And the *same* calculators run
+backwards: paste a published paper's geometry, flow and claimed shear, and
+Labwright recomputes the claims and flags anything that doesn't follow from the
+paper's own inputs — a reproducibility checker in three seconds
+([`labwright verify-protocol`](#quickstart)).
+
+We benchmarked the gate, honestly: a bare LLM hallucinates **1.000** of its
+numbers and produces **0 %** usable designs, while Labwright's verified designs
+reach **88–100 % usable with 0.000 hallucination** on the reading set — every
+number re-proven. One honest boundary, stated in [the benchmark](eval/README.md):
+verification is *necessary, not sufficient*. Labwright proves numbers are
+internally consistent; it cannot supply physiology the model doesn't know. The
+blind-set usable rate collapses to 25–33 % (11–22 % on goals with no hint at
+all) for exactly that reason. That boundary is the real research frontier, and
+closing it is where this project is headed.
+
 ## What you get
 
 | | Without Labwright | With Labwright |
@@ -295,8 +332,13 @@ Read the numbers honestly — and the boundary of what they mean.
   was internally verified, hallucination 0.000. But the designs aimed at the
   wrong physiology. On the 12 goals `flash` recovers 3 (arterial 1.5 Pa, lung
   0.03 Pa, BBB 1.0 Pa), `pro` 4 (venular 0.3 Pa, lung 0.03 Pa, HepG2 seeding
-  4000 cells per channel, BBB 1.0 Pa); both miss the liver (0.10 Pa vs the 0.05
-  Pa convention) and the kidney (`flash` 0.50 Pa, `pro` 0.20 Pa — 24× / 9× off
+  4000 cells per channel, BBB 1.0 Pa). **Cold-only honesty check:** three of
+  the 12 goals are `prompt-backed` (the answer sits in the system prompt —
+  liver, lung, BBB), so on the nine genuinely cold goals `flash` recovers only
+  **1** (arterial) and `pro` only **2** (venular, HepG2): cold-only usable ≈
+  **11 % / 22 %**, not 25 % / 33 %. The hint is not even enough for the liver,
+  which both models propose at 0.10 Pa instead of the 0.05 Pa convention. Both
+  also miss the kidney (`flash` 0.50 Pa, `pro` 0.20 Pa — 24× / 9× off
   the 0.02 Pa target, the `pro` error reading dyn/cm² as Pa). **The gate stops
   fabricated numbers; it cannot supply domain knowledge the model does not
   have.** That boundary is the honest headline, and it is exactly what a

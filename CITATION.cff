@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use Labwright in your work, please cite it as follows."
+title: "Labwright: the AI bench copilot that gets your numbers right"
+authors:
+  - family-names: Geng
+    given-names: Q.
+    website: "https://github.com/qgeng1465"
+version: "0.1.0"
+date-released: "2026-08-12"
+license: "Apache-2.0"
+url: "https://github.com/qgeng1465/labwright"
+keywords:
+  - organ-on-chip
+  - microfluidics
+  - llm-agent
+  - wet-lab
+  - experimental-design
+  - reproducibility

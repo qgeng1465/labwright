@@ -161,13 +161,16 @@ calculators + verifier reach usable > 0 % on design goals. thoth-8b — the one
 open-weights competitor runnable on this hardware — sits at the very bottom of
 the table: 0 % usable on every memory system on both sets, mostly because its
 trained protocol *prose* fails structured extraction (23/24 reading goals under
-soft-gate unverifiable). Training on protocol text does not teach arithmetic
-checkability.
+soft-gate unverifiable).
 
 The blind-set drop is the honest headline: when the goal does not hand over the
 target, Labwright's verified designs hit the wrong physiology. On the expanded
 12 goals, `flash` recovers 3 (arterial 1.5 Pa, lung 0.03 Pa, BBB 1.0 Pa) and
 `pro` recovers 4 (venular 0.3 Pa, lung 0.03 Pa, HepG2 seeding 4000, BBB 1.0 Pa).
+**Cold-only sub-rates:** three of the 12 goals are `prompt-backed` (liver, lung,
+BBB), so the headline 25 %/33 % usable overstates recall on the genuinely cold
+goals — on the nine cold entries `flash` recovers only 1 (arterial) and `pro`
+only 2 (venular, HepG2), i.e. cold-only usable ≈ **11 %/22 %**.
 Both models correctly select the two prompt-backed entries they are primed for
 (lung, BBB) yet both miss the third prompt-backed entry (liver, 0.05 Pa): they
 propose the mid-range 0.10 Pa — inside the prompt's 0.05–0.15 Pa range but not
@@ -235,8 +238,8 @@ Labwright) are benchmarked and not the published systems named in the manuscript
   synthesizer*: given the answer it
   produces geometry. On the blind set its input cannot even be constructed; on
   the reading set it is handed the answer key. It has no LLM, no natural-language
-  interface, and no cell-biology/dosing/statistics layer — a different problem,
-  not a different solution to the same one.
+  interface, and no cell-biology/dosing/statistics layer, so it is not directly
+  comparable on this benchmark.
 - **BPL-COGEN** (bioRxiv 2026) — the released pipeline couples a compiler with a
   **30B**-parameter model (~60 GB of GPU memory in BF16); the single available
   GPU here is 32 GB, so the comparison is *physically infeasible*, not declined.
@@ -247,12 +250,11 @@ Labwright) are benchmarked and not the published systems named in the manuscript
   protocol text with a structured reward. We run it through the **identical
   harness** (same gold goals, same bare prompt, same JSON extraction, same
   scoring — `eval/run_thoth.py`), a prompt-only comparison because Thoth's native
-  output is protocol prose, not design JSON. The result is the cleanest row in
-  the tables: thoth-8b scores 0 %/0 %/1.000 on all three memory systems. Its
-  trained output is prose, and forced through the same schema it mostly emits
-  nothing checkable (on the reading set 18/24 bare goals unverifiable, 23/24
-  under soft-gate) and the rest contradicts its own geometry. Training on
-  protocol text does not teach arithmetic checkability.
+  output is protocol prose, not design JSON. Run through the identical harness,
+  thoth-8b scores 0 %/0 %/1.000 on all three memory systems: its trained output
+  is prose, and forced through the same schema it mostly emits nothing checkable
+  (on the reading set 18/24 bare goals unverifiable, 23/24 under soft-gate), and
+  the rest contradicts its own reported geometry.
 
 ## Run
 
