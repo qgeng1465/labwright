@@ -10,13 +10,22 @@ from labwright.design import DesignInput, build_design
 from labwright.extract.data import encode_example, raw_to_json
 from labwright.extract.eval import build_from_raw, field_errors, errors_all_within, score_batch, score_one
 from labwright.extract.gold_pairs import gold_pairs
-from labwright.extract.pipeline import parse_json
+from labwright.extract.pipeline import configure_tokenizer, parse_json
 from labwright.extract.synthetic import generate
 from labwright.verify.checker import has_errors, verify_design
 
 
 class _StubTokenizer:
-    """Minimal tokenizer stand-in: one token per character, ChatML rendering."""
+    """Minimal tokenizer stand-in: one token per character, ChatML rendering.
+
+    Mimics the Qwen2.5 tokenizer's dangerous default: right padding and no
+    pad token (pad falls back to eos), which is what corrupts batch decode
+    for a decoder-only model.
+    """
+
+    padding_side = "right"
+    pad_token = None
+    eos_token = "<|endoftext|>"
 
     def apply_chat_template(self, messages, tokenize=False):
         rendered = "".join(
@@ -125,6 +134,31 @@ def test_gold_pairs_reproduce_expected_numbers():
     # liver-sinusoid-shear canonical → 0.05 Pa
     inp = DesignInput(goal="x", rationale="x", **by_gold["liver-sinusoid-shear"]["raw"])
     assert build_design(inp).derived.shear_pa == pytest.approx(0.05, rel=1e-4)
+
+
+# ---------------------------------------------------------------------------
+# Decoder-only tokenizer configuration (regression: the 19.9 % parse rate)
+# ---------------------------------------------------------------------------
+
+
+def test_configure_tokenizer_forces_left_padding():
+    """Right padding corrupts decoder-only batch decode — must be left."""
+    tok = _StubTokenizer()
+    assert tok.padding_side == "right"  # the dangerous default we're guarding
+    configure_tokenizer(tok)
+    assert tok.padding_side == "left"
+
+
+def test_configure_tokenizer_falls_back_to_eos_pad():
+    tok = _StubTokenizer()
+    assert tok.pad_token is None
+    configure_tokenizer(tok)
+    assert tok.pad_token == "<|endoftext|>"
+    # and it never overwrites an explicit pad token
+    tok = _StubTokenizer()
+    tok.pad_token = "<|pad|>"
+    configure_tokenizer(tok)
+    assert tok.pad_token == "<|pad|>"
 
 
 # ---------------------------------------------------------------------------

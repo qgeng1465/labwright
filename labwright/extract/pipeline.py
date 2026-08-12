@@ -28,6 +28,19 @@ _DEFAULT_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
 _DEFAULT_ADAPTER = "results/extractor/lora"
 
 
+def configure_tokenizer(tokenizer) -> None:
+    """Normalize a tokenizer for decoder-only generation, in place.
+
+    Decoder-only models must be **left-padded**: with right padding the pad
+    tokens of a shorter prompt sit between the prompt and the new tokens, the
+    model attends over them, and the decoded output is corrupted. This was the
+    cause of the 19.9 % JSON parse rate in the first extractor eval run.
+    """
+    tokenizer.padding_side = "left"
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+
 def parse_json(text: str) -> dict[str, Any] | None:
     """Robust JSON extraction from model output (fences + balanced braces)."""
     if not text:
@@ -62,13 +75,7 @@ class Extractor:
     ):
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        # Decoder-only generation must be left-padded: with right padding the
-        # shorter prompts' pad tokens sit between the prompt and the new tokens,
-        # and the model attends over them — corrupting the decoded output (this
-        # was the cause of the 19.9 % JSON parse rate in the first eval run).
-        self.tokenizer.padding_side = "left"
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
+        configure_tokenizer(self.tokenizer)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_path, dtype=torch.float16, device_map=self.device
         )
