@@ -113,35 +113,61 @@ def score_batch(
     extract_fn: Callable[[str], dict | None],
     eval_rows: list[dict],
     blind_golds: list[dict],
+    extract_batch_fn: Callable[[list[str]], list[dict | None]] | None = None,
+    batch_size: int = 1,
 ) -> dict:
-    """Run ``extract_fn`` over eval rows + blind golds; aggregate the report."""
+    """Run ``extract_fn`` over eval rows + blind golds; aggregate the report.
+
+    With ``extract_batch_fn`` supplied, rows are extracted in left-padded chunks
+    so the GPU decode is batched. Each blind gold is scored defensively — one
+    row that trips an unexpected code path is recorded as a failure, never an
+    abort (the run is ~45 min on the V100; it must survive a bad row).
+    """
     n_parse = n_schema = n_consistent = n_recovered = 0
     errs_all: list[float] = []
     n_target = n_target_ok = 0
     n_rows = len(eval_rows)
-    for row in eval_rows:
-        rec = score_one(row["goal"], extract_fn(row["goal"]), row["raw"])
-        n_parse += int(rec["parsed"])
-        n_schema += int(rec["schema_ok"])
-        n_consistent += int(rec["consistent"])
-        if "recovered" in rec:
-            n_recovered += int(rec["recovered"])
-            errs_all += [e for e in rec["field_errs"].values() if e is not None]
+    goals = [r["goal"] for r in eval_rows]
+    if extract_batch_fn is not None and batch_size > 1:
+        for start in range(0, len(eval_rows), batch_size):
+            chunk = eval_rows[start:start + batch_size]
+            raws = extract_batch_fn([r["goal"] for r in chunk])
+            for row, raw in zip(chunk, raws):
+                rec = score_one(row["goal"], raw, row["raw"])
+                n_parse += int(rec["parsed"])
+                n_schema += int(rec["schema_ok"])
+                n_consistent += int(rec["consistent"])
+                if "recovered" in rec:
+                    n_recovered += int(rec["recovered"])
+                    errs_all += [e for e in rec["field_errs"].values() if e is not None]
+    else:
+        for row in eval_rows:
+            rec = score_one(row["goal"], extract_fn(row["goal"]), row["raw"])
+            n_parse += int(rec["parsed"])
+            n_schema += int(rec["schema_ok"])
+            n_consistent += int(rec["consistent"])
+            if "recovered" in rec:
+                n_recovered += int(rec["recovered"])
+                errs_all += [e for e in rec["field_errs"].values() if e is not None]
     for gold in blind_golds:
-        raw = extract_fn(gold["goal"])
-        if raw is None:
+        try:
+            raw = extract_fn(gold["goal"])
+            if raw is None:
+                continue
+            plan, issues, _err = build_from_raw(gold["goal"], raw)
+            n_parse += 1
+            if plan is None:
+                continue
+            n_schema += 1
+            n_consistent += int(not has_errors(issues))
+            target = gold["expected"].get("shear_pa")
+            if target is not None and plan.derived is not None:
+                n_target += 1
+                shear = plan.derived.shear_pa
+                n_target_ok += int(abs(shear - target) <= _TARGET_TOL * abs(target))
+        except Exception:
+            # Never abort the whole run for one gold; count it as not-consistent.
             continue
-        plan, issues, _err = build_from_raw(gold["goal"], raw)
-        n_parse += 1
-        if plan is None:
-            continue
-        n_schema += 1
-        n_consistent += int(not has_errors(issues))
-        target = gold["expected"].get("shear_pa")
-        if target is not None and plan.derived is not None:
-            n_target += 1
-            shear = plan.derived.shear_pa
-            n_target_ok += int(abs(shear - target) <= _TARGET_TOL * abs(target))
     return {
         "n_rows": n_rows,
         "n_blind": len(blind_golds),
@@ -189,6 +215,8 @@ def main() -> int:
     parser.add_argument("--model", default="Qwen/Qwen2.5-1.5B-Instruct")
     parser.add_argument("--api", nargs="*", default=[], help="API model names to compare, e.g. --api flash pro")
     parser.add_argument("--limit", type=int, default=0, help="cap eval rows (smoke)")
+    parser.add_argument("--batch-size", type=int, default=1,
+                        help="left-padded GPU batch decode (e.g. 6); 1 = sequential")
     args = parser.parse_args()
 
     data_dir = Path(args.data)
@@ -203,7 +231,10 @@ def main() -> int:
     # Fine-tuned extractor
     if Path(args.adapter or _DEFAULT_ADAPTER).exists():
         ext = Extractor(model_path=args.model, adapter_path=args.adapter)
-        report["systems"]["fine-tuned-1.5B"] = score_batch(ext.extract, eval_rows, blind)
+        report["systems"]["fine-tuned-1.5B"] = score_batch(
+            ext.extract, eval_rows, blind,
+            extract_batch_fn=ext.extract_batch, batch_size=args.batch_size,
+        )
         print("fine-tuned:", report["systems"]["fine-tuned-1.5B"])
     else:
         print(f"[warn] adapter not found at {args.adapter or _DEFAULT_ADAPTER}; skipping fine-tuned eval")

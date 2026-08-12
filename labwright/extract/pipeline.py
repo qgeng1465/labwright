@@ -131,18 +131,17 @@ class Extractor:
             prompts, return_tensors="pt", padding=True, truncation=True,
             max_length=1024, return_token_type_ids=False)
         inputs = {k: v.to(self.device) for k, v in inputs.items()}
-        # Left-padding makes per-row prompt lengths unequal to the batch width;
-        # the mask sum recovers each row's own prompt length for un-padding.
-        prompt_lens = inputs["attention_mask"].sum(dim=1)
+        # Generated tokens always begin at the batch prompt width (generate
+        # extends the full padded batch), so that slice drops every prompt and
+        # keeps only the decoded output — independent of padding side.
+        prompt_width = inputs["input_ids"].shape[1]
         with torch.no_grad():
             out = self.model.generate(
                 **inputs, max_new_tokens=max_new_tokens, do_sample=False,
                 pad_token_id=self.tokenizer.pad_token_id,
             )
-        texts = [
-            self.tokenizer.decode(out[i, prompt_lens[i]:], skip_special_tokens=True)
-            for i in range(len(goals))
-        ]
+        texts = self.tokenizer.batch_decode(
+            out[:, prompt_width:], skip_special_tokens=True)
         return [parse_json(t) for t in texts]
 
 
