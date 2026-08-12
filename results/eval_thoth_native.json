@@ -1,0 +1,521 @@
+{
+  "model": "thoth-8b (native mode)",
+  "generated_at": "2026-08-12T15:41:28+00:00",
+  "reading": {
+    "n_total": 24,
+    "n_parse": 24,
+    "n_with_claims": 5,
+    "n_checkable": 3,
+    "verdict_counts": {
+      "ok": 2,
+      "review_required": 1,
+      "unverifiable": 21
+    },
+    "internal_consistency_rate": 0.6667,
+    "consistency_ci": [
+      0.2077,
+      0.9385
+    ],
+    "consistency_ci_str": "0.667 [0.208, 0.939]",
+    "runtime_s": 554.4,
+    "rows": [
+      {
+        "id": "liver-sinusoid-shear",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 757,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "kidney-proximal-tubule",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 584,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "microvascular-venular",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1668,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "lung-alveolar-shear",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 2217,
+        "claimed": {
+          "shear_pa": 0.03
+        },
+        "domain": "flow",
+        "quote": "Step 1: Design microfluidic channels with serpentine geometry on a PDMS substrate",
+        "raw": {
+          "chip": {
+            "channel_count": 1,
+            "height_um": 100.0,
+            "length_mm": 10.0,
+            "material": "PDMS",
+            "width_um": 400.0
+          },
+          "flow": {
+            "density_kgm3": 1000.0,
+            "flow_rate_uLmin": 1.2,
+            "viscosity_pas": 0.001
+          }
+        },
+        "computed": {
+          "shear_pa": 0.03,
+          "reynolds": 0.08,
+          "pressure_drop_pa": 6.0,
+          "residence_time_s": 20.0,
+          "channel_volume_ul": 0.4,
+          "mean_velocity_mms": 0.5
+        },
+        "discrepancy_fields": [],
+        "verdict": "ok",
+        "reason": null
+      },
+      {
+        "id": "selfconsistent-400x100-shear",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1517,
+        "claimed": {
+          "shear_pa": 0.66
+        },
+        "domain": "flow",
+        "quote": "The endothelium sees a wall shear stress of 0",
+        "raw": {
+          "chip": {
+            "channel_count": 1,
+            "height_um": 1000.0,
+            "length_mm": 20.0,
+            "material": "PDMS",
+            "width_um": 400.0
+          },
+          "flow": {
+            "density_kgm3": 1000.0,
+            "flow_rate_uLmin": 0.132,
+            "viscosity_pas": 0.001
+          }
+        },
+        "computed": {
+          "shear_pa": 3.3e-05,
+          "reynolds": 0.003143,
+          "pressure_drop_pa": 0.00132,
+          "residence_time_s": 3636.363636,
+          "channel_volume_ul": 8.0,
+          "mean_velocity_mms": 0.0055
+        },
+        "discrepancy_fields": [
+          "shear_pa"
+        ],
+        "verdict": "review_required",
+        "reason": null
+      },
+      {
+        "id": "selfconsistent-800x100-shear",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1410,
+        "claimed": {
+          "shear_pa": 0.1
+        },
+        "domain": "flow",
+        "quote": "Step 1: Calculate the hydraulic radius as 400 µm",
+        "raw": null,
+        "computed": null,
+        "discrepancy_fields": [],
+        "verdict": "unverifiable",
+        "reason": "no_flow_raw"
+      },
+      {
+        "id": "reynolds-laminar-check",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 2600,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "seeding-density-hepg2",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 836,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "seeding-primary-hepatocytes",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1328,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "dmso-vehicle-check",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1352,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "power-80-effect-1",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1684,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "power-80-effect-half",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1499,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "arterial-shear-15dyn",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1798,
+        "claimed": {
+          "shear_pa": 1.5
+        },
+        "domain": "flow",
+        "quote": "Step 1: Design the arterial-channel with either flat plate or cylindrical geometry",
+        "raw": {
+          "chip": {
+            "channel_count": 1,
+            "height_um": 250.0,
+            "length_mm": 10.0,
+            "material": "PDMS",
+            "width_um": 25.0
+          },
+          "flow": {
+            "density_kgm3": 1000.0,
+            "flow_velocity_ms": 10.0,
+            "viscosity_pas": 0.001
+          }
+        },
+        "computed": null,
+        "discrepancy_fields": [],
+        "verdict": "unverifiable",
+        "reason": "validation_error: 1 validation error for FlowParams\nflow_rate_uLmin\n  Field required [type=missing"
+      },
+      {
+        "id": "venular-shear-3dyn",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1970,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "seeding-endothelial-5e4",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1016,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "selfconsistent-residence-60s",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1199,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "selfconsistent-channel-volume",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1288,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "selfconsistent-mean-velocity",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1218,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "selfconsistent-pressure-drop-40mm",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 991,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "selfconsistent-flow-for-01Pa-200x50",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1674,
+        "claimed": {
+          "shear_pa": 0.1
+        },
+        "domain": "flow",
+        "quote": "Question: What flow rate of water delivers exactly 0",
+        "raw": {
+          "chip": {
+            "channel_count": 1,
+            "height_um": 50.0,
+            "length_mm": 20.0,
+            "material": "PDMS",
+            "width_um": 200.0
+          },
+          "flow": {
+            "density_kgm3": 1000.0,
+            "flow_rate_uLmin": 0.5,
+            "viscosity_pas": 0.001
+          }
+        },
+        "computed": {
+          "shear_pa": 0.1,
+          "reynolds": 0.066667,
+          "pressure_drop_pa": 80.0,
+          "residence_time_s": 24.0,
+          "channel_volume_ul": 0.2,
+          "mean_velocity_mms": 0.833333
+        },
+        "discrepancy_fields": [],
+        "verdict": "ok",
+        "reason": null
+      },
+      {
+        "id": "power-80-effect-02",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1291,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "power-90-effect-1",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1515,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "reynolds-800x100-100uLmin",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1981,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "dmso-at-guideline-1mM",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1893,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      }
+    ]
+  },
+  "blind": {
+    "n_total": 12,
+    "n_parse": 12,
+    "n_with_claims": 1,
+    "n_checkable": 0,
+    "verdict_counts": {
+      "ok": 0,
+      "review_required": 0,
+      "unverifiable": 12
+    },
+    "internal_consistency_rate": NaN,
+    "consistency_ci": [
+      0.0,
+      0.0
+    ],
+    "consistency_ci_str": "n/a",
+    "runtime_s": 238.7,
+    "rows": [
+      {
+        "id": "blind-liver-sinusoid",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1381,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "blind-kidney-ptec",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1411,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "blind-arterial-shear",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1644,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "blind-venular-shear",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1752,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "blind-lung-alveolar",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1684,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "blind-seed-hepg2-log",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1414,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "blind-phh-seed",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1233,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "blind-bbb-shear",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1353,
+        "claimed": {
+          "shear_pa": 5.0
+        },
+        "domain": "culture",
+        "quote": "Step 1: Design the blood-brain barrier channel sufficiently wide to allow single cell passage",
+        "raw": null,
+        "computed": null,
+        "discrepancy_fields": [],
+        "verdict": "unverifiable",
+        "reason": "no_culture_raw"
+      },
+      {
+        "id": "blind-pulmonary-artery-shear",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1756,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "blind-gut-epithelial-shear",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1865,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "blind-retinal-arteriole-shear",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 2191,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      },
+      {
+        "id": "blind-lymphatic-shear",
+        "has_key": true,
+        "has_orc": true,
+        "n_segments": 4,
+        "generated_len": 1666,
+        "claimed": {},
+        "verdict": "unverifiable",
+        "reason": "no_numeric_claims"
+      }
+    ]
+  }
+}
