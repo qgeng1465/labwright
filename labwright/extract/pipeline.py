@@ -24,7 +24,7 @@ from labwright.design import DesignInput, build_design
 from labwright.extract.data import SYSTEM_PROMPT
 from labwright.verify.checker import Issue, format_issues, verify_design
 
-_DEFAULT_MODEL = "/data/hf_models/Qwen/Qwen2.5-1.5B-Instruct"
+_DEFAULT_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
 _DEFAULT_ADAPTER = "results/extractor/lora"
 
 

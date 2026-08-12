@@ -9,10 +9,11 @@ Hardware notes
 --------------
 - fp16, not bf16: the V100 (SM70) has no BF16 tensor cores.
 - No bitsandbytes: keep the model in fp16 (1.5B ≈ 3 GB) + LoRA, no 4-bit.
-- Run through the resource arbitrator, e.g.::
+- Run through the cluster resource gate, e.g. (arbitrator binary differs per
+  site)::
 
-    python3 ~/.claude/resources/arbitrate.py run --name extract-train \
-        --gpu-mem 12 --cpu 4 --ram 12 --detach -- \\
+    python3 <arbitrate.py> run --name extract-train \
+        --gpu-mem 12 --cpu 4 --ram 12 --detach -- \
         python3 -m labwright.extract.train --data results/extractor
 """
 
@@ -73,7 +74,7 @@ def make_collator(tokenizer):
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", default="/data/hf_models/Qwen/Qwen2.5-1.5B-Instruct")
+    parser.add_argument("--model", default="Qwen/Qwen2.5-1.5B-Instruct")
     parser.add_argument("--data", default="results/extractor")
     parser.add_argument("--out", default="results/extractor/lora")
     parser.add_argument("--epochs", type=int, default=3)

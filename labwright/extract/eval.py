@@ -183,7 +183,7 @@ def main() -> int:
     parser.add_argument("--data", default="results/extractor")
     parser.add_argument("--out", default="results/extractor/eval_report.json")
     parser.add_argument("--adapter", default=None, help="LoRA adapter dir (default results/extractor/lora)")
-    parser.add_argument("--model", default="/data/hf_models/Qwen/Qwen2.5-1.5B-Instruct")
+    parser.add_argument("--model", default="Qwen/Qwen2.5-1.5B-Instruct")
     parser.add_argument("--api", nargs="*", default=[], help="API model names to compare, e.g. --api flash pro")
     parser.add_argument("--limit", type=int, default=0, help="cap eval rows (smoke)")
     args = parser.parse_args()

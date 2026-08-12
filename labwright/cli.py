@@ -153,7 +153,7 @@ def main(argv: list[str] | None = None) -> int:
         help="Extract raw inputs from a goal with the fine-tuned extractor, derive and verify",
     )
     p.add_argument("goal", help="Experimental goal prose")
-    p.add_argument("--model", default="/data/hf_models/Qwen/Qwen2.5-1.5B-Instruct")
+    p.add_argument("--model", default="Qwen/Qwen2.5-1.5B-Instruct")
     p.add_argument("--adapter", default="results/extractor/lora")
     p.set_defaults(func=cmd_audit)
 

@@ -15,7 +15,7 @@ same question through the same schema, that is a finding, not a rigging.
 Usage::
 
     python -m eval.run_thoth --gold eval/gold_blind.json --systems bare,soft_gate,self_verify \\
-        --out results/eval_blind_thoth.json --model-dir /data/hf_models/manglu3935/Thoth
+        --out results/eval_blind_thoth.json --model-dir manglu3935/Thoth
 
 Defaults to the reading set and ``bare``. Model loads in BF16 on GPU when
 available, else CPU (slow — intended for the queued GPU run).
@@ -83,7 +83,7 @@ def main() -> int:
     ap.add_argument("--gold", default=None, help="Path to gold JSON (default eval/gold_experiments.json)")
     ap.add_argument("--systems", default="bare", help="Comma-separated: bare,soft_gate,self_verify")
     ap.add_argument("--out", required=True, help="Output JSON path")
-    ap.add_argument("--model-dir", default="/data/hf_models/manglu3935/Thoth")
+    ap.add_argument("--model-dir", default="manglu3935/Thoth")
     ap.add_argument("--max-new-tokens", type=int, default=2048)
     args = ap.parse_args()
 

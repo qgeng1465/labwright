@@ -299,7 +299,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--funnel-only", action="store_true",
                         help="deterministic funnel + harvest only, no extractor")
     parser.add_argument("--adapter", default="results/extractor/lora")
-    parser.add_argument("--model", default="/data/hf_models/Qwen/Qwen2.5-1.5B-Instruct")
+    parser.add_argument("--model", default="Qwen/Qwen2.5-1.5B-Instruct")
     parser.add_argument("--batch-size", type=int, default=1,
                         help="left-padded GPU batch decode (e.g. 6); 1 = sequential")
     args = parser.parse_args(argv)
