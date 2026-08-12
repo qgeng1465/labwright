@@ -161,11 +161,15 @@ def build_design(inp: DesignInput) -> DesignPlan:
 
     cells = None
     if inp.cells is not None:
+        density = inp.cells.get("seeding_density_cells_cm2")
+        area = inp.cells.get("culture_area_cm2")
+        if density is None or area is None:
+            raise ValueError(
+                "cells block requires seeding_density_cells_cm2 and culture_area_cm2"
+            )
         cells = CellPlan(
             **inp.cells,
-            seed_count=calc_cell.seeding_cell_count(
-                inp.cells["seeding_density_cells_cm2"], inp.cells["culture_area_cm2"]
-            ),
+            seed_count=calc_cell.seeding_cell_count(density, area),
         )
 
     dosing = None

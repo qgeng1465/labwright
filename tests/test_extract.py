@@ -8,7 +8,7 @@ import pytest
 
 from labwright.design import DesignInput, build_design
 from labwright.extract.data import encode_example, raw_to_json
-from labwright.extract.eval import field_errors, errors_all_within, score_batch, score_one
+from labwright.extract.eval import build_from_raw, field_errors, errors_all_within, score_batch, score_one
 from labwright.extract.gold_pairs import gold_pairs
 from labwright.extract.pipeline import parse_json
 from labwright.extract.synthetic import generate
@@ -153,6 +153,26 @@ def test_field_errors_and_recovery():
     assert not errors_all_within({"chip.width_um": None})
     # missing key
     assert field_errors({"chip": {"width_um": 400}}, gold)["chip.height_um"] is None
+
+
+def test_partial_cells_block_is_schema_error_not_crash():
+    """A cells block missing seeding density/area must not KeyError in build_design."""
+    goal = "Seed cells onto a chip."
+    # cells present but partial -> schema_error, parsed counts as not-ok
+    rec = score_one(goal, {"cells": {"cell_type": "HepG2"}}, None)
+    assert rec["parsed"] is True
+    assert rec["schema_ok"] is False
+    assert rec["consistent"] is False
+    # build_from_raw surfaces the schema_error reason
+    _plan, _issues, err = build_from_raw(goal, {"cells": {"cell_type": "HepG2"}})
+    assert err == "schema_error"
+    # and a blind-gold-shaped flow row with no cells works fine
+    plan, issues, err = build_from_raw(
+        "Design a 400 um channel at 0.05 Pa.",
+        {"chip": {"width_um": 400, "height_um": 100, "length_mm": 20},
+         "flow": {"flow_rate_uLmin": 2, "viscosity_pas": 0.001}},
+    )
+    assert err is None and plan is not None
 
 
 def test_score_batch_with_stub_extractor():

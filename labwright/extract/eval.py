@@ -79,7 +79,10 @@ def build_from_raw(goal: str, raw: dict) -> tuple[object | None, list | None, st
         inp = DesignInput(goal=goal, rationale="eval", **raw)
     except Exception as exc:  # pydantic ValidationError
         return None, None, f"schema_error"
-    plan = build_design(inp)
+    try:
+        plan = build_design(inp)
+    except (ValueError, KeyError) as exc:  # partial raw block, e.g. cells w/o density
+        return None, None, f"schema_error"
     issues = verify_design(plan)
     return plan, issues, None
 

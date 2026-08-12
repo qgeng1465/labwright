@@ -104,7 +104,10 @@ class Extractor:
             inp = DesignInput(goal=goal, rationale="Auto-extracted raw inputs", **raw)
         except ValidationError as exc:
             return None, None, f"schema_error: {exc.errors()[0]['loc']} {exc.errors()[0]['msg']}"
-        plan = build_design(inp)
+        try:
+            plan = build_design(inp)
+        except (ValueError, KeyError) as exc:
+            return None, None, f"schema_error: {exc}"
         issues = verify_design(plan)
         return plan, issues, None
 
