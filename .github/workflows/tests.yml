@@ -20,7 +20,11 @@ jobs:
       - name: Install
         run: |
           pip install --upgrade pip
+          # CPU torch keeps the extractor deps light on CI; pip keeps the
+          # already-satisfied torch when resolving peft from PyPI.
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -e ".[dev,agent]"
+          pip install peft pandas pyarrow
       - name: Run tests
         run: |
           python -m pytest --tb=short

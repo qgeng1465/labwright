@@ -29,6 +29,9 @@ dependencies = [
 [project.optional-dependencies]
 # LLM agent brain (calls any OpenAI-compatible API, e.g. DeepSeek)
 agent = ["openai>=1.30"]
+# Fine-tuned raw-input extractor (LoRA inference + SciRecipe audit). torch can
+# be installed CPU-only to keep CI light.
+extract = ["torch>=2.1", "peft>=0.8", "pandas>=2.0", "pyarrow>=15"]
 # Knowledge base / retrieval
 kb = ["chromadb>=0.5", "sentence-transformers>=2.7"]
 # Web demo
