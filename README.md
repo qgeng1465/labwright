@@ -5,7 +5,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
 [![CI](https://github.com/qgeng1465/labwright/actions/workflows/tests.yml/badge.svg)](https://github.com/qgeng1465/labwright/actions)
-[![Tests](https://img.shields.io/badge/tests-163%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-174%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
 Frontier LLMs hallucinate ~100 % of the derived numbers in a wet-lab design.
@@ -180,9 +180,15 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
 - **`verify/`** — re-runs every governing equation on the agent's own inputs and
   rejects designs that don't match. This is what makes the "no hallucinated
   numbers" claim checkable, not just asserted.
-- **`schema/domains/`** — the extension point. `ooc/` is the first domain
-  package; a new domain (cell culture, molecular biology, …) is a folder, not a
-  fork.
+- **`extract/`** — a fine-tuned goal→raw-inputs model (Qwen2.5-1.5B LoRA,
+  `extract/pipeline.py`): the natural-language goal seeds the raw inputs the
+  calculators then check, so a design can be generated without an agent
+  round-trip. Eval (`extract/eval.py`): JSON parse **1.0**, extract→verify
+  consistency **0.998**, field recovery **0.72** on 400 rows + 12 blind goals.
+- **`schema/` + `published.py`** — the verified design plan types
+  (`DesignPlan`, `CulturePlan`, …); `published.py` runs the *same* calculators
+  backwards over a published protocol's own inputs. A new domain is a
+  `calc/` module + a `tools.py` registration, not a fork.
 
 ## Related work & differentiation
 
@@ -368,7 +374,9 @@ calculators didn't check.
 - [x] Preprint drafted (kept local-only while in submission; the benchmark evidence and figures ship in this repo)
 - [x] Pin all gold anchors (real DOIs / explicit self-consistent labels); render the paper figure (`paper/fig_benchmark.py`)
 - [ ] Publish the HF Space (needs a HF token; see `hf_space/PUBLISH.md`)
-- [ ] Domain package #2 (cell culture); fine-tune a small extractor on the V100
+- [x] Domain package #2 — plate cell culture (`calc/culture.py` + gold set `eval/gold_cell_culture.json`)
+- [x] Fine-tuned goal→raw-inputs extractor (`extract/`, Qwen2.5-1.5B LoRA on the V100; JSON parse 1.0, consistency 0.998)
+- [ ] SciRecipe large-scale reverse-verification audit (`eval/run_scirecipe_audit.py`, ~5.7k numeric protocol summaries)
 - [ ] Submit the preprint to bioRxiv
 
 ## License & citation
