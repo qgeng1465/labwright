@@ -26,15 +26,13 @@ Usage::
         results/eval_flash.json results/eval_flash.json \\
         results/eval_pro.json results/eval_pro.json \\
         results/eval_blind_flash.json results/eval_blind_flash.json \\
-        results/eval_blind_pro.json results/eval_blind_pro.json \\
-        results/eval_thoth.json results/eval_blind_thoth.json
+        results/eval_blind_pro.json results/eval_blind_pro.json
     # writes paper/fig_benchmark.pdf and paper/fig_benchmark.png
 
 After the post-fix re-run the soft-gate + self-verify rows live in the same
 file as bare + Labwright, so the main and comp args point at the same file.
-The optional final two args add a thoth-8b group (three memory-system bars, no
-Labwright bar) from the prompt-only Thoth run. Numbers come from
-eval/report.derive(), which recomputes every metric from per-entry records.
+Numbers come from eval/report.derive(), which recomputes every metric from
+per-entry records.
 """
 
 from __future__ import annotations
@@ -53,12 +51,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from eval.report import derive  # noqa: E402
 
 # --- data ---
-# A third group (thoth-8b) is added when the optional Thoth result files are
-# passed (argv[8] = reading, argv[9] = blind). Thoth is run through the bare
-# harness only — it has no Labwright mode — so its group carries just the three
-# memory-system bars.
-MODELS = ["deepseek-v4-flash", "deepseek-v4-pro", "thoth-8b"]
-MODEL_SHORT = ["flash", "pro", "thoth-8b"]
+# Two model families, each carrying the four systems (bare / soft-gate /
+# self-verify as a de-emphasized gray family, Labwright as the saturated
+# orange).
+MODELS = ["deepseek-v4-flash", "deepseek-v4-pro"]
+MODEL_SHORT = ["flash", "pro"]
 #: (metric key, row title, row subtitle) — one row per headline metric.
 METRICS = [
     ("self_consistent_rate", "Self-consistent rate", "higher is better"),
@@ -104,16 +101,10 @@ def load_merged(main_path: str, comp_path: str) -> dict:
     return merged
 
 
-def load_thoth(path: str) -> dict:
-    """A Thoth group: derive the three memory systems from a single file."""
-    with open(path) as fh:
-        return derive(json.load(fh))
-
-
 def main(argv: list[str]) -> int:
     # argv layout: [reading-main flash, reading-comp flash, reading-main pro,
     # reading-comp pro, blind-main flash, blind-comp flash, blind-main pro,
-    # blind-comp pro, thoth-reading (optional), thoth-blind (optional)]
+    # blind-comp pro]
     if len(argv) < 8:
         print(__doc__)
         return 1
@@ -127,9 +118,6 @@ def main(argv: list[str]) -> int:
         [load_merged(*pairs[0]), load_merged(*pairs[1])],  # reading: flash, pro
         [load_merged(*pairs[2]), load_merged(*pairs[3])],  # blind: flash, pro
     ]
-    if len(argv) >= 10 and argv[8] and argv[9]:
-        sets[0].append(load_thoth(argv[8]))  # reading: thoth-8b
-        sets[1].append(load_thoth(argv[9]))  # blind: thoth-8b
 
     fig, axes = plt.subplots(
         len(METRICS), len(SETS), figsize=(8.6, 4.6),
@@ -152,7 +140,7 @@ def main(argv: list[str]) -> int:
                 d = data[i]
                 pos = i
                 for (sys_key, _label, color, edge, hatch), off in zip(SYSTEMS, offsets):
-                    if sys_key not in d:  # e.g. thoth-8b has no Labwright bar
+                    if sys_key not in d:  # a system missing from this run's file
                         continue
                     v = d[sys_key][key]
                     ax.bar(pos + off, v, width, color=color, edgecolor=edge,

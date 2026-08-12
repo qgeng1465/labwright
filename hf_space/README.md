@@ -27,6 +27,11 @@ OpenAI-compatible API works; default model `deepseek-v4-flash`). The
 reverse-verification tab works without any key.
 
 - Repo: https://github.com/qgeng1465/labwright
-- Benchmark (bare LLM vs Labwright): **0.000** hallucination rate vs **33–58 %**.
+- Benchmark (bare LLM vs Labwright, 24-reading set): a bare frontier LLM
+  hallucinates ~0.9–1.0 of its derived numbers and produces 0–12 % usable
+  designs; Labwright hallucination rate **0.000** with **88–100 %** usable
+  designs. (On the harder 12-blind set — target not stated — Labwright stays at
+  0.000 hallucination but usable drops to 25–33 %: the gate cannot supply
+  physiology the model doesn't know.)
 
 Labwright is an experimental-design aid, not medical-device software.

@@ -4,15 +4,36 @@
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
-[![Tests](https://img.shields.io/badge/tests-88%20passing-brightgreen)]()
+[![CI](https://github.com/qgeng1465/labwright/actions/workflows/tests.yml/badge.svg)](https://github.com/qgeng1465/labwright/actions)
+[![Tests](https://img.shields.io/badge/tests-163%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
-Tell a wet-lab LLM agent what experiment you want. It **proposes** the design.
-Labwright **computes and verifies** every number — shear stress, flow rate,
-seeding, DMSO carry-over, replicate counts — with deterministic calculators,
-so nothing is hallucinated.
+Frontier LLMs hallucinate ~100 % of the derived numbers in a wet-lab design.
+Labwright doesn't let them: the model proposes **raw inputs**, deterministic
+calculators compute every derived number, and a verifier **re-proves each one**
+before the design is accepted. One yardstick, one rule for every row
+([`eval/`](eval/README.md)):
+
+| system | how derived numbers are produced | usable designs (24 reading goals) | hallucination |
+|---|---|---|---|
+| bare frontier LLM (the status quo) | written from memory | **0–12 %** | ~0.9–1.0 |
+| "check yourself" / LLM-as-verifier | self-derived (soft-gate, self-verify) | **0 %** — the second pass actively corrupts the first | ~0.75–1.0 |
+| **Labwright** | calculators compute; verifier re-proves | **88–100 %** | **0.000** |
 
 **Built for organ-on-chip and perfused cell culture first. General wet-lab by design.**
+
+👉 **Try it:** `pip install -e .[agent]` (PyPI release pending) ·
+[Open in Colab](https://colab.research.google.com/github/qgeng1465/labwright/blob/main/colab/labwright_demo.ipynb) ·
+[Web demo](hf_space/) · reverse-verify a *published* protocol:
+`labwright verify-protocol examples/verify_protocol.json`
+
+**Who this is for.**
+- *Bench scientists* — paste a paper's geometry/flow/shear and get a
+  discrepancy check in 3 seconds (`labwright verify-protocol`), or describe an
+  experiment and get a verified SOP.
+- *AI-for-science researchers* — a hard-gate agent architecture with a
+  reproducible benchmark and an honestly stated boundary ([`eval/`](eval/README.md)).
+- *Contributors* — adding a domain is a folder, not a fork ([CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ---
 
@@ -29,11 +50,6 @@ will confidently write "shear stress 0.25 Pa" whether or not that follows from
 the geometry it chose. **An LLM that writes numbers from memory is a
 hallucination engine.**
 
-Labwright inverts the responsibility:
-
-> **The model proposes raw inputs. The calculators produce and verify every
-> derived number. The model cannot write a number the calculators didn't check.**
-
 ## The gap today's wet-lab LLMs haven't closed
 
 An LLM can write you a beautiful protocol. But **every number in it** — shear
@@ -42,7 +58,7 @@ stress, flow rate, seeding density, DMSO carry-over, replicate count — is a
 density. Models write these from memory, and memory can't do arithmetic.
 
 We looked at every closely-related system we could run. None of them closes
-this gap:
+this gap — Labwright is the one that does:
 
 | System | How it handles protocol numbers | Can it *prove* a number follows from its own inputs? |
 |---|---|---|
@@ -51,25 +67,27 @@ this gap:
 | **ChemCrow** (Nature Mach. Intell.) | LLM agent for chemistry; verification delegated to the LLM as judge | No — the judge can't be trusted for arithmetic |
 | **LLM self-check** ("check yourself") | the model re-derives its own numbers | No — we measured it: the second pass actively corrupts the first |
 | **MMFT OoC Designer** (IEEE TCAD 2024) | deterministic organ-chip *geometry* synthesis | No LLM, no natural language, no cell/dosing/stats layer |
+| **Labwright** (this repo) | LLM proposes **raw inputs**; deterministic calculators compute every derived number; the verifier **re-derives each one** | **Yes — a hard gate.** No number enters a design unless a calculator produced it and the verifier re-proved it |
 
-**Labwright inverts the responsibility: the model proposes raw inputs; the
-calculators compute every derived number; the verifier re-derives each one
-before a design is accepted.** The model cannot type a number the calculators
-didn't check — a hard gate, not a soft reward. And the *same* calculators run
-backwards: paste a published paper's geometry, flow and claimed shear, and
+**Labwright inverts the responsibility: the model cannot type a number the
+calculators didn't check — a hard gate, not a soft reward.** And the *same*
+calculators run backwards: paste a published paper's geometry, flow and claimed shear, and
 Labwright recomputes the claims and flags anything that doesn't follow from the
 paper's own inputs — a reproducibility checker in three seconds
 ([`labwright verify-protocol`](#quickstart)).
 
-We benchmarked the gate, honestly: a bare LLM hallucinates **1.000** of its
-numbers and produces **0 %** usable designs, while Labwright's verified designs
-reach **88–100 % usable with 0.000 hallucination** on the reading set — every
-number re-proven. One honest boundary, stated in [the benchmark](eval/README.md):
-verification is *necessary, not sufficient*. Labwright proves numbers are
-internally consistent; it cannot supply physiology the model doesn't know. The
-blind-set usable rate collapses to 25–33 % (11–22 % on goals with no hint at
-all) for exactly that reason. That boundary is the real research frontier, and
-closing it is where this project is headed.
+**Measured on one yardstick.** None of the systems above publishes a measure of
+whether its output numbers follow from its own inputs — we do (the table at the
+top; full protocol in [`eval/`](eval/README.md)). The two that could
+conceivably be run are not runnable here (BPL's released pipeline needs ~60 GB
+of GPU memory; MMFT is a deterministic geometry synthesizer, not an LLM), so we
+state that plainly instead of claiming a head-to-head. One honest boundary,
+stated in [the benchmark](eval/README.md): verification is *necessary, not
+sufficient*. Labwright proves numbers are internally consistent; it cannot
+supply physiology the model doesn't know. The blind-set usable rate collapses
+to 25–33 % (11–22 % on goals with no hint at all) for exactly that reason. That
+boundary is the real research frontier, and closing it is where this project is
+headed.
 
 ## What you get
 
@@ -112,7 +130,7 @@ was computed by `labwright.calc` and passed `labwright.verify`.
 ## Quickstart
 
 ```bash
-pip install -e .[agent]        # or: pip install labwright
+pip install -e .[agent]        # PyPI release pending (name reserved)
 export DEEPSEEK_API_KEY=sk-... # any OpenAI-compatible API works
 labwright design "lung-on-chip at alveolar-capillary shear (~0.03 Pa)"
 ```
@@ -146,23 +164,11 @@ Web demo (Hugging Face Space): [`hf_space/`](hf_space/) — see
 
 ## How it works
 
-```
-                    ┌──────────────────────────────┐
-   "goal" ────────► │  LLM agent (proposes inputs) │
-                    └──────────────┬───────────────┘
-                                   │ raw inputs only
-                    ┌──────────────▼───────────────┐
-                    │  labwright.calc  (computes)  │  shear, Re, dP,
-                    │  deterministic calculators   │  residence, seeding,
-                    │  + submit_design             │  DMSO fraction, n
-                    └──────────────┬───────────────┘
-                                   │ verified plan
-                    ┌──────────────▼───────────────┐
-                    │  labwright.verify (checks)   │  every number re-derived
-                    └──────────────┬───────────────┘
-                                   ▼
-                        SOP + design JSON
-```
+![Labwright pipeline: goal → LLM proposes raw inputs → calculators compute → verifier re-proves → SOP + design JSON](paper/fig_pipeline.png)
+
+The goal goes in; a design whose every number was computed by
+`labwright.calc` and re-proved by `labwright.verify` comes out. The agent
+writes the narrative; the arithmetic is exiled to unit-tested code.
 
 - **`calc/`** — pure, unit-tested engineering math (microfluidics, cell, dosing,
   stats). The moat: an LLM cannot compute these reliably, but a calculator can.
@@ -179,15 +185,10 @@ Web demo (Hugging Face Space): [`hf_space/`](hf_space/) — see
 ## Related work & differentiation
 
 We are not the first to put LLMs on wet-lab design — and we say so plainly.
-Three directly related projects define the space:
-
-| Project | What it does | The gap Labwright fills |
-|---|---|---|
-| **Thoth** (ICLR 2026) | 8B reasoning model that generates biological protocol *text*; trained with a SCORE structured-reward mechanism over 12k+ real protocols | Verification is a *learned* reward inside the model — soft and model-internal. It cannot **prove** a number: a protocol that says "shear 0.25 Pa" can score well and still not follow from its own geometry. |
-| **BPL-COGEN** (bioRxiv 2026) | A formal protocol *language* plus a compiler; 95.1% fidelity on 300 Nature Protocols | The compiler checks protocol *structure* (type-safety), not physics. If a protocol asserts "shear 1 Pa", the compiler cannot tell you the stated geometry and flow imply 0.05. |
-| **MMFT OoC Designer** (IEEE TCAD 2024) | Automated organ-chip *geometry* design, validated with CFD + fabrication | Optimizes geometry only — no LLM, no natural-language goals, and no cell biology, dosing or statistics. |
-
-Labwright's claim is narrower and sharper: **no number enters a design unless a
+[The comparison table above](#the-gap-todays-wet-lab-llms-havent-closed) puts
+Labwright next to every closely-related system we could run (Thoth, BPL-COGEN,
+ChemCrow, LLM self-check, MMFT). Three of them define the space; Labwright's
+claim is narrower and sharper: **no number enters a design unless a
 deterministic calculator computed it and the verifier re-proved it.** The LLM
 proposes raw inputs and a coherent biological narrative — the one thing it is
 genuinely good at — while every computed value is exiled to unit-tested code.
@@ -239,14 +240,12 @@ re-proves) — on two gold sets:
    `prompt-backed` (the system prompt lists a range, but the model must still
    pick the right value).
 
-Four systems are compared. The three LLM-memory systems (bare-LLM, soft-gate,
-self-verify) write numbers from memory and are scored by *identical* rules —
-only the prompt/stage structure differs. Labwright adds the calculators and
-the verifier. On top of the two DeepSeek models, the open-weights 8B protocol
-generator **thoth-8b** (the one runnable competitor from the related work) is
-run through the same three memory systems as a prompt-only comparison — it has
-no Labwright mode — and scores 0 % usable on every row (see the `thoth-8b`
-rows below).
+Four systems are compared, on two frontier models. The three LLM-memory
+systems (bare-LLM, soft-gate, self-verify) write numbers from memory and are
+scored by *identical* rules — only the prompt/stage structure differs.
+Labwright adds the calculators and the verifier.
+
+![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading and 12-blind sets (flash & pro). The memory systems (gray) never reach a usable design; Labwright (orange) holds the gate but misses the blind-set physiology.](paper/fig_benchmark.png)
 
 A *usable* design is internally consistent **and** hits every target within
 ±5 %. This is an *ablation*, not an equal-resource race: Labwright's
@@ -282,12 +281,6 @@ hallucination rate                 1.000         0.125
 | 12-blind | `pro` | soft-gate | 0 % | 0 % | 1.000 |
 | 12-blind | `pro` | self-verify | 0 % | 0 % | 0.806 |
 | 12-blind | `pro` | **Labwright** | **100 %** | **33 %** | **0.000** |
-| 24-reading | `thoth-8b` | bare-LLM | 0 % | 0 % | 1.000 |
-| 24-reading | `thoth-8b` | soft-gate | 0 % | 0 % | 1.000 |
-| 24-reading | `thoth-8b` | self-verify | 0 % | 0 % | 1.000 |
-| 12-blind | `thoth-8b` | bare-LLM | 0 % | 0 % | 1.000 |
-| 12-blind | `thoth-8b` | soft-gate | 0 % | 0 % | 1.000 |
-| 12-blind | `thoth-8b` | self-verify | 0 % | 0 % | 1.000 |
 
 *All memory-system rows come from a single re-run at temperature 0.2 after a
 prompt regression that dropped the goal text was found and fixed (see the
@@ -297,12 +290,8 @@ goal, so the bug never touched it. The only usable memory-system entries on
 either set are the three single-arithmetic-step goals on the 24-reading set
 (12 % for `pro` bare / `flash` soft-gate): goals with no design choice. A point
 or two between memory systems is sampling noise; the qualitative ordering is
-not. The `thoth-8b` rows are the prompt-only comparison against the open-weights
-8B protocol generator (why Thoth is the only runnable competitor, and why MMFT
-and BPL-COGEN are not, is on the ground in [`eval/README.md`](eval/README.md#benchmarking-scope-why-these-systems-and-not-the-named-ones)): it has no
-Labwright mode (its native output is protocol prose), and run through the
-identical harness it produces nothing checkable — 0 % usable on every memory
-system on both sets.*
+not. Why the published systems in related work are not benchmarked here is on
+the ground in [`eval/README.md`](eval/README.md#benchmarking-scope-why-these-systems-and-not-the-named-ones).*
 
 Read the numbers honestly — and the boundary of what they mean.
 
@@ -386,7 +375,7 @@ Apache-2.0. Built and maintained by [qgeng1465](https://github.com/qgeng1465).
 
 ```bibtex
 @software{labwright,
-  author = {Q., Geng},
+  author = {Geng, Q.},
   title = {Labwright: the AI bench copilot that gets your numbers right},
   year = {2026},
   url = {https://github.com/qgeng1465/labwright},

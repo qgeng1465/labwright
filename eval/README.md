@@ -112,9 +112,7 @@ verifier add to the bare model.
 
 ## Results (honest)
 
-All systems, both sets, three models (`flash`, `pro`, and the open-weights
-protocol generator `thoth-8b` run as a prompt-only comparison — no Labwright
-mode, because its native output is protocol prose). Self-consistent = zero
+All systems, both sets, two models (`flash`, `pro`). Self-consistent = zero
 verifier errors; usable = self-consistent *and* recovers every gold target
 within ±5 %. The memory systems (bare, soft-gate, self-verify) are scored by
 identical extraction/tolerance/unverifiable=1.0 rules — only the prompt/stage
@@ -138,12 +136,6 @@ structure differs.
 | `pro` | 12-blind | soft-gate | 0 % | 0 % | 1.000 |
 | `pro` | 12-blind | self-verify | 0 % | 0 % | 0.806 |
 | `pro` | 12-blind | **Labwright** | **100 %** | **33 %** | **0.000** |
-| `thoth-8b` | 24-reading | bare-LLM | 0 % | 0 % | 1.000 |
-| `thoth-8b` | 24-reading | soft-gate | 0 % | 0 % | 1.000 |
-| `thoth-8b` | 24-reading | self-verify | 0 % | 0 % | 1.000 |
-| `thoth-8b` | 12-blind | bare-LLM | 0 % | 0 % | 1.000 |
-| `thoth-8b` | 12-blind | soft-gate | 0 % | 0 % | 1.000 |
-| `thoth-8b` | 12-blind | self-verify | 0 % | 0 % | 1.000 |
 
 The memory systems never produce a usable *design* on either set, and the two
 naive "fixes" do not help. The only usable memory-system entries anywhere are
@@ -152,16 +144,12 @@ with geometry given, a channel volume, a mean velocity — where the goal suppli
 every input and no design choice remains (`pro` bare and `flash` soft-gate both
 reach 12 % there, `pro` soft-gate 8 %). On every goal that requires choosing
 geometry and flow to hit a target, all memory systems score 0 % usable, both
-sets, all three models. Soft-gate (a "re-check yourself" prompt) occasionally
+sets, both models. Soft-gate (a "re-check yourself" prompt) occasionally
 completes one of those three single-step goals but never rescues a design;
 self-verify (using the LLM as its own verifier) collapses to **0 %**
 everywhere: handed its own raw inputs, the model recomputes them wrong, so the
 second pass actively corrupts the proposal. Only Labwright's deterministic
-calculators + verifier reach usable > 0 % on design goals. thoth-8b — the one
-open-weights competitor runnable on this hardware — sits at the very bottom of
-the table: 0 % usable on every memory system on both sets, mostly because its
-trained protocol *prose* fails structured extraction (23/24 reading goals under
-soft-gate unverifiable).
+calculators + verifier reach usable > 0 % on design goals.
 
 The blind-set drop is the honest headline: when the goal does not hand over the
 target, Labwright's verified designs hit the wrong physiology. On the expanded
@@ -245,16 +233,16 @@ Labwright) are benchmarked and not the published systems named in the manuscript
   GPU here is 32 GB, so the comparison is *physically infeasible*, not declined.
   It compiles protocols into a formal language (type-safety), not a
   goal-to-design generator.
-- **Thoth** (ICLR 2026) — the one genuinely comparable competitor: an 8B LLM
-  with public weights (`manglu3935/Thoth`, cc-by-4.0) trained to generate
-  protocol text with a structured reward. We run it through the **identical
-  harness** (same gold goals, same bare prompt, same JSON extraction, same
-  scoring — `eval/run_thoth.py`), a prompt-only comparison because Thoth's native
-  output is protocol prose, not design JSON. Run through the identical harness,
-  thoth-8b scores 0 %/0 %/1.000 on all three memory systems: its trained output
-  is prose, and forced through the same schema it mostly emits nothing checkable
-  (on the reading set 18/24 bare goals unverifiable, 23/24 under soft-gate), and
-  the rest contradicts its own reported geometry.
+- **Thoth** (ICLR 2026) — an 8B LLM with public weights (`manglu3935/Thoth`,
+  cc-by-4.0) trained to generate protocol text with a structured reward. Its
+  native output is protocol *prose* (structured `<think>`/`<key>`/`<orc>`
+  sections), not design JSON. We tried running it through the identical harness
+  as a prompt-only comparison; forcing prose through a design-JSON schema makes
+  the result a *harness-adaptation artifact* — it emits nothing checkable for
+  format reasons, not capability ones — so we do **not** report a head-to-head
+  row for it. Functionally it is the same boundary as the other named systems:
+  its verification is a learned, model-internal reward, so it cannot prove a
+  number follows from its own inputs.
 
 ## Run
 

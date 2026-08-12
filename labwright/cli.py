@@ -15,7 +15,7 @@ from labwright.tools import list_tools
 
 
 def _add_llm_args(p: argparse.ArgumentParser) -> None:
-    p.add_argument("--model", help="Model name (default: env LABWRIGHT_MODEL or deepseek-chat)")
+    p.add_argument("--model", help="Model name (default: env LABWRIGHT_MODEL or deepseek-v4-flash)")
     p.add_argument("--base-url", help="OpenAI-compatible base URL (default: env or DeepSeek)")
     p.add_argument("--api-key", help="API key (default: env LABWRIGHT_API_KEY / DEEPSEEK_API_KEY)")
     p.add_argument("--max-iterations", type=int, default=12)
