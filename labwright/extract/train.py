@@ -121,6 +121,10 @@ def main() -> int:
         target_modules=_TARGET_MODULES, task_type="CAUSAL_LM",
     )
     model = get_peft_model(model, peft_cfg)
+    # Gradient checkpointing keeps activation memory within the 12 GiB claim for
+    # batch 8 x seq 1024 on the V100; with LoRA the input requires grad explicitly.
+    model.enable_input_require_grads()
+    model.gradient_checkpointing_enable()
     model.print_trainable_parameters()
 
     log_dir = Path(args.log).resolve()
@@ -137,6 +141,7 @@ def main() -> int:
         lr_scheduler_type="cosine",
         warmup_steps=warmup_steps,
         fp16=use_fp16,
+        gradient_checkpointing=True,
         logging_steps=10,
         save_strategy="epoch",
         save_total_limit=1,
