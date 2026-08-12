@@ -94,17 +94,37 @@ def main(argv: list[str]) -> int:
     ax.set_title("protocol audit funnel", fontsize=9.5, color=INK, pad=4)
 
     # ---- right: verdicts over the audited rows (the funnel's audited stage) ----
+    # A slice carries its count inside only when it is wide enough to hold text;
+    # a thin slice (here the 74 review-required rows, ~1% of the bar) cannot, so
+    # its count floats above the bar. Coloured slices wide enough hold their name
+    # under the count; light slices put the name above the bar instead; the thin
+    # slice's name lives in the legend.
     ax = axes[1]
     counts = [(n_ok, GOOD, "verified"), (n_review, WARN, "needs review"),
               (n_unv, NEUTRAL, "unverifiable")]
+    xmax = audited * 1.15  # the axis xlim, in the same data units as value
     bottom = 0
     for value, color, label in counts:
         ax.barh([0], [value], left=[bottom], color=color, height=0.7, ec="white", lw=1.0)
         if value:
-            ax.text(bottom + value / 2, 0, f"{value:,}", va="center", ha="center",
-                    fontsize=9, color="white" if color in (GOOD, WARN) else INK, zorder=3)
-            ax.text(bottom + value / 2, 0.47, label, ha="center", va="bottom",
-                    fontsize=8, color=INK)
+            frac = value / xmax
+            cx = bottom + value / 2
+            if frac >= 0.045:
+                # wide enough for the count inside the slice
+                ax.text(cx, 0, f"{value:,}", va="center", ha="center", fontsize=9,
+                        color="white" if color in (GOOD, WARN) else INK, zorder=3)
+            else:
+                # thin slice: count floats above the bar, clear of the neighbours
+                ax.text(cx, 0.58, f"{value:,}", va="center", ha="center",
+                        fontsize=7.5, color=WARN, zorder=3)
+            if frac >= 0.055 and color in (GOOD, WARN):
+                # coloured slice wide enough for the name, under the count
+                ax.text(cx, -0.15, label, ha="center", va="center", fontsize=7.5,
+                        color="white", zorder=3)
+            elif frac >= 0.045:
+                # light/wide slice: name above the bar
+                ax.text(cx, 0.47, label, ha="center", va="bottom", fontsize=8,
+                        color=INK)
         bottom += value
     ax.set_ylim(-1.5, 0.72)
     ax.set_xlim(0, audited * 1.15)

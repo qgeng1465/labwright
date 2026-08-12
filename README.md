@@ -263,7 +263,7 @@ systems (bare-LLM, soft-gate, self-verify) write numbers from memory and are
 scored by *identical* rules — only the prompt/stage structure differs.
 Labwright adds the calculators and the verifier.
 
-![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading and 12-blind sets (flash & pro). The memory systems (gray) never reach a usable design; Labwright (deep blue) holds the gate but misses the blind-set physiology.](paper/fig_benchmark.png)
+![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading and 12-blind sets (flash & pro). The memory systems (stone / ochre / sage) never reach a usable design; Labwright (deep blue) holds the gate but misses the blind-set physiology.](paper/fig_benchmark.png)
 
 A *usable* design is internally consistent **and** hits every target within
 ±5 %. This is an *ablation*, not an equal-resource race: Labwright's

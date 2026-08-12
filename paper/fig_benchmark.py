@@ -5,10 +5,10 @@ and the 12-blind set (no target stated) — as 3 × 2 small multiples, one row p
 headline metric (self-consistent rate, usable rate, hallucination rate). Within
 each panel the two model families (deepseek-v4-flash, deepseek-v4-pro) are
 grouped; the four systems (bare-LLM, soft-gate, self-verify, Labwright) sit as
-adjacent bars. Color follows the *system*: the three LLM-memory systems are a
-de-emphasized gray family and Labwright is the deep academic blue, so the texture
-channel (45° hatch on Labwright) plus the legend keep identity readable in
-print and for CVD.
+adjacent bars. Color follows the *system*: one categorical hue per system —
+neutral stone, warm ochre, cool sage, and the deep academic blue for Labwright —
+so the texture channel (45° hatch on Labwright) plus the legend keep identity
+readable in print and for CVD.
 
 The blind set is where the honest boundary of the gate shows: self-consistency
 stays high for Labwright while the usable rate collapses, and the naive
@@ -74,15 +74,15 @@ SETS = [
     ("12-blind set", "no target stated"),
 ]
 #: (system key, legend label, bar color, edge/hatch color, hatch).
-#: The three LLM-memory systems are a neutral gray family, monotonic
-#: light→dark in bar order (bare, soft-gate, self-verify); Labwright is the
-#: paper's deep academic blue. Pairwise OKLab ΔE verified ≥ 15 normal-vision
-#: and ≥ 8 under CVD simulation (bare→soft 20.3, soft→self 24.5, self→lab 15.5;
-#: CVD 22.0/26.4/25.2).
+#: Categorical, one hue per system: a neutral light stone for the plain baseline,
+#: a warm ochre for soft-gate, a cool sage for self-verify, and the paper's deep
+#: academic blue for Labwright. Pairwise OKLab ΔE verified ≥ 15 normal-vision
+#: and ≥ 8 under CVD simulation (bare→soft 20.4, soft→self 16.6, self→lab 16.3;
+#: CVD min 17.7). Labwright keeps the 45° hatch as an extra identity channel.
 SYSTEMS = [
-    ("bare", "bare-LLM", "#c8c4bd", "none", None),
-    ("soft_gate", "soft-gate", "#8a857e", "#c8c4bd", "o"),
-    ("self_verify", "self-verify", "#454039", "#c8c4bd", "+"),
+    ("bare", "bare-LLM", "#C9C2B6", "none", None),
+    ("soft_gate", "soft-gate", "#C07C2B", "#9A611F", "o"),
+    ("self_verify", "self-verify", "#5F7668", "#3F5146", "+"),
     ("labwright", "Labwright", "#2E5598", "#1f3f70", "//"),
 ]
 INK = "#262522"          # text primary
