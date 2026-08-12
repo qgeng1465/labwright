@@ -79,6 +79,53 @@ def derive(result: dict) -> dict:
     return out
 
 
+def scirecipe_derive(report: dict) -> dict:
+    """Derive the SciRecipe funnel + consistency metrics from an audit JSON.
+
+    The denominator story is the whole point: of N protocol summaries, only a
+    fraction carry numbers, of those a fraction route to a domain we can check,
+    of those a fraction say *enough* to recompute a claimed number. The
+    consistency rate is reported over the checkable set, never over the corpus.
+    """
+    verdicts = report.get("verdict_counts", {})
+    n_ok = verdicts.get("ok", 0)
+    n_review = verdicts.get("review_required", 0)
+    n_checkable = n_ok + n_review
+    return {
+        "n_total": report["n_total"],
+        "n_numeric": report["n_numeric"],
+        "n_culture": report["n_culture"],
+        "n_flow": report["n_flow"],
+        "n_audited": report["n_audited"],
+        "verdict_counts": verdicts,
+        "n_ok": n_ok,
+        "n_review_required": n_review,
+        "n_unverifiable": verdicts.get("unverifiable", 0),
+        "numeric_pct": report["n_numeric"] / report["n_total"] if report["n_total"] else 0,
+        "domain_rate": (report["n_culture"] + report["n_flow"]) / report["n_numeric"] if report["n_numeric"] else 0,
+        "checkable_rate": n_checkable / report["n_audited"] if report["n_audited"] else 0,
+        "consistency_among_checkable": n_ok / n_checkable if n_checkable else 0,
+    }
+
+
+def render_scirecipe(report: dict) -> str:
+    d = scirecipe_derive(report)
+    pct = _pct
+    lines = [
+        f"SciRecipe reverse-verification audit ({d['n_total']} protocols)",
+        f"  funnel: {d['n_numeric']} numeric ({pct(d['numeric_pct'])}) "
+        f"-> {d['n_culture']} culture + {d['n_flow']} flow "
+        f"({pct(d['domain_rate'])} of numeric) -> {d['n_audited']} audited",
+        f"  checkable: {d['n_ok'] + d['n_review_required']} "
+        f"({pct(d['checkable_rate'])} of audited); "
+        f"consistent {pct(d['consistency_among_checkable'])}, "
+        f"review_required {d['n_review_required']}",
+        f"  verdicts: {d['verdict_counts']}",
+        f"  runtime: {report.get('runtime_s')}s",
+    ]
+    return "\n".join(lines)
+
+
 _LABELS = {
     "bare": "bare-LLM",
     "soft_gate": "soft-gate",
@@ -146,7 +193,10 @@ def main(argv: list[str] | None = None) -> int:
     path = Path(argv[0])
     with open(path) as fh:
         result = json.load(fh)
-    print(render(result))
+    if "verdict_counts" in result and "n_numeric" in result:
+        print(render_scirecipe(result))
+    else:
+        print(render(result))
     return 0
 
 

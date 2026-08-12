@@ -261,7 +261,7 @@
       "discrepancy_fields": [],
       "detail": {
         "status": "validation_error",
-        "error": "3 validation errors for ChipGeometry\nwidth_um\n  Field required [type=missing, input_value={}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nheight_um\n  Field required [type=missing, input_value={}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nlength_mm\n  Field required [type=missing, input_value={}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing"
+        "error": "no inputs: report chip+flow (fluidics) and/or culture (plate)"
       }
     },
     {
