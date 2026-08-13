@@ -4,7 +4,7 @@ The benchmark's headline rates — "usable designs", "hallucination rate" — ar
 binomial proportions over a finite gold set. The Wilson score interval is the
 honest interval for a small-n proportion: unlike a naive normal approximation
 it never collapses to zero width at 0 % or 100 %, so "0.000 hallucination over
-24 goals" is reported as ``0.000 [0.000, 0.115]`` (the 95 % upper bound), not a
+24 goals" is reported as ``0.000 [0.000, 0.138]`` (the 95 % upper bound), not a
 false exact zero. It is also the interval a reviewer can re-derive from
 ``k`` and ``n`` alone — no sampler, no prior.
 

@@ -5,7 +5,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
 [![CI](https://github.com/qgeng1465/labwright/actions/workflows/tests.yml/badge.svg)](https://github.com/qgeng1465/labwright/actions)
-[![Tests](https://img.shields.io/badge/tests-208%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-226%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
 Frontier LLMs hallucinate ~100 % of the derived numbers in a wet-lab design.
@@ -124,7 +124,7 @@ four of them, in order, and never passes a violation silently:
    generic arithmetic errors.
 3. **Physiological range** — each quantity sits in a sanity band
    ([`labwright/verify/sanity.py`](labwright/verify/sanity.py)): wall shear
-   0.001–10 Pa (hard 1e-4–50), seeding density 10³–10⁶ cells/cm², DMSO
+   0.001–10 Pa (hard 1e-4–50), seeding density 10³–10⁷ cells/cm², DMSO
    <0.5% v/v (hard <14%). Soft-band violations warn; hard-band violations error.
 4. **Safety & compliance** ([`labwright/verify/safety.py`](labwright/verify/safety.py)) —
    hazardous-compound dose caps (e.g. doxorubicin >0.5 mM rejected with a
@@ -239,7 +239,7 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
   `extract/pipeline.py`): the natural-language goal seeds the raw inputs the
   calculators then check, so a design can be generated without an agent
   round-trip. Eval (`extract/eval.py`): JSON parse **1.0**, extract→verify
-  consistency **0.998**, field recovery **0.72** on 400 rows + 12 blind goals
+  consistency **0.9976**, field recovery **0.72** on 400 rows + 12 blind goals
   (the pre-expansion blind set) — against **0.40** consistency for the untuned
   `deepseek-v4-flash`/`pro` baselines on the same rows (results are in
   `results/extractor/eval_report.json`).
