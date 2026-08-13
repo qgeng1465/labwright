@@ -1,5 +1,6 @@
 """Tests for benchmark metrics (no LLM involved — metrics are pure)."""
 
+import json
 import os
 import sys
 
@@ -56,10 +57,14 @@ def test_parameter_recovery_relative_error():
 # --- competitor baselines (no LLM — prompt structure and scoring are pure) ---
 
 from eval.benchmark import (  # noqa: E402
+    _find_key,
+    _find_str_key,
+    _is_spheroid_gold,
     bare_checkable,
     bare_hallucination,
     bare_prompt_for,
     evaluate,
+    run_bare_llm,
     run_self_verify,
     run_soft_gate,
     soft_gate_prompt_for,
@@ -228,6 +233,25 @@ def test_bare_hallucination_culture_no_derived_is_unverifiable():
     assert bare_checkable(extracted) is False
 
 
+def test_bare_hallucination_culture_confluence_without_growth_inputs_no_crash():
+    # A model over-reporting expected_confluence_pct without the growth inputs
+    # that produce it must not crash the scorer (regression: KeyError).
+    extracted = {
+        "plate_format": "96", "seeding_density_cells_cm2": 1e4, "wells": 1,
+        "seed_per_well": 3200.0, "expected_confluence_pct": 42.0,  # unsupported
+    }
+    assert bare_hallucination(extracted) == 0.0  # confluence not counted, seed is right
+    # confluence WITH its inputs is cross-checked: at 0 h, 3200 cells on a
+    # 96-well (0.32 cm²) at 1e5 cells/cm² confluence = 3200 / (1e5 × 0.32) = 10 %
+    extracted["confluent_density_cells_cm2"] = 1e5
+    extracted["doubling_time_h"] = 24.0
+    extracted["culture_duration_h"] = 0.0
+    extracted["expected_confluence_pct"] = 10.0
+    assert bare_hallucination(extracted) == 0.0
+    extracted["expected_confluence_pct"] = 99.0  # wrong → now counted wrong
+    assert bare_hallucination(extracted) > 0
+
+
 def test_parameter_recovery_culture_exact():
     plan = _verified_plan()
     plan.culture = CulturePlan(**derive_culture(
@@ -314,6 +338,41 @@ def test_bare_hallucination_spheroid_bad_format_is_unverifiable():
     assert bare_hallucination(extracted) == 1.0
 
 
+def test_bare_hallucination_spheroid_geometry_without_vessel_format():
+    # A geometry-only answer (volume / diameter from cells × cell size) is
+    # checkable even when the model never names a vessel format — a model that
+    # writes "solid_sphere" instead of "96-ula" is not penalised for the volume
+    # and diameter it derived correctly.
+    extracted = {
+        "cells_per_spheroid": 1000.0, "cell_diameter_um": 20.0,
+        "expected_diameter_um": 200.0, "spheroid_volume_ul": 4.18879e-3,
+    }
+    assert bare_checkable(extracted) is True
+    assert bare_hallucination(extracted) == 0.0
+
+
+def test_bare_hallucination_spheroid_unparseable_vessel_number_not_counted():
+    # A vessel number reported with an unparseable format cannot be re-derived
+    # from the model's own raws, so it is neither counted right nor wrong; the
+    # geometry fields are still cross-checked.
+    extracted = {
+        "cells_per_spheroid": 1000.0, "cell_diameter_um": 20.0,
+        "expected_diameter_um": 200.0, "spheroid_format": "solid_sphere",
+        "medium_volume_per_spheroid_ul": 9999.0,  # unsupported — not counted
+    }
+    assert bare_hallucination(extracted) == 0.0
+
+
+def test_bare_hallucination_spheroid_vessel_only_with_bad_format_is_unverifiable():
+    # The only reported derived number is a vessel volume, but the vessel format
+    # is unparseable → nothing cross-checkable → 1.0.
+    extracted = {
+        "cells_per_spheroid": 1000.0, "cell_diameter_um": 20.0,
+        "spheroid_format": "solid_sphere", "medium_volume_per_spheroid_ul": 100.0,
+    }
+    assert bare_hallucination(extracted) == 1.0
+
+
 def test_parameter_recovery_spheroid_exact():
     from labwright.design import derive_spheroid
     from labwright.schema.design import SpheroidPlan
@@ -334,3 +393,107 @@ def test_hallucination_rate_ignores_spheroid_when_absent():
     plan.spheroid = None
     rate = hallucination_rate(plan)
     assert 0 < rate < 1  # flow fields counted, spheroid fields not in denominator
+
+
+# --- string-format fairness: a format written as text must be extractable ---
+#
+# ``spheroid_format`` (always "96-ula"/"hanging-drop") and ``plate_format``
+# (when written "96-well") are strings. The numeric finder ignores them, so a
+# bare model reporting the canonical form was scored unverifiable — spheroid
+# golds got hallucination 1.0 for bare/soft-gate/self-verify unconditionally.
+# The string finder recovers them and the calculators normalise to the tables.
+
+
+def test_find_key_ignores_string_format_but_find_str_key_recovers_it():
+    assert _find_key({"spheroid_format": "96-ula"}, "spheroid_format") is None
+    assert _find_key({"plate_format": "96-well"}, "plate_format") is None
+    assert _find_str_key({"spheroid_format": "96-ula"}, "spheroid_format") == "96-ula"
+    assert _find_str_key({"plate_format": "96-well"}, "plate_format") == "96-well"
+    # a numeric-looking format still extracts as a string for the calc tables
+    assert _find_str_key({"plate_format": "96"}, "plate_format") == "96"
+    assert _find_str_key({"spheroid": {"spheroid_format": "hanging drop"}},
+                         "spheroid_format") == "hanging drop"
+
+
+def test_run_bare_llm_extracts_string_format_and_becomes_checkable():
+    def chat(prompt: str) -> str:
+        return json.dumps({
+            "spheroid_format": "96-ula",
+            "spheroid_count": 96,
+            "cells_per_spheroid": 1000.0,
+            "cell_diameter_um": 20.0,
+            "expected_diameter_um": 200.0,
+            "cells_total": 96000.0,
+        })
+
+    out = run_bare_llm(_SPHEROID_GOLD, chat)
+    assert out["spheroid_format"] == "96-ula"
+    assert out["spheroid_count"] == pytest.approx(96.0)
+    assert out["expected_diameter_um"] == pytest.approx(200.0)
+    # previously this reported the canonical format yet scored unverifiable;
+    # now the spheroid branch of bare_checkable / bare_hallucination fires
+    assert bare_checkable(out) is True
+    assert bare_hallucination(out) == 0.0
+
+
+def test_bare_hallucination_culture_with_dashed_plate_format():
+    extracted = {
+        "plate_format": "96-well", "seeding_density_cells_cm2": 1e4, "wells": 1,
+        "seed_per_well": 3200.0, "medium_volume_per_well_ml": 0.17,
+    }
+    assert bare_checkable(extracted) is True
+    assert bare_hallucination(extracted) == 0.0
+
+
+def test_soft_gate_prompt_for_spheroid_uses_spheroid_check():
+    prompt = soft_gate_prompt_for(_SPHEROID_GOLD)
+    assert "3D-culture" in prompt
+    assert "spheroid_format" in prompt
+    assert "medium_volume_per_spheroid_ul" in prompt
+    assert "width_um" not in prompt  # no flow keys for a spheroid goal
+
+
+def test_run_self_verify_culture_stage2_replaces_invented_number():
+    stage1 = {
+        "plate_format": "96", "seeding_density_cells_cm2": 1e4, "wells": 1,
+        "seed_per_well": 9999.0,  # invented
+        "medium_volume_per_well_ml": 0.5,
+    }
+    stage2 = {
+        "seed_per_well": 3200.0, "total_seed_count": 3200.0,
+        "medium_volume_per_well_ml": 0.17, "total_medium_ml": 0.17,
+        "expected_confluence_pct": None,
+    }
+
+    def chat(prompt: str) -> str:
+        data = stage1 if "Goal:" in prompt else stage2
+        return "{" + ",".join(f'"{k}":{json.dumps(v)}' for k, v in data.items()) + "}"
+
+    out = run_self_verify(_CULTURE_GOLD, chat)
+    assert out["seed_per_well"] == pytest.approx(3200.0)
+    assert out["seed_per_well"] != pytest.approx(9999.0)
+    assert out["plate_format"] == "96"  # raw survives the merge
+
+
+def test_run_self_verify_spheroid_stage2_replaces_invented_number():
+    stage1 = {
+        "spheroid_format": "96-ula", "spheroid_count": 96.0,
+        "cells_per_spheroid": 1000.0, "cell_diameter_um": 20.0,
+        "expected_diameter_um": 999.0,  # invented
+        "cells_total": 50000.0,
+    }
+    stage2 = {
+        "expected_diameter_um": 200.0, "spheroid_volume_ul": 4.18879e-3,
+        "medium_volume_per_spheroid_ul": 100.0, "cells_total": 96000.0,
+        "total_medium_ml": 9.6, "expected_cells_after_growth": None,
+    }
+
+    def chat(prompt: str) -> str:
+        data = stage1 if "Goal:" in prompt else stage2
+        return "{" + ",".join(f'"{k}":{json.dumps(v)}' for k, v in data.items()) + "}"
+
+    out = run_self_verify(_SPHEROID_GOLD, chat)
+    assert out["expected_diameter_um"] == pytest.approx(200.0)
+    assert out["expected_diameter_um"] != pytest.approx(999.0)
+    assert out["spheroid_format"] == "96-ula"
+    assert bare_hallucination(out) == 0.0

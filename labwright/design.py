@@ -16,6 +16,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from labwright.blocks import ALL_DERIVED_KEYS
 from labwright.calc import cell as calc_cell
 from labwright.calc import culture as calc_culture
 from labwright.calc import microfluidics as mf
@@ -36,24 +37,11 @@ from labwright.verify.checker import format_issues, verify_design
 #: Field names the calculators own. ``submit_design`` refuses any of these from
 #: the model — a derived number is computed, never accepted. Kept as a plain set
 #: so a smuggled field is rejected with a clear message instead of being
-#: silently overwritten (the old pydantic default was to drop it).
-_DERIVED_FIELD_NAMES = {
-    # flow
-    "shear_pa", "reynolds", "pressure_drop_pa", "residence_time_s",
-    "channel_volume_ul", "mean_velocity_mms",
-    # cells
-    "seed_count",
-    # dosing
-    "dmso_fraction_vv",
-    # stats
-    "n_per_group",
-    # culture
-    "seed_per_well", "total_seed_count", "medium_volume_per_well_ml",
-    "total_medium_ml", "expected_confluence_pct",
-    # spheroid
-    "spheroid_volume_ul", "expected_diameter_um", "cells_total",
-    "medium_volume_per_spheroid_ul", "expected_cells_after_growth",
-}
+#: silently overwritten (the old pydantic default was to drop it). The set is
+#: the union of every design domain's derived keys, declared once per domain in
+#: :mod:`labwright.blocks` — adding a domain's derived fields means editing that
+#: domain's ``Block``, not this list.
+_DERIVED_FIELD_NAMES: frozenset[str] = ALL_DERIVED_KEYS
 
 
 # ---------------------------------------------------------------------------

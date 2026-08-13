@@ -18,57 +18,15 @@ lumping the case into generic recovery error.
 
 from __future__ import annotations
 
+from labwright.blocks import ALL_CANONICAL_UNITS
 from labwright.calc.units import Q
 
 #: Canonical unit of every raw and derived field, keyed by the field names used
 #: in the schema and the verifier's issue records. This is the audit table:
-#: a value is only correct when it is expressed in this unit.
-CANONICAL_UNITS: dict[str, str] = {
-    # flow
-    "derived.shear_pa": "Pa",
-    "derived.reynolds": "dimensionless",
-    "derived.pressure_drop_pa": "Pa",
-    "derived.residence_time_s": "s",
-    "derived.channel_volume_ul": "uL",
-    "derived.mean_velocity_mms": "mm/s",
-    "flow_rate_uLmin": "uL/min",
-    "viscosity_pas": "Pa*s",
-    "density_kgm3": "kg/m^3",
-    # geometry
-    "width_um": "um",
-    "height_um": "um",
-    "length_mm": "mm",
-    # cells / culture
-    "cells.seed_count": "cells",
-    "cells.seeding_density_cells_cm2": "cells/cm^2",
-    "cells.culture_area_cm2": "cm^2",
-    "culture.seed_per_well": "cells",
-    "culture.total_seed_count": "cells",
-    "culture.medium_volume_per_well_ml": "mL",
-    "culture.total_medium_ml": "mL",
-    "culture.seeding_density_cells_cm2": "cells/cm^2",
-    "culture.expected_confluence_pct": "%",
-    "culture.viability_pct": "%",
-    "culture.doubling_time_h": "h",
-    "culture.culture_duration_h": "h",
-    # spheroid
-    "spheroid.cells_per_spheroid": "cells",
-    "spheroid.spheroid_count": "n",
-    "spheroid.expected_diameter_um": "um",
-    "spheroid.spheroid_volume_ul": "uL",
-    "spheroid.cell_diameter_um": "um",
-    "spheroid.medium_volume_per_spheroid_ul": "uL",
-    "spheroid.total_medium_ml": "mL",
-    "spheroid.cells_total": "cells",
-    "spheroid.expected_cells_after_growth": "cells",
-    # dosing
-    "dosing.stock_mM": "mM",
-    "dosing.working_mM": "mM",
-    "dosing.dmso_fraction_vv": "v/v",
-    "dosing.molecular_weight_g_mol": "g/mol",
-    # stats
-    "stats.n_per_group": "n",
-}
+#: a value is only correct when it is expressed in this unit. Declared once per
+#: design domain in :mod:`labwright.blocks` and merged here; adding a domain's
+#: units means editing that domain's ``Block``, not this table.
+CANONICAL_UNITS: dict[str, str] = ALL_CANONICAL_UNITS
 
 #: Unit aliases that matter in practice: ``(name, from_unit, to_unit, factor)``
 #: where ``factor`` is the ratio a *claimed* value shows against the *true*

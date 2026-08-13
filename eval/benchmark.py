@@ -37,41 +37,31 @@ GOLD_PATH = os.path.join(_HERE, "gold_experiments.json")
 #: by hand; Labwright uses calculators and must match to 1e-6.
 BARE_CONSISTENCY_TOL = 0.05
 
-_DERIVED_KEYS = ["shear_pa", "reynolds", "pressure_drop_pa", "residence_time_s",
-                 "channel_volume_ul", "mean_velocity_mms"]
-_RAW_KEYS = ["width_um", "height_um", "length_mm", "flow_rate_uLmin", "viscosity_pas",
-             "density_kgm3", "seed_count", "seeding_density_cells_cm2",
-             "culture_area_cm2", "dmso_fraction_vv", "n_per_group",
-             "plate_format", "wells"]
+#: Per-domain raw/derived/consistency key sets. The single source of truth is
+#: :mod:`labwright.blocks` — one ``Block`` per design domain declares its raw,
+#: derived and consistency keys — and these aliases are re-exported here as
+#: lists so the existing ``_CULTURE_*`` / ``_SPHEROID_*`` / flow key names keep
+#: working. Adding a domain to the benchmark means adding a ``Block`` entry;
+#: these names then exist automatically.
+from labwright.blocks import ALL_FIELD_MAP, ALL_RAW_KEYS, BLOCKS
+
+_DERIVED_KEYS = list(BLOCKS["flow"].derived_keys)
+_RAW_KEYS = sorted(ALL_RAW_KEYS)
+_CONSISTENCY_KEYS = list(BLOCKS["flow"].consistency_keys)
 
 #: Plate-culture raw inputs and derived fields (WS1 domain).
-_CULTURE_RAW_KEYS = [
-    "plate_format", "wells", "seeding_density_cells_cm2", "viability_pct",
-    "confluent_density_cells_cm2", "doubling_time_h", "culture_duration_h",
-]
-_CULTURE_DERIVED_KEYS = [
-    "seed_per_well", "total_seed_count", "medium_volume_per_well_ml",
-    "total_medium_ml", "expected_confluence_pct",
-]
+_CULTURE_RAW_KEYS = list(BLOCKS["culture"].raw_keys)
+_CULTURE_DERIVED_KEYS = list(BLOCKS["culture"].derived_keys)
 #: The minimal raw set a bare model must report for its culture numbers to be
 #: cross-checkable (analogue of _CONSISTENCY_KEYS for the plate domain).
-_CULTURE_CONSISTENCY_KEYS = ["plate_format", "seeding_density_cells_cm2", "wells"]
+_CULTURE_CONSISTENCY_KEYS = list(BLOCKS["culture"].consistency_keys)
 
 #: Spheroid / 3D-culture raw inputs and derived fields (3D domain).
-_SPHEROID_RAW_KEYS = [
-    "spheroid_format", "spheroid_count", "cells_per_spheroid",
-    "cell_diameter_um", "doubling_time_h", "culture_duration_h",
-]
-_SPHEROID_DERIVED_KEYS = [
-    "spheroid_volume_ul", "expected_diameter_um", "cells_total",
-    "medium_volume_per_spheroid_ul", "total_medium_ml",
-    "expected_cells_after_growth",
-]
+_SPHEROID_RAW_KEYS = list(BLOCKS["spheroid"].raw_keys)
+_SPHEROID_DERIVED_KEYS = list(BLOCKS["spheroid"].derived_keys)
 #: The minimal raw set a bare model must report for its spheroid numbers to be
 #: cross-checkable.
-_SPHEROID_CONSISTENCY_KEYS = [
-    "spheroid_format", "spheroid_count", "cells_per_spheroid", "cell_diameter_um",
-]
+_SPHEROID_CONSISTENCY_KEYS = list(BLOCKS["spheroid"].consistency_keys)
 
 
 @dataclass
@@ -142,35 +132,14 @@ def classify_failure(rec: dict, gold: GoldExperiment) -> str:
 #: Gold keys (bare, as used in ``gold.expected``) -> canonical verifier field
 #: name. ``classify_unit_misread`` looks the field up in the unit audit table,
 #: which is keyed by the verifier's issue names (``derived.shear_pa``), so a
-#: bare ``shear_pa`` must be mapped before the alias check can run.
-_FIELD_MAP = {
-    "shear_pa": "derived.shear_pa",
-    "reynolds": "derived.reynolds",
-    "pressure_drop_pa": "derived.pressure_drop_pa",
-    "residence_time_s": "derived.residence_time_s",
-    "channel_volume_ul": "derived.channel_volume_ul",
-    "mean_velocity_mms": "derived.mean_velocity_mms",
-    "flow_rate_uLmin": "flow_rate_uLmin",
-    "seed_count": "cells.seed_count",
-    "dmso_fraction_vv": "dosing.dmso_fraction_vv",
-    "n_per_group": "stats.n_per_group",
-    "seed_per_well": "culture.seed_per_well",
-    "total_seed_count": "culture.total_seed_count",
-    "medium_volume_per_well_ml": "culture.medium_volume_per_well_ml",
-    "total_medium_ml": "culture.total_medium_ml",
-    "expected_confluence_pct": "culture.expected_confluence_pct",
-    "spheroid_volume_ul": "spheroid.spheroid_volume_ul",
-    "expected_diameter_um": "spheroid.expected_diameter_um",
-    "cells_total": "spheroid.cells_total",
-    "medium_volume_per_spheroid_ul": "spheroid.medium_volume_per_spheroid_ul",
-    "total_medium_ml": "spheroid.total_medium_ml",
-    "cells_per_spheroid": "spheroid.cells_per_spheroid",
-    "spheroid_count": "spheroid.spheroid_count",
-    "expected_cells_after_growth": "spheroid.expected_cells_after_growth",
-}
+#: bare ``shear_pa`` must be mapped before the alias check can run. The mapping
+#: is the union of every design domain's ``Block.field_map`` (declared once in
+#: :mod:`labwright.blocks`), first declaration wins — so the shared
+#: ``total_medium_ml`` key maps to culture's field, exactly as before.
+_FIELD_MAP: dict[str, str] = ALL_FIELD_MAP
 
 
-def unit_misreads(claimed: dict[str, float | None], gold: GoldExperiment) -> dict[str, dict]:
+def unit_misreads(claimed: dict[str, float | str | None], gold: GoldExperiment) -> dict[str, dict]:
     """Probable unit misreads among the reported numbers.
 
     For each gold target the system reported, run :func:`classify_unit_misread`
@@ -252,9 +221,9 @@ def parameter_recovery(gold: GoldExperiment, plan: DesignPlan) -> dict[str, floa
     return errs
 
 
-def _design_claimed(plan: DesignPlan, gold: GoldExperiment) -> dict[str, float | None]:
+def _design_claimed(plan: DesignPlan, gold: GoldExperiment) -> dict[str, float | str | None]:
     """The design's value for each gold target key (mirror of parameter_recovery)."""
-    out: dict[str, float | None] = {}
+    out: dict[str, float | str | None] = {}
     if plan.derived is not None:
         d = plan.derived
         mapping = {
@@ -360,9 +329,6 @@ def hallucination_rate(plan: DesignPlan) -> float:
 # Bare-LLM path (lenient number extraction)
 # ---------------------------------------------------------------------------
 
-#: Raw inputs a bare model must report for its derived numbers to be checkable.
-_CONSISTENCY_KEYS = ["width_um", "height_um", "length_mm", "flow_rate_uLmin", "viscosity_pas", "density_kgm3"]
-
 
 def _is_culture_gold(gold: GoldExperiment) -> bool:
     """True when the gold's expected keys are plate-culture derived numbers."""
@@ -430,6 +396,14 @@ def soft_gate_prompt_for(gold: GoldExperiment) -> str:
             "dimensions, hemocytometer and viability formulas, and correct any "
             "value that does not match."
         )
+    elif _is_spheroid_gold(gold):
+        check = (
+            "BEFORE you finalize: re-derive every derived 3D-culture number "
+            f"({', '.join(_SPHEROID_DERIVED_KEYS)}) from your own spheroid_format/"
+            "spheroid_count/cells_per_spheroid/cell_diameter_um using the standard "
+            "spheroid geometry (solid-sphere packing) and standard vessel volumes, "
+            "and correct any value that does not match."
+        )
     else:
         check = (
             "BEFORE you finalize: re-derive every derived flow number "
@@ -450,21 +424,48 @@ def soft_gate_prompt_for(gold: GoldExperiment) -> str:
     )
 
 
-def self_verify_prompt_for(raw: dict[str, float | None], derived_keys: list[str]) -> str:
+def _self_verify_domain(gold: GoldExperiment) -> tuple[list[str], list[str], str]:
+    """(consistency keys, derived keys, formula instruction) for a gold's domain.
+
+    The verifier pass must hand back the raw inputs of the *right* domain: a
+    plate-culture gold is checked against plate raws and plate derived numbers,
+    a spheroid gold against spheroid raws and spheroid derived numbers, not the
+    flow sets a generic prompt would assume.
+    """
+    if _is_culture_gold(gold):
+        return (
+            _CULTURE_CONSISTENCY_KEYS, _CULTURE_DERIVED_KEYS,
+            "standard multi-well plate dimensions (well surface area and working "
+            "volume per format) and the hemocytometer/viability formulas",
+        )
+    if _is_spheroid_gold(gold):
+        return (
+            _SPHEROID_CONSISTENCY_KEYS, _SPHEROID_DERIVED_KEYS,
+            "standard spheroid geometry (solid-sphere packing, volume-to-diameter) "
+            "and the standard ULA-plate / hanging-drop vessel volumes",
+        )
+    return (
+        _CONSISTENCY_KEYS, _DERIVED_KEYS,
+        "standard rectangular-channel microfluidic formulas",
+    )
+
+
+def self_verify_prompt_for(raw: dict[str, float | str | None], derived_keys: list[str],
+                           formulas: str, consistency_keys: list[str]) -> str:
     """Stage-2 prompt: hand the model its own raw inputs and ask it to recompute.
 
     The second LLM pass plays the role of verifier. It sees only the raw inputs
     the first pass reported — never the deterministic answers — so any agreement
     is the model's own arithmetic, not a leak.
     """
-    present = {k: raw[k] for k in _CONSISTENCY_KEYS if raw.get(k) is not None}
-    rendered = ", ".join(f"{k}={present[k]}" for k in _CONSISTENCY_KEYS if k in present)
+    present = {k: raw[k] for k in consistency_keys if raw.get(k) is not None}
+    rendered = ", ".join(f"{k}={present[k]}" for k in consistency_keys if k in present)
     return (
         "A design proposed these raw inputs: " + rendered + ".\n"
-        "Using the standard rectangular-channel microfluidic formulas, recompute "
-        "EXACTLY these derived values yourself (" + ", ".join(derived_keys) + ") "
-        "from those inputs, and return a single flat JSON object with ONLY those "
-        "keys (use exactly these names; do the arithmetic):\n"
+        "Using " + formulas + ", recompute EXACTLY these derived values yourself ("
+        + ", ".join(derived_keys) + ") from those inputs, and return a single flat "
+        "JSON object with ONLY those keys (use exactly these names; do the "
+        "arithmetic):\n"
         "Return ONLY the JSON object (no prose, no markdown fences)."
     )
 
@@ -493,13 +494,53 @@ def _find_key(data: Any, key: str, depth: int = 0) -> float | None:
     return None
 
 
-def run_bare_llm(gold: GoldExperiment, chat: Callable, attempts: int = 3) -> dict[str, float | None]:
+#: Gold keys whose value is a format identifier, not a number. ``_find_key`` is
+#: float-only, so a bare model that reports ``spheroid_format: "96-ula"`` or
+#: ``plate_format: "96-well"`` (the canonical forms) would be scored as if it
+#: reported nothing at all — spheroid golds were unverifiable for bare / soft
+#: gate / self-verify unconditionally. These are extracted by string instead and
+#: normalised by the calculators' own format tables.
+_STRING_KEYS = {"plate_format", "spheroid_format"}
+
+
+def _find_str_key(data: Any, key: str, depth: int = 0) -> str | None:
+    """Recursively find a string field by exact name anywhere in a JSON tree."""
+    if depth > 12:
+        return None
+    if isinstance(data, dict):
+        for k, v in data.items():
+            if k == key:
+                if isinstance(v, str) and v.strip():
+                    return v.strip()
+                if isinstance(v, (int, float)) and math.isfinite(float(v)):
+                    # "96" written as a bare number is still a plate format.
+                    return str(v)
+            found = _find_str_key(v, key, depth + 1)
+            if found is not None:
+                return found
+    elif isinstance(data, list):
+        for item in data:
+            found = _find_str_key(item, key, depth + 1)
+            if found is not None:
+                return found
+    return None
+
+
+def _extract_key(data: Any, key: str) -> float | str | None:
+    """Extract one key: as a number, or as a string for the format identifiers."""
+    if key in _STRING_KEYS:
+        return _find_str_key(data, key)
+    return _find_key(data, key)
+
+
+def run_bare_llm(gold: GoldExperiment, chat: Callable, attempts: int = 3) -> dict[str, float | str | None]:
     """Ask a raw LLM for the design numbers; return a lenient extraction.
 
     Retries on empty/unparseable responses (the models intermittently spend the
     whole token budget on hidden reasoning and emit nothing — a transient
     budget artifact, not a competence verdict). Returns a dict mapping every
-    key to a float, or ``None`` when the model never reported it.
+    key to a float (or a string for ``plate_format`` / ``spheroid_format``), or
+    ``None`` when the model never reported it.
     """
     keys = _prompt_keys_for(gold)
     prompt = bare_prompt_for(gold)
@@ -512,13 +553,13 @@ def run_bare_llm(gold: GoldExperiment, chat: Callable, attempts: int = 3) -> dic
             data = _extract_json(text)
         except Exception:
             continue
-        extracted = {k: _find_key(data, k) for k in keys}
+        extracted = {k: _extract_key(data, k) for k in keys}
         if any(v is not None for v in extracted.values()):
             return extracted
     return empty
 
 
-def run_soft_gate(gold: GoldExperiment, chat: Callable, attempts: int = 3) -> dict[str, float | None]:
+def run_soft_gate(gold: GoldExperiment, chat: Callable, attempts: int = 3) -> dict[str, float | str | None]:
     """Ask the raw LLM for the design numbers under a 'check yourself' prompt.
 
     Identical retry/extraction logic to :func:`run_bare_llm`; only the prompt
@@ -536,28 +577,30 @@ def run_soft_gate(gold: GoldExperiment, chat: Callable, attempts: int = 3) -> di
             data = _extract_json(text)
         except Exception:
             continue
-        extracted = {k: _find_key(data, k) for k in keys}
+        extracted = {k: _extract_key(data, k) for k in keys}
         if any(v is not None for v in extracted.values()):
             return extracted
     return empty
 
 
-def run_self_verify(gold: GoldExperiment, chat: Callable, attempts: int = 2) -> dict[str, float | None]:
+def run_self_verify(gold: GoldExperiment, chat: Callable, attempts: int = 2) -> dict[str, float | str | None]:
     """Two-stage 'LLM as its own verifier': propose, then recompute.
 
     Stage 1 is exactly the bare prompt (propose numbers from memory). Stage 2
     hands the model its own reported raw inputs back and asks it to recompute the
-    derived flow numbers *itself*. The final answer is the stage-2 numbers where
-    returned; if the verifier pass returns nothing checkable, the proposal stands
-    unverified (scored exactly like a bare answer). This is the naive alternative
-    to Labwright's deterministic verifier: can a second LLM pass correct the
-    first LLM's arithmetic? The benchmark shows it cannot reliably.
+    derived numbers of the goal's own domain (flow, plate-culture or spheroid)
+    *itself*. The final answer is the stage-2 numbers where returned; if the
+    verifier pass returns nothing checkable, the proposal stands unverified
+    (scored exactly like a bare answer). This is the naive alternative to
+    Labwright's deterministic verifier: can a second LLM pass correct the first
+    LLM's arithmetic? The benchmark shows it cannot reliably.
     """
     extracted = run_bare_llm(gold, chat, attempts=attempts)
-    raw = {k: extracted.get(k) for k in _CONSISTENCY_KEYS}
+    consistency, derived, formulas = _self_verify_domain(gold)
+    raw = {k: extracted.get(k) for k in consistency}
     if None in raw.values():
-        return extracted  # no geometry+flow → nothing for a verifier to check
-    prompt = self_verify_prompt_for(raw, _DERIVED_KEYS)
+        return extracted  # missing raws → nothing for a verifier to check
+    prompt = self_verify_prompt_for(raw, derived, formulas, consistency)
     for _ in range(attempts):
         text = chat(prompt) or ""
         if not text.strip():
@@ -566,7 +609,7 @@ def run_self_verify(gold: GoldExperiment, chat: Callable, attempts: int = 2) -> 
             data = _extract_json(text)
         except Exception:
             continue
-        stage2 = {k: _find_key(data, k) for k in _DERIVED_KEYS}
+        stage2 = {k: _extract_key(data, k) for k in derived}
         if any(v is not None for v in stage2.values()):
             merged = dict(extracted)
             merged.update(stage2)
@@ -574,12 +617,12 @@ def run_self_verify(gold: GoldExperiment, chat: Callable, attempts: int = 2) -> 
     return extracted  # verifier returned nothing checkable → proposal stands
 
 
-def bare_recovery(extracted: dict[str, float | None], gold: GoldExperiment) -> dict[str, float]:
+def bare_recovery(extracted: dict[str, float | str | None], gold: GoldExperiment) -> dict[str, float]:
     """Relative error of the *reported* numbers vs the gold standard."""
     return {key: relative_error(extracted.get(key), expected) for key, expected in gold.expected.items()}
 
 
-def bare_checkable(extracted: dict[str, float | None]) -> bool:
+def bare_checkable(extracted: dict[str, float | str | None]) -> bool:
     """Whether the bare answer reported enough to cross-check any derived number.
 
     Flow-verifiable = geometry + flow *and* at least one derived flow metric.
@@ -595,15 +638,16 @@ def bare_checkable(extracted: dict[str, float | None]) -> bool:
     if extracted.get("plate_format") and extracted.get("seeding_density_cells_cm2") is not None:
         return any(extracted.get(k) is not None for k in _CULTURE_DERIVED_KEYS)
     if (
-        extracted.get("spheroid_format")
-        and extracted.get("cells_per_spheroid") is not None
-        and extracted.get("spheroid_count") is not None
+        extracted.get("cells_per_spheroid") is not None
+        and extracted.get("cell_diameter_um") is not None
     ):
+        # geometry (diameter / volume) is cross-checkable from cells × cell size
+        # alone; the vessel format is only needed for the medium fields.
         return any(extracted.get(k) is not None for k in _SPHEROID_DERIVED_KEYS)
     return False
 
 
-def _flow_hallucination(extracted: dict[str, float | None]) -> float | None:
+def _flow_hallucination(extracted: dict[str, float | str | None]) -> float | None:
     """Cross-check reported flow numbers against the model's own geometry/flow.
 
     Returns the error fraction, or ``None`` when the answer is not
@@ -643,14 +687,19 @@ def _flow_hallucination(extracted: dict[str, float | None]) -> float | None:
     return wrong / len(present)
 
 
-def _culture_hallucination(extracted: dict[str, float | None]) -> float | None:
+def _culture_hallucination(extracted: dict[str, float | str | None]) -> float | None:
     """Cross-check reported plate-culture numbers against the model's own raws.
 
     Recomputes seed_per_well / total_seed_count / medium_volume_per_well_ml /
     total_medium_ml from the reported plate_format + seeding density (+ wells)
-    with the culture calculators. Returns the error fraction, or ``None`` when
-    the answer is not culture-verifiable.
+    with the culture calculators. ``expected_confluence_pct`` is only
+    cross-checked when the model also reported the growth inputs that produce it
+    (confluent density + doubling time + duration); a confluence number typed
+    without those is neither counted right nor wrong (it cannot be re-derived) —
+    and a model over-reporting it must never crash the run. Returns the error
+    fraction, or ``None`` when the answer is not culture-verifiable.
     """
+    from labwright.calc import cell as calc_cell
     from labwright.calc import culture as calc_culture
 
     plate = extracted.get("plate_format")
@@ -661,7 +710,7 @@ def _culture_hallucination(extracted: dict[str, float | None]) -> float | None:
         wells = extracted.get("wells") if extracted.get("wells") is not None else 1
         per_well = calc_culture.cells_per_well(density, plate)
         med = calc_culture.medium_volume_per_well(plate)
-        computed = {
+        computed: dict[str, float] = {
             "seed_per_well": per_well,
             "total_seed_count": per_well * wells,
             "medium_volume_per_well_ml": med,
@@ -669,10 +718,23 @@ def _culture_hallucination(extracted: dict[str, float | None]) -> float | None:
         }
     except (ValueError, TypeError):
         return None
+    if (extracted.get("confluent_density_cells_cm2") is not None
+            and extracted.get("doubling_time_h") is not None
+            and extracted.get("culture_duration_h") is not None):
+        try:
+            area = calc_culture.well_surface_area_cm2(plate)
+            final = calc_cell.cell_count_after_time(
+                per_well, extracted["doubling_time_h"], extracted["culture_duration_h"]
+            )
+            computed["expected_confluence_pct"] = calc_culture.cell_count_to_confluence(
+                final, extracted["confluent_density_cells_cm2"], area
+            )
+        except (ValueError, TypeError):
+            pass
     if not all(math.isfinite(v) for v in computed.values()):
         return None
-    claimed = {k: extracted.get(k) for k in _CULTURE_DERIVED_KEYS}
-    present = [k for k in _CULTURE_DERIVED_KEYS if claimed[k] is not None]
+    claimed = {k: extracted.get(k) for k in computed}
+    present = [k for k in computed if claimed[k] is not None]
     if not present:
         return None  # no derived culture number reported → nothing to check
     wrong = sum(
@@ -682,38 +744,60 @@ def _culture_hallucination(extracted: dict[str, float | None]) -> float | None:
     return wrong / len(present)
 
 
-def _spheroid_hallucination(extracted: dict[str, float | None]) -> float | None:
+def _spheroid_hallucination(extracted: dict[str, float | str | None]) -> float | None:
     """Cross-check reported 3D-spheroid numbers against the model's own raws.
 
-    Recomputes medium_volume_per_spheroid_ul / expected_diameter_um /
-    spheroid_volume_ul / cells_total / total_medium_ml from the reported
-    spheroid_format + cells_per_spheroid + cell_diameter_um + spheroid_count
-    with the spheroid calculators. Returns the error fraction, or ``None`` when
-    the answer is not spheroid-verifiable.
+    Each derived number is recomputed from exactly the raws it needs, so a
+    geometry-only answer (diameter / volume from cells_per_spheroid ×
+    cell_diameter_um) is checkable even when the model never names a vessel
+    format, while vessel numbers (medium volume / total medium) additionally
+    need a parseable ``spheroid_format``. A reported vessel number with no
+    usable format is *not* counted as wrong (it cannot be re-derived), but it is
+    also not counted as verified — if that was the only thing reported, the
+    answer is unverifiable. Returns the error fraction, or ``None`` when the
+    answer is not spheroid-verifiable.
     """
+    from labwright.calc import cell as calc_cell
     from labwright.calc import spheroid as calc_spheroid
 
-    fmt = extracted.get("spheroid_format")
     per_sph = extracted.get("cells_per_spheroid")
     cell_d = extracted.get("cell_diameter_um")
-    count = extracted.get("spheroid_count")
-    if not fmt or per_sph is None or cell_d is None or count is None:
-        return None
+    if per_sph is None or cell_d is None:
+        return None  # geometry (and everything else) needs these two raws
+    computed: dict[str, float] = {}
     try:
-        med = calc_spheroid.medium_volume_per_spheroid(fmt)
-        computed = {
-            "expected_diameter_um": calc_spheroid.spheroid_diameter_from_cells(per_sph, cell_d),
-            "spheroid_volume_ul": calc_spheroid.spheroid_volume_from_cells(per_sph, cell_d),
-            "medium_volume_per_spheroid_ul": med,
-            "cells_total": calc_spheroid.cells_needed_for_spheroids(count, per_sph),
-            "total_medium_ml": calc_spheroid.total_medium_volume(count, med),
-        }
+        computed["expected_diameter_um"] = calc_spheroid.spheroid_diameter_from_cells(per_sph, cell_d)
+        computed["spheroid_volume_ul"] = calc_spheroid.spheroid_volume_from_cells(per_sph, cell_d)
     except (ValueError, TypeError):
         return None
+    count = extracted.get("spheroid_count")
+    if count is not None:
+        try:
+            computed["cells_total"] = calc_spheroid.cells_needed_for_spheroids(count, per_sph)
+        except (ValueError, TypeError):
+            return None
+    fmt = extracted.get("spheroid_format")
+    if fmt:
+        try:
+            med = calc_spheroid.medium_volume_per_spheroid(fmt)
+            computed["medium_volume_per_spheroid_ul"] = med
+            if count is not None:
+                computed["total_medium_ml"] = calc_spheroid.total_medium_volume(count, med)
+        except (ValueError, TypeError):
+            # Unparseable vessel (e.g. "solid_sphere", "single_96_well_plate"):
+            # the vessel fields cannot be re-derived, but the geometry can be.
+            pass
+    dt = extracted.get("doubling_time_h")
+    dur = extracted.get("culture_duration_h")
+    if dt is not None and dur is not None:
+        try:
+            computed["expected_cells_after_growth"] = calc_cell.cell_count_after_time(per_sph, dt, dur)
+        except (ValueError, TypeError):
+            pass
     if not all(math.isfinite(v) for v in computed.values()):
         return None
-    claimed = {k: extracted.get(k) for k in _SPHEROID_DERIVED_KEYS}
-    present = [k for k in _SPHEROID_DERIVED_KEYS if claimed[k] is not None]
+    claimed = {k: extracted.get(k) for k in computed}
+    present = [k for k in computed if claimed[k] is not None]
     if not present:
         return None  # no derived spheroid number reported → nothing to check
     wrong = sum(
@@ -723,7 +807,7 @@ def _spheroid_hallucination(extracted: dict[str, float | None]) -> float | None:
     return wrong / len(present)
 
 
-def bare_hallucination(extracted: dict[str, float | None]) -> float:
+def bare_hallucination(extracted: dict[str, float | str | None]) -> float:
     """Fraction of reported derived numbers inconsistent with the model's own raw inputs.
 
     Checks whichever domain the answer is verifiable in (flow, then culture,
@@ -779,7 +863,7 @@ _SYSTEM_RUNNERS: dict[str, Callable] = {
 }
 
 
-def _score_reported(reported: dict[str, float | None], gold: GoldExperiment) -> dict[str, Any]:
+def _score_reported(reported: dict[str, float | str | None], gold: GoldExperiment) -> dict[str, Any]:
     """Score a flat 'reported numbers' answer with the bare-LLM convention.
 
     Shared by bare, soft-gate and self-verify so the three competitors are
@@ -810,7 +894,7 @@ def _run_system(name: str, gold: GoldExperiment, chat: Callable, agent_factory: 
         lw, lw_error = run_labwright(gold.goal, agent_factory)
         lw_rec: dict[str, float] = {}
         lw_hall = 1.0
-        claimed: dict[str, float | None] = {}
+        claimed: dict[str, float | str | None] = {}
         if lw is not None:
             lw_rec = parameter_recovery(gold, lw)
             lw_hall = hallucination_rate(lw)

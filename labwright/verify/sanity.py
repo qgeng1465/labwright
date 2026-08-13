@@ -24,96 +24,15 @@ judge. Unit-scale mistakes (dyn/cm² vs Pa, etc.) are the job of
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
+from labwright.blocks import ALL_SANITY_BANDS, Band
 from labwright.schema.design import DesignPlan
 from labwright.verify.checker import Issue
 
-
-@dataclass(frozen=True)
-class Band:
-    """A physiological range with a hard physical boundary.
-
-    ``None`` bounds are unbounded on that side. ``soft_min/soft_max`` are the
-    warning band; ``hard_min/hard_max`` the error band. hard bounds are always
-    wider than (or equal to) the soft bounds.
-    """
-
-    soft_min: float | None
-    soft_max: float | None
-    hard_min: float | None
-    hard_max: float | None
-    description: str
-    units: str
-
-
 #: Keyed by the verifier's issue field names (same keys as the checker uses).
-SANITY_BANDS: dict[str, Band] = {
-    "derived.shear_pa": Band(0.001, 10, 1e-4, 50,
-        "wall shear stress in organ-on-chip culture", "Pa"),
-    "derived.reynolds": Band(0.001, 200, 0.0, 2300,
-        "Reynolds number (flow must be laminar)", "dimensionless"),
-    "derived.pressure_drop_pa": Band(1.0, 1e5, 0.0, 1e6,
-        "laminar pressure drop along a microchannel", "Pa"),
-    "derived.residence_time_s": Band(0.1, 1e4, 1e-4, 1e5,
-        "fluid residence time in a channel", "s"),
-    "derived.channel_volume_ul": Band(0.01, 100, 1e-6, 1e4,
-        "per-channel culture volume", "uL"),
-    "derived.mean_velocity_mms": Band(0.01, 1e4, 1e-4, 1e5,
-        "mean flow velocity in a channel", "mm/s"),
-    "cells.seed_count": Band(1e2, 1e9, 1.0, 1e10,
-        "cells seeded onto a culture area", "cells"),
-    "cells.seeding_density_cells_cm2": Band(1e3, 1e7, 1.0, 1e9,
-        "cell seeding density", "cells/cm^2"),
-    "cells.culture_area_cm2": Band(1e-4, 100, 1e-6, 1e3,
-        "cell culture area", "cm^2"),
-    "culture.seed_per_well": Band(1e2, 1e9, 1.0, 1e10,
-        "cells seeded per well", "cells"),
-    "culture.total_seed_count": Band(1e2, 1e10, 1.0, 1e11,
-        "total cells seeded across wells", "cells"),
-    "culture.seeding_density_cells_cm2": Band(1e3, 1e7, 1.0, 1e9,
-        "cell seeding density", "cells/cm^2"),
-    "culture.medium_volume_per_well_ml": Band(0.01, 5.0, 1e-4, 100,
-        "working medium volume per well", "mL"),
-    "culture.total_medium_ml": Band(0.01, 1e3, 1e-4, 1e4,
-        "total medium volume across wells", "mL"),
-    "culture.expected_confluence_pct": Band(0.0, 100, 0.0, 1000,
-        "predicted confluence at harvest (may exceed 100 % for over-confluent cultures)", "%"),
-    "culture.doubling_time_h": Band(10, 200, 0.1, 1000,
-        "population doubling time", "h"),
-    "culture.culture_duration_h": Band(0.0, 2000, 0.0, 1e5,
-        "culture duration", "h"),
-    "spheroid.cells_per_spheroid": Band(100, 1e5, 1.0, 1e6,
-        "cells seeded per spheroid", "cells"),
-    "spheroid.expected_diameter_um": Band(30, 2000, 5, 1e4,
-        "spheroid diameter (functional spheroids stay < ~400 µm to avoid necrotic cores)", "um"),
-    "spheroid.spheroid_volume_ul": Band(1e-4, 1e2, 1e-6, 1e4,
-        "spheroid volume (a 200 µm spheroid ≈ 4.2e-3 uL)", "uL"),
-    "spheroid.cell_diameter_um": Band(5, 60, 1.0, 200,
-        "mean single-cell diameter", "um"),
-    "spheroid.medium_volume_per_spheroid_ul": Band(10, 300, 1.0, 2000,
-        "working medium volume per spheroid", "uL"),
-    "spheroid.total_medium_ml": Band(0.01, 1e3, 1e-4, 1e4,
-        "total medium volume for the spheroid culture", "mL"),
-    "spheroid.cells_total": Band(1e2, 1e10, 1.0, 1e11,
-        "total cells for spheroid seeding", "cells"),
-    "spheroid.spheroid_count": Band(1, 1e5, 1.0, 1e6,
-        "number of spheroids", "n"),
-    "spheroid.doubling_time_h": Band(10, 200, 0.1, 1000,
-        "population doubling time", "h"),
-    "spheroid.culture_duration_h": Band(0.0, 2000, 0.0, 1e5,
-        "culture duration", "h"),
-    "spheroid.expected_cells_after_growth": Band(10, 1e8, 1.0, 1e10,
-        "predicted cells per spheroid at harvest", "cells"),
-    "dosing.stock_mM": Band(0.1, 1e4, 1e-4, 1e6,
-        "compound stock concentration", "mM"),
-    "dosing.working_mM": Band(1e-3, 100, 1e-6, 1e4,
-        "compound working concentration", "mM"),
-    "dosing.dmso_fraction_vv": Band(0.0, 0.005, 0.0, 0.14,
-        "DMSO volume fraction in medium", "v/v"),
-    "stats.n_per_group": Band(3, 1000, 2, 1e6,
-        "biological replicates per group", "n"),
-}
+#: The bands themselves are declared once in :mod:`labwright.blocks` — one
+#: ``Block`` per design domain carries its own bands — and merged here. Adding
+#: a domain's range check means editing that domain's ``Block``, not this table.
+SANITY_BANDS: dict[str, Band] = ALL_SANITY_BANDS
 
 
 def check_sanity(plan: DesignPlan, issues: list[Issue]) -> None:

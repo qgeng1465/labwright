@@ -83,11 +83,15 @@ def _normalize_format(spheroid_format: str) -> str:
         return candidates[s]
     # tolerate "96ula" spelled with spaces/dashes in odd places
     compact = "".join(ch for ch in str(spheroid_format).lower() if ch.isalnum())
-    if compact in ("96ula", "96ull", "96ulaplate"):
+    # drop an embedded "well" so "96-well ULA" / "96 well ULA plate" compact to
+    # the same token as "96ula" (the docstring promised these, but the bare
+    # compact form kept the word and raised)
+    compact_nw = compact.replace("well", "")
+    if compact in ("96ula", "96ull", "96ulaplate") or compact_nw in ("96ula", "96ull", "96ulaplate"):
         return "96-ula"
-    if compact in ("384ula", "384ulaplate"):
+    if compact in ("384ula", "384ulaplate") or compact_nw in ("384ula", "384ulaplate"):
         return "384-ula"
-    if compact in ("hangingdrop", "hangingdropplate"):
+    if compact in ("hangingdrop", "hangingdropplate") or compact_nw in ("hangingdrop", "hangingdropplate"):
         return "hanging-drop"
     raise ValueError(
         f"spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got "

@@ -13,8 +13,10 @@ Labwright) plus the legend keep identity readable in print and for CVD.
 
 The blind set is where the honest boundary of the gate shows: self-consistency
 stays high for Labwright while the usable rate collapses, and the naive
-alternatives (soft-gate, self-verify) never reach a usable design at all — so
-the figure carries the paper's central caveat visually.
+alternatives (soft-gate, self-verify) reach a usable design only on the handful
+of single-step goals the goal itself hands over (the three no-choice 24-reading
+goals; a few pure-geometry/lookup spheroid goals after the string-format
+fairness fix) — so the figure carries the paper's central caveat visually.
 
 Data source: each result file (``eval_flash.json`` / ``eval_pro.json`` /
 ``eval_blind_*.json`` / ``eval_spheroid_*.json``) already contains all four

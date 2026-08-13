@@ -282,28 +282,37 @@ structure differs.
 | `pro` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
 | `pro` | 15-blind | self-verify | 0 % | 0 % | 0.733 |
 | `pro` | 15-blind | **Labwright** | **100 %** | **47 %** | **0.000** |
-| `flash` | 15-3D-spheroid | bare-LLM | 0 % | 0 % | 1.000 |
-| `flash` | 15-3D-spheroid | soft-gate | 0 % | 0 % | 1.000 |
-| `flash` | 15-3D-spheroid | self-verify | 0 % | 0 % | 1.000 |
+| `flash` | 15-3D-spheroid | bare-LLM | 20 % | 20 % | 0.800 |
+| `flash` | 15-3D-spheroid | soft-gate | 13 % | 13 % | 0.867 |
+| `flash` | 15-3D-spheroid | self-verify | 20 % | 20 % | 0.569 |
 | `flash` | 15-3D-spheroid | **Labwright** | **93 %** | **87 %** | **0.011** |
-| `pro` | 15-3D-spheroid | bare-LLM | 0 % | 0 % | 1.000 |
-| `pro` | 15-3D-spheroid | soft-gate | 0 % | 0 % | 1.000 |
-| `pro` | 15-3D-spheroid | self-verify | 0 % | 0 % | 1.000 |
+| `pro` | 15-3D-spheroid | bare-LLM | 27 % | 27 % | 0.733 |
+| `pro` | 15-3D-spheroid | soft-gate | 27 % | 27 % | 0.733 |
+| `pro` | 15-3D-spheroid | self-verify | 40 % | 20 % | 0.400 |
 | `pro` | 15-3D-spheroid | **Labwright** | **93 %** | **87 %** | **0.067** |
 
-The memory systems never produce a usable *design* on either set, and the two
-naive "fixes" do not help. The only usable memory-system entries anywhere are
-the three single-arithmetic-step goals on the 24-reading set — a residence time
-with geometry given, a channel volume, a mean velocity — where the goal supplies
-every input and no design choice remains (`pro` bare and `flash` soft-gate both
-reach 12 % there, `pro` soft-gate 8 %). On every goal that requires choosing
-geometry and flow to hit a target, all memory systems score 0 % usable, both
-sets, both models. Soft-gate (a "re-check yourself" prompt) occasionally
-completes one of those three single-step goals but never rescues a design;
-self-verify (using the LLM as its own verifier) collapses to **0 %**
-everywhere: handed its own raw inputs, the model recomputes them wrong, so the
-second pass actively corrupts the proposal. Only Labwright's deterministic
-calculators + verifier reach usable > 0 % on design goals.
+The memory systems never produce a usable *design* on the flow sets (24-reading,
+15-blind), and the two naive "fixes" do not help there. On the 24-reading set the
+only usable memory-system entries are three single-arithmetic-step goals — a
+residence time with geometry given, a channel volume, a mean velocity — where
+the goal supplies every input and no design choice remains (`pro` bare and
+`flash` soft-gate both reach 12 % there, `pro` soft-gate 8 %); every goal that
+requires choosing geometry and flow to hit a target scores 0 % usable for all
+three memory systems, both models. The 3D-spheroid set breaks that floor after
+the fairness fix below: once string vessel formats are actually extracted, the
+pure-geometry and single-lookup goals become *checkable*, and bare reaches
+**20 % / 27 %** usable (`flash` / `pro`) — recovering sphere volume/diameter
+from the goal's own raws and the 384-ULA 50 µL convention. That is the entire
+usable ceiling: the 96-ULA working volume is remembered wrong (200 µL vs the
+correct 100 µL), hanging-drop answers arrive in plate-culture vocabulary, and
+the doxorubicin dosing target is missed. Soft-gate (a "re-check yourself"
+prompt) adds nothing — its usable ≤ bare on both models (13 % / 27 %). Self-
+verify's second pass now *helps* on the spheroid set's simpler arithmetic
+(hallucination drops 0.800 → 0.569 `flash`, 0.733 → 0.400 `pro`) but still
+rarely reaches a usable design (20 % both models): a recompute pass that is
+itself wrong (e.g. 1000 cells of 15 µm "→" 1000 µm spheroids) is now visible as
+a contradiction rather than carried as a fact. Only Labwright's deterministic
+calculators + verifier reach usable > 30 % on any set.
 
 The blind-set drop is the honest headline: when the goal does not hand over the
 target, Labwright's verified designs hit the wrong physiology. On the expanded
@@ -353,8 +362,8 @@ submits verified or fails to submit). The spheroid set is the exception that
 proves the taxonomy: `flash` 1/15 `calculation_error` (hepatocyte-formation —
 one derived field rejected by the verifier) and `pro` 1/15 `silence`
 (sphere-volume — no design). The memory
-systems fail almost entirely with `calculation_error` (14/15 for bare on both
-models). **Target-selection accuracy** (headline target within ±5 %) is 40 %
+systems fail almost entirely with `calculation_error` (12/15 `flash` / 11/15
+`pro` for bare). **Target-selection accuracy** (headline target within ±5 %) is 40 %
 (`flash`) / 53 % (`pro`) for Labwright vs 33 % for the bare model — a bare model
 names the right target about a third of the time but never produces an
 internally consistent design behind it. The **unit-misread layer** fires rarely
@@ -372,13 +381,19 @@ volumes, hepatocyte spheroid seeding density) that the model must recall. On the
 stated-goal arithmetic Labwright is close to the reading set: `flash` 13/15 and
 `pro` 13/15 usable (both **87 %**, Wilson CI 62–96 %), and both models recover
 every gold target within tolerance on 13 of the 15 goals. The conventions still
-generalize — both recover the cold 384-ULA 50 µL and hanging-drop 20 µL at
-**100 %** (2/2 each) precisely because those values live in the calculator's
-tool registry, not in model memory: the bare model scores 0 % on the same two
-entries (its answers are `calculation_error`, 0 % verifiable — the format-driven
-medium volume never appears). This is the paper's "the calculator is the
-knowledge base" claim made literal: a convention encoded once in `SPHEROID_FORMATS`
-is available to both models on every run, cold or not. The remaining failures
+generalize — both models' Labwright recovers the cold 384-ULA 50 µL and
+hanging-drop 20 µL at **100 %** (2/2 each) precisely because those values live
+in the calculator's tool registry, not in model memory. The bare model's memory
+of the same conventions is patchy: after the fairness fix it scores **0 %**
+(`flash`) / **50 %** (`pro`) on the two cold convention goals (the one recovery,
+pro on hanging-drop 20 µL, is a correct recall, not a lookup), and on the
+reading set the format string is no longer the blocker — a parseable
+"384-well ULA plate" now scores clean at 50 µL on both models — but a wrong
+memory still fails (96-ULA reported at 200 µL vs the correct 100 µL, and
+hanging-drop answers arrive in plate-culture vocabulary). This is the paper's
+"the calculator is the knowledge base" claim made literal: a convention encoded
+once in `SPHEROID_FORMATS` is available to both models on every run, cold or
+not, while the bare model must re-recall each value from memory. The remaining failures
 are the honest residue, and each is also why the set-level hallucination is
 non-zero. Both models mis-target the doxorubicin dosing goal (`flash` 24
 spheroids against the gold 96, `pro` 54 — internally consistent, `hall 0.000`
@@ -396,7 +411,7 @@ the calculator path turns that into a verified, usable design. As with the
 blind set, these are single-run point estimates; the differences between the
 two models' two failures each are noise at n=15.
 
-Two corrections make these numbers what they are, both reported honestly. First,
+Three corrections make these numbers what they are, all reported honestly. First,
 earlier committed figures counted unverifiable answers (geometry and flow with
 no derived numbers to check) as consistent; `recompute_honest.py` applies the
 same unverifiable=1.0 rule the Labwright path already used, dropping the
@@ -409,6 +424,23 @@ tests (`../tests/test_benchmark_prompts.py`), and **every memory-system number
 in this table is from a single post-fix re-run** at temperature 0.2. The
 Labwright numbers are the committed run, preserved verbatim — Labwright's agent
 always received the goal through a separate code path and was never affected.
+
+Third, the 3D-spheroid competitor rows above were recomputed under a **fairness
+fix** to the scorer (the three systems rerun, `results/eval_spheroid_*.json`).
+The scorer previously extracted only *float* keys from memory-system output, so
+string vessel formats (`spheroid_format` / `plate_format`: `"96-ula"`,
+`"384-well ULA plate"`, …) were never recovered — every convention goal for
+bare / soft-gate / self-verify was scored unverifiable → 1.0 *regardless of the
+answer*, and spheroid geometry was checkable only when a vessel format was
+present, so geometry goals like sphere-volume-from-diameter were penalized too.
+The fix (a) recovers string keys, (b) recomputes each derived number from
+exactly the raws it needs (geometry from cell count + diameter, vessel numbers
+from a parseable format, growth from doubling × duration), and (c) *excludes*
+reported-but-not-recomputable numbers instead of counting them wrong. Only the
+three competitor systems were rerun — the Labwright records are carried from the
+pre-fix run because Labwright scores typed `DesignPlan`s through a separate
+path the fix does not touch. The previously committed 0 % / 1.000 cells were
+this artifact; the Labwright cells never changed.
 
 ### Statistical precision: single runs vs 5-seed intervals
 

@@ -14,6 +14,12 @@ def test_normalize_format():
     assert spheroid._normalize_format("96well ULA") == "96-ula"
     assert spheroid._normalize_format("384-ula") == "384-ula"
     assert spheroid._normalize_format("hanging drop") == "hanging-drop"
+    # "96 well ULA" / "96-well ULA plate" — the phrasings a bare LLM actually
+    # writes — must normalise too, or a correct format string is scored
+    # unverifiable in the benchmark.
+    assert spheroid._normalize_format("96 well ULA") == "96-ula"
+    assert spheroid._normalize_format("96-well ULA plate") == "96-ula"
+    assert spheroid._normalize_format("384-well ULA") == "384-ula"
     with pytest.raises(ValueError):
         spheroid._normalize_format("petri-dish")
 

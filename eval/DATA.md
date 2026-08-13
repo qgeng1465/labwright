@@ -51,6 +51,16 @@ value cannot be sourced, it is removed or relabelled, not silently kept.
   inputs" test as a flow gold; spheroid answers are cross-checked against
   spheroid_format + cells_per_spheroid + spheroid_count + cell_diameter_um, so a
   spheroid gold is scored by the same self-consistency test.
+- **String formats are extracted, and each derived field is recomputed from
+  exactly the raws it needs** (fairness fix): `spheroid_format` / `plate_format`
+  are found by name anywhere in the reported JSON (a `"384-well ULA plate"`
+  string, not just floats), spheroid geometry is checkable from
+  cells_per_spheroid + cell_diameter_um alone, vessel-derived numbers only from
+  a *parseable* format string, growth from doubling × duration — and a number
+  that is reported but not recomputable from the raws is *excluded*, never
+  counted wrong. This removed the artifact where every spheroid convention goal
+  scored 1.0 for the memory systems because the vessel string was never
+  extracted.
 - **Reading-set recovery is constructive**: the self-consistent anchors are
   computed from the same equations Labwright uses, so recovery ≈ 0 there is by
   construction. The real signal is extraction and tool-calling.
@@ -64,7 +74,11 @@ value cannot be sourced, it is removed or relabelled, not silently kept.
 1. Write the `goal` and `expected`, and pin `source` to one of the three
    buckets above — no new bucket, no empty source.
 2. For a reading goal, add the raw inputs to the harness so the anchors derive
-   from the calculators (see `benchmark.py` `_RAW_KEYS` / `_DERIVED_FIELDS`).
+   from the calculators. Each design domain's keys are declared once in
+   `labwright/blocks.py` (a domain's `Block`: `raw_keys`, `derived_keys`,
+   `consistency_keys`, plus its `field_map` / `sanity_bands` / `canonical_units`);
+   `benchmark.py` imports them from there, so adding a goal's inputs means
+   editing that domain's `Block`, not a per-system list in the harness.
 3. Re-run the benchmark and commit the new `results/eval_*.json`.
 4. Add a regression test that re-derives the entry's `expected` values from the
    goal's stated numbers, so transcription drift is caught at test time. For the

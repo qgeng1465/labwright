@@ -336,7 +336,15 @@ Adding a calculator is the whole integration story:
 ```
 
 The agent, verifier and demo all read the same registry — a new calculator is
-instantly callable, verifiable and demonstrable. See [CONTRIBUTING.md](CONTRIBUTING.md).
+instantly callable, verifiable and demonstrable.
+
+Adding a whole *design domain* (a new optional part of a design, like the
+3D-spheroid plan) is one declaration too: a `calc/` module, a schema model, a
+derive function, and a `Block` in `labwright/blocks.py` — that one entry owns
+the domain's raw/derived/consistency keys, its field map, sanity bands and
+canonical units, and the design gate, verifier, units layer and benchmark all
+import from it. A domain that forgets a band or unit fails loudly at import.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Benchmark
 
@@ -392,7 +400,7 @@ blind-set cells are split by hint strength (cold vs prompt-backed). The `eval.re
 renderer prints all of it; the classification and misread logic are unit-tested
 (`tests/test_metrics.py`).
 
-![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind and 15-3D-spheroid sets (flash & pro). The memory systems (stone / ochre / sage) never reach a usable design; Labwright (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on the spheroid set.](paper/fig_benchmark.png)
+![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind and 15-3D-spheroid sets (flash & pro). The memory systems (stone / ochre / sage) reach a usable design only on the handful of single-step goals the goal hands over; Labwright (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on the spheroid set.](paper/fig_benchmark.png)
 
 A *usable* design is internally consistent **and** hits every target within
 ±5 %. This is an *ablation*, not an equal-resource race: Labwright's
@@ -449,25 +457,34 @@ usable).*
 | 15-blind | `pro` | soft-gate | 13 % | 0 % | 0.867 |
 | 15-blind | `pro` | self-verify | 0 % | 0 % | 0.733 |
 | 15-blind | `pro` | **Labwright** | **100 %** | **47 %** | **0.000** |
-| 15-3D-spheroid | `flash` | bare-LLM | 0 % | 0 % | 1.000 |
-| 15-3D-spheroid | `flash` | soft-gate | 0 % | 0 % | 1.000 |
-| 15-3D-spheroid | `flash` | self-verify | 0 % | 0 % | 1.000 |
+| 15-3D-spheroid | `flash` | bare-LLM | 20 % | 20 % | 0.800 |
+| 15-3D-spheroid | `flash` | soft-gate | 13 % | 13 % | 0.867 |
+| 15-3D-spheroid | `flash` | self-verify | 20 % | 20 % | 0.569 |
 | 15-3D-spheroid | `flash` | **Labwright** | **93 %** | **87 %** | **0.011** |
-| 15-3D-spheroid | `pro` | bare-LLM | 0 % | 0 % | 1.000 |
-| 15-3D-spheroid | `pro` | soft-gate | 0 % | 0 % | 1.000 |
-| 15-3D-spheroid | `pro` | self-verify | 0 % | 0 % | 1.000 |
+| 15-3D-spheroid | `pro` | bare-LLM | 27 % | 27 % | 0.733 |
+| 15-3D-spheroid | `pro` | soft-gate | 27 % | 27 % | 0.733 |
+| 15-3D-spheroid | `pro` | self-verify | 40 % | 20 % | 0.400 |
 | 15-3D-spheroid | `pro` | **Labwright** | **93 %** | **87 %** | **0.067** |
 
 *All memory-system rows come from a single re-run at temperature 0.2 after a
 prompt regression that dropped the goal text was found and fixed (see the
 transparency note in [`eval/README.md`](eval/README.md)); Labwright rows are
 the committed run, preserved verbatim — Labwright's agent always receives the
-goal, so the bug never touched it. The only usable memory-system entries on
-either set are the three single-arithmetic-step goals on the 24-reading set
-(12 % for `pro` bare / `flash` soft-gate): goals with no design choice. A point
-or two between memory systems is sampling noise; the qualitative ordering is
-not. Why the published systems in related work are not benchmarked here is on
-the ground in [`eval/README.md`](eval/README.md#benchmarking-scope-why-these-systems-and-not-the-named-ones).*
+goal, so the bug never touched it. The 15-3D-spheroid memory-system rows were
+additionally rerun under a fairness fix to the scorer: string vessel formats
+(`spheroid_format` / `plate_format`) were previously never extracted from
+memory-system output, so every spheroid convention goal scored 1.0
+unverifiable regardless of the answer; the fix recovers them, recomputes each
+derived number from the raws it needs, and excludes
+reported-but-not-recomputable numbers. The formerly committed 0 % / 1.000
+spheroid cells were this artifact. After the fix the only usable memory-system
+entries are the three single-arithmetic-step goals on the 24-reading set (12 %
+for `pro` bare / `flash` soft-gate) plus a handful of single-step spheroid
+geometry/lookup goals (bare 20 % / 27 %, `flash`/`pro`). A point or two between
+memory systems is sampling noise; the qualitative ordering (Labwright ≫ memory
+systems) is not. Why the published systems in related work are not benchmarked
+here is on the ground in
+[`eval/README.md`](eval/README.md#benchmarking-scope-why-these-systems-and-not-the-named-ones).*
 
 Read the numbers honestly — and the boundary of what they mean.
 
