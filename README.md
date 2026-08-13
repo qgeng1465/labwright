@@ -17,7 +17,7 @@ before the design is accepted. One yardstick, one rule for every row
 | system | how derived numbers are produced | usable designs (24 reading goals) | hallucination |
 |---|---|---|---|
 | bare frontier LLM (the status quo) | written from memory | **0–12 %** | ~0.9–1.0 |
-| "check yourself" / LLM-as-verifier | self-derived (soft-gate, self-verify) | **0 %** — the second pass actively corrupts the first | ~0.75–1.0 |
+| "check yourself" / LLM-as-verifier | self-derived (soft-gate, self-verify) | **0 %** on design goals — only the 3 no-choice single-step goals ever reach 12 %; the second pass actively corrupts the first | ~0.75–1.0 |
 | **Labwright** | calculators compute; verifier re-proves | **88–100 %** | **0.000** |
 
 ![Labwright graphical abstract: goal → LLM proposes raw inputs → deterministic calculators → verifier re-proves every number → SOP + design JSON; naive alternatives rejected at the hard gate](paper/fig_abstract.png)
@@ -87,8 +87,8 @@ state that plainly instead of claiming a head-to-head. One honest boundary,
 stated in [the benchmark](eval/README.md): verification is *necessary, not
 sufficient*. Labwright proves numbers are internally consistent; it cannot
 supply physiology the model doesn't know. The blind-set usable rate collapses
-from 88–100 % on the reading set to 40–47 % on the blind set (3 of the 8 goals
-with no hint at all for either model — 38 %, 95 % Wilson CI 14–69 %) for
+from 88–100 % on the reading set to 40–47 % on the blind set (each model
+recovers only 3 of the 8 no-hint goals — 38 %, 95 % Wilson CI 14–69 %) for
 exactly that reason. That boundary is the real research frontier, and closing
 it is where this project is headed.
 

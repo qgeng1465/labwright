@@ -357,7 +357,7 @@ expanded set, so they are historical and are **not** directly comparable to the
 
 The blind misses persist with thinking on (17 % / 42 % vs 25 % / 33 % off —
 within a goal of each other): thinking neither recovers targets the model does
-not know (`flash` lost its one prompt-backed hit, BBB; `pro` picked up one cold
+not know (`flash` dropped a prompt-backed hit, BBB; `pro` picked up one cold
 goal, arterial) nor breaks the gate's 100 % self-consistency. The misses are a
 domain-knowledge gap, not an effort one. The one row where thinking *helps* is
 the `flash` 24-reading set (88 % → 100 % usable): the three silent
