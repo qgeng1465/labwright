@@ -1,5 +1,14 @@
 # Labwright benchmark — paper evidence
 
+> **Version note (Aug 2026).** The blind gold set is currently **15** goals
+> (expanded 6 → 12 → 15). Anywhere "12 blind goals" appears below it means the
+> **pre-expansion** set — the extractor eval (`extract/eval.py`,
+> `results/extractor/eval_report.json`) and the thinking-ablation grid were
+> run on the 12-goal set, before the scenario entries (unit-ambiguity,
+> multi-target) and the 24-well medium-volume goal grew it to 15. Those rows
+> are historical and **not** directly comparable to the 15-goal cells; every
+> table below states its own set.
+
 ## Question
 
 Do LLM-written wet-lab designs contain hallucinated numbers, and does
@@ -253,11 +262,18 @@ calculators + verifier reach usable > 0 % on design goals.
 
 The blind-set drop is the honest headline: when the goal does not hand over the
 target, Labwright's verified designs hit the wrong physiology. On the expanded
-15 goals, `flash` recovers 6 (arterial 1.5 Pa, HepG2 seeding, 24-well medium,
-lung 0.03 Pa, and both scenario goals — the dyn/cm²-as-Pa unit test and the
-shear + residence joint target) and `pro` recovers 7 (arterial, HepG2 seeding,
-24-well medium, venular 0.3 Pa, lung, BBB 1.0 Pa, and the unit-ambiguity goal;
-its multi-target run hits the shear but misses the residence time 0.5×).
+15 goals:
+- `flash` recovers **6/15**: arterial 1.5 Pa, HepG2 seeding, 24-well medium
+  volume, lung 0.03 Pa, and both scenario goals — the dyn/cm²-as-Pa unit test
+  and the shear + residence joint target.
+- `pro` recovers **7/15**: arterial, HepG2 seeding, 24-well medium, venular
+  0.3 Pa, lung 0.03 Pa, BBB 1.0 Pa, and the unit-ambiguity goal. (`pro`'s
+  multi-target run hits the shear but misses the residence time 0.5×, so it is
+  **not** counted as usable.)
+Both usable rates are single-run point estimates with wide error bars: the
+95 % Wilson CI around 6/15 = 40 % is **20–64 %**, around 7/15 = 47 % it is
+**25–70 %** — n=15 is too thin to separate the two models, or either from the
+cold-only 38 % below.
 **Cold-only sub-rates:** five of the 15 goals are `prompt-backed` (liver, lung,
 BBB, venular, lymphatic), so the headline 40 %/47 % usable overstates recall on
 the genuinely cold goals — on the eight cold entries `flash` and `pro` each
@@ -265,17 +281,22 @@ recover only 3 (arterial, HepG2 seeding, 24-well medium), i.e. cold-only usable
 ≈ **38 % / 38 %**, each with a 95 % Wilson CI of 14–69 %; n=8 is still too thin
 to separate the two models, and cold recall is nowhere near the reading set. Of
 the recoveries that look like domain knowledge, only those three are actually
-cold; the others (lung, BBB, venular) sit inside prompted ranges.
+cold; the others (lung, BBB, venular) sit inside prompted ranges. Remove the
+two scenario-only goals (they state the magnitude, so they test a failure mode,
+not recall) and the *domain*-target recovery is **4/13 = 31 %** for `flash` and
+**6/13 = 46 %** for `pro` — scenario goals should not be lumped into cold
+recall.
 Both models correctly select the prompt-backed entries they are primed for
 (`pro` recovers venular 0.3 Pa, lung and BBB; `flash` recovers lung) yet both
 miss liver (0.05 Pa): they propose the mid-range 0.10 Pa — inside the prompt's
-0.05–0.15 Pa range but not the low-shear convention — and neither recovers
-lymphatic (0.2 Pa). The remaining cold entries are mostly wrong (recovery =
-relative error of the proposed shear vs the target): kidney PTEC 0.02 Pa is
-proposed at 0.50 Pa (`flash`, recovery 24) / 0.05 Pa (`pro`, recovery 1.5), gut
-epithelium 0.002 Pa at 0.005 Pa (`flash`, recovery 1.5) / ~0.013 Pa (`pro`,
-recovery 5.7), retinal arteriole 0.72× off (`flash`) / 0.63× off (`pro`),
-pulmonary artery 0.9× off (`flash`) / 0.25× off (`pro`), and the
+0.05–0.15 Pa range but 100 % off the low-shear convention, and usable demands
+the exact target within ±5 %, so range-membership alone does not recover it —
+and neither recovers lymphatic (0.2 Pa). The remaining cold entries are mostly
+wrong (recovery = relative error of the proposed shear vs the target): kidney
+PTEC 0.02 Pa is proposed at 0.50 Pa (`flash`, recovery 24) / 0.05 Pa (`pro`,
+recovery 1.5), gut epithelium 0.002 Pa at 0.005 Pa (`flash`, recovery 1.5) /
+~0.013 Pa (`pro`, recovery 5.7), retinal arteriole 0.72× off (`flash`) / 0.63×
+off (`pro`), pulmonary artery 0.9× off (`flash`) / 0.25× off (`pro`), and the
 primary-hepatocyte seeding density 0.33× off on both. The gate never failed —
 every plan was internally verified — it just could not supply domain knowledge
 the model did not have.

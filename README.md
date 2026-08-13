@@ -20,6 +20,11 @@ before the design is accepted. One yardstick, one rule for every row
 | "check yourself" / LLM-as-verifier | self-derived (soft-gate, self-verify) | **0 %** on design goals — only the 3 no-choice single-step goals ever reach 12 %; the second pass actively corrupts the first | ~0.75–1.0 |
 | **Labwright** | calculators compute; verifier re-proves | **88–100 %** | **0.000** |
 
+*hallucination = 1.0 also covers a no-submit run. The one non-zero Labwright
+cell anywhere is `flash` on the 24-reading set at **0.125** — three
+pure-calculation goals where the agent produced no design at all: silence, not
+wrong numbers (full table below).*
+
 ![Labwright graphical abstract: goal → LLM proposes raw inputs → deterministic calculators → verifier re-proves every number → SOP + design JSON; naive alternatives rejected at the hard gate](paper/fig_abstract.png)
 
 **Built for organ-on-chip and perfused cell culture first. General wet-lab by design.**
@@ -273,9 +278,9 @@ Two capabilities the above don't have:
    derived number that could be re-derived from the protocol's own inputs — a
    checkable rate of **104/5,700 = 1.8 %**. Among those 104, **30** were
    internally consistent and **74** were contradicted by the papers' own numbers —
-   a checkable consistency of **30/104 = 28.8 %** (可检自洽率 30/104 = 28.8 %，
-   可检率 104/5,700 = 1.8 %). The other 5,596 rows stated no derived number that
-   could be re-derived; they are `unverifiable`, never counted as "ok". **This
+   a checkable consistency of **30/104 = 28.8 %**. The other 5,596 rows stated
+   no derived number that could be re-derived; they are `unverifiable`, never
+   counted as "ok". **This
    28.8 % is the consistency rate among the checkable rows only, not "28.8 % of
    the literature is inconsistent"** — it says: of the 1.8 % of protocols that
    say enough to check, 28.8 % agree with their own inputs. An early run
@@ -359,6 +364,19 @@ usable rate                           0%           88%
 hallucination rate                 1.000         0.125
 ```
 
+\*The non-zero Labwright hallucination cell (0.125) is **silence, not
+fabrication**: the three reading-set goals it missed were pure-calculation
+goals (Reynolds check, pressure-drop target, power analysis) where the agent
+produced **no design** (`plan: false`); a no-submit run scores 1.0 by
+convention, so 3/24 → 0.125. It never wrote a number the calculators didn't
+check.*
+
+*Definitions: **self-consistent** = every submitted number was re-derived from
+its own raw inputs (zero verifier errors); **usable** = self-consistent
+**and** every physiological target within ±5 %. A plan can be fully
+self-consistent and still miss the target — that is exactly what the 15-blind
+rows show (100 % self-consistent, 40–47 % usable).*
+
 | set | model | system | self-consistent | usable | hallucination |
 |---|---|---|---|---|---|
 | 24-reading | `flash` | bare-LLM | 0 % | 0 % | 1.000 |
@@ -415,27 +433,41 @@ Read the numbers honestly — and the boundary of what they mean.
 - **The blind set is where target selection is actually tested — and Labwright
   drops.** `flash` 88 % → 40 %, `pro` 100 % → 47 %. The gate held: every plan
   was internally verified, hallucination 0.000. But the designs aimed at the
-  wrong physiology. On the 15 goals `flash` recovers 6 (arterial 1.5 Pa, HepG2
-  seeding, 24-well medium, lung 0.03 Pa, and both scenario goals — the
-  dyn/cm²-as-Pa unit test and the shear + residence joint target), `pro` 7
-  (arterial, HepG2 seeding, 24-well medium, venular 0.3 Pa, lung, BBB 1.0 Pa,
-  and the unit-ambiguity goal; its multi-target run hits the shear but misses
-  the residence time 0.5×). **Cold-only honesty check:** five of the 15 goals
-  are `prompt-backed` (the answer sits inside the system prompt's
-  physiological-anchor range — liver, lung, BBB, venular, lymphatic), so on
-  the eight genuinely cold goals `flash` and `pro` each recover only **3**
-  (arterial, HepG2, 24-well medium): cold-only usable ≈ **38 % / 38 %**, each
-  with a 95 % Wilson CI of **14–69 %** — n=8 is still too thin to separate the
-  models, and cold recall is nowhere near the reading set. Of the recoveries
-  that look like domain knowledge, only those three are actually cold; the
-  others (lung, BBB, venular) sit inside the prompted range. The hint is not
-  even enough for the liver, which both models propose at 0.10 Pa instead of
-  the 0.05 Pa convention, and neither recovers lymphatic. Both miss the kidney
-  (`flash` 0.50 Pa — 24× off the 0.02 Pa target; `pro` 0.05 Pa — 1.5×) and the
-  primary-hepatocyte seeding density (0.33×). **The gate stops fabricated
-  numbers; it cannot supply domain knowledge the model does not have.** That
-  boundary is the honest headline, and it is exactly what a wet-lab user must
-  not forget: verify the target, not just the arithmetic.
+  wrong physiology. On the 15 goals:
+  - `flash` recovers **6/15**: arterial 1.5 Pa, HepG2 seeding, 24-well medium
+    volume, lung 0.03 Pa, and both scenario goals — the dyn/cm²-as-Pa unit
+    test and the shear + residence joint target.
+  - `pro` recovers **7/15**: arterial, HepG2 seeding, 24-well medium, venular
+    0.3 Pa, lung 0.03 Pa, BBB 1.0 Pa, and the unit-ambiguity goal. (`pro`'s
+    multi-target run hits the shear but misses the residence time 0.5×, so it
+    is **not** counted as usable.)
+  Both usable rates are single-run point estimates with wide error bars: the
+  95 % Wilson CI around 6/15 = 40 % is **20–64 %**, around 7/15 = 47 % it is
+  **25–70 %** — n=15 is too thin to separate the two models, or either from
+  the cold-only 38 % below.
+  **Cold-only honesty check:** five of the 15 goals are `prompt-backed` (the
+  answer sits inside the system prompt's physiological-anchor range — liver,
+  lung, BBB, venular, lymphatic), so on the eight genuinely cold goals `flash`
+  and `pro` each recover only **3** (arterial, HepG2, 24-well medium):
+  cold-only usable ≈ **38 % / 38 %**, each with a 95 % Wilson CI of **14–69 %**
+  — n=8 is still too thin to separate the models, and cold recall is nowhere
+  near the reading set. Of the recoveries that look like domain knowledge,
+  only those three are actually cold; the others (lung, BBB, venular) sit
+  inside the prompted range. Remove the two scenario-only goals (they state
+  the magnitude, so they test a failure mode, not recall) and the
+  *domain*-target recovery is **4/13 = 31 %** for `flash` and **6/13 = 46 %**
+  for `pro` — scenario goals should not be lumped into cold recall.
+  **Prompt-backed does not mean recovered:** the anchors are deliberately wide
+  ranges (e.g. liver 0.05–0.15 Pa) and a usable design must land within ±5 %
+  of the exact conventional value, so a model that picks the wrong end of the
+  range fails even with the hint — both models propose liver at 0.10 Pa
+  (inside the range but 100 % off the 0.05 Pa convention), and neither
+  recovers lymphatic. Both miss the kidney (`flash` 0.50 Pa — 24× off the
+  0.02 Pa target; `pro` 0.05 Pa — 1.5×) and the primary-hepatocyte seeding
+  density (0.33×). **The gate stops fabricated numbers; it cannot supply
+  domain knowledge the model does not have.** That boundary is the honest
+  headline, and it is exactly what a wet-lab user must not forget: verify the
+  target, not just the arithmetic.
 
 ## Reproducibility: prompts, models & provenance
 
@@ -482,6 +514,12 @@ grew to 15 — Qwen2.5-1.5B-Instruct LoRA, adapter at
 Target recovery is 0 even for the fine-tuned model: the extractor recovers the
 *raw inputs* a goal implies, not the physiological target number (that is the
 agent's job). `mean_field_rel_error` is 0.0059 for the fine-tuned model.
+`target_recovery` is **not** a rate over the 400 eval rows (nor the 412 with
+the blind goals): it is scored only on the blind goals that carry a
+physiological shear target **and** whose extracted raw built a design — a
+single-digit subset (at most the 10 shear-bearing goals of the 12-goal blind
+set; the untuned extractor builds fewer). `pro`'s 0.2 is therefore ~1 hit
+within ±20 % out of a few such goals — small-n noise, not a 20 % capability.
 
 **Statistical caveat.** The headline cells in the table above are **single
 runs** over 24/15 goals. A 5-seed re-run of the 24-reading set
