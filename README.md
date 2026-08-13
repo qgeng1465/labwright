@@ -17,7 +17,7 @@ before the design is accepted. One yardstick, one rule for every row
 | system | how derived numbers are produced | usable designs (24 reading goals) | hallucination |
 |---|---|---|---|
 | bare frontier LLM (the status quo) | written from memory | **0–12 %** | ~0.9–1.0 |
-| "check yourself" / LLM-as-verifier | self-derived (soft-gate, self-verify) | **0 %** on design goals — only the 3 no-choice single-step goals ever reach 12 %; the second pass actively corrupts the first | ~0.75–1.0 |
+| "check yourself" / LLM-as-verifier | self-derived (soft-gate, self-verify) | **0 %** on design goals — only a few single-step arithmetic goals ever reach 8–12 %; the second pass actively corrupts the first | ~0.75–1.0 |
 | **Labwright** | calculators compute; verifier re-proves | **88–100 %** | **0.000** |
 
 *Snapshot — the **24-reading set only**. The 15-goal blind set and the 15-goal
@@ -26,12 +26,14 @@ before the design is accepted. One yardstick, one rule for every row
 *hallucination = the fraction of a plan's `derived` fields the verifier
 rejects (error-level), averaged over goals; a run that submits no design
 scores 1.0 (the denominator is derived fields per plan, not goals — see
-Definitions below). The only non-zero Labwright cells anywhere: `flash` **0.125** on the
-24-reading set — three pure-calculation goals where the agent produced no
-design at all: silence, not wrong numbers — and `flash` **0.011** / `pro`
-**0.067** on the 15-3D-spheroid set, each from exactly one goal (`flash`: one
-plan with 1 of 6 derived spheroid fields rejected by the verifier; `pro`: one
-no-submit silence). Zero elsewhere.*
+Definitions below). Labwright's hallucination is **0.000 on most sets**; the
+few non-zero cells are silence or a single rejected field, never a fabricated
+number: `flash` **0.125** on the 24-reading set (three pure-calculation goals
+where the agent produced no design — silence, not wrong numbers), `flash`
+**0.011** / `pro` **0.067** on the 15-3D-spheroid set (one goal each: a single
+rejected spheroid field / a no-submit silence), and `flash` **0.071** / `pro`
+**0.043** on the 14-plate-culture set (one silence / two goals with a single
+rejected field). Per-goal detail is in the benchmark section below.*
 
 ![Labwright graphical abstract: goal → LLM proposes raw inputs → deterministic calculators → verifier re-proves every number → SOP + design JSON; naive alternatives rejected at the hard gate](paper/fig_abstract.png)
 
@@ -174,9 +176,17 @@ failing:
 | attack | defense | test |
 |---|---|---|
 | answer the goal in prose ("shear is 0.25 Pa") | prose answers refused; only `submit_design` is accepted | `test_prose_only_answer_is_refused` |
-| smuggle `shear_pa` / `derived{…}` / `culture.seed_per_well` into `submit_design` | `submit_design` rejects every derived field name with a validation error — never silently drops it | `test_submit_rejects_*`, `test_agent_recovers_…` |
+| smuggle `shear_pa` / `derived{…}` / `culture.seed_per_well` into `submit_design` | `submit_design` rejects every derived field name with a validation error — never silently drops it | `test_submit_rejects_*`, `test_agent_recovers_when_derived_field_rejected` |
 | hand-edit / inject a derived field into a finished plan | the verifier re-runs the calculators and flags the mismatch | `test_tampered_*` |
 | assert a number in the design's own prose (`rationale`, `caveats`) that contradicts the calculators | a prose-number gate ([`labwright/verify/prose.py`](labwright/verify/prose.py)) extracts every number-with-unit, converts it to the field's unit (so "0.5 dyn/cm²" is judged as 0.05 Pa), and warns when it matches no value the design actually carries | `test_prose_*` |
+
+`*` marks a family of tests in `tests/` — representative names only
+(`test_submit_rejects_*` covers `test_submit_rejects_derived_block`,
+`test_submit_rejects_top_level_derived_field`, `test_submit_rejects_derived_field_in_culture_block`,
+`test_submit_rejects_derived_field_in_spheroid_block`; `test_tampered_*` covers
+`test_tampered_derived_field_caught_by_verifier`,
+`test_tampered_spheroid_field_caught_by_verifier`; `test_prose_*` covers the
+prose gate's positive/negative cases).
 
 Prose assertions are warnings, never errors, so an honest design is never
 blocked; threshold phrases ("above 400 µm", "up to 24 h") are domain knowledge,
@@ -261,7 +271,10 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
   its own gold set (`eval/gold_cell_culture.json`). A third domain — 3D culture:
   spheroid/organoid geometry, cells-per-size, ULA and hanging-drop working
   volumes, necrotic-core limits — ships as `calc/spheroid.py` with its own gold
-  set (`eval/gold_spheroid.json`).
+  set (`eval/gold_spheroid.json`). A fourth domain — single-compartment
+  pharmacokinetics on-chip (extraction ratio, clearance, half-life,
+  steady-state accumulation) — ships as `calc/pk.py` with its own gold set
+  (`eval/gold_pk.json`).
 - **`agent/`** — a ReAct loop over the tool registry. It may call any
   calculator and must finish by calling `submit_design`. Prose answers are
   refused: *"numbers you type are not trusted."*
@@ -593,7 +606,7 @@ Read the numbers honestly — and the boundary of what they mean.
   of the exact conventional value, so a model that picks the wrong end of the
   range fails even with the hint — both models propose liver at 0.10 Pa
   (inside the range but 100 % off the 0.05 Pa convention), and neither
-  recovers lymphatic. Both miss the kidney (`flash` 0.50 Pa — 24× off the
+  recovers lymphatic. Both miss the kidney (`flash` 0.50 Pa — 25× off the
   0.02 Pa target; `pro` 0.05 Pa — 2.5×) and the primary-hepatocyte seeding
   density (0.33×). **The gate stops fabricated numbers; it cannot supply
   domain knowledge the model does not have.** That boundary is the honest
@@ -631,7 +644,13 @@ Read the numbers honestly — and the boundary of what they mean.
   a single extra field the goal did not ask for makes the whole entry
   unverifiable. The 4 blind-`cold` recall cells (PHH sandwich density,
   plate-table volumes) are exactly where bare fails — the numbers live in the
-  `CULTURE_*` tables, not model memory.
+  `CULTURE_*` tables, not model memory. Labwright's own non-zero cells on this
+  set are the gate catching its own errors, not a failed gate: `flash` **0.071**
+  is one silence (the strict hemocytometer goal `plate-hemocytometer-seed-96well`
+  produced no design — hall 1.0), and `pro` **0.043** is two goals
+  (`plate-96well-total-medium`, the blind-`cold` `blind-96well-area-and-medium`)
+  where the verifier rejected one or two derived fields (calculation error) —
+  rejected fields, never fabricated numbers.
 - **The perfused-PK set is the arithmetic step-up.** Labwright is
   self-consistent **100 %** / usable **79 %** (`flash`) and **86 %** (`pro`)
   with hallucination **0.000**. PK is a *good* news story for the naive

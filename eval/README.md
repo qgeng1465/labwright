@@ -377,7 +377,12 @@ floor: every culture answer is re-derived from plate_format + seeding density +
 wells, and one extra field the goal did not ask for voids the whole entry, so
 all three memory systems land at **0 % usable** on both models (self-verify
 `flash` hallucination **0.929** — its recompute pass overwrote correct numbers
-with confident wrong ones). Labwright holds **86 %** (`flash`) / **64 %** (`pro`).
+with confident wrong ones). Labwright holds **86 %** (`flash`) / **64 %** (`pro`);
+its own non-zero hallucination here is the gate catching its errors, not a
+failed gate — `flash` 0.071 is one silence (the strict hemocytometer goal
+`plate-hemocytometer-seed-96well` produced no design), `pro` 0.043 is two goals
+(`plate-96well-total-medium`, the blind-`cold` `blind-96well-area-and-medium`)
+where the verifier rejected one or two derived fields (calculation error).
 The **perfused-PK** set is the arithmetic step-up where the naive systems do
 best: most goals hand over the formula's raw numbers, so soft-gate reaches
 **50 % usable** and self-verify **29 %** (single-step arithmetic is exactly the
