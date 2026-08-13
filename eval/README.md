@@ -726,8 +726,9 @@ same reason on both sides: `wrong_target` (the model anchored on a different
 output quantity than the goal asked for; `spheroid-um-mm-unit-ambiguity`,
 `selfconsistent-channel-volume`, `blind-seed-hepg2-log`, …). Not one divergent
 entry is a hallucination or a unit error. The honest conclusion is **not** "the
-verifier rescues usable rate" — removing it changed usable rate by −2 to +3
-goals on sets of 14–24, i.e. within noise, and it is **not** a hallucination
+verifier rescues usable rate" — removing it changed usable rate by −1 to +1
+goals per set (sets of 14–24), i.e. within noise, and it is **not** a
+hallucination
 shield the way the headline 0.000 might suggest. The calculators carry the load.
 The verifier's measurable added value sits elsewhere:
 
