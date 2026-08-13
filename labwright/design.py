@@ -218,10 +218,15 @@ def submit_design(input_dict: dict[str, Any]) -> dict[str, Any]:
     inp = DesignInput(**input_dict)
     plan = build_design(inp)
     issues = verify_design(plan)
+    from labwright.sop.provenance import provenance_for
+
     return {
         "design": plan.model_dump(mode="json"),
         "verification": [i.__dict__ for i in issues],
         "verification_summary": format_issues(issues),
+        # Full computation path: every derived number's formula, inputs, units,
+        # code version and verification status (exportable to an ELN/LIMS).
+        "provenance": provenance_for(plan, issues),
         "status": "ok" if not issues else "review_required",
     }
 

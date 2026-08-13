@@ -27,17 +27,28 @@ Two gold sets:
    answer (the geometry/flow/density/effect-size, or the physiological target
    number). These test whether the pipeline can *extract the stated numbers and
    drive the calculators to them*. They do **not** test domain knowledge.
-2. **`gold_blind.json` — 12 "recall" goals.** The goal states no number at all
+2. **`gold_blind.json` — 15 "recall" goals.** The goal states no number at all
    ("recapitulate physiological venular wall shear"); the model must supply the
-   canonical target from its own knowledge. Seven are `cold` (answer in neither
-   goal nor the system prompt: kidney, arterial, HepG2 density,
-   primary-hepatocyte density, pulmonary artery, gut, retinal arteriole); five
-   are `prompt-backed` (liver, lung, BBB, venular, lymphatic — the target sits
-   inside a range listed in the Labwright system prompt, so the model must still
-   *select* the right value; venular 0.3 Pa and lymphatic 0.2 Pa fall inside the
-   prompt's "microvascular endothelium ≈ 0.1-1 Pa", by the same
-   range-contains-answer criterion as liver/lung/BBB). Every entry pins a
-   citable source in its `source` field; no number is invented.
+   canonical target from its own knowledge. **Eight** are `cold` (answer in
+   neither goal nor the system prompt: kidney PTEC, arterial, HepG2 density,
+   primary-hepatocyte density, pulmonary artery, gut, retinal arteriole,
+   24-well medium volume); **five** are `prompt-backed` (liver, lung, BBB,
+   venular, lymphatic — the target sits inside a range listed in the Labwright
+   system prompt, so the model must still *select* the right value; venular
+   0.3 Pa and lymphatic 0.2 Pa fall inside the prompt's "microvascular
+   endothelium ≈ 0.1-1 Pa", by the same range-contains-answer criterion as
+   liver/lung/BBB); **two** are scenario-only (the magnitude is stated, so they
+   exercise a failure mode, not cold recall):
+   - **unit-ambiguity** (`blind-kidney-ptec-unit-ambiguity`) — the goal states
+     "0.2 dyn/cm²" and asks for Pa; a dyn-as-Pa misread is exactly 10× off
+     (0.2 Pa instead of 0.02 Pa).
+   - **multi-target** (`blind-bbb-shear-residence-multitarget`) — two targets
+     jointly satisfiable at Q ≈ 40 µL/min in a 400×100 µm × 100 mm channel
+     (shear 1.0 Pa *and* residence 6.0 s); the model must hit both.
+   Every entry pins a citable source in its `source` field; no number is
+   invented, and `tests/test_metrics.py` re-derives each scenario entry to prove
+   the gold itself is satisfiable (an unwinnable gold would inflate failure
+   rates for the wrong reason).
 
 ### Prompts & models (verbatim)
 
@@ -132,6 +143,25 @@ verifier add to the bare model.
   recover every gold target within ±5 %. A design that is internally consistent
   but misses the physiological target is not usable.
 
+New in the 15-entry blind run, every record also carries:
+
+- **failure reason** (`classify_failure`) — one of `ok` / `silence` (nothing
+  checkable produced) / `calculation_error` (numbers inconsistent or
+  unverifiable) / `wrong_target` (internally consistent but misses the gold).
+  This separates "model refused / ran out of budget" from "model fabricated"
+  from "model aimed at the wrong physiology".
+- **unit-misread rate** (`unit_misreads`) — a claimed value that is a clean
+  multiple of a known alias ratio (dyn/cm² vs Pa = 10×, mL/min vs µL/min =
+  1000×, ...) with the *right* magnitude is classified as a unit error, not an
+  arithmetic one, using `labwright/verify/units.py` against the field's
+  canonical unit. An entry flagged here is an extractor/converter failure, not a
+  physics miss.
+- **target-selection accuracy** — fraction of entries whose *headline* gold
+  target (first expected key) is recovered within ±5 %.
+- **blind split** — usable rate and hallucination rate reported separately for
+  `cold` vs `prompt-backed` goals, so prompt-leaked answers never inflate the
+  cold-recall claim.
+
 ### What the numbers do — and do not — mean
 
 - **"0.000 hallucination"** means *no number entered a design unless a
@@ -143,7 +173,7 @@ verifier add to the bare model.
   equations Labwright uses. The real signal there is number-extraction and
   tool-calling.
 - **The blind set is where target selection is actually tested.** There the
-  usable rate collapses: `flash` 88 % → 25 %, `pro` 100 % → 33 % (see below).
+  usable rate collapses: `flash` 88 % → 40 %, `pro` 100 % → 47 % (see below).
   The gate held (hallucination 0.000 on every submitted plan) — Labwright
   produced clean, verified designs that aimed at the *wrong physiology*. That
   is the honest boundary of the guarantee.
@@ -153,19 +183,25 @@ verifier add to the bare model.
 - [x] Curate the 24-reading gold set. Every entry carries a provenance rule — a
       pinned source or an explicit `self-consistent` label. All anchors
       hand-checked against the governing equations.
-- [x] Curate the 12-blind gold set (`gold_blind.json`, expanded 6 → 12 in
-      Aug 2026), each entry labelled `cold`/`prompt-backed` with a pinned source.
-      Labels re-audited in Aug 2026 against the *actual* system-prompt ranges:
-      venular and lymphatic sit inside "microvascular endothelium ≈ 0.1-1 Pa",
-      so 5 are `prompt-backed` and 7 `cold`.
+- [x] Curate the blind gold set (`gold_blind.json`, expanded 6 → 12 → **15** in
+      Aug 2026), each entry labelled `cold`/`prompt-backed`/scenario with a
+      pinned source. Labels re-audited in Aug 2026 against the *actual*
+      system-prompt ranges: venular and lymphatic sit inside "microvascular
+      endothelium ≈ 0.1-1 Pa", so 5 are `prompt-backed` and 8 `cold`, plus 2
+      scenario entries (unit-ambiguity, multi-target).
 - [x] Run bare-LLM + Labwright on `deepseek-v4-flash` and `deepseek-v4-pro` on
       the 24-reading set → `results/eval_flash.json`, `results/eval_pro.json`.
       The runner checkpoints after every entry.
 - [x] Run the competitor systems (soft-gate, self-verify) on both sets and both
       models → `results/eval_competitors_{flash,pro}.json`,
       `results/eval_blind_competitors_{flash,pro}.json`.
-- [x] Re-run bare-LLM + Labwright on the expanded 12-blind set →
+- [x] Re-run all four systems on the expanded **15**-blind set, with the
+      failure-reason / unit-misread / target-selection / blind-split metrics →
       `results/eval_blind_{flash,pro}.json`.
+- [x] Unit tests for the new metrics and scenario golds
+      (`tests/test_metrics.py`), the unit/alias layer (`test_units.py`), the
+      sanity bands (`test_sanity.py`), the safety boundary (`test_safety.py`)
+      and provenance (`test_provenance.py`).
 - [x] Thinking ablation grid (thinking ON for both models on both sets) →
       `results/eval_blind_{flash,pro}_thinking.json`,
       `results/eval_{flash,pro}_thinking.json`.
@@ -192,14 +228,14 @@ structure differs.
 | `pro` | 24-reading | soft-gate | 8 % | 8 % | 0.917 |
 | `pro` | 24-reading | self-verify | 0 % | 0 % | 0.750 |
 | `pro` | 24-reading | **Labwright** | **100 %** | **100 %** | **0.000** |
-| `flash` | 12-blind | bare-LLM | 8 % | 0 % | 0.917 |
-| `flash` | 12-blind | soft-gate | 8 % | 0 % | 0.917 |
-| `flash` | 12-blind | self-verify | 0 % | 0 % | 0.750 |
-| `flash` | 12-blind | **Labwright** | **100 %** | **25 %** | **0.000** |
-| `pro` | 12-blind | bare-LLM | 8 % | 0 % | 0.917 |
-| `pro` | 12-blind | soft-gate | 0 % | 0 % | 1.000 |
-| `pro` | 12-blind | self-verify | 0 % | 0 % | 0.806 |
-| `pro` | 12-blind | **Labwright** | **100 %** | **33 %** | **0.000** |
+| `flash` | 15-blind | bare-LLM | 7 % | 0 % | 0.933 |
+| `flash` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
+| `flash` | 15-blind | self-verify | 0 % | 0 % | 0.611 |
+| `flash` | 15-blind | **Labwright** | **100 %** | **40 %** | **0.000** |
+| `pro` | 15-blind | bare-LLM | 7 % | 0 % | 0.933 |
+| `pro` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
+| `pro` | 15-blind | self-verify | 0 % | 0 % | 0.733 |
+| `pro` | 15-blind | **Labwright** | **100 %** | **47 %** | **0.000** |
 
 The memory systems never produce a usable *design* on either set, and the two
 naive "fixes" do not help. The only usable memory-system entries anywhere are
@@ -217,29 +253,48 @@ calculators + verifier reach usable > 0 % on design goals.
 
 The blind-set drop is the honest headline: when the goal does not hand over the
 target, Labwright's verified designs hit the wrong physiology. On the expanded
-12 goals, `flash` recovers 3 (arterial 1.5 Pa, lung 0.03 Pa, BBB 1.0 Pa) and
-`pro` recovers 4 (venular 0.3 Pa, lung 0.03 Pa, HepG2 seeding 4000, BBB 1.0 Pa).
-**Cold-only sub-rates:** five of the 12 goals are `prompt-backed` (liver, lung,
-BBB, venular, lymphatic), so the headline 25 %/33 % usable overstates recall on
-the genuinely cold goals — on the seven cold entries `flash` recovers only 1
-(arterial) and `pro` only 1 (HepG2 seeding), i.e. cold-only usable ≈ **14 % /
-14 %**. Of the recoveries that look like domain knowledge, only arterial
-(`flash`) and HepG2 seeding (`pro`) are actually cold; lung, BBB and venular sit
-inside prompted ranges.
+15 goals, `flash` recovers 6 (arterial 1.5 Pa, HepG2 seeding, 24-well medium,
+lung 0.03 Pa, and both scenario goals — the dyn/cm²-as-Pa unit test and the
+shear + residence joint target) and `pro` recovers 7 (arterial, HepG2 seeding,
+24-well medium, venular 0.3 Pa, lung, BBB 1.0 Pa, and the unit-ambiguity goal;
+its multi-target run hits the shear but misses the residence time 0.5×).
+**Cold-only sub-rates:** five of the 15 goals are `prompt-backed` (liver, lung,
+BBB, venular, lymphatic), so the headline 40 %/47 % usable overstates recall on
+the genuinely cold goals — on the eight cold entries `flash` and `pro` each
+recover only 3 (arterial, HepG2 seeding, 24-well medium), i.e. cold-only usable
+≈ **38 % / 38 %**, each with a 95 % Wilson CI of 14–69 %; n=8 is still too thin
+to separate the two models, and cold recall is nowhere near the reading set. Of
+the recoveries that look like domain knowledge, only those three are actually
+cold; the others (lung, BBB, venular) sit inside prompted ranges.
 Both models correctly select the prompt-backed entries they are primed for
-(lung, BBB; `pro` also recovers venular 0.3 Pa, `flash` also recovers the cold
-arterial 1.5 Pa) yet both miss liver (0.05 Pa): they propose the mid-range
-0.10 Pa — inside the prompt's 0.05–0.15 Pa range but not the low-shear
-convention — and neither recovers lymphatic (0.2 Pa). The remaining cold
-entries are mostly wrong (recovery = relative error of the proposed shear vs
-the target): kidney PTEC 0.02 Pa is proposed at 0.50 Pa (`flash`, recovery 24)
-/ 0.20 Pa (`pro`, recovery 9 — treating dyn/cm² as Pa), gut epithelium 0.002 Pa
-at 0.01 Pa (recovery 4), retinal arteriole within 7 % (`flash` — the closest
-miss, just outside the ±5 % usable tolerance) but 44 % off on `pro`, pulmonary
-artery off by 25–50 %, and both seeding densities off by a third to a half. The
-gate
-never failed — every plan was internally verified — it just could not supply
-domain knowledge the model did not have.
+(`pro` recovers venular 0.3 Pa, lung and BBB; `flash` recovers lung) yet both
+miss liver (0.05 Pa): they propose the mid-range 0.10 Pa — inside the prompt's
+0.05–0.15 Pa range but not the low-shear convention — and neither recovers
+lymphatic (0.2 Pa). The remaining cold entries are mostly wrong (recovery =
+relative error of the proposed shear vs the target): kidney PTEC 0.02 Pa is
+proposed at 0.50 Pa (`flash`, recovery 24) / 0.05 Pa (`pro`, recovery 1.5), gut
+epithelium 0.002 Pa at 0.005 Pa (`flash`, recovery 1.5) / ~0.013 Pa (`pro`,
+recovery 5.7), retinal arteriole 0.72× off (`flash`) / 0.63× off (`pro`),
+pulmonary artery 0.9× off (`flash`) / 0.25× off (`pro`), and the
+primary-hepatocyte seeding density 0.33× off on both. The gate never failed —
+every plan was internally verified — it just could not supply domain knowledge
+the model did not have.
+
+The new per-entry metrics on the same run: the failure-reason breakdown for
+Labwright is `ok` 6/15 (`flash`) / 7/15 (`pro`) and `wrong_target` 9/15 / 8/15 —
+`silence` and `calculation_error` are architecturally excluded from the
+Labwright path (a plan either submits verified or fails to submit). The memory
+systems fail almost entirely with `calculation_error` (14/15 for bare on both
+models). **Target-selection accuracy** (headline target within ±5 %) is 40 %
+(`flash`) / 53 % (`pro`) for Labwright vs 33 % for the bare model — a bare model
+names the right target about a third of the time but never produces an
+internally consistent design behind it. The **unit-misread layer** fires rarely
+and never inside a Labwright plan (0.000 for both models): the probable
+dyn/cm²-as-Pa misreads are caught on the memory side (flash self-verify on
+liver; pro bare/soft-gate on kidney PTEC, both proposing 0.20 Pa for the
+0.02 Pa target; pro self-verify on the unit-ambiguity scenario), and the two
+scenario goals exist precisely to prove the layer would catch it inside a
+verified design too — `flash` recovers both, `pro` the unit-ambiguity one.
 
 Two corrections make these numbers what they are, both reported honestly. First,
 earlier committed figures counted unverifiable answers (geometry and flow with
@@ -257,7 +312,7 @@ always received the goal through a separate code path and was never affected.
 
 ### Statistical precision: single runs vs 5-seed intervals
 
-The headline cells above are **single runs** over 24/12 goals. A 5-seed re-run
+The headline cells above are **single runs** over 24/15 goals. A 5-seed re-run
 of the 24-reading set (`results/eval_seed_benchmark.json`: 24 goals × 5 seeds =
 120 trials per system/model, Wilson 95 % CI via `eval/ci.py`) bounds the
 point estimates:
@@ -288,12 +343,17 @@ reasoning-budget gap. Labwright self-consistency / usable / hallucination:
 |---|---|---|---|---|---|
 | `flash` | 24-reading | off | 88 % | 88 % | 0.125 |
 | `flash` | 24-reading | on | 100 % | 100 % | 0.000 |
-| `flash` | 12-blind | off | 100 % | 25 % | 0.000 |
-| `flash` | 12-blind | on | 100 % | 17 % | 0.000 |
+| `flash` | 12-blind* | off | 100 % | 25 % | 0.000 |
+| `flash` | 12-blind* | on | 100 % | 17 % | 0.000 |
 | `pro` | 24-reading | off | 100 % | 100 % | 0.000 |
 | `pro` | 24-reading | on | 100 % | 100 % | 0.000 |
-| `pro` | 12-blind | off | 100 % | 33 % | 0.000 |
-| `pro` | 12-blind | on | 100 % | 42 % | 0.000 |
+| `pro` | 12-blind* | off | 100 % | 33 % | 0.000 |
+| `pro` | 12-blind* | on | 100 % | 42 % | 0.000 |
+
+\* The thinking-ablation grid was run on the **12-goal** blind set, before the
+scenario expansion grew it to 15; the thinking rows were not repeated on the
+expanded set, so they are historical and are **not** directly comparable to the
+15-entry cells above.
 
 The blind misses persist with thinking on (17 % / 42 % vs 25 % / 33 % off —
 within a goal of each other): thinking neither recovers targets the model does

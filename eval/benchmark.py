@@ -70,6 +70,12 @@ class GoldExperiment:
     # (pure domain recall); "prompt-backed" = the Labwright system prompt lists a
     # range containing the answer, so the model must still select the right value.
     blind_strength: str | None = None
+    #: Real-world failure mode the goal exercises: "complete-info" (all numbers
+    #: given, answer follows by calculation), "partial-info" (a parameter must
+    #: come from a standard reference/default), "unit-ambiguity" (a target is
+    #: stated in a non-canonical unit that must be converted), "multi-target"
+    #: (two or more targets must be hit jointly).
+    scenario: str = "complete-info"
 
 
 def load_gold(path: str = GOLD_PATH) -> list[GoldExperiment]:
@@ -87,6 +93,84 @@ def relative_error(got: float | None, expected: float) -> float:
     if got is None:
         return float("inf")
     return abs(got - expected) / abs(expected)
+
+
+def classify_failure(rec: dict, gold: GoldExperiment) -> str:
+    """Why an entry failed (or succeeded), as a category.
+
+    - ``"ok"`` — usable: verified/consistent and recovers every gold target.
+    - ``"silence"`` — the model produced nothing checkable (no plan for
+      Labwright; no reported numbers for the memory systems). The 3
+      ``plan:false`` flash refusals are silence.
+    - ``"calculation_error"`` — numbers were produced but are internally
+      inconsistent / unverifiable (the memory systems' typed-from-memory
+      numbers; a Labwright plan the verifier rejects).
+    - ``"wrong_target"`` — the answer is internally consistent (or verified)
+      but misses the gold value: the model picked the wrong magnitude, the
+      wrong formula, or the wrong organ's number.
+    """
+    if "plan" in rec:  # Labwright record
+        if not rec["plan"]:
+            return "silence"
+        if rec["hallucination_rate"] > 0:
+            return "calculation_error"
+        return "ok" if rec["valid"] else "wrong_target"
+    # memory-system record (bare / soft-gate / self-verify)
+    if not rec.get("reported"):
+        return "silence"
+    if rec["hallucination_rate"] > 0:
+        return "calculation_error"
+    return "ok" if rec["valid"] else "wrong_target"
+
+
+#: Gold keys (bare, as used in ``gold.expected``) -> canonical verifier field
+#: name. ``classify_unit_misread`` looks the field up in the unit audit table,
+#: which is keyed by the verifier's issue names (``derived.shear_pa``), so a
+#: bare ``shear_pa`` must be mapped before the alias check can run.
+_FIELD_MAP = {
+    "shear_pa": "derived.shear_pa",
+    "reynolds": "derived.reynolds",
+    "pressure_drop_pa": "derived.pressure_drop_pa",
+    "residence_time_s": "derived.residence_time_s",
+    "channel_volume_ul": "derived.channel_volume_ul",
+    "mean_velocity_mms": "derived.mean_velocity_mms",
+    "flow_rate_uLmin": "flow_rate_uLmin",
+    "seed_count": "cells.seed_count",
+    "dmso_fraction_vv": "dosing.dmso_fraction_vv",
+    "n_per_group": "stats.n_per_group",
+    "seed_per_well": "culture.seed_per_well",
+    "total_seed_count": "culture.total_seed_count",
+    "medium_volume_per_well_ml": "culture.medium_volume_per_well_ml",
+    "total_medium_ml": "culture.total_medium_ml",
+    "expected_confluence_pct": "culture.expected_confluence_pct",
+}
+
+
+def unit_misreads(claimed: dict[str, float | None], gold: GoldExperiment) -> dict[str, dict]:
+    """Probable unit misreads among the reported numbers.
+
+    For each gold target the system reported, run :func:`classify_unit_misread`
+    — a claimed value that is a clean multiple of a known alias ratio (e.g.
+    dyn/cm² vs Pa = 10×) with the *right* magnitude is a unit error, not an
+    arithmetic one. Returns ``{gold_key: misread_record}``.
+    """
+    from labwright.verify.units import classify_unit_misread
+
+    out: dict[str, dict] = {}
+    for key, expected in gold.expected.items():
+        value = claimed.get(key)
+        if value is None:
+            continue
+        field = _FIELD_MAP.get(key, key)
+        m = classify_unit_misread(value, expected, field)
+        if m:
+            out[key] = m
+    return out
+
+
+def _primary_key(gold: GoldExperiment) -> str:
+    """The goal's headline target — the first listed expected key."""
+    return next(iter(gold.expected)) if gold.expected else ""
 
 
 def parameter_recovery(gold: GoldExperiment, plan: DesignPlan) -> dict[str, float]:
@@ -127,6 +211,41 @@ def parameter_recovery(gold: GoldExperiment, plan: DesignPlan) -> dict[str, floa
             if key in gold.expected and value is not None:
                 errs[key] = relative_error(value, gold.expected[key])
     return errs
+
+
+def _design_claimed(plan: DesignPlan, gold: GoldExperiment) -> dict[str, float | None]:
+    """The design's value for each gold target key (mirror of parameter_recovery)."""
+    out: dict[str, float | None] = {}
+    if plan.derived is not None:
+        d = plan.derived
+        mapping = {
+            "shear_pa": d.shear_pa, "reynolds": d.reynolds,
+            "pressure_drop_pa": d.pressure_drop_pa, "residence_time_s": d.residence_time_s,
+            "channel_volume_ul": d.channel_volume_ul, "mean_velocity_mms": d.mean_velocity_mms,
+        }
+        for key in gold.expected:
+            if key in mapping:
+                out[key] = mapping[key]
+    if "flow_rate_uLmin" in gold.expected and plan.flow is not None:
+        out["flow_rate_uLmin"] = plan.flow.flow_rate_uLmin
+    if "seed_count" in gold.expected and plan.cells is not None:
+        out["seed_count"] = plan.cells.seed_count
+    if "dmso_fraction_vv" in gold.expected and plan.dosing is not None:
+        out["dmso_fraction_vv"] = plan.dosing.dmso_fraction_vv
+    if "n_per_group" in gold.expected and plan.stats is not None:
+        out["n_per_group"] = float(plan.stats.n_per_group)
+    if plan.culture is not None:
+        c = plan.culture
+        cmap = {
+            "seed_per_well": c.seed_per_well, "total_seed_count": c.total_seed_count,
+            "medium_volume_per_well_ml": c.medium_volume_per_well_ml,
+            "total_medium_ml": c.total_medium_ml,
+            "expected_confluence_pct": c.expected_confluence_pct, "wells": float(c.wells),
+        }
+        for key in gold.expected:
+            if key in cmap and cmap[key] is not None:
+                out[key] = cmap[key]
+    return out
 
 
 #: Every derived field the verifier can reject, across all domains. The flow
@@ -542,13 +661,20 @@ def _score_reported(reported: dict[str, float | None], gold: GoldExperiment) -> 
     """
     rec = bare_recovery(reported, gold)
     hall = bare_hallucination(reported)
-    return {
+    primary = _primary_key(gold)
+    record = {
         "reported": {k: v for k, v in reported.items() if v is not None},
         "verifiable": bare_checkable(reported),
         "recovery": {k: round(v, 6) for k, v in rec.items()},
         "hallucination_rate": round(hall, 6),
         "valid": hall == 0.0 and all(err <= 0.05 for err in rec.values()),
     }
+    record["unit_misread"] = unit_misreads(reported, gold)
+    record["failure"] = classify_failure(record, gold)
+    record["target_selected"] = (
+        bool(primary) and primary in rec and rec[primary] <= 0.05
+    )
+    return record
 
 
 def _run_system(name: str, gold: GoldExperiment, chat: Callable, agent_factory: Callable) -> dict[str, Any]:
@@ -557,10 +683,12 @@ def _run_system(name: str, gold: GoldExperiment, chat: Callable, agent_factory: 
         lw, lw_error = run_labwright(gold.goal, agent_factory)
         lw_rec: dict[str, float] = {}
         lw_hall = 1.0
+        claimed: dict[str, float | None] = {}
         if lw is not None:
             lw_rec = parameter_recovery(gold, lw)
             lw_hall = hallucination_rate(lw)
-        return {
+            claimed = _design_claimed(lw, gold)
+        record = {
             "plan": lw is not None,
             "error": lw_error,
             "recovery": {k: round(v, 6) for k, v in lw_rec.items()},
@@ -573,6 +701,13 @@ def _run_system(name: str, gold: GoldExperiment, chat: Callable, agent_factory: 
                 and all(err <= 0.05 for err in lw_rec.values())
             ),
         }
+        record["unit_misread"] = unit_misreads(claimed, gold)
+        record["failure"] = classify_failure(record, gold)
+        primary = _primary_key(gold)
+        record["target_selected"] = (
+            lw is not None and bool(primary) and primary in lw_rec and lw_rec[primary] <= 0.05
+        )
+        return record
     return _score_reported(_SYSTEM_RUNNERS[name](gold, chat, agent_factory), gold)
 
 
@@ -596,7 +731,14 @@ def evaluate(
         summary[name] = {"recovery": {}, "hallucination_rate": []}
 
     for g in gold:
-        entry: dict[str, Any] = {"id": g.id}
+        entry: dict[str, Any] = {
+            "id": g.id,
+            "gold": {
+                "id": g.id,
+                "blind_strength": g.blind_strength,
+                "scenario": g.scenario,
+            },
+        }
         for name in systems:
             if progress:
                 progress(f"[{g.id}] {name} ...")

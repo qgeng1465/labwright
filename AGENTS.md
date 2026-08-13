@@ -16,8 +16,8 @@ usable tool + benchmark + preprint. Stars come from people being able to use it.
 - tests: `.venv/bin/python -m pytest tests/`
 - run: `.venv/bin/python -m labwright.cli design "..."` (needs an API key)
 - pip index: TUNA mirror (`PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple`)
-- GitHub: no `gh` CLI — use `curl` + a PAT supplied through `GIT_ASKPASS`
-  (read the token from a local file; never put it in argv or a command line)
+- GitHub: no `gh` CLI — use `curl` + a PAT supplied through `GIT_ASKPASS`;
+  never put the token in argv or a command line
 - HF downloads: `HF_ENDPOINT=https://hf-mirror.com`
 
 ## Architecture

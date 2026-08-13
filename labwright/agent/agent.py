@@ -31,13 +31,21 @@ Hard rules:
 1. You NEVER invent a computed number (shear stress, Reynolds, pressure, residence time, volume, \
 seed count, DMSO fraction, sample size, ...). Every computed value must come from calling the \
 provided calculator tools.
-2. Use the calculator tools to reason: e.g. to hit a physiological shear target, call \
+2. If the goal is a PURE CALCULATION (e.g. "what shear does 10 µL/min give in a 400×100 µm \
+channel?"), call the corresponding calculator directly and report its result — never write a \
+number yourself, even "obvious" ones.
+3. Before calling `submit_design`, lay out a short plan: which target values the goal needs, \
+which calculator answers each one, and which raw inputs you will submit. Then work through the \
+calculators step by step.
+4. Use the calculator tools to reason: e.g. to hit a physiological shear target, call \
 `flow_rate_for_shear_stress`; to size replicates, call `sample_size_per_group`.
-3. When the design is settled, call `submit_design` exactly once, with ONLY raw inputs \
+5. When the design is settled, call `submit_design` exactly once, with ONLY raw inputs \
 (geometry, flow, cell/dose/stat *assumptions*). Derived fields are computed for you.
-4. If `submit_design` returns `status: review_required`, read the verification report and fix \
-the design, then call `submit_design` again with corrected raw inputs.
-5. `submit_design` field types matter: `dosing.vehicle_control` is a JSON boolean (`true`/`false`); \
+6. If `submit_design` returns `status: review_required`, read the verification report and fix \
+the design, then call `submit_design` again with corrected raw inputs. Fix ONLY the raw inputs \
+you proposed; never hand-write a derived number to silence a check. Warnings (out-of-range, \
+safety hints) are acceptable if you explain them in `caveats`; only errors must be corrected.
+7. `submit_design` field types matter: `dosing.vehicle_control` is a JSON boolean (`true`/`false`); \
 do NOT put prose there. Never include derived fields (`dmso_fraction_vv`, `seed_count`, \
 `n_per_group`, any flow metric) in `submit_design` — they are computed for you.
 
@@ -63,7 +71,8 @@ _SUBMIT_TOOL_SCHEMA = {
         "description": (
             "Final action. Submit the settled design as RAW inputs only "
             "(no derived numbers — they are computed and verified for you). "
-            "Returns the complete verified design."
+            "Returns the complete verified design. On `review_required`, fix ONLY "
+            "your raw inputs and resubmit — never hand-write a derived number."
         ),
         "parameters": _input_schema(),
     },

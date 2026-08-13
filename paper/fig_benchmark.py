@@ -1,7 +1,7 @@
 """Render the paper's benchmark figure from the committed result JSONs.
 
 Two gold sets side by side — the 24-reading set (every goal states the target)
-and the 12-blind set (no target stated) — as 3 × 2 small multiples, one row per
+and the 15-blind set (no target stated) — as 3 × 2 small multiples, one row per
 headline metric (self-consistent rate, usable rate, hallucination rate). Within
 each panel the two model families (deepseek-v4-flash, deepseek-v4-pro) are
 grouped; the four systems (bare-LLM, soft-gate, self-verify, Labwright) sit as
@@ -71,7 +71,7 @@ METRICS = [
 #: blind set does not — that is the boundary the figure makes visible.
 SETS = [
     ("24-reading set", "target stated in the goal"),
-    ("12-blind set", "no target stated"),
+    ("15-blind set", "no target stated"),
 ]
 #: (system key, legend label, bar color, edge/hatch color, hatch).
 #: Categorical, one hue per system: a neutral light stone for the plain baseline,

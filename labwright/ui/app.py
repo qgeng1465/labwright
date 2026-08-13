@@ -12,6 +12,7 @@ import gradio as gr
 
 from labwright.agent import DesignAgent, LLMClient
 from labwright.sop import design_to_sop
+from labwright.sop.provenance import provenance_for
 
 _EXAMPLE_GOALS = [
     "Design a perfused liver-chip experiment to model drug-induced liver injury, "
@@ -23,9 +24,41 @@ _EXAMPLE_GOALS = [
 ]
 
 
-def _run(goal: str, api_key: str, model: str, base_url: str) -> tuple[str, str, str, str]:
+def _fmt_in(inp: dict) -> str:
+    v = inp["value"]
+    if isinstance(v, (int, float)):
+        return f"{inp['name']}={v:g}{inp['unit']}"
+    return f"{inp['name']}={v}{inp['unit']}"
+
+
+def _provenance_md(provenance: list[dict]) -> str:
+    """Render the computation path as a compact markdown table."""
+    if not provenance:
+        return "_No derived numbers to trace._"
+    rows = "\n".join(
+        "| `%s` | %s | %s | %s %s | %s | %s |"
+        % (
+            r["field"],
+            r["formula"],
+            ", ".join(_fmt_in(i) for i in r["inputs"]),
+            r["value"] if isinstance(r["value"], str) else f"{r['value']:g}",
+            r["unit"],
+            r["status"],
+            r["code_version"],
+        )
+        for r in provenance
+    )
+    return (
+        "**Every bolded number, fully traceable** — formula · inputs (value+unit) · "
+        "output · verifier verdict · code version.\n\n"
+        "| field | formula | inputs | value | verify | code |\n"
+        "|---|---|---|---|---|---|\n" + rows
+    )
+
+
+def _run(goal: str, api_key: str, model: str, base_url: str) -> tuple[str, str, str, str, str]:
     if not goal.strip():
-        return "Please describe an experimental goal.", "", "", "idle"
+        return "Please describe an experimental goal.", "", "", "idle", ""
     try:
         llm = LLMClient(
             api_key=api_key.strip() or None,
@@ -33,20 +66,21 @@ def _run(goal: str, api_key: str, model: str, base_url: str) -> tuple[str, str, 
             base_url=base_url.strip() or None,
         )
     except ValueError as exc:
-        return str(exc), "", "", "error"
+        return str(exc), "", "", "error", ""
 
     result = DesignAgent(llm).run(goal)
     if result.status == "error":
-        return f"**Error:** {result.error}", "", "", "error"
+        return f"**Error:** {result.error}", "", "", "error", ""
 
     sop = design_to_sop(result.design)
     js = json.dumps(result.design.model_dump(mode="json"), indent=2, ensure_ascii=False)
+    provenance = provenance_for(result.design)
     badge = (
         "🟢 **verified** — every number computed by the calculators"
         if result.status == "ok"
         else "🟠 **review required** — see verification report"
     )
-    return sop, js, badge + "\n\n" + result.verification_summary, result.status
+    return sop, js, badge + "\n\n" + result.verification_summary, result.status, _provenance_md(provenance)
 
 
 def build_app() -> gr.Blocks:
@@ -78,11 +112,13 @@ def build_app() -> gr.Blocks:
             sop_out = gr.Markdown(label="SOP")
             design_out = gr.Code(label="Design (JSON)", language="json")
         status_out = gr.Markdown(label="Verification")
+        with gr.Accordion("🔍 Provenance — trace every number", open=False):
+            provenance_out = gr.Markdown(label="Computation path")
 
         run_btn.click(
             _run,
             inputs=[goal, api_key, model, base_url],
-            outputs=[sop_out, design_out, status_out],
+            outputs=[sop_out, design_out, status_out, provenance_out],
         )
         gr.Examples(examples=_EXAMPLE_GOALS, inputs=goal, label="Try one of these")
         gr.Markdown(

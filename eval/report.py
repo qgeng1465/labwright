@@ -73,9 +73,40 @@ def derive(result: dict) -> dict:
             out[system]["verifiable_rate"] = _mean(
                 [1.0 if e[system].get("verifiable") else 0.0 for e in per_entry]
             )
+        # New metrics from per-entry records produced by the current harness
+        # (absent from older result JSONs — then simply omitted).
+        if any("failure" in e for e in entries):
+            from collections import Counter
+
+            counts = Counter(e.get("failure") for e in entries)
+            counts.pop(None, None)
+            out[system]["failure_counts"] = dict(counts)
+            out[system]["unit_misread_rate"] = _mean(
+                [1.0 if e.get("unit_misread") else 0.0 for e in entries]
+            )
+            out[system]["target_selection_accuracy"] = _mean(
+                [1.0 if e.get("target_selected") else 0.0 for e in entries]
+            )
     out["n_gold"] = result["n_gold"]
     out["model"] = result.get("model")
     out["systems"] = systems
+    # Cold vs prompt-backed blind split (only when the gold metadata is present).
+    strengths = sorted({
+        e["gold"]["blind_strength"] for e in per_entry
+        if e.get("gold") and e["gold"].get("blind_strength")
+    })
+    if strengths:
+        out["by_blind_strength"] = {}
+        for s in strengths:
+            subs = [e for e in per_entry if e.get("gold") and e["gold"].get("blind_strength") == s]
+            out["by_blind_strength"][s] = {}
+            for system in systems:
+                rows = [e[system] for e in subs]
+                out["by_blind_strength"][s][system] = {
+                    "n": len(rows),
+                    "usable_rate": _mean([1.0 if r["valid"] else 0.0 for r in rows]),
+                    "hallucination_rate": _mean([r["hallucination_rate"] for r in rows]),
+                }
     return out
 
 
@@ -172,6 +203,30 @@ def render(result: dict) -> str:
     if "bare" in systems:
         lines.append(f"{'bare answers verifiable':<26}" + "".join(
             f"{_pct(d[s]['verifiable_rate']):>14}" for s in ("bare",) if s in systems))
+    # failure-reason breakdown / unit-misread / target-selection (new harness)
+    if systems and "failure_counts" in d[systems[0]]:
+        labels = {k: v for k, v in _LABELS.items() if k in systems}
+        lines.append("")
+        lines.append("Failure reasons (ok / silence / calculation_error / wrong_target):")
+        for key in ("ok", "silence", "calculation_error", "wrong_target"):
+            cells = []
+            for s in systems:
+                cells.append(f"{d[s]['failure_counts'].get(key, 0)}/{d['n_gold']}")
+            lines.append(f"  {key:<26}" + "".join(f"{c:>14}" for c in cells))
+        lines.append(f"{'unit-misread rate':<26}" + "".join(
+            f"{_pct(d[s]['unit_misread_rate']):>14}" for s in systems))
+        lines.append(f"{'target-selection accuracy':<26}" + "".join(
+            f"{_pct(d[s]['target_selection_accuracy']):>14}" for s in systems))
+    # cold vs prompt-backed blind split
+    if d.get("by_blind_strength"):
+        lines.append("")
+        lines.append("Blind split by hint strength (usable rate / n):")
+        for strength, subs in d["by_blind_strength"].items():
+            cells = []
+            for s in systems:
+                sub = subs.get(s)
+                cells.append(f"{_pct(sub['usable_rate'])}/{sub['n']}")
+            lines.append(f"  {strength:<26}" + "".join(f"{c:>14}" for c in cells))
     lines.append("")
     lines.append("Parameter recovery (mean relative error):")
     all_keys = set()

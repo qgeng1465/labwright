@@ -1,13 +1,15 @@
 """Render the paper's blind-set per-goal figure (Fig 2).
 
-Each row is one of the 12 blind goals (no target stated in the goal); each
+Each row is one of the 15 blind goals (no target stated in the goal); each
 column is a system/model family: bare-LLM and Labwright on flash and pro. The
 cell colour encodes the recovery error (relative error of the reported target
 parameter vs the gold value, log-scaled and clamped at 10×; the two seeding
-goals are scored on cell-count recovery). A white cell with "√" means the
-reported value lands within 5% of the physical target; colour deepens with the
-miss; a gray cell with "·" means the system reported nothing recoverable at all
-(unverifiable — scored hallucination 1.0 under the paper's convention).
+goals are scored on cell-count recovery; the multi-target goal is scored on
+its shear target, the partial-info goal on its single medium-volume target).
+A white cell with "√" means the reported value lands within 5% of the physical
+target; colour deepens with the miss; a gray cell with "·" means the system
+reported nothing recoverable at all (unverifiable — scored hallucination 1.0
+under the paper's convention).
 
 The figure carries the paper's central caveat visually: on the blind set the
 bare model is *self-consistent but wrong* (it emits a plausible default chip
@@ -88,6 +90,9 @@ GOAL_LABELS = {
     "blind-gut-epithelial-shear": "gut epithelium",
     "blind-retinal-arteriole-shear": "retinal arteriole",
     "blind-lymphatic-shear": "lymphatic",
+    "blind-kidney-ptec-unit-ambiguity": "kidney PTEC (unit)",
+    "blind-24well-medium-partial": "24-well medium",
+    "blind-bbb-shear-residence-multitarget": "BBB shear + residence",
 }
 
 #: goals whose target is hinted (as a range) in the Labwright system prompt.
@@ -95,7 +100,7 @@ GOAL_LABELS = {
 #: venular (0.3 Pa) and lymphatic (0.2 Pa) sit inside the prompt's
 #: "microvascular endothelium ≈ 0.1-1 Pa" range, so by the same
 #: range-contains-answer criterion as liver/lung/BBB they are prompt-backed —
-#: seven goals are genuinely cold.
+#: eight goals are genuinely cold (the two scenario goals state their target).
 PROMPT_BACKED = {
     "blind-liver-sinusoid", "blind-lung-alveolar", "blind-bbb-shear",
     "blind-venular-shear", "blind-lymphatic-shear",
@@ -217,7 +222,8 @@ def main(argv: list[str]) -> int:
                ncol=2, frameon=False, fontsize=10)
     # footnote in the figure's bottom margin, not inside the table
     fig.text(0.1, 0.02,
-             "† = target hinted in system prompt · the two seeding goals are scored on cell-count recovery",
+             "† = target hinted in system prompt · the two seeding goals are scored on cell-count recovery, "
+             "the 24-well goal on medium volume, the multi-target goal on its shear target",
              fontsize=10, color=MUT, ha="left", va="bottom")
 
     out = Path(__file__).resolve().parent

@@ -21,6 +21,9 @@ token.txt
 # Paper (kept local only — submission in progress, not public)
 paper/manuscript.md
 
+# Submission materials (kept local only — two .docx stay untracked)
+*.docx
+
 # Models & caches (large)
 models/
 *.gguf

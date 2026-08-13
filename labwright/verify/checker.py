@@ -6,6 +6,16 @@ equations on the agent's own inputs and reports every mismatch. Labwright's
 public interface refuses to display a design with unresolved errors, which is
 the practical difference between "an LLM that guesses numbers" and "an LLM
 that quotes the calculators".
+
+Verification is layered on top of the arithmetic cross-checks here:
+
+- :mod:`labwright.verify.units` — every field's canonical unit and the unit
+  aliases (dyn/cm² vs Pa, mL/min vs µL/min, ...) that cause real misreads;
+- :mod:`labwright.verify.sanity` — physiological/physical range bands;
+- :mod:`labwright.verify.safety` — chemical dose limits, biosafety hints and
+  the institution's configurable safety boundary.
+
+A design must pass every layer before it can be shown as "verified".
 """
 
 from __future__ import annotations
@@ -102,7 +112,9 @@ def check_dosing(plan: DesignPlan, issues: list[Issue]) -> None:
     """Cross-check the dose plan when present."""
     if plan.dosing is None:
         return
-    # DMSO fraction must match stock/working concentrations
+    # DMSO fraction must match stock/working concentrations. The solvent-toxicity
+    # warning lives in the safety layer (:mod:`labwright.verify.safety`) so the
+    # threshold is the institution's configurable safety boundary, not a literal.
     expected_dmso = calc_dosing.dmso_fraction(plan.dosing.stock_mM, plan.dosing.working_mM)
     if not _close(expected_dmso, plan.dosing.dmso_fraction_vv):
         issues.append(
@@ -112,16 +124,6 @@ def check_dosing(plan: DesignPlan, issues: list[Issue]) -> None:
                 message="DMSO fraction does not equal working_mM / stock_mM",
                 expected=expected_dmso,
                 found=plan.dosing.dmso_fraction_vv,
-            )
-        )
-    # solvent-toxicity warning
-    if plan.dosing.dmso_fraction_vv > 0.005:
-        issues.append(
-            Issue(
-                level="warning",
-                field="dosing.dmso_fraction_vv",
-                message=f"DMSO {plan.dosing.dmso_fraction_vv*100:.2f}% v/v exceeds the usual "
-                "0.1-0.5% safe window — consider a more concentrated stock or lower dose",
             )
         )
 
@@ -273,13 +275,23 @@ def _power_from_n(effect_size: float, std_dev: float, n: int, alpha: float) -> f
 
 
 def verify_design(plan: DesignPlan) -> list[Issue]:
-    """Run every cross-check on a design plan. Errors must be resolved before use."""
+    """Run every cross-check on a design plan. Errors must be resolved before use.
+
+    The layers run in order: arithmetic cross-checks, physiological range
+    checks (:mod:`~labwright.verify.sanity`) and, when a safety profile is in
+    force, chemical-dose / biosafety checks (:mod:`~labwright.verify.safety`).
+    """
     issues: list[Issue] = []
     check_flow(plan, issues)
     check_seeding(plan, issues)
     check_culture(plan, issues)
     check_dosing(plan, issues)
     check_stats(plan, issues)
+    from labwright.verify.sanity import check_sanity
+    from labwright.verify.safety import check_safety
+
+    check_sanity(plan, issues)
+    check_safety(plan, issues)
     return issues
 
 
