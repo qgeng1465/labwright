@@ -411,9 +411,11 @@ def verify_design(plan: DesignPlan) -> list[Issue]:
     check_stats(plan, issues)
     from labwright.verify.sanity import check_sanity
     from labwright.verify.safety import check_safety
+    from labwright.verify.prose import check_prose_numbers
 
     check_sanity(plan, issues)
     check_safety(plan, issues)
+    check_prose_numbers(plan, issues)
     return issues
 
 

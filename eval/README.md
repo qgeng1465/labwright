@@ -159,7 +159,12 @@ verifier add to the bare model.
     this is **0 by construction**. That is the point: it is an architectural
     guarantee, not a measured win — the metric exists to *make* the guarantee
     checkable. The only way it is non-zero is a `plan: false` run (the agent
-    produced no design), scored 1.0.
+    produced no design), scored 1.0. The guarantee is also **attack-tested**:
+    `tests/test_gate_security.py` proves every other path a hallucinated number
+    could take is closed — a derived field smuggled into `submit_design` is
+    rejected (not silently dropped), a tampered plan field is caught by the
+    verifier, and a number asserted in the design's own prose that contradicts
+    the calculators is flagged by the prose-number gate.
   - bare-LLM: a number that does not follow from the model's own geometry/flow
     is a hallucination. A bare answer that reports geometry+flow but **no
     derived flow numbers** is *unverifiable* and scored 1.0 — the same
@@ -196,7 +201,10 @@ New in the 15-entry blind run, every record also carries:
 - **"0.000 hallucination"** means *no number entered a design unless a
   calculator produced it and the verifier re-proved it*. It does **not** mean
   "every design is physiologically correct". The gate cannot tell the model
-  which target to aim at.
+  which target to aim at. It also does not rest on trust: since the 15-spheroid
+  run, a prose-number gate cross-checks numbers the model writes in `rationale`
+  / `caveats` against the plan's own values, so an asserted shear that the
+  calculators do not reproduce is flagged, not silently carried in a sentence.
 - **Recovery ≈ 0 on the 24-reading set** is *by construction*: every goal
   states the answer, and the self-consistent anchors are computed from the same
   equations Labwright uses. The real signal there is number-extraction and

@@ -5,7 +5,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
 [![CI](https://github.com/qgeng1465/labwright/actions/workflows/tests.yml/badge.svg)](https://github.com/qgeng1465/labwright/actions)
-[![Tests](https://img.shields.io/badge/tests-264%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-280%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
 Frontier LLMs hallucinate ~100 % of the derived numbers in a wet-lab design.
@@ -151,6 +151,22 @@ it must decompose the goal into a plan before acting; and when a verification
 fails it may **only fix the raw inputs it proposed — never hand-write a derived
 number** to silence a check. Every tool's description carries a worked example
 and its common mistakes.
+
+**The gate is attack-tested** — the benchmark's `hallucination_rate == 0.000`
+is not "0 because we said so"; every alternative path a hallucinated number
+could take into a design is closed and proven closed by an adversarial test
+suite ([`tests/test_gate_security.py`](tests/test_gate_security.py)):
+
+| attack | defense | test |
+|---|---|---|
+| answer the goal in prose ("shear is 0.25 Pa") | prose answers refused; only `submit_design` is accepted | `test_prose_only_answer_is_refused` |
+| smuggle `shear_pa` / `derived{…}` / `culture.seed_per_well` into `submit_design` | `submit_design` rejects every derived field name with a validation error — never silently drops it | `test_submit_rejects_*`, `test_agent_recovers_…` |
+| hand-edit / inject a derived field into a finished plan | the verifier re-runs the calculators and flags the mismatch | `test_tampered_*` |
+| assert a number in the design's own prose (`rationale`, `caveats`) that contradicts the calculators | a prose-number gate ([`labwright/verify/prose.py`](labwright/verify/prose.py)) extracts every number-with-unit, converts it to the field's unit (so "0.5 dyn/cm²" is judged as 0.05 Pa), and warns when it matches no value the design actually carries | `test_prose_*` |
+
+Prose assertions are warnings, never errors, so an honest design is never
+blocked; threshold phrases ("above 400 µm", "up to 24 h") are domain knowledge,
+not design claims, and are not judged.
 
 ## Demo
 

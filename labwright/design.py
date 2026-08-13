@@ -33,6 +33,28 @@ from labwright.schema.design import (
 )
 from labwright.verify.checker import format_issues, verify_design
 
+#: Field names the calculators own. ``submit_design`` refuses any of these from
+#: the model — a derived number is computed, never accepted. Kept as a plain set
+#: so a smuggled field is rejected with a clear message instead of being
+#: silently overwritten (the old pydantic default was to drop it).
+_DERIVED_FIELD_NAMES = {
+    # flow
+    "shear_pa", "reynolds", "pressure_drop_pa", "residence_time_s",
+    "channel_volume_ul", "mean_velocity_mms",
+    # cells
+    "seed_count",
+    # dosing
+    "dmso_fraction_vv",
+    # stats
+    "n_per_group",
+    # culture
+    "seed_per_well", "total_seed_count", "medium_volume_per_well_ml",
+    "total_medium_ml", "expected_confluence_pct",
+    # spheroid
+    "spheroid_volume_ul", "expected_diameter_um", "cells_total",
+    "medium_volume_per_spheroid_ul", "expected_cells_after_growth",
+}
+
 
 # ---------------------------------------------------------------------------
 # Raw input the LLM is allowed to propose
@@ -267,6 +289,32 @@ def build_design(inp: DesignInput) -> DesignPlan:
     return plan
 
 
+def _reject_derived_fields(input_dict: dict[str, Any]) -> None:
+    """Refuse any derived field the model tried to write.
+
+    ``submit_design`` is the agent's only gate into a verified design. If the
+    model smuggles a derived number — a top-level flow metric, or a derived key
+    inside a raw block (``culture.seed_per_well``, ``spheroid.expected_diameter_um``,
+    ...) — reject the submission explicitly rather than silently overwriting it.
+    The model sees a ``validation_error`` tool result and resubmits raw-only, and
+    the rejection is a testable property of the gate.
+    """
+    found: list[str] = []
+    for key, value in input_dict.items():
+        if key == "derived" or key in _DERIVED_FIELD_NAMES:
+            found.append(key)
+        elif isinstance(value, dict):
+            for nested in value:
+                if nested in _DERIVED_FIELD_NAMES:
+                    found.append(f"{key}.{nested}")
+    if found:
+        raise ValueError(
+            "derived field(s) are computed by Labwright, not accepted from the model: "
+            + ", ".join(sorted(set(found)))
+            + ". Remove them and submit raw inputs only."
+        )
+
+
 def submit_design(input_dict: dict[str, Any]) -> dict[str, Any]:
     """Validate raw input, derive everything, verify, and report.
 
@@ -274,6 +322,7 @@ def submit_design(input_dict: dict[str, Any]) -> dict[str, Any]:
     design plus the verifier's report, so a design with unresolved errors is
     visible to the agent and can be corrected in a follow-up turn.
     """
+    _reject_derived_fields(input_dict)
     inp = DesignInput(**input_dict)
     plan = build_design(inp)
     issues = verify_design(plan)
