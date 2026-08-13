@@ -21,7 +21,7 @@ from typing import Any, Callable
 
 from pydantic import BaseModel, Field
 
-from labwright.calc import barrier, cell, culture, dosing, microfluidics as mf, o2, spheroid, stats
+from labwright.calc import barrier, cell, culture, dosing, microfluidics as mf, o2, pk, spheroid, stats
 from labwright.published import verify_published_protocol
 
 # ---------------------------------------------------------------------------
@@ -254,6 +254,28 @@ _TOOL_NOTES: dict[str, tuple[str, str]] = {
         "effective_permeability(1e-13, 20) -> 5e-7 cm/s",
         "diffusivity in m²/s, thickness in µm; this is the purely-diffusive reference — a "
         "monolayer Papp far above its passive-membrane P means active/paracellular transport",
+    ),
+    "extraction_ratio": (
+        "extraction_ratio(10, 7) -> 0.3",
+        "E = 1 − C_out/C_in, both concentrations in the SAME units (µM); a negative E means the "
+        "outlet exceeds the inlet — active secretion or a measurement error, not a clamp",
+    ),
+    "clearance_uLmin": (
+        "clearance_uLmin(10, 7, 2) -> 0.6 µL/min",
+        "Cl = E·Q; flow in µL/min gives clearance in µL/min — a mL/min flow is 1000× too large",
+    ),
+    "half_life_h": (
+        "half_life_h(200, 0.6) -> 3.85 h",
+        "t½ = ln2·V/Cl; V in µL, Cl in µL/min, result in hours (the min→h ÷60 is automatic)",
+    ),
+    "accumulation_ratio": (
+        "accumulation_ratio(3.85, 24) -> 1.06",
+        "R = 1/(1 − e^(−ln2·τ/t½)); R ≥ 1 — R≈1 means no accumulation (interval ≫ half-life), "
+        "R grows as τ drops below t½",
+    ),
+    "mass_cleared_ug_h": (
+        "mass_cleared_ug_h(0.6, 10, 464) -> 1.67 µg/h",
+        "M = Cl·C_in·MW·6e-5; C_in in µM (not mM — 1000× error), MW in g/mol, result in µg/h",
     ),
 }
 
@@ -546,6 +568,33 @@ class ClearanceParams(BaseModel):
 class EffectivePermeabilityParams(BaseModel):
     diffusivity_m2s: float = Field(gt=0, description="Solute diffusivity in the membrane, m²/s (small molecules in water ≈ 1e-9; in PDMS ≈ 1e-12-1e-10)")
     thickness_um: float = Field(gt=0, description="Membrane thickness, µm")
+
+
+class ExtractionRatioParams(BaseModel):
+    inlet_concentration_uM: float = Field(gt=0, description="Drug concentration in the perfusate entering the chip, µM")
+    outlet_concentration_uM: float = Field(ge=0, description="Drug concentration leaving the chip, µM")
+
+
+class PkClearanceParams(BaseModel):
+    inlet_concentration_uM: float = Field(gt=0, description="Inlet drug concentration, µM")
+    outlet_concentration_uM: float = Field(ge=0, description="Outlet drug concentration, µM")
+    flow_rate_uLmin: float = Field(gt=0, description="Perfusion flow rate, µL/min")
+
+
+class HalfLifeParams(BaseModel):
+    system_volume_uL: float = Field(gt=0, description="Recirculating medium volume (reservoir + chip + tubing), µL")
+    clearance_uLmin: float = Field(gt=0, description="Clearance, µL/min (from clearance_uLmin)")
+
+
+class AccumulationRatioParams(BaseModel):
+    half_life_h: float = Field(gt=0, description="Elimination half-life, h")
+    dose_interval_h: float = Field(gt=0, description="Time between doses, h")
+
+
+class MassClearedParams(BaseModel):
+    clearance_uLmin: float = Field(gt=0, description="Clearance, µL/min (from clearance_uLmin)")
+    inlet_concentration_uM: float = Field(gt=0, description="Inlet drug concentration, µM")
+    molecular_weight_g_mol: float = Field(gt=0, description="Drug molecular weight, g/mol")
 
 
 # ---------------------------------------------------------------------------
@@ -1022,6 +1071,61 @@ register_tool(
     barrier.effective_permeability_cm_s,
     "barrier",
     units_out="cm/s",
+)
+
+register_tool(
+    ExtractionRatioParams,
+    "extraction_ratio",
+    "First-pass extraction ratio of a perfused chip: E = 1 − C_out/C_in, the fraction of "
+    "drug removed from the perfusate in one pass. The core ADME readout of a perfused "
+    "organ-on-chip. Call when an experiment compares drug handling across devices/conditions.",
+    pk.extraction_ratio,
+    "pk",
+    units_out="dimensionless",
+)
+
+register_tool(
+    PkClearanceParams,
+    "clearance_uLmin",
+    "Volume of perfusate fully cleared of drug per minute: Cl = E·Q. Compare across "
+    "devices or against a cell-free control to isolate cell-mediated clearance from "
+    "tubing/PDMS binding.",
+    pk.clearance_uLmin,
+    "pk",
+    units_out="µL/min",
+)
+
+register_tool(
+    HalfLifeParams,
+    "half_life_h",
+    "Elimination half-life in a recirculating system: t½ = ln2·V/Cl. Assumes a well-mixed "
+    "single compartment (reservoir + chip + tubing). Call when the study reports a "
+    "half-life or designs a repeat-dosing schedule.",
+    pk.half_life_h,
+    "pk",
+    units_out="h",
+)
+
+register_tool(
+    AccumulationRatioParams,
+    "accumulation_ratio",
+    "Steady-state accumulation factor for fixed-interval dosing: R = 1/(1 − e^(−ln2·τ/t½)). "
+    "R ≈ 1 = no accumulation (interval ≫ half-life); R grows as the interval drops toward "
+    "or below the half-life. Call to predict whether a repeat-dose protocol builds up drug.",
+    pk.accumulation_ratio,
+    "pk",
+    units_out="dimensionless",
+)
+
+register_tool(
+    MassClearedParams,
+    "mass_cleared_ug_h",
+    "Absolute mass of drug the chip clears per hour: M = Cl·C_in·MW·6e-5, µg/h. Convert "
+    "the volume-based clearance into the mass a bioanalysis lab measures (LC-MS/MS). Call "
+    "when the readout is a cleared amount, not a fraction.",
+    pk.mass_cleared_ug_h,
+    "pk",
+    units_out="µg/h",
 )
 
 

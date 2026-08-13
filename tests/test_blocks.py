@@ -27,6 +27,7 @@ EXPECTED_BLOCKS = {
     "spheroid": "spheroid",
     "dosing": "dosing",
     "stats": "stats",
+    "pk": "pk",
 }
 
 

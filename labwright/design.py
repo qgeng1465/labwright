@@ -20,6 +20,7 @@ from labwright.blocks import ALL_DERIVED_KEYS
 from labwright.calc import cell as calc_cell
 from labwright.calc import culture as calc_culture
 from labwright.calc import microfluidics as mf
+from labwright.calc import pk as calc_pk
 from labwright.calc import spheroid as calc_spheroid
 from labwright.schema.design import (
     CellPlan,
@@ -29,6 +30,7 @@ from labwright.schema.design import (
     DesignPlan,
     DosePlan,
     FlowParams,
+    PkPlan,
     SpheroidPlan,
     StatsPlan,
 )
@@ -94,6 +96,13 @@ class DesignInput(BaseModel):
         "culture_duration_h (no spheroid_volume_ul / expected_diameter_um / "
         "cells_total / medium_volume_per_spheroid_ul / total_medium_ml / "
         "expected_cells_after_growth; they are computed)",
+    )
+    pk: dict[str, Any] | None = Field(
+        default=None,
+        description="compound, molecular_weight_g_mol, inlet_concentration_uM, "
+        "outlet_concentration_uM, flow_rate_uLmin, system_volume_uL, "
+        "dose_interval_h (no extraction_ratio / clearance_uLmin / half_life_h / "
+        "accumulation_ratio / mass_cleared_ug_h; they are computed)",
     )
     caveats: list[str] = Field(default_factory=list, description="What must be checked in the lab")
 
@@ -194,6 +203,51 @@ def derive_spheroid(raw: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def derive_pk(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived PkPlan field from the perfused-system raw inputs.
+
+    The LLM never writes a derived PK number: extraction ratio and clearance
+    always come from :mod:`labwright.calc.pk`; half-life, accumulation ratio and
+    mass cleared are added when their input fields are present (system volume,
+    dose interval, molecular weight).
+
+    Parameters
+    ----------
+    raw : dict
+        compound, molecular_weight_g_mol, inlet_concentration_uM,
+        outlet_concentration_uM, flow_rate_uLmin, and any of system_volume_uL,
+        dose_interval_h.
+
+    Returns
+    -------
+    dict
+        ``raw`` plus ``extraction_ratio``, ``clearance_uLmin`` and — when the
+        extra inputs are present — ``half_life_h``, ``accumulation_ratio``,
+        ``mass_cleared_ug_h``.
+    """
+    out = dict(raw)
+    out["extraction_ratio"] = calc_pk.extraction_ratio(
+        raw["inlet_concentration_uM"], raw["outlet_concentration_uM"]
+    )
+    out["clearance_uLmin"] = calc_pk.clearance_uLmin(
+        raw["inlet_concentration_uM"], raw["outlet_concentration_uM"], raw["flow_rate_uLmin"]
+    )
+    out["half_life_h"] = None
+    if raw.get("system_volume_uL") is not None:
+        out["half_life_h"] = calc_pk.half_life_h(raw["system_volume_uL"], out["clearance_uLmin"])
+    out["accumulation_ratio"] = None
+    if out["half_life_h"] is not None and raw.get("dose_interval_h") is not None:
+        out["accumulation_ratio"] = calc_pk.accumulation_ratio(
+            out["half_life_h"], raw["dose_interval_h"]
+        )
+    out["mass_cleared_ug_h"] = None
+    if raw.get("molecular_weight_g_mol") is not None:
+        out["mass_cleared_ug_h"] = calc_pk.mass_cleared_ug_h(
+            out["clearance_uLmin"], raw["inlet_concentration_uM"], raw["molecular_weight_g_mol"]
+        )
+    return out
+
+
 def build_design(inp: DesignInput) -> DesignPlan:
     """Derive every computed field from the agent's raw inputs.
 
@@ -266,6 +320,10 @@ def build_design(inp: DesignInput) -> DesignPlan:
     if inp.spheroid is not None:
         spheroid = SpheroidPlan(**derive_spheroid(inp.spheroid))
 
+    pk = None
+    if inp.pk is not None:
+        pk = PkPlan(**derive_pk(inp.pk))
+
     plan = DesignPlan(
         goal=inp.goal,
         rationale=inp.rationale,
@@ -277,6 +335,7 @@ def build_design(inp: DesignInput) -> DesignPlan:
         spheroid=spheroid,
         dosing=dosing,
         stats=stats,
+        pk=pk,
         caveats=inp.caveats,
     )
     return plan

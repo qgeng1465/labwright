@@ -138,6 +138,32 @@ class StatsPlan(BaseModel):
     note: str | None = Field(default=None, description="Justification / assumption notes")
 
 
+class PkPlan(BaseModel):
+    """Pharmacokinetics of a drug in a perfused organ-on-chip system.
+
+    Derived fields (``extraction_ratio``, ``clearance_uLmin``, and — when the
+    extra inputs are present — ``half_life_h``, ``accumulation_ratio``,
+    ``mass_cleared_ug_h``) are *always* computed by :mod:`labwright.calc.pk`
+    from the inlet/outlet concentrations and flow rate — never proposed by the
+    LLM — and re-checked by the verifier.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    compound: str = Field(description="Drug name")
+    molecular_weight_g_mol: float | None = Field(default=None, gt=0, description="Drug molecular weight (g/mol); needed for mass_cleared_ug_h")
+    inlet_concentration_uM: float = Field(gt=0, description="Drug concentration entering the chip (µM)")
+    outlet_concentration_uM: float = Field(ge=0, description="Drug concentration leaving the chip (µM)")
+    flow_rate_uLmin: float = Field(gt=0, description="Perfusion flow rate (µL/min)")
+    extraction_ratio: float = Field(description="DERIVED: 1 − C_out/C_in, the fraction cleared per pass")
+    clearance_uLmin: float = Field(description="DERIVED: E × Q, volume of medium fully cleared per minute")
+    system_volume_uL: float | None = Field(default=None, gt=0, description="Recirculating medium volume (µL); needed for half_life_h")
+    half_life_h: float | None = Field(default=None, gt=0, description="DERIVED: ln2·V/Cl, elimination half-life (h)")
+    dose_interval_h: float | None = Field(default=None, gt=0, description="Time between doses (h); needed for accumulation_ratio")
+    accumulation_ratio: float | None = Field(default=None, ge=1, description="DERIVED: 1/(1 − e^(−ln2·τ/t½)), steady-state accumulation factor")
+    mass_cleared_ug_h: float | None = Field(default=None, ge=0, description="DERIVED: Cl·C_in·MW·6e-5, mass the chip clears per hour (µg/h)")
+
+
 class DesignPlan(BaseModel):
     """Top-level output of the Labwright agent."""
 
@@ -151,4 +177,5 @@ class DesignPlan(BaseModel):
     spheroid: SpheroidPlan | None = Field(default=None, description="3D spheroid/organoid culture plan (only when forming spheroids)")
     dosing: DosePlan | None = None
     stats: StatsPlan | None = None
+    pk: PkPlan | None = Field(default=None, description="Perfused-system pharmacokinetics plan (only when studying drug clearance)")
     caveats: list[str] = Field(default_factory=list, description="Things to verify in the lab")

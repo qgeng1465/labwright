@@ -24,13 +24,14 @@ On every gold-standard experiment, run the systems being compared:
 | soft-gate | bare-LLM plus a "check yourself" instruction: re-derive your own derived numbers from your own reported geometry/flow before finalising. No calculators, no verifier. |
 | self-verify | two LLM passes: the model proposes numbers from memory, then is handed back its *own reported raw inputs* and asked to recompute the derived numbers itself. The naive "use the LLM as the verifier" alternative to Labwright's deterministic verifier. |
 | Labwright | the model proposes raw inputs; derived numbers come from `labwright.calc` and pass `labwright.verify` |
+| finetuned-ext | a fixed local Qwen2.5-1.5B LoRA run through the same design path (goal → raw → derive → verify), scored identically; model-independent, so identical under flash and pro |
 
 The three LLM-memory systems (bare, soft-gate, self-verify) are scored by
 **exactly the same** rules — extraction, ±5 % consistency tolerance,
 verifiability, unverifiable=1.0. Only the prompt/stage structure differs, so any
 measured difference between them is caused by the *approach*, not by scoring.
 
-Three gold sets:
+Five gold sets:
 
 1. **`gold_experiments.json` — 24 "reading" goals.** Every goal states the
    answer (the geometry/flow/density/effect-size, or the physiological target
@@ -78,6 +79,26 @@ Three gold sets:
    goal text nor the system prompt). Every entry pins a citable source or an
    explicit self-consistent derivation; `tests/test_gold_spheroid.py`
    re-derives each entry from its goal raws with `calc/spheroid.py`.
+4. **`gold_cell_culture.json` — 14 plate-culture goals.** A fourth domain — 2D
+   plate culture (wells, seeding density, counting, viability, confluence).
+   Ten are reading (plate geometry / density stated in the goal) and four are
+   blind-`cold` (the model must recall the pinned PHH sandwich-plating density
+   or a plate-table working volume; the answers live in the `CULTURE_*` tables,
+   not in the prompt). This is the *strictest* cross-check in the benchmark:
+   every answer is re-derived from plate_format + seeding density + wells, and
+   one extra field the goal did not ask for makes the whole entry unverifiable.
+   `tests/test_gold_culture.py` re-derives every entry through `calc/culture.py`.
+5. **`gold_pk.json` — 14 perfused-system PK goals.** A fifth domain —
+   single-compartment pharmacokinetics on-chip (extraction ratio, clearance,
+   half-life, steady-state accumulation, mass cleared). Twelve are
+   reading/scenario (every input stated, or the formula's raw numbers given,
+   including two **unit traps** — mM-vs-µM `pk-mM-unit-trap` and min-vs-h
+   `pk-half-life-min-trap`) and two are blind `prompt-backed` (propranolol
+   high-extraction / antipyrine low-extraction — the classification is stated
+   in the Labwright system prompt's PK anchor, the exact target number is not).
+   Equations are pinned to Rowland & Tozer and Gibaldi & Perrier; the propranolol
+   intrinsic-clearance design target cites Baudoin et al. (doi:10.1002/jps.23796).
+   `tests/test_gold_pk.py` re-derives every entry through `calc/pk.py`.
 
 ### Prompts & models (verbatim)
 
@@ -89,6 +110,15 @@ default); Labwright's agent runs the same client at 0.2 with a 12-iteration
 tool budget. These are API models — no weight pin exists; `generated_at` in each
 result JSON records the run date. `LABWRIGHT_MODEL` / `LABWRIGHT_BASE_URL`
 override, but the committed numbers are exactly these two models.
+
+A cross-provider sweep over the same five sets runs against the **Kimi Code**
+endpoint (`https://api.kimi.com/coding/v1`), models `kimi-for-coding` and `k3`
+(`results/eval_*_kimicode.json` / `results/eval_*_k3.json`), at temperature
+**0.6** — the only value that endpoint accepts; `LABWRIGHT_TEMPERATURE`
+overrides the 0.2 DeepSeek default. The finetuned-ext rows come from
+`eval/run_finetuned_benchmark.py` (a fixed local Qwen2.5-1.5B LoRA, adapter at
+`results/extractor/lora`) and are grafted into both model files of their set by
+`eval/merge_finetuned.py` — model-independent by construction.
 
 The three LLM-memory prompts (`eval/benchmark.py`; each is joined with the
 per-goal key list `_prompt_keys_for(gold)` and the goal text):
@@ -258,11 +288,12 @@ New in the 15-entry blind run, every record also carries:
 
 ## Results (honest)
 
-All systems, all three sets, two models (`flash`, `pro`). Self-consistent = zero
-verifier errors; usable = self-consistent *and* recovers every gold target
-within ±5 %. The memory systems (bare, soft-gate, self-verify) are scored by
-identical extraction/tolerance/unverifiable=1.0 rules — only the prompt/stage
-structure differs.
+All systems, all five sets, two models (`flash`, `pro`) plus the
+model-independent `finetuned-ext`. Self-consistent = zero verifier errors;
+usable = self-consistent *and* recovers every gold target within ±5 %. The
+memory systems (bare, soft-gate, self-verify) are scored by identical
+extraction/tolerance/unverifiable=1.0 rules — only the prompt/stage structure
+differs.
 
 | model | set | system | self-consistent | usable | hallucination |
 |---|---|---|---|---|---|
@@ -270,26 +301,52 @@ structure differs.
 | `flash` | 24-reading | soft-gate | 12 % | 12 % | 0.875 |
 | `flash` | 24-reading | self-verify | 0 % | 0 % | 0.792 |
 | `flash` | 24-reading | **Labwright** | **88 %** | **88 %** | **0.125** |
+| `flash` | 24-reading | finetuned-ext (in-dist) | 92 % | 79 % | 0.083 |
 | `pro` | 24-reading | bare-LLM | 12 % | 12 % | 0.875 |
 | `pro` | 24-reading | soft-gate | 8 % | 8 % | 0.917 |
 | `pro` | 24-reading | self-verify | 0 % | 0 % | 0.750 |
 | `pro` | 24-reading | **Labwright** | **100 %** | **100 %** | **0.000** |
+| `pro` | 24-reading | finetuned-ext (in-dist) | 92 % | 79 % | 0.083 |
 | `flash` | 15-blind | bare-LLM | 7 % | 0 % | 0.933 |
 | `flash` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
 | `flash` | 15-blind | self-verify | 0 % | 0 % | 0.611 |
 | `flash` | 15-blind | **Labwright** | **100 %** | **40 %** | **0.000** |
+| `flash` | 15-blind | finetuned-ext | 80 % | 7 % | 0.200 |
 | `pro` | 15-blind | bare-LLM | 7 % | 0 % | 0.933 |
 | `pro` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
 | `pro` | 15-blind | self-verify | 0 % | 0 % | 0.733 |
 | `pro` | 15-blind | **Labwright** | **100 %** | **47 %** | **0.000** |
+| `pro` | 15-blind | finetuned-ext | 80 % | 7 % | 0.200 |
 | `flash` | 15-3D-spheroid | bare-LLM | 20 % | 20 % | 0.800 |
 | `flash` | 15-3D-spheroid | soft-gate | 13 % | 13 % | 0.867 |
 | `flash` | 15-3D-spheroid | self-verify | 20 % | 20 % | 0.569 |
 | `flash` | 15-3D-spheroid | **Labwright** | **93 %** | **87 %** | **0.011** |
+| `flash` | 15-3D-spheroid | finetuned-ext (OOD) | 33 % | 0 % | 0.611 |
 | `pro` | 15-3D-spheroid | bare-LLM | 27 % | 27 % | 0.733 |
 | `pro` | 15-3D-spheroid | soft-gate | 27 % | 27 % | 0.733 |
 | `pro` | 15-3D-spheroid | self-verify | 40 % | 20 % | 0.400 |
 | `pro` | 15-3D-spheroid | **Labwright** | **93 %** | **87 %** | **0.067** |
+| `pro` | 15-3D-spheroid | finetuned-ext (OOD) | 33 % | 0 % | 0.611 |
+| `flash` | 14-plate-culture | bare-LLM | 0 % | 0 % | 0.893 |
+| `flash` | 14-plate-culture | soft-gate | 0 % | 0 % | 0.893 |
+| `flash` | 14-plate-culture | self-verify | 0 % | 0 % | 0.929 |
+| `flash` | 14-plate-culture | **Labwright** | **93 %** | **86 %** | **0.071** |
+| `flash` | 14-plate-culture | finetuned-ext (in-dist) | 100 % | 64 % | 0.000 |
+| `pro` | 14-plate-culture | bare-LLM | 7 % | 7 % | 0.750 |
+| `pro` | 14-plate-culture | soft-gate | 7 % | 7 % | 0.786 |
+| `pro` | 14-plate-culture | self-verify | 0 % | 0 % | 0.821 |
+| `pro` | 14-plate-culture | **Labwright** | **86 %** | **64 %** | **0.043** |
+| `pro` | 14-plate-culture | finetuned-ext (in-dist) | 100 % | 64 % | 0.000 |
+| `flash` | 14-perfused-PK | bare-LLM | 50 % | 36 % | 0.500 |
+| `flash` | 14-perfused-PK | soft-gate | 50 % | 50 % | 0.500 |
+| `flash` | 14-perfused-PK | self-verify | 79 % | 29 % | 0.214 |
+| `flash` | 14-perfused-PK | **Labwright** | **100 %** | **79 %** | **0.000** |
+| `flash` | 14-perfused-PK | finetuned-ext (OOD) | 29 % | 0 % | 0.714 |
+| `pro` | 14-perfused-PK | bare-LLM | 43 % | 36 % | 0.536 |
+| `pro` | 14-perfused-PK | soft-gate | 50 % | 36 % | 0.500 |
+| `pro` | 14-perfused-PK | self-verify | 79 % | 29 % | 0.214 |
+| `pro` | 14-perfused-PK | **Labwright** | **100 %** | **86 %** | **0.000** |
+| `pro` | 14-perfused-PK | finetuned-ext (OOD) | 29 % | 0 % | 0.714 |
 
 The memory systems never produce a usable *design* on the flow sets (24-reading,
 15-blind), and the two naive "fixes" do not help there. On the 24-reading set the
@@ -313,6 +370,29 @@ rarely reaches a usable design (20 % both models): a recompute pass that is
 itself wrong (e.g. 1000 cells of 15 µm "→" 1000 µm spheroids) is now visible as
 a contradiction rather than carried as a fact. Only Labwright's deterministic
 calculators + verifier reach usable > 30 % on any set.
+
+The **plate-culture** set is the strictest cross-check and the memory systems'
+floor: every culture answer is re-derived from plate_format + seeding density +
+wells, and one extra field the goal did not ask for voids the whole entry, so
+all three memory systems land at **0 % usable** on both models (self-verify
+`flash` hallucination **0.929** — its recompute pass overwrote correct numbers
+with confident wrong ones). Labwright holds **86 %** (`flash`) / **64 %** (`pro`).
+The **perfused-PK** set is the arithmetic step-up where the naive systems do
+best: most goals hand over the formula's raw numbers, so soft-gate reaches
+**50 % usable** and self-verify **29 %** (single-step arithmetic is exactly the
+regime where those systems occasionally succeed), while Labwright is
+self-consistent **100 %** / usable **79 %** (`flash`) / **86 %** (`pro`) with
+hallucination **0.000**, its residue being the two blind propranolol/antipyrine
+targets and one mM→µM unit-trap that the unit layer caught.
+
+The **finetuned-ext** rows separate in-distribution recall from honest
+generalization: usable **79 %** on reading (in-dist), **100 %** self-consistent
+/ **0.000** hallucination on culture (in-dist, but only **64 %** usable because
+it reads fewer blind-`cold` recall targets), and a clean OOD collapse on
+spheroid (**0 % usable**, hallucination **0.611**) and PK (**0 % usable**,
+hallucination **0.714**) — domains it never trained on, where the extractor
+proposes raw inputs the calculators cannot honour, and the gate rejects the
+design.
 
 The blind-set drop is the honest headline: when the goal does not hand over the
 target, Labwright's verified designs hit the wrong physiology. On the expanded

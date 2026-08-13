@@ -84,6 +84,18 @@
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 1.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -185,6 +197,16 @@
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -270,6 +292,18 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.333333
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -355,6 +389,18 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 2.333333
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -440,6 +486,18 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.966667
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -526,6 +584,18 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 2.2
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -605,6 +675,18 @@
         "error": null,
         "recovery": {
           "seed_count": 0.333333
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 0.893333
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -696,6 +778,18 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.99
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -775,6 +869,18 @@
         "error": null,
         "recovery": {
           "shear_pa": 0.25
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.9995
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -866,6 +972,18 @@
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 49.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -951,6 +1069,18 @@
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.814815
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -1030,6 +1160,18 @@
         "error": null,
         "recovery": {
           "shear_pa": 0.75
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.5
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -1129,6 +1271,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -1188,6 +1340,18 @@
         "target_selected": false
       },
       "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "finetuned": {
         "plan": true,
         "error": null,
         "recovery": {
@@ -1289,6 +1453,16 @@
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     }
   ],

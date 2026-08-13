@@ -34,7 +34,7 @@ class LLMClient:
         api_key: str | None = None,
         base_url: str | None = None,
         model: str | None = None,
-        temperature: float = 0.2,
+        temperature: float | None = None,
         disable_thinking: bool = True,
     ) -> None:
         self.api_key = api_key or os.environ.get("LABWRIGHT_API_KEY") or os.environ.get("DEEPSEEK_API_KEY")
@@ -44,7 +44,12 @@ class LLMClient:
             )
         self.base_url = base_url or os.environ.get("LABWRIGHT_BASE_URL") or "https://api.deepseek.com"
         self.model = model or os.environ.get("LABWRIGHT_MODEL") or "deepseek-v4-flash"
-        self.temperature = temperature
+        # Providers differ: DeepSeek accepts temperature 0.2; Kimi Code only
+        # allows 0.6 and rejects any other value with a 400. The benchmark
+        # defaults to 0.2; set LABWRIGHT_TEMPERATURE to override per provider.
+        self.temperature = temperature if temperature is not None else float(
+            os.environ.get("LABWRIGHT_TEMPERATURE", "0.2")
+        )
         # DeepSeek v4 models run hidden reasoning by default and can spend the
         # whole output budget thinking before emitting anything. For a design
         # copilot the arithmetic lives in the calculators, not the model, so we

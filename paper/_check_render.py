@@ -1,5 +1,6 @@
-"""Post-render QA for fig_blind_goals + fig_scirecipe: text-overlap census
-and rendered-pixel checks. Not a pytest module — run directly:
+"""Post-render QA for fig_blind_goals + fig_scirecipe + fig_benchmark:
+text-overlap census and rendered-pixel checks. Not a pytest module — run
+directly:
 
     .venv/bin/python paper/_check_render.py
 """
@@ -84,6 +85,16 @@ def main() -> int:
     fsc = importlib.import_module("fig_scirecipe")
     fsc.main(["results/eval_scirecipe_audit.json"])
     bad += _overlaps(_captured["figs"][-1], "fig_scirecipe")
+
+    fbm = importlib.import_module("fig_benchmark")
+    fbm.main([
+        "results/eval_flash.json", "results/eval_pro.json",
+        "results/eval_blind_flash.json", "results/eval_blind_pro.json",
+        "results/eval_spheroid_flash.json", "results/eval_spheroid_pro.json",
+        "results/eval_culture_flash.json", "results/eval_culture_pro.json",
+        "results/eval_pk_flash.json", "results/eval_pk_pro.json",
+    ])
+    bad += _overlaps(_captured["figs"][-1], "fig_benchmark")
 
     print(f"\nTOTAL overlaps: {bad}")
     return 1 if bad else 0

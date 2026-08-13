@@ -1,0 +1,136 @@
+[
+  {
+    "id": "pk-extraction-ratio",
+    "goal": "Measure the first-pass extraction of a perfused liver-on-chip. The chip is dosed with diclofenac at an inlet concentration of 10 uM and the outlet measures 7 uM. What is the extraction ratio (E = 1 - C_out/C_in)?",
+    "expected": {
+      "extraction_ratio": 0.3
+    },
+    "source": "self-consistent (formula): E = 1 - C_out/C_in = 1 - 7/10 = 0.3. Rowland & Tozer, Clinical Pharmacokinetics and Pharmacodynamics, 4th ed., ch. 3 (extraction ratio).",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "pk-clearance",
+    "goal": "A perfused kidney-on-chip removes a fluorescent marker: inlet 10 uM, outlet 7 uM, perfusion flow 2 uL/min. Compute the clearance in uL/min (Cl = E x Q, E = 1 - C_out/C_in).",
+    "expected": {
+      "clearance_uLmin": 0.6
+    },
+    "source": "self-consistent (formula): Cl = E x Q = (1 - 7/10) x 2 = 0.6 uL/min. Rowland & Tozer, Clinical Pharmacokinetics, ch. 3 (clearance = Q x E).",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "pk-half-life",
+    "goal": "A recirculating liver-on-chip has a total system volume (reservoir + chip + tubing) of 200 uL and is dosed at an inlet of 10 uM; the outlet reads 7 uM at a perfusion flow of 2 uL/min. What is the elimination half-life in hours (t1/2 = ln2 x V / Cl, Cl = E x Q)?",
+    "expected": {
+      "half_life_h": 3.8508176697774745
+    },
+    "source": "self-consistent (formula): Cl = (1 - 7/10) x 2 = 0.6 uL/min; t1/2 = ln2 x 200 / 0.6 = 231.0 min = 3.851 h (min -> h via /60, handled by the calculator). Rowland & Tozer, single-compartment half-life.",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "pk-accumulation-ratio",
+    "goal": "A recirculating liver-on-chip has system volume 200 uL and clears the perfusate at 0.6 uL/min (inlet 10 uM, outlet 7 uM, perfusion flow 2 uL/min). A repeat-dose study doses it every 24 h. What is the steady-state accumulation ratio (R = 1/(1 - exp(-ln2 x tau / t1/2)))?",
+    "expected": {
+      "accumulation_ratio": 1.0134791547306115
+    },
+    "source": "self-consistent (formula, full derive path): t1/2 = ln2 x 200 / 0.6 = 3.8508 h, then R = 1/(1 - exp(-ln2 x 24 / 3.8508)) = 1.0135 (interval much longer than t1/2 -> no accumulation). Gibaldi & Perrier, Pharmacokinetics, 2nd ed. (accumulation factor).",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "pk-mass-cleared",
+    "goal": "A perfused chip is dosed at an inlet of 10 uM, the outlet reads 7 uM at a perfusion flow of 2 uL/min; the drug's molecular weight is 464 g/mol and the cleared amount is measured by LC-MS/MS. What mass does the chip clear per hour in ug/h (M = Cl x C_in x MW x 6e-5, Cl = E x Q)?",
+    "expected": {
+      "mass_cleared_ug_h": 0.16704
+    },
+    "source": "self-consistent (formula): Cl = (1 - 7/10) x 2 = 0.6 uL/min; M = 0.6 x 10 x 464 x 6e-5 = 0.167 ug/h. Derivation of the 6e-5 factor (uL->L, mol->ug, min->h) documented in labwright/calc/pk.py.",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "pk-complete-clearance-panel",
+    "goal": "Characterize the full clearance profile of a perfused chip: inlet 10 uM, outlet 7 uM, perfusion flow 2 uL/min, recirculating system volume 200 uL, drug MW 464 g/mol. Report the extraction ratio, clearance (uL/min), half-life (h) and mass cleared (ug/h).",
+    "expected": {
+      "extraction_ratio": 0.3,
+      "clearance_uLmin": 0.6,
+      "half_life_h": 3.8508176697774745,
+      "mass_cleared_ug_h": 0.16704
+    },
+    "source": "self-consistent (formulas): E = 1 - 7/10 = 0.3; Cl = 0.3 x 2 = 0.6 uL/min; t1/2 = ln2 x 200 / 0.6 = 3.851 h; M = 0.6 x 10 x 464 x 6e-5 = 0.167 ug/h.",
+    "scenario": "multi-target"
+  },
+  {
+    "id": "pk-mM-unit-trap",
+    "goal": "A perfused liver-on-chip is dosed with diclofenac at an inlet of 0.5 mM and the outlet measures 0.35 mM. The chip's data sheet reports concentrations in micromolar (uM). Report the inlet and outlet concentrations converted to uM.",
+    "expected": {
+      "inlet_concentration_uM": 500,
+      "outlet_concentration_uM": 350
+    },
+    "source": "self-consistent (unit conversion): 0.5 mM = 500 uM, 0.35 mM = 350 uM (mM -> uM is 1000x). Unit-ambiguity scenario exercising the mM/uM conversion trap; the ratio E is unchanged, but reporting the raw mM numbers as uM is a 1000x concentration misread.",
+    "scenario": "unit-ambiguity"
+  },
+  {
+    "id": "pk-half-life-min-trap",
+    "goal": "A recirculating chip with a system volume of 200 uL is dosed at an inlet of 10 uM; the outlet reads 7 uM at a perfusion flow of 2 uL/min. The half-life works out to 231 minutes. Report the elimination half-life in hours.",
+    "expected": {
+      "half_life_h": 3.8508176697774745
+    },
+    "source": "self-consistent (formula + unit conversion): Cl = (1 - 7/10) x 2 = 0.6 uL/min; t1/2 = ln2 x 200 / 0.6 = 231 min = 3.851 h. Unit-ambiguity scenario exercising the min/h conversion trap: reporting 231 as hours is a 60x misread.",
+    "scenario": "unit-ambiguity"
+  },
+  {
+    "id": "pk-cell-free-subtraction",
+    "goal": "Design an ADME experiment that separates cell-mediated clearance from tubing/PDMS binding. Run the same chip cell-free at the same flow and drug; the cell-free chip clears 0.05 uL/min and the full chip clears 0.45 uL/min. Report the cell-attributable clearance.",
+    "expected": {
+      "clearance_uLmin": 0.4
+    },
+    "source": "self-consistent (design calculation): cell-attributable Cl = Cl_full - Cl_cell-free = 0.45 - 0.05 = 0.40 uL/min. Standard cell-free control subtraction used in OOC ADME studies to isolate biological clearance from device binding (e.g. rat liver biochip wall-adsorption modeling, J Pharm Sci 2014, doi:10.1002/jps.23796).",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "pk-repeat-dose-24h",
+    "goal": "A repeat-dose study doses a chip with a compound whose half-life is 12 h, every 24 h. Report the steady-state accumulation ratio.",
+    "expected": {
+      "accumulation_ratio": 1.3333333333333333
+    },
+    "source": "self-consistent (formula): R = 1/(1 - exp(-ln2 x 24 / 12)) = 1/(1 - 0.25) = 1.33 (interval = 2 x t1/2). Gibaldi & Perrier (accumulation factor).",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "pk-high-extraction-clearance",
+    "goal": "Propranolol is a high-extraction (flow-limited) drug; in a rat liver microfluidic biochip its intrinsic clearance is 900 uL/min per 10^6 cells. For a flow-limited design at a target extraction ratio of 0.8 perfused at 1 uL/min, report the clearance.",
+    "expected": {
+      "clearance_uLmin": 0.8
+    },
+    "source": "design target (self-consistent): Cl = E x Q = 0.8 x 1 = 0.8 uL/min. Propranolol intrinsic clearance 900 uL/min per 10^6 cells in a rat liver biochip - J Pharm Sci 2014, doi:10.1002/jps.23796. High-extraction classification (E > 0.7): Rowland & Tozer. Goal states the target E - complete-info.",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "pk-low-extraction-clearance",
+    "goal": "Antipyrine is a low-extraction (capacity-limited) drug used to probe intrinsic metabolic activity. For a design at a target extraction ratio of 0.1 perfused at 2 uL/min, report the clearance.",
+    "expected": {
+      "clearance_uLmin": 0.2
+    },
+    "source": "design target (self-consistent): Cl = E x Q = 0.1 x 2 = 0.2 uL/min. Antipyrine is the classic low-extraction marker (E much less than 0.3): Rowland & Tozer, Clinical Pharmacokinetics. Goal states the target E - complete-info.",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "blind-pk-high-extraction-propranolol",
+    "goal": "Design a perfused liver-on-chip clearance study with propranolol. The study must be flow-limited so that clearance reflects perfusion rather than the enzyme's intrinsic capacity. Set the target extraction ratio in the high-extraction regime and report it with the clearance at a 1 uL/min perfusion.",
+    "expected": {
+      "extraction_ratio": 0.8,
+      "clearance_uLmin": 0.8
+    },
+    "blind_strength": "prompt-backed",
+    "source": "Blind design target: propranolol is the classic high-extraction (flow-limited) drug - Rowland & Tozer classify hepatic extraction E > 0.7 as high; 0.8 is a mid-high target within that class. Goal names the drug but not the target E; the Labwright system prompt's PK anchor states the high/low extraction classification, so prompt-backed.",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "blind-pk-low-extraction-antipyrine",
+    "goal": "Design a perfused liver-on-chip metabolism study with antipyrine, which is cleared slowly and used to measure intrinsic metabolic capacity. Set the target extraction ratio in the low-extraction regime and report it with the clearance at a 2 uL/min perfusion.",
+    "expected": {
+      "extraction_ratio": 0.1,
+      "clearance_uLmin": 0.2
+    },
+    "blind_strength": "prompt-backed",
+    "source": "Blind design target: antipyrine is the classic low-extraction (capacity-limited) drug - Rowland & Tozer classify hepatic extraction E < 0.3 as low; 0.1 is a low target within that class. Goal names the drug but not the target E; the Labwright system prompt's PK anchor states the classification, so prompt-backed.",
+    "scenario": "complete-info"
+  }
+]

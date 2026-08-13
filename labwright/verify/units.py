@@ -55,6 +55,9 @@ UNIT_ALIASES: list[tuple[str, str, str, float]] = [
     ("um read as mm", "um", "mm", 1000.0),
     ("mm read as um", "mm", "um", 0.001),
     ("ng/mL read as ug/mL", "ng/mL", "ug/mL", 1000.0),
+    ("mM read as uM", "mM", "uM", 0.001),
+    ("uM read as mM", "uM", "mM", 1000.0),
+    ("min read as h", "min", "h", 60.0),
 ]
 
 

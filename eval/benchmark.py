@@ -63,6 +63,14 @@ _SPHEROID_DERIVED_KEYS = list(BLOCKS["spheroid"].derived_keys)
 #: cross-checkable.
 _SPHEROID_CONSISTENCY_KEYS = list(BLOCKS["spheroid"].consistency_keys)
 
+#: Perfused-system pharmacokinetics raw inputs and derived fields (PK domain).
+_PK_RAW_KEYS = list(BLOCKS["pk"].raw_keys)
+_PK_DERIVED_KEYS = list(BLOCKS["pk"].derived_keys)
+#: The minimal raw set a bare model must report for its PK numbers to be
+#: cross-checkable: inlet/outlet concentrations and the flow are enough to
+#: re-derive extraction ratio and clearance.
+_PK_CONSISTENCY_KEYS = list(BLOCKS["pk"].consistency_keys)
+
 
 @dataclass
 class GoldExperiment:
@@ -218,6 +226,26 @@ def parameter_recovery(gold: GoldExperiment, plan: DesignPlan) -> dict[str, floa
         for key, value in spheroid_map.items():
             if key in gold.expected and value is not None:
                 errs[key] = relative_error(value, gold.expected[key])
+    # PK domain: expected keys map onto PkPlan fields. ``flow_rate_uLmin`` is
+    # resolved from the PK plan's own field (checked after the flow block so a
+    # PK gold is scored against the circuit flow actually used in the PK math).
+    if plan.pk is not None:
+        pk_map = {
+            "extraction_ratio": plan.pk.extraction_ratio,
+            "clearance_uLmin": plan.pk.clearance_uLmin,
+            "half_life_h": plan.pk.half_life_h,
+            "accumulation_ratio": plan.pk.accumulation_ratio,
+            "mass_cleared_ug_h": plan.pk.mass_cleared_ug_h,
+            "inlet_concentration_uM": plan.pk.inlet_concentration_uM,
+            "outlet_concentration_uM": plan.pk.outlet_concentration_uM,
+            "flow_rate_uLmin": plan.pk.flow_rate_uLmin,
+            "system_volume_uL": plan.pk.system_volume_uL,
+            "dose_interval_h": plan.pk.dose_interval_h,
+            "molecular_weight_g_mol": plan.pk.molecular_weight_g_mol,
+        }
+        for key, value in pk_map.items():
+            if key in gold.expected and value is not None:
+                errs[key] = relative_error(value, gold.expected[key])
     return errs
 
 
@@ -268,6 +296,23 @@ def _design_claimed(plan: DesignPlan, gold: GoldExperiment) -> dict[str, float |
         for key in gold.expected:
             if key in smap and smap[key] is not None:
                 out[key] = smap[key]
+    if plan.pk is not None:
+        pk_map = {
+            "extraction_ratio": plan.pk.extraction_ratio,
+            "clearance_uLmin": plan.pk.clearance_uLmin,
+            "half_life_h": plan.pk.half_life_h,
+            "accumulation_ratio": plan.pk.accumulation_ratio,
+            "mass_cleared_ug_h": plan.pk.mass_cleared_ug_h,
+            "inlet_concentration_uM": plan.pk.inlet_concentration_uM,
+            "outlet_concentration_uM": plan.pk.outlet_concentration_uM,
+            "flow_rate_uLmin": plan.pk.flow_rate_uLmin,
+            "system_volume_uL": plan.pk.system_volume_uL,
+            "dose_interval_h": plan.pk.dose_interval_h,
+            "molecular_weight_g_mol": plan.pk.molecular_weight_g_mol,
+        }
+        for key in gold.expected:
+            if key in pk_map and pk_map[key] is not None:
+                out[key] = pk_map[key]
     return out
 
 
@@ -285,6 +330,8 @@ _DERIVED_FIELDS = [
     "spheroid.spheroid_volume_ul", "spheroid.expected_diameter_um",
     "spheroid.cells_total", "spheroid.medium_volume_per_spheroid_ul",
     "spheroid.total_medium_ml", "spheroid.expected_cells_after_growth",
+    "pk.extraction_ratio", "pk.clearance_uLmin", "pk.half_life_h",
+    "pk.accumulation_ratio", "pk.mass_cleared_ug_h",
 ]
 
 
@@ -322,6 +369,10 @@ def hallucination_rate(plan: DesignPlan) -> float:
                   "spheroid.cells_total", "spheroid.medium_volume_per_spheroid_ul",
                   "spheroid.total_medium_ml", "spheroid.expected_cells_after_growth"):
             present.discard(f)
+    if plan.pk is None:
+        for f in ("pk.extraction_ratio", "pk.clearance_uLmin", "pk.half_life_h",
+                  "pk.accumulation_ratio", "pk.mass_cleared_ug_h"):
+            present.discard(f)
     return len(errored & present) / max(len(present), 1)
 
 
@@ -346,18 +397,33 @@ def _is_spheroid_gold(gold: GoldExperiment) -> bool:
     return bool(set(gold.expected) & (set(_SPHEROID_DERIVED_KEYS) | set(_SPHEROID_CONSISTENCY_KEYS)))
 
 
+def _is_pk_gold(gold: GoldExperiment) -> bool:
+    """True when the gold's expected keys are PK numbers.
+
+    Includes the raw design targets (``inlet_concentration_uM``,
+    ``outlet_concentration_uM``, ``flow_rate_uLmin``) because for a perfused
+    clearance study the flow/concentration decision is itself a target the
+    model must get right, and it is only checkable when the model also reports
+    the raws that produce the derived clearance numbers.
+    """
+    return bool(set(gold.expected) & (set(_PK_DERIVED_KEYS) | set(_PK_CONSISTENCY_KEYS)))
+
+
 def _prompt_keys_for(gold: GoldExperiment) -> list[str]:
     """Key set a bare model must report, chosen per gold domain.
 
     Flow goals need geometry+flow raws (``_CONSISTENCY_KEYS``); plate-culture
     goals need plate_format + seeding density + wells; spheroid goals need the
-    vessel format + count + cells-per-spheroid + cell diameter. Everything else
-    is the goal's own targets.
+    vessel format + count + cells-per-spheroid + cell diameter; PK goals need
+    inlet/outlet concentration + flow. Everything else is the goal's own
+    targets.
     """
     if _is_culture_gold(gold):
         return sorted(set(gold.expected) | set(_CULTURE_CONSISTENCY_KEYS))
     if _is_spheroid_gold(gold):
         return sorted(set(gold.expected) | set(_SPHEROID_CONSISTENCY_KEYS))
+    if _is_pk_gold(gold):
+        return sorted(set(gold.expected) | set(_PK_CONSISTENCY_KEYS))
     return sorted(set(gold.expected) | set(_CONSISTENCY_KEYS))
 
 
@@ -404,6 +470,16 @@ def soft_gate_prompt_for(gold: GoldExperiment) -> str:
             "spheroid geometry (solid-sphere packing) and standard vessel volumes, "
             "and correct any value that does not match."
         )
+    elif _is_pk_gold(gold):
+        check = (
+            "BEFORE you finalize: re-derive every derived PK number "
+            f"({', '.join(_PK_DERIVED_KEYS)}) from your own "
+            "inlet_concentration_uM/outlet_concentration_uM/flow_rate_uLmin (and "
+            "system_volume_uL / dose_interval_h / molecular_weight_g_mol when you "
+            "reported them) using E = 1 − C_out/C_in, Cl = E·Q, t½ = ln2·V/Cl, "
+            "R = 1/(1 − e^(−ln2·τ/t½)) and M = Cl·C_in·MW·6e-5, and correct any "
+            "value that does not match."
+        )
     else:
         check = (
             "BEFORE you finalize: re-derive every derived flow number "
@@ -443,6 +519,13 @@ def _self_verify_domain(gold: GoldExperiment) -> tuple[list[str], list[str], str
             _SPHEROID_CONSISTENCY_KEYS, _SPHEROID_DERIVED_KEYS,
             "standard spheroid geometry (solid-sphere packing, volume-to-diameter) "
             "and the standard ULA-plate / hanging-drop vessel volumes",
+        )
+    if _is_pk_gold(gold):
+        return (
+            _PK_CONSISTENCY_KEYS, _PK_DERIVED_KEYS,
+            "first-pass clearance (E = 1 − C_out/C_in, Cl = E·Q) plus t½ = ln2·V/Cl, "
+            "R = 1/(1 − e^(−ln2·τ/t½)) and M = Cl·C_in·MW·6e-5 when the extra "
+            "inputs are present",
         )
     return (
         _CONSISTENCY_KEYS, _DERIVED_KEYS,
@@ -627,9 +710,10 @@ def bare_checkable(extracted: dict[str, float | str | None]) -> bool:
 
     Flow-verifiable = geometry + flow *and* at least one derived flow metric.
     Culture-verifiable = plate_format + seeding density (+ wells) *and* at
-    least one derived culture number. A bare answer that only states a headline
-    number (e.g. ``seed_count``) without the raw inputs that produce it cannot
-    be cross-checked.
+    least one derived culture number. PK-verifiable = inlet + outlet + flow
+    *and* at least one derived PK number. A bare answer that only states a
+    headline number (e.g. ``seed_count``) without the raw inputs that produce
+    it cannot be cross-checked.
     """
     chip = (extracted.get("width_um"), extracted.get("height_um"), extracted.get("length_mm"))
     flow_rate = extracted.get("flow_rate_uLmin")
@@ -644,6 +728,14 @@ def bare_checkable(extracted: dict[str, float | str | None]) -> bool:
         # geometry (diameter / volume) is cross-checkable from cells × cell size
         # alone; the vessel format is only needed for the medium fields.
         return any(extracted.get(k) is not None for k in _SPHEROID_DERIVED_KEYS)
+    if (
+        extracted.get("inlet_concentration_uM") is not None
+        and extracted.get("outlet_concentration_uM") is not None
+        and flow_rate is not None
+    ):
+        # clearance is cross-checkable from inlet/outlet × flow alone; the
+        # volume / interval / MW inputs are only needed for the extra fields.
+        return any(extracted.get(k) is not None for k in _PK_DERIVED_KEYS)
     return False
 
 
@@ -716,7 +808,7 @@ def _culture_hallucination(extracted: dict[str, float | str | None]) -> float | 
             "medium_volume_per_well_ml": med,
             "total_medium_ml": med * wells,
         }
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, ArithmeticError):
         return None
     if (extracted.get("confluent_density_cells_cm2") is not None
             and extracted.get("doubling_time_h") is not None
@@ -729,7 +821,7 @@ def _culture_hallucination(extracted: dict[str, float | str | None]) -> float | 
             computed["expected_confluence_pct"] = calc_culture.cell_count_to_confluence(
                 final, extracted["confluent_density_cells_cm2"], area
             )
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, ArithmeticError):
             pass
     if not all(math.isfinite(v) for v in computed.values()):
         return None
@@ -768,13 +860,13 @@ def _spheroid_hallucination(extracted: dict[str, float | str | None]) -> float |
     try:
         computed["expected_diameter_um"] = calc_spheroid.spheroid_diameter_from_cells(per_sph, cell_d)
         computed["spheroid_volume_ul"] = calc_spheroid.spheroid_volume_from_cells(per_sph, cell_d)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, ArithmeticError):
         return None
     count = extracted.get("spheroid_count")
     if count is not None:
         try:
             computed["cells_total"] = calc_spheroid.cells_needed_for_spheroids(count, per_sph)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, ArithmeticError):
             return None
     fmt = extracted.get("spheroid_format")
     if fmt:
@@ -783,7 +875,7 @@ def _spheroid_hallucination(extracted: dict[str, float | str | None]) -> float |
             computed["medium_volume_per_spheroid_ul"] = med
             if count is not None:
                 computed["total_medium_ml"] = calc_spheroid.total_medium_volume(count, med)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, ArithmeticError):
             # Unparseable vessel (e.g. "solid_sphere", "single_96_well_plate"):
             # the vessel fields cannot be re-derived, but the geometry can be.
             pass
@@ -792,7 +884,7 @@ def _spheroid_hallucination(extracted: dict[str, float | str | None]) -> float |
     if dt is not None and dur is not None:
         try:
             computed["expected_cells_after_growth"] = calc_cell.cell_count_after_time(per_sph, dt, dur)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, ArithmeticError):
             pass
     if not all(math.isfinite(v) for v in computed.values()):
         return None
@@ -807,14 +899,75 @@ def _spheroid_hallucination(extracted: dict[str, float | str | None]) -> float |
     return wrong / len(present)
 
 
+def _pk_hallucination(extracted: dict[str, float | str | None]) -> float | None:
+    """Cross-check reported PK numbers against the model's own raws.
+
+    Extraction ratio and clearance are recomputed from the reported inlet /
+    outlet concentrations × flow. The extra fields (half-life, accumulation
+    ratio, mass cleared) are cross-checked only when the model also reported
+    the inputs that produce them (system volume, dose interval, molecular
+    weight); a value typed without its input is neither counted right nor
+    wrong (it cannot be re-derived). Returns the error fraction, or ``None``
+    when the answer is not PK-verifiable (no inlet/outlet/flow, or
+    inlet/outlet/flow but no derived PK number at all).
+    """
+    from labwright.calc import pk as calc_pk
+
+    c_in = extracted.get("inlet_concentration_uM")
+    c_out = extracted.get("outlet_concentration_uM")
+    flow = extracted.get("flow_rate_uLmin")
+    if c_in is None or c_out is None or flow is None:
+        return None
+    computed: dict[str, float] = {}
+    try:
+        computed["extraction_ratio"] = calc_pk.extraction_ratio(c_in, c_out)
+        computed["clearance_uLmin"] = calc_pk.clearance_uLmin(c_in, c_out, flow)
+    except (ValueError, TypeError, ArithmeticError):
+        return None
+    vol = extracted.get("system_volume_uL")
+    if vol is not None:
+        try:
+            computed["half_life_h"] = calc_pk.half_life_h(vol, computed["clearance_uLmin"])
+        except (ValueError, TypeError, ArithmeticError):
+            return None
+    interval = extracted.get("dose_interval_h")
+    if computed.get("half_life_h") is not None and interval is not None:
+        try:
+            computed["accumulation_ratio"] = calc_pk.accumulation_ratio(
+                computed["half_life_h"], interval
+            )
+        except (ValueError, TypeError, ArithmeticError):
+            return None
+    mw = extracted.get("molecular_weight_g_mol")
+    if mw is not None:
+        try:
+            computed["mass_cleared_ug_h"] = calc_pk.mass_cleared_ug_h(
+                computed["clearance_uLmin"], c_in, mw
+            )
+        except (ValueError, TypeError, ArithmeticError):
+            return None
+    if not all(math.isfinite(v) for v in computed.values()):
+        return None
+    claimed = {k: extracted.get(k) for k in computed}
+    present = [k for k in computed if claimed[k] is not None]
+    if not present:
+        return None  # no derived PK number reported → nothing to check
+    wrong = sum(
+        1 for k in present
+        if abs(claimed[k] - computed[k]) > BARE_CONSISTENCY_TOL * max(abs(computed[k]), 1e-12)
+    )
+    return wrong / len(present)
+
+
 def bare_hallucination(extracted: dict[str, float | str | None]) -> float:
     """Fraction of reported derived numbers inconsistent with the model's own raw inputs.
 
     Checks whichever domain the answer is verifiable in (flow, then culture,
-    then spheroid). An answer that is not verifiable in any — no geometry+flow,
-    or geometry+flow but **no derived flow numbers at all**, or no plate+density
-    and no culture numbers, or no spheroid raws and no spheroid numbers — is
-    scored 1.0. The second case matters: a design whose every number is typed
+    then spheroid, then pk). An answer that is not verifiable in any — no
+    geometry+flow, or geometry+flow but **no derived flow numbers at all**, or
+    no plate+density and no culture numbers, or no spheroid raws and no
+    spheroid numbers, or no inlet/outlet/flow and no PK numbers — is scored
+    1.0. The second case matters: a design whose every number is typed
     from memory and cannot be re-derived from the model's own inputs is exactly
     the case Labwright refuses to trust ("numbers you type are not trusted").
     This mirrors the Labwright convention where a run that never submits a plan
@@ -827,6 +980,9 @@ def bare_hallucination(extracted: dict[str, float | str | None]) -> float:
     if rate is not None:
         return rate
     rate = _spheroid_hallucination(extracted)
+    if rate is not None:
+        return rate
+    rate = _pk_hallucination(extracted)
     if rate is not None:
         return rate
     return 1.0
@@ -888,37 +1044,84 @@ def _score_reported(reported: dict[str, float | str | None], gold: GoldExperimen
     return record
 
 
-def _run_system(name: str, gold: GoldExperiment, chat: Callable, agent_factory: Callable) -> dict[str, Any]:
+def _score_design(plan: DesignPlan | None, error: str | None, gold: GoldExperiment) -> dict[str, Any]:
+    """Score a verified design path — Labwright or the fine-tuned fast path.
+
+    Shared by the agent-built Labwright pipeline and the deterministic
+    extractor fast path, so both are judged by identical recovery, tolerance
+    and verifiability rules. The only difference is *how the plan was built*,
+    which the record's ``plan``/``error`` fields make auditable.
+    """
+    lw_rec: dict[str, float] = {}
+    lw_hall = 1.0
+    claimed: dict[str, float | str | None] = {}
+    if plan is not None:
+        lw_rec = parameter_recovery(gold, plan)
+        lw_hall = hallucination_rate(plan)
+        claimed = _design_claimed(plan, gold)
+    record = {
+        "plan": plan is not None,
+        "error": error,
+        "recovery": {k: round(v, 6) for k, v in lw_rec.items()},
+        "hallucination_rate": round(lw_hall, 6),
+        # usable: a plan that verifies AND recovers every gold target.
+        "valid": (
+            plan is not None
+            and lw_hall == 0.0
+            and bool(lw_rec)
+            and all(err <= 0.05 for err in lw_rec.values())
+        ),
+    }
+    record["unit_misread"] = unit_misreads(claimed, gold)
+    record["failure"] = classify_failure(record, gold)
+    primary = _primary_key(gold)
+    record["target_selected"] = (
+        plan is not None and bool(primary) and primary in lw_rec and lw_rec[primary] <= 0.05
+    )
+    return record
+
+
+def run_finetuned(gold: GoldExperiment, extractor: Callable) -> tuple[DesignPlan | None, str | None]:
+    """Run the fine-tuned extractor fast path: goal → raw → derive → verify.
+
+    Returns ``(design, error)`` in the same contract as :func:`run_labwright`.
+    ``extractor`` carries :meth:`~labwright.extract.pipeline.Extractor.extract_plan`
+    (goal → plan, issues, error). The extractor never writes a derived number:
+    its raw crosses the same gate as the agent's ``submit_design``, so this is
+    Labwright's deterministic fast path — no agent loop, no API cost — scored by
+    the exact same usable/hallucination rules.
+
+    Fairness note: the extractor was fine-tuned on synthetic flow/culture
+    instances whose shear targets are reused from the benchmark gold sets (see
+    ``labwright/extract/synthetic.py``), so its numbers on those domains are
+    *in-distribution* and must be labelled as such at report time; on domains it
+    never trained on (spheroid, PK) it is a clean out-of-distribution test.
+    """
+    try:
+        plan, _issues, error = extractor.extract_plan(gold.goal)
+    except Exception as exc:  # noqa: BLE001 - an extractor failure is a scored outcome
+        return None, f"extractor_error: {exc}"
+    if plan is None:
+        return None, error or "no_plan"
+    return plan, None
+
+
+def _run_system(
+    name: str,
+    gold: GoldExperiment,
+    chat: Callable,
+    agent_factory: Callable,
+    extractor: Callable | None = None,
+) -> dict[str, Any]:
     """Run one named system on one gold entry and return its scored record."""
     if name == "labwright":
         lw, lw_error = run_labwright(gold.goal, agent_factory)
-        lw_rec: dict[str, float] = {}
-        lw_hall = 1.0
-        claimed: dict[str, float | str | None] = {}
-        if lw is not None:
-            lw_rec = parameter_recovery(gold, lw)
-            lw_hall = hallucination_rate(lw)
-            claimed = _design_claimed(lw, gold)
-        record = {
-            "plan": lw is not None,
-            "error": lw_error,
-            "recovery": {k: round(v, 6) for k, v in lw_rec.items()},
-            "hallucination_rate": round(lw_hall, 6),
-            # usable: a plan that verifies AND recovers every gold target.
-            "valid": (
-                lw is not None
-                and lw_hall == 0.0
-                and bool(lw_rec)
-                and all(err <= 0.05 for err in lw_rec.values())
-            ),
-        }
-        record["unit_misread"] = unit_misreads(claimed, gold)
-        record["failure"] = classify_failure(record, gold)
-        primary = _primary_key(gold)
-        record["target_selected"] = (
-            lw is not None and bool(primary) and primary in lw_rec and lw_rec[primary] <= 0.05
-        )
-        return record
+        return _score_design(lw, lw_error, gold)
+    if name == "finetuned":
+        if extractor is None:
+            raise ValueError("the 'finetuned' system requires an extractor with extract_plan()")
+        plan, error = run_finetuned(gold, extractor)
+        return _score_design(plan, error, gold)
     return _score_reported(_SYSTEM_RUNNERS[name](gold, chat, agent_factory), gold)
 
 
@@ -929,13 +1132,19 @@ def evaluate(
     progress: Callable[[str], None] | None = None,
     checkpoint: Callable[[dict[str, Any]], None] | None = None,
     systems: tuple[str, ...] = ("bare", "labwright"),
+    extractor: Callable | None = None,
 ) -> dict[str, Any]:
     """Run the requested systems on every gold experiment and aggregate metrics.
 
     ``systems`` names which systems to run (bare / soft_gate / self_verify /
-    labwright, any subset). The default keeps the historical bare-vs-Labwright
-    comparison; the competitor baselines are extra systems scored by the same
-    rules.
+    labwright / finetuned, any subset). The default keeps the historical
+    bare-vs-Labwright comparison; the competitor baselines are extra systems
+    scored by the same rules.
+
+    ``extractor`` supplies :meth:`extract_plan` for the ``finetuned`` system —
+    the fine-tuned raw-input extractor run as Labwright's deterministic fast
+    path (no API cost). Its in-distribution / out-of-distribution split across
+    gold domains is documented on :func:`run_finetuned`.
     """
     summary: dict[str, Any] = {"n_gold": len(gold), "per_entry": []}
     for name in systems:
@@ -953,7 +1162,7 @@ def evaluate(
         for name in systems:
             if progress:
                 progress(f"[{g.id}] {name} ...")
-            rec = _run_system(name, g, chat, agent_factory)
+            rec = _run_system(name, g, chat, agent_factory, extractor=extractor)
             entry[name] = rec
             summary[name]["hallucination_rate"].append(rec["hallucination_rate"])
             for key, err in rec["recovery"].items():
@@ -991,6 +1200,7 @@ __all__ = [
     "run_bare_llm",
     "run_soft_gate",
     "run_self_verify",
+    "run_finetuned",
     "bare_prompt_for",
     "soft_gate_prompt_for",
     "self_verify_prompt_for",

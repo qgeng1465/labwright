@@ -95,6 +95,26 @@ def check_sanity(plan: DesignPlan, issues: list[Issue]) -> None:
         })
     if plan.stats is not None:
         values["stats.n_per_group"] = float(plan.stats.n_per_group)
+    if plan.pk is not None:
+        p = plan.pk
+        values.update({
+            "pk.extraction_ratio": p.extraction_ratio,
+            "pk.clearance_uLmin": p.clearance_uLmin,
+            "pk.inlet_concentration_uM": p.inlet_concentration_uM,
+            "pk.outlet_concentration_uM": p.outlet_concentration_uM,
+            "pk.flow_rate_uLmin": p.flow_rate_uLmin,
+            "pk.molecular_weight_g_mol": p.molecular_weight_g_mol,
+        })
+        if p.half_life_h is not None:
+            values["pk.half_life_h"] = p.half_life_h
+        if p.accumulation_ratio is not None:
+            values["pk.accumulation_ratio"] = p.accumulation_ratio
+        if p.mass_cleared_ug_h is not None:
+            values["pk.mass_cleared_ug_h"] = p.mass_cleared_ug_h
+        if p.system_volume_uL is not None:
+            values["pk.system_volume_uL"] = p.system_volume_uL
+        if p.dose_interval_h is not None:
+            values["pk.dose_interval_h"] = p.dose_interval_h
 
     for field, value in values.items():
         if value is None:

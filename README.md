@@ -349,9 +349,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Benchmark
 
 Can an LLM write a wet-lab design without hallucinating the numbers? We measure
-it. `eval/` runs two systems — **bare LLM** (the model writes every number from
-memory) vs **Labwright** (the model proposes, calculators compute, the verifier
-re-proves) — on three gold sets:
+it. `eval/` runs five systems — **bare LLM** (the model writes every number from
+memory), two naive fixes (**soft-gate**, **self-verify**), **Labwright** (the
+model proposes, calculators compute, the verifier re-proves), and a
+**fine-tuned raw-input extractor** (a fixed local Qwen2.5-1.5B LoRA) — on five
+gold sets:
 
 1. **24 "reading" goals** (`eval/gold_experiments.json`) — every goal states
    the answer (geometry, flow, or the physiological target number). This tests
@@ -386,11 +388,35 @@ re-proves) — on three gold sets:
    so this set stresses recall and cross-domain reasoning rather than a single
    geometry. Every entry pins a citable source or a self-consistent derivation;
    no number is invented.
+4. **14 plate-culture goals** (`eval/gold_cell_culture.json`) — a fourth domain:
+   2D/plate culture (wells, seeding density, counting, viability, confluence).
+   Ten are reading (plate geometry / density stated) and four are blind-`cold`
+   (the model must recall the pinned PHH sandwich-plating density or a
+   plate-table working volume). This set exists to prove the domain transfer is
+   not an artifact of the microfluidics calculators: the plate-culture
+   calculators are a separate module, and the blind `cold` cells require
+   recall, not derivation.
+5. **14 perfused-system PK goals** (`eval/gold_pk.json`) — a fifth domain:
+   single-compartment pharmacokinetics on-chip (extraction ratio, clearance,
+   half-life, steady-state accumulation, mass cleared). Twelve are
+   reading/scenario (every input stated, or the formula's raw numbers given,
+   including two **unit traps** — mM-vs-µM and minutes-vs-hours), and two are
+   blind `prompt-backed` (propranolol high-extraction / antipyrine
+   low-extraction — the classification is stated in the system prompt, the
+   target number is not). PK equations are pinned to Rowland & Tozer and
+   Gibaldi & Perrier; one literature citation is to Baudoin et al.
+   (doi:10.1002/jps.23796).
 
-Four systems are compared, on two frontier models. The three LLM-memory
-systems (bare-LLM, soft-gate, self-verify) write numbers from memory and are
-scored by *identical* rules — only the prompt/stage structure differs.
-Labwright adds the calculators and the verifier.
+Five systems are compared, on two frontier models (plus a model-independent
+fixed local extractor). The three LLM-memory systems (bare-LLM, soft-gate,
+self-verify) write numbers from memory and are scored by *identical* rules —
+only the prompt/stage structure differs. Labwright adds the calculators and
+the verifier. The fifth, **finetuned-ext**, is a local Qwen2.5-1.5B-Instruct
+LoRA fine-tuned on synthetic flow/culture instances whose raw-input targets
+are reused from the reading gold set — so the reading and culture columns are
+*in-distribution* for it (a plug-in replacement for the API models' extraction
+step), while the spheroid and PK columns are out-of-distribution. Its bars are
+identical under flash and pro by construction.
 
 **New failure-mode metrics.** Each entry is also classified *why* it failed
 (`ok` / `silence` / `calculation_error` / `wrong_target`), whether a
@@ -400,7 +426,7 @@ blind-set cells are split by hint strength (cold vs prompt-backed). The `eval.re
 renderer prints all of it; the classification and misread logic are unit-tested
 (`tests/test_metrics.py`).
 
-![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind and 15-3D-spheroid sets (flash & pro). The memory systems (stone / ochre / sage) reach a usable design only on the handful of single-step goals the goal hands over; Labwright (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on the spheroid set.](paper/fig_benchmark.png)
+![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind, 15-3D-spheroid, 14-culture and 14-PK sets (flash & pro; finetuned-ext identical under both). The memory systems (stone / ochre / sage) reach a usable design only on the handful of single-step goals the goal hands over; Labwright (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on the spheroid, culture and PK sets; the in-distribution fine-tuned extractor (lilac) closes much of the reading-set gap but collapses out-of-distribution.](paper/fig_benchmark.png)
 
 A *usable* design is internally consistent **and** hits every target within
 ±5 %. This is an *ablation*, not an equal-resource race: Labwright's
@@ -445,26 +471,52 @@ usable).*
 | 24-reading | `flash` | soft-gate | 12 % | 12 % | 0.875 |
 | 24-reading | `flash` | self-verify | 0 % | 0 % | 0.792 |
 | 24-reading | `flash` | **Labwright** | **88 %** | **88 %** | **0.125** |
+| 24-reading | `flash` | finetuned-ext (in-dist) | 92 % | 79 % | 0.083 |
 | 24-reading | `pro` | bare-LLM | 12 % | 12 % | 0.875 |
 | 24-reading | `pro` | soft-gate | 8 % | 8 % | 0.917 |
 | 24-reading | `pro` | self-verify | 0 % | 0 % | 0.750 |
 | 24-reading | `pro` | **Labwright** | **100 %** | **100 %** | **0.000** |
+| 24-reading | `pro` | finetuned-ext (in-dist) | 92 % | 79 % | 0.083 |
 | 15-blind | `flash` | bare-LLM | 7 % | 0 % | 0.933 |
 | 15-blind | `flash` | soft-gate | 13 % | 0 % | 0.867 |
 | 15-blind | `flash` | self-verify | 0 % | 0 % | 0.611 |
 | 15-blind | `flash` | **Labwright** | **100 %** | **40 %** | **0.000** |
+| 15-blind | `flash` | finetuned-ext | 80 % | 7 % | 0.200 |
 | 15-blind | `pro` | bare-LLM | 7 % | 0 % | 0.933 |
 | 15-blind | `pro` | soft-gate | 13 % | 0 % | 0.867 |
 | 15-blind | `pro` | self-verify | 0 % | 0 % | 0.733 |
 | 15-blind | `pro` | **Labwright** | **100 %** | **47 %** | **0.000** |
+| 15-blind | `pro` | finetuned-ext | 80 % | 7 % | 0.200 |
 | 15-3D-spheroid | `flash` | bare-LLM | 20 % | 20 % | 0.800 |
 | 15-3D-spheroid | `flash` | soft-gate | 13 % | 13 % | 0.867 |
 | 15-3D-spheroid | `flash` | self-verify | 20 % | 20 % | 0.569 |
 | 15-3D-spheroid | `flash` | **Labwright** | **93 %** | **87 %** | **0.011** |
+| 15-3D-spheroid | `flash` | finetuned-ext (OOD) | 33 % | 0 % | 0.611 |
 | 15-3D-spheroid | `pro` | bare-LLM | 27 % | 27 % | 0.733 |
 | 15-3D-spheroid | `pro` | soft-gate | 27 % | 27 % | 0.733 |
 | 15-3D-spheroid | `pro` | self-verify | 40 % | 20 % | 0.400 |
 | 15-3D-spheroid | `pro` | **Labwright** | **93 %** | **87 %** | **0.067** |
+| 15-3D-spheroid | `pro` | finetuned-ext (OOD) | 33 % | 0 % | 0.611 |
+| 14-plate-culture | `flash` | bare-LLM | 0 % | 0 % | 0.893 |
+| 14-plate-culture | `flash` | soft-gate | 0 % | 0 % | 0.893 |
+| 14-plate-culture | `flash` | self-verify | 0 % | 0 % | 0.929 |
+| 14-plate-culture | `flash` | **Labwright** | **93 %** | **86 %** | **0.071** |
+| 14-plate-culture | `flash` | finetuned-ext (in-dist) | 100 % | 64 % | 0.000 |
+| 14-plate-culture | `pro` | bare-LLM | 7 % | 7 % | 0.750 |
+| 14-plate-culture | `pro` | soft-gate | 7 % | 7 % | 0.786 |
+| 14-plate-culture | `pro` | self-verify | 0 % | 0 % | 0.821 |
+| 14-plate-culture | `pro` | **Labwright** | **86 %** | **64 %** | **0.043** |
+| 14-plate-culture | `pro` | finetuned-ext (in-dist) | 100 % | 64 % | 0.000 |
+| 14-perfused-PK | `flash` | bare-LLM | 50 % | 36 % | 0.500 |
+| 14-perfused-PK | `flash` | soft-gate | 50 % | 50 % | 0.500 |
+| 14-perfused-PK | `flash` | self-verify | 79 % | 29 % | 0.214 |
+| 14-perfused-PK | `flash` | **Labwright** | **100 %** | **79 %** | **0.000** |
+| 14-perfused-PK | `flash` | finetuned-ext (OOD) | 29 % | 0 % | 0.714 |
+| 14-perfused-PK | `pro` | bare-LLM | 43 % | 36 % | 0.536 |
+| 14-perfused-PK | `pro` | soft-gate | 50 % | 36 % | 0.500 |
+| 14-perfused-PK | `pro` | self-verify | 79 % | 29 % | 0.214 |
+| 14-perfused-PK | `pro` | **Labwright** | **100 %** | **86 %** | **0.000** |
+| 14-perfused-PK | `pro` | finetuned-ext (OOD) | 29 % | 0 % | 0.714 |
 
 *All memory-system rows come from a single re-run at temperature 0.2 after a
 prompt regression that dropped the goal text was found and fixed (see the
@@ -570,6 +622,42 @@ Read the numbers honestly — and the boundary of what they mean.
   - `pro` returns silence on the one-line sphere-volume goal — no design at
     all, which scores **1.0** and is pro's whole set-level **0.067** (1.0 ÷ 15).
   Single-run point estimates; the model-pair differences are noise at n=15.
+- **The plate-culture set is where every memory system collapses to ~0 %.**
+  The three naive systems land at 0 % usable on both models (self-verify
+  `flash` hallucination **0.929** — it overwrote correct numbers with confident
+  wrong ones on almost every goal), while Labwright holds **86 %** (`flash`) /
+  **64 %** (`pro`). This is the *strictest* cross-check in the benchmark: each
+  culture answer is re-derived from plate_format + seeding density + wells, and
+  a single extra field the goal did not ask for makes the whole entry
+  unverifiable. The 4 blind-`cold` recall cells (PHH sandwich density,
+  plate-table volumes) are exactly where bare fails — the numbers live in the
+  `CULTURE_*` tables, not model memory.
+- **The perfused-PK set is the arithmetic step-up.** Labwright is
+  self-consistent **100 %** / usable **79 %** (`flash`) and **86 %** (`pro`)
+  with hallucination **0.000**. PK is a *good* news story for the naive
+  systems: because most goals hand over the formula's raw numbers, soft-gate
+  reaches **50 %** usable and self-verify **29 %** — the same single-step
+  arithmetic where those systems occasionally succeed. Labwright's remaining
+  gap is the two blind `prompt-backed` propranolol/antipyrine targets (E = 0.8
+  and 0.1 are inside the prompted classification range but the exact number is
+  not), plus one unit-trap entry where the unit layer caught the mM→µM
+  conversion before it entered the plan. The two genuine **unit traps** (mM-vs-µM
+  and min-vs-h) are recovered cleanly by Labwright on both models.
+- **The fine-tuned extractor separates in-distribution recall from honest
+  generalization.** On the reading set — in-distribution, targets reused in its
+  synthetic training — it is usable **79 %** / self-consistent **92 %**,
+  essentially closing the gap to the API models' extraction step. On the
+  plate-culture set (also in-distribution) it is **100 %** self-consistent /
+  **0.000** hallucination, beating even Labwright's consistency, though usable
+  drops to **64 %** because it reads fewer of the blind-`cold` recall targets.
+  On the spheroid set — out-of-distribution, a domain it never trained on —
+  usable collapses to **0 %** and hallucination rises to **0.611**: the
+  extractor proposes raw inputs the calculators cannot honour, and the gate
+  rejects the design. The perfused-PK set repeats the collapse (usable **0 %**,
+  hallucination **0.714**) — also a domain the extractor never saw. That OOD
+  collapse is the honest boundary of a fine-tuned extractor: strong on what it
+  saw, blind beyond it. (The extractor's bars are identical under flash and pro
+  by construction.)
 
 ## Reproducibility: prompts, models & provenance
 
@@ -588,6 +676,13 @@ model; any OpenAI-compatible model works, but the committed numbers are exactly
 these two. These are API models, so no weight pin is possible; the API snapshots
 are the models as served on the run dates in the result JSONs (`generated_at`).
 
+A cross-provider sweep over the same five sets is run against the **Kimi Code**
+endpoint (`https://api.kimi.com/coding/v1`), models `kimi-for-coding` and `k3`,
+so the same protocol can be read across provider families (temperature **0.6** —
+the only temperature that endpoint accepts; `LABWRIGHT_TEMPERATURE` overrides
+the 0.2 DeepSeek default). Rows land in `results/eval_*_kimicode.json` /
+`results/eval_*_k3.json` and are merged into the table once complete.
+
 **The three LLM-memory prompts** are the controllable variables of the ablation,
 so they are pinned verbatim (with the exact per-goal key lists) in
 [`eval/README.md`](eval/README.md#prompts--models-verbatim) — `bare_prompt_for`,
@@ -599,8 +694,10 @@ computed numbers, requires every derived value to come from the calculator
 tools, mandates `submit_design` with raw inputs only, and — critically for the
 blind set — *leaks physiological anchors* ("Hepatic sinusoidal shear ≈
 0.05-0.15 Pa; lung alveolar-capillary ≈ 0.03 Pa; microvascular endothelium ≈
-0.1-1 Pa"). The blind goals whose target falls inside one of those ranges are
-labelled `prompt-backed`; the eight that do not are `cold`.
+0.1-1 Pa"), plus the PK classification anchors (propranolol is a
+high-extraction/flow-limited probe, antipyrine a low-extraction/capacity-limited
+probe). The blind goals whose target falls inside one of those ranges are
+labelled `prompt-backed`; the others are `cold`.
 
 **Fine-tuned extractor scores** (`results/extractor/eval_report.json`,
 n = 400 eval rows + 12 blind goals — the *pre-expansion* blind set, before it

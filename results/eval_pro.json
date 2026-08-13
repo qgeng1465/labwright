@@ -66,6 +66,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -133,6 +145,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -200,6 +224,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -267,6 +303,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -340,6 +388,19 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0,
+          "pressure_drop_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -411,6 +472,19 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0,
+          "flow_rate_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -478,6 +552,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "reynolds": 1e-05
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -545,6 +631,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -612,6 +710,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -680,6 +790,16 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 1 validation error for DosePlan\nvolume_uL\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2.5, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -748,6 +868,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "n_per_group": 2.9375
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -816,6 +948,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "n_per_group": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -883,6 +1027,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.25
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -950,6 +1106,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1017,6 +1185,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1084,6 +1264,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "residence_time_s": 0.9875
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -1151,6 +1343,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "channel_volume_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1218,6 +1422,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "mean_velocity_mms": 4e-05
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1285,6 +1501,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "pressure_drop_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1350,6 +1578,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "flow_rate_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1418,6 +1658,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "n_per_group": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1486,6 +1738,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "n_per_group": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1553,6 +1817,18 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "reynolds": 1e-06
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1621,6 +1897,16 @@
         },
         "hallucination_rate": 0.0,
         "valid": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 1 validation error for DosePlan\nviability_pct\n  Extra inputs are not permitted [type=extra_forbidden, input_value=100.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     }
   ],

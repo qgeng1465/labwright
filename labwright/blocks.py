@@ -2,7 +2,8 @@
 
 A **block** is one named, optional part of a design: the derived flow metrics,
 the plate-culture plan, the 3D-spheroid plan, the channel cell plan, the dosing
-plan or the statistics plan. Each block is declared **exactly once here**, and
+plan, the statistics plan or the perfused-system PK plan. Each block is
+declared **exactly once here**, and
 everything the other layers need to know about it *declaratively* lives in that
 one entry:
 
@@ -43,6 +44,7 @@ from labwright.calc import cell as calc_cell
 from labwright.calc import culture as calc_culture
 from labwright.calc import dosing as calc_dosing
 from labwright.calc import microfluidics as mf
+from labwright.calc import pk as calc_pk
 from labwright.calc import spheroid as calc_spheroid
 from labwright.calc import stats as calc_stats
 
@@ -92,11 +94,14 @@ class Block:
 
 # ---------------------------------------------------------------------------
 # The blocks, in registration order (flow → cells → culture → spheroid →
-# dosing → stats). Shared-key precedence in the merged tables follows this
+# dosing → stats → pk). Shared-key precedence in the merged tables follows this
 # order: ``total_medium_ml`` is a derived key of both the culture and spheroid
 # blocks (each with its own verifier field, both canonical unit "mL"), and the
 # merged field map keeps the *first* mapping, i.e. culture's — matching the
-# pre-registry ``_FIELD_MAP`` exactly.
+# pre-registry ``_FIELD_MAP`` exactly. ``flow_rate_uLmin`` is a raw key of both
+# the flow and pk blocks; the flow block's top-level mapping wins, so the
+# merged field map resolves it to the flow field (canonical unit "uL/min"
+# either way).
 # ---------------------------------------------------------------------------
 
 
@@ -357,9 +362,88 @@ def _stats() -> Block:
     )
 
 
+def _pk() -> Block:
+    """Perfused-system pharmacokinetics block.
+
+    Raw inputs are the measured inlet/outlet concentrations and the perfusion
+    flow; the calculators own extraction ratio, clearance and — when the extra
+    inputs are present — half-life, accumulation ratio and mass cleared. The
+    ``flow_rate_uLmin`` here is the PK circuit's own field (declared inside the
+    ``pk`` plan), independent of the flow block's top-level field — the merged
+    field map keeps the flow block's first-wins mapping.
+    """
+    return Block(
+        name="pk",
+        plan_field="pk",
+        input_field="pk",
+        calc=calc_pk,
+        raw_keys=(
+            "inlet_concentration_uM", "outlet_concentration_uM", "flow_rate_uLmin",
+            "system_volume_uL", "dose_interval_h", "molecular_weight_g_mol",
+        ),
+        derived_keys=(
+            "extraction_ratio", "clearance_uLmin", "half_life_h",
+            "accumulation_ratio", "mass_cleared_ug_h",
+        ),
+        consistency_keys=(
+            "inlet_concentration_uM", "outlet_concentration_uM", "flow_rate_uLmin",
+        ),
+        field_map={
+            "extraction_ratio": "pk.extraction_ratio",
+            "clearance_uLmin": "pk.clearance_uLmin",
+            "half_life_h": "pk.half_life_h",
+            "accumulation_ratio": "pk.accumulation_ratio",
+            "mass_cleared_ug_h": "pk.mass_cleared_ug_h",
+            "inlet_concentration_uM": "pk.inlet_concentration_uM",
+            "outlet_concentration_uM": "pk.outlet_concentration_uM",
+            "flow_rate_uLmin": "pk.flow_rate_uLmin",
+            "system_volume_uL": "pk.system_volume_uL",
+            "dose_interval_h": "pk.dose_interval_h",
+            "molecular_weight_g_mol": "pk.molecular_weight_g_mol",
+        },
+        sanity_bands={
+            "pk.extraction_ratio": Band(0.0, 0.99, -1.0, 1.0,
+                "fraction of drug extracted in one pass (negative = net secretion)", "dimensionless"),
+            "pk.clearance_uLmin": Band(0.01, 1e3, -1e3, 1e5,
+                "volume of perfusate cleared of drug per minute", "uL/min"),
+            "pk.half_life_h": Band(0.01, 200, 1e-4, 1e4,
+                "elimination half-life in a recirculating OOC system", "h"),
+            "pk.accumulation_ratio": Band(1.0, 100, 1.0, 1e6,
+                "steady-state accumulation factor under repeated dosing", "dimensionless"),
+            "pk.mass_cleared_ug_h": Band(1e-6, 1e3, 0.0, 1e9,
+                "mass of drug the chip clears per hour", "ug/h"),
+            "pk.inlet_concentration_uM": Band(1e-3, 1e3, 1e-6, 1e6,
+                "drug concentration entering the chip", "uM"),
+            "pk.outlet_concentration_uM": Band(0.0, 1e3, 0.0, 1e6,
+                "drug concentration leaving the chip", "uM"),
+            "pk.flow_rate_uLmin": Band(0.1, 1e3, 1e-3, 1e5,
+                "perfusion flow rate in the PK circuit", "uL/min"),
+            "pk.system_volume_uL": Band(50, 1e5, 1.0, 1e7,
+                "recirculating medium volume (reservoir + chip + tubing)", "uL"),
+            "pk.dose_interval_h": Band(0.5, 168, 1e-3, 1e5,
+                "time between doses", "h"),
+            "pk.molecular_weight_g_mol": Band(100, 1e3, 10, 1e5,
+                "drug molecular weight", "g/mol"),
+        },
+        canonical_units={
+            "pk.extraction_ratio": "dimensionless",
+            "pk.clearance_uLmin": "uL/min",
+            "pk.half_life_h": "h",
+            "pk.accumulation_ratio": "dimensionless",
+            "pk.mass_cleared_ug_h": "ug/h",
+            "pk.inlet_concentration_uM": "uM",
+            "pk.outlet_concentration_uM": "uM",
+            "pk.flow_rate_uLmin": "uL/min",
+            "pk.system_volume_uL": "uL",
+            "pk.dose_interval_h": "h",
+            "pk.molecular_weight_g_mol": "g/mol",
+        },
+    )
+
+
 BLOCKS: dict[str, Block] = {
     b.name: b
-    for b in (_flow(), _cells(), _culture(), _spheroid(), _dosing(), _stats())
+    for b in (_flow(), _cells(), _culture(), _spheroid(), _dosing(), _stats(), _pk())
 }
 
 

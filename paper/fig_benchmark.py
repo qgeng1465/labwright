@@ -1,15 +1,25 @@
 """Render the paper's benchmark figure from the committed result JSONs.
 
-Three gold sets side by side — the 24-reading set (every goal states the
-target), the 15-blind set (no target stated), and the 15-3D-spheroid set (a
-third domain with fragmented 3D-culture conventions) — as 3 × 3 small
+Five gold sets side by side — the 24-reading set (every goal states the
+target), the 15-blind set (no target stated), the 15-3D-spheroid set (a
+third domain with fragmented 3D-culture conventions), the 14-plate-culture set
+and the 14-perfused-PK set — as 3 × 5 small
 multiples, one row per headline metric (self-consistent rate, usable rate,
 hallucination rate). Within each panel the two model families
-(deepseek-v4-flash, deepseek-v4-pro) are grouped; the four systems (bare-LLM,
-soft-gate, self-verify, Labwright) sit as adjacent bars. Color follows the
-*system*: one categorical hue per system — neutral stone, warm ochre, cool sage,
-and the deep academic blue for Labwright — so the texture channel (45° hatch on
-Labwright) plus the legend keep identity readable in print and for CVD.
+(deepseek-v4-flash, deepseek-v4-pro) are grouped; the five systems (bare-LLM,
+soft-gate, self-verify, Labwright, and the local fine-tuned extractor) sit as
+adjacent bars. Color follows the *system*: one categorical hue per system —
+neutral stone, warm ochre, cool sage, deep academic blue for Labwright, lilac
+for the fine-tuned extractor — so the texture channel (45° hatch on Labwright,
+crosshatch on the extractor) plus the legend keep identity readable in print
+and for CVD.
+
+The fifth bar is the fine-tuned raw-input extractor (Qwen2.5-1.5B LoRA). It is
+a *fixed local model*, so its bars are identical under flash and pro — it does
+not depend on the API model. Honesty note carried in the figure: it was trained
+on synthetic flow/culture instances whose targets are reused from the reading
+gold set, so the reading column is in-distribution for it and the spheroid
+column is out-of-distribution; the blind column is a mix.
 
 The blind set is where the honest boundary of the gate shows: self-consistency
 stays high for Labwright while the usable rate collapses, and the naive
@@ -19,11 +29,12 @@ goals; a few pure-geometry/lookup spheroid goals after the string-format
 fairness fix) — so the figure carries the paper's central caveat visually.
 
 Data source: each result file (``eval_flash.json`` / ``eval_pro.json`` /
-``eval_blind_*.json`` / ``eval_spheroid_*.json``) already contains all four
-systems after the post-fix re-run, so the figure reads straight from the
-per-entry records of one file per set × model — no competitor-file merging.
-Numbers are recomputed by ``eval.report.derive()`` from the raw per-entry
-records, never re-typed.
+``eval_blind_*.json`` / ``eval_spheroid_*.json``) already contains all five
+systems after the post-fix re-run (the fine-tuned rows are merged into both
+model files, since the extractor is model-independent), so the figure reads
+straight from the per-entry records of one file per set × model — no
+competitor-file merging. Numbers are recomputed by ``eval.report.derive()``
+from the raw per-entry records, never re-typed.
 
 Layout: the set headers live in a reserved band above the panels (not as axes
 text at y>1, which collided with the first-row titles), and each panel keeps
@@ -36,7 +47,9 @@ Usage::
     python paper/fig_benchmark.py \\
         results/eval_flash.json results/eval_pro.json \\
         results/eval_blind_flash.json results/eval_blind_pro.json \\
-        results/eval_spheroid_flash.json results/eval_spheroid_pro.json
+        results/eval_spheroid_flash.json results/eval_spheroid_pro.json \\
+        results/eval_culture_flash.json results/eval_culture_pro.json \\
+        results/eval_pk_flash.json results/eval_pk_pro.json
     # writes paper/fig_benchmark.pdf and paper/fig_benchmark.png
 """
 
@@ -75,23 +88,30 @@ METRICS = [
 #: (column title, column subtitle). The reading set hands over the answer; the
 #: blind set does not — that is the boundary the figure makes visible; the
 #: spheroid set mixes a stated-goal arithmetic with fragmented 3D-culture
-#: conventions (ULA / hanging-drop working volumes) that are domain knowledge.
+#: conventions (ULA / hanging-drop working volumes) that are domain knowledge;
+#: the culture and PK sets add two further domains with their own calculators
+#: and their own strictest-cross-check scoring.
 SETS = [
     ("24-reading set", "target stated in the goal"),
     ("15-blind set", "no target stated"),
     ("15 3D-spheroid set", "3D-culture conventions"),
+    ("14 plate-culture set", "plate conventions"),
+    ("14 perfused-PK set", "single-compartment PK"),
 ]
 #: (system key, legend label, bar color, edge/hatch color, hatch).
 #: Categorical, one hue per system: a neutral light stone for the plain baseline,
-#: a warm ochre for soft-gate, a cool sage for self-verify, and the paper's deep
-#: academic blue for Labwright. Pairwise OKLab ΔE verified ≥ 15 normal-vision
-#: and ≥ 8 under CVD simulation (bare→soft 20.4, soft→self 16.6, self→lab 16.3;
-#: CVD min 17.7). Labwright keeps the 45° hatch as an extra identity channel.
+#: a warm ochre for soft-gate, a cool sage for self-verify, the paper's deep
+#: academic blue for Labwright, and a lilac for the local fine-tuned extractor.
+#: Pairwise OKLab ΔE verified ≥ 15 normal-vision and ≥ 8 under protan simulation
+#: (bare→soft 20.3, soft→self 16.6, self→lab 15.6; finetuned→others 15.2–21.3
+#: normal, 13.4–26.8 protan). Labwright keeps the 45° hatch and finetuned the
+#: crosshatch as extra identity channels.
 SYSTEMS = [
     ("bare", "bare-LLM", "#C9C2B6", "none", None),
     ("soft_gate", "soft-gate", "#C07C2B", "#9A611F", "o"),
     ("self_verify", "self-verify", "#5F7668", "#3F5146", "+"),
     ("labwright", "Labwright", "#2E5598", "#1f3f70", "//"),
+    ("finetuned", "finetuned-ext", "#A080B0", "#6E4F8A", "x"),
 ]
 INK = "#262522"          # text primary
 MUT = "#8a8782"          # muted text (axis, sub-label)
@@ -119,20 +139,25 @@ def _load_set(path: str) -> dict:
 
 def main(argv: list[str]) -> int:
     # argv: [reading-flash, reading-pro, blind-flash, blind-pro,
-    #        spheroid-flash, spheroid-pro]
-    if len(argv) < 6:
+    #        spheroid-flash, spheroid-pro, culture-flash, culture-pro,
+    #        pk-flash, pk-pro]
+    if len(argv) < 10:
         print(__doc__)
         return 1
     sets = [
         [_load_set(argv[0]), _load_set(argv[1])],  # reading: flash, pro
         [_load_set(argv[2]), _load_set(argv[3])],  # blind: flash, pro
         [_load_set(argv[4]), _load_set(argv[5])],  # spheroid: flash, pro
+        [_load_set(argv[6]), _load_set(argv[7])],  # culture: flash, pro
+        [_load_set(argv[8]), _load_set(argv[9])],  # pk: flash, pro
     ]
 
     # Reserved top band for the set headers + legend so they never collide
-    # with the first row of panels.
+    # with the first row of panels. Five columns × 3 rows; the width keeps each
+    # panel as wide as the 3-column layout's panels (value labels are sized for
+    # that width and overlap at any narrower value).
     fig, axes = plt.subplots(
-        len(METRICS), len(SETS), figsize=(10.9, 5.1),
+        len(METRICS), len(SETS), figsize=(18.6, 5.1),
         sharey="row",
     )
     fig.patch.set_facecolor("white")
@@ -165,12 +190,11 @@ def main(argv: list[str]) -> int:
                     # One label format (percent) for every bar — including 0%
                     # bars, so "nothing happened" is countable, not a gap.
                     txt = f"{100 * v:.0f}%"
-                    if v >= 0.85:
-                        ax.text(pos + off, v - 0.015, txt, ha="center", va="top",
-                                fontsize=8.0, color=_label_color(color))
-                    elif v > 0.30:
-                        ax.text(pos + off, v - 0.015, txt, ha="center", va="top",
-                                fontsize=8.0, color=_label_color(color))
+                    if v > 0.30:
+                        # Inside the bar, sunk far enough that two tall adjacent
+                        # bars' labels never touch (5 bars/group is tight).
+                        ax.text(pos + off, v - 0.03, txt, ha="center", va="top",
+                                fontsize=7.5, color=_label_color(color))
                     else:
                         ax.text(pos + off, v + 0.015, txt, ha="center", va="bottom",
                                 fontsize=8.0, color=INK)

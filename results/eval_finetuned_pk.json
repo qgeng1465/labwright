@@ -1,0 +1,265 @@
+{
+  "n_gold": 14,
+  "per_entry": [
+    {
+      "id": "pk-extraction-ratio",
+      "gold": {
+        "id": "pk-extraction-ratio",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 8 validation errors for DesignInput\nchemical\n  Extra inputs are not permitted [type=extra_forbidden, input_value='diclofenac', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nconcentration_mM\n  Extra inputs are not permitted [type=extra_forbidden, input_value=10.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow_rate_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=28.666667, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ninlet_concentration_mM\n  Extra inputs are not permitted [type=extra_forbidden, input_value=7.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\noutlet_concentration_mM\n  Extra inputs are not permitted [type=extra_forbidden, input_value=3.5, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nplate_format\n  Extra inputs are not permitted [type=extra_forbidden, input_value='4CHx0.1mm', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nseeding_density_kgm2\n  Extra inputs are not permitted [type=extra_forbidden, input_value=10000.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nthickness_um\n  Extra inputs are not permitted [type=extra_forbidden, input_value=100.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-clearance",
+      "gold": {
+        "id": "pk-clearance",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-half-life",
+      "gold": {
+        "id": "pk-half-life",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 4 validation errors for DesignInput\nk_m_s-1\n  Extra inputs are not permitted [type=extra_forbidden, input_value=4.5, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nm_uL\n  Extra inputs are not permitted [type=extra_forbidden, input_value=200.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nQ_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nV_uL\n  Extra inputs are not permitted [type=extra_forbidden, input_value=200.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-accumulation-ratio",
+      "gold": {
+        "id": "pk-accumulation-ratio",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '200mmx10uM'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-mass-cleared",
+      "gold": {
+        "id": "pk-mass-cleared",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 1 validation error for DesignInput\nchemical\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'compound': 'drug', 'mol...ar_weight_g_mol': 464.0}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-complete-clearance-panel",
+      "gold": {
+        "id": "pk-complete-clearance-panel",
+        "blind_strength": null,
+        "scenario": "multi-target"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 3 validation errors for DesignInput\nflow.flow_rate_uLmin\n  Field required [type=missing, input_value={'density_kgm3': 1000.0, ...lar_weight_gmol': 464.0}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nflow.flow_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow.molecular_weight_gmol\n  Extra inputs are not permitted [type=extra_forbidden, input_value=464.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-mM-unit-trap",
+      "gold": {
+        "id": "pk-mM-unit-trap",
+        "blind_strength": null,
+        "scenario": "unit-ambiguity"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-half-life-min-trap",
+      "gold": {
+        "id": "pk-half-life-min-trap",
+        "blind_strength": null,
+        "scenario": "unit-ambiguity"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 3 validation errors for DesignInput\nflow.flow_rate_uLmin\n  Field required [type=missing, input_value={'density_kgm3': 1000.0, ... 'viscosity_pas': 0.001}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nflow.flow_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow.half_life_minutes\n  Extra inputs are not permitted [type=extra_forbidden, input_value=231.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-cell-free-subtraction",
+      "gold": {
+        "id": "pk-cell-free-subtraction",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-repeat-dose-24h",
+      "gold": {
+        "id": "pk-repeat-dose-24h",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-high-extraction-clearance",
+      "gold": {
+        "id": "pk-high-extraction-clearance",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-low-extraction-clearance",
+      "gold": {
+        "id": "pk-low-extraction-clearance",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 3 validation errors for DesignInput\ndrug\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Antipyrine', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow_rate_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntarget_extraction_ratio\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0.1, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-pk-high-extraction-propranolol",
+      "gold": {
+        "id": "blind-pk-high-extraction-propranolol",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '200mm x 10uM'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-pk-low-extraction-antipyrine",
+      "gold": {
+        "id": "blind-pk-low-extraction-antipyrine",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    }
+  ],
+  "finetuned": {
+    "recovery": {},
+    "hallucination_rate": 0.7142857142857143,
+    "self_consistent_rate": 0.2857142857142857,
+    "usable_design_rate": 0.0
+  },
+  "system": "finetuned",
+  "generated_at": "2026-08-13T11:37:07+00:00"
+}

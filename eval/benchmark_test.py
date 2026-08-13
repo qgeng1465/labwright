@@ -191,6 +191,71 @@ def test_evaluate_supports_competitor_systems():
     assert "labwright" not in summary
 
 
+# --- fine-tuned extractor as a design-benchmark system (the fast path) ---
+
+
+def _flow_plan_for(gold):
+    """A verified DesignPlan for the flow _GOLD, as the extractor would build it."""
+    from labwright.design import DesignInput, build_design
+    from labwright.schema.design import ChipGeometry, FlowParams
+
+    return build_design(DesignInput(
+        goal=gold.goal,
+        rationale="mock extractor",
+        chip=ChipGeometry(width_um=400, height_um=100, length_mm=20),
+        flow=FlowParams(flow_rate_uLmin=2.0, viscosity_pas=1e-3, density_kgm3=1000.0),
+    ))
+
+
+class _MockExtractor:
+    """A fake Extractor whose extract_plan returns a fixed plan / failure."""
+
+    def __init__(self, plan=None, error=None):
+        self._plan = plan
+        self._error = error
+
+    def extract_plan(self, goal):
+        if self._plan is not None:
+            return self._plan, [], None
+        return None, None, self._error or "unparseable_json"
+
+
+def test_run_finetuned_fast_path_contract():
+    """run_finetuned returns (plan, None) on a clean extraction and (None, reason)
+    on a failure — the same contract as run_labwright, so a silent extractor
+    refusal is scored as an auditable error, not an unexplained blank."""
+    from eval.benchmark import run_finetuned
+
+    good = _MockExtractor(plan=_flow_plan_for(_GOLD))
+    plan, error = run_finetuned(_GOLD, good)
+    assert plan is not None and error is None
+
+    broken = _MockExtractor(plan=None, error="unparseable_json")
+    plan, error = run_finetuned(_GOLD, broken)
+    assert plan is None and error == "unparseable_json"
+
+
+def test_evaluate_supports_finetuned_system():
+    """evaluate() scores the fine-tuned extractor with the design-path rules —
+    the same usable/hallucination convention as Labwright. A valid extraction is
+    usable (hallucination 0, target recovered); a failed extraction is scored as
+    unverifiable (hallucination 1.0, not usable)."""
+    summary = evaluate([_GOLD], agent_factory=None, chat=None,
+                       systems=("finetuned",),
+                       extractor=_MockExtractor(plan=_flow_plan_for(_GOLD)))
+    assert summary["finetuned"]["usable_design_rate"] == 1.0
+    assert summary["finetuned"]["hallucination_rate"] == 0.0
+    assert summary["per_entry"][0]["finetuned"]["valid"] is True
+
+    broken = evaluate([_GOLD], agent_factory=None, chat=None,
+                      systems=("finetuned",),
+                      extractor=_MockExtractor(plan=None, error="unparseable_json"))
+    assert broken["finetuned"]["usable_design_rate"] == 0.0
+    assert broken["finetuned"]["hallucination_rate"] == 1.0
+    assert broken["per_entry"][0]["finetuned"]["plan"] is False
+    assert broken["per_entry"][0]["finetuned"]["error"] == "unparseable_json"
+
+
 # --- plate-culture domain: bare metrics are culture-aware, not flow-only ---
 
 _CULTURE_GOLD = GoldExperiment(

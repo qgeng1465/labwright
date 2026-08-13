@@ -58,6 +58,11 @@ Common physiological anchors (verify against literature before relying on them):
 - Spheroids: one spheroid per well in a 96-well ULA plate (≈ 100 µL working volume/well);
   primary hepatocyte spheroids ≈ 1000 cells/spheroid ≈ 200 µm (20 µm cells, dense packing);
   spheroids above ~400 µm develop necrotic cores (oxygen diffuses ~200 µm from the surface).
+- Perfused PK: drug extraction in a recirculating liver-on-chip is reported as the fraction
+  cleared per pass (E = 1 − C_out/C_in). Hepatic extraction classes (Rowland & Tozer):
+  low (E < 0.3, e.g. antipyrine — capacity-limited, reflects enzyme activity), intermediate
+  (0.3–0.7), high (E > 0.7, e.g. propranolol — flow-limited, reflects perfusion). Clearance
+  Cl = E·Q; the perfused volume to clear is the system volume (reservoir + chip + tubing).
 
 Cell physiology (literature ranges with sources — call `cell_physiology` for the full per-cell entry):
 """ + physiology_anchor_text() + """

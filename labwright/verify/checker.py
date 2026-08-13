@@ -27,6 +27,7 @@ from labwright.calc import cell as calc_cell
 from labwright.calc import culture as calc_culture
 from labwright.calc import dosing as calc_dosing
 from labwright.calc import microfluidics as mf
+from labwright.calc import pk as calc_pk
 from labwright.calc import spheroid as calc_spheroid
 from labwright.schema.design import DesignPlan
 
@@ -440,6 +441,153 @@ def _power_from_n(effect_size: float, std_dev: float, n: int, alpha: float) -> f
     return calc_stats.power_for_sample_size(n, effect_size, std_dev, alpha)
 
 
+def check_pk(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the perfused-system PK plan when present.
+
+    Re-runs :mod:`labwright.calc.pk` on the raw inlet/outlet/flow inputs and
+    verifies every derived field; warns when the outlet exceeds the inlet (a
+    negative extraction ratio — active secretion or a measurement error) and
+    when a half-life is far shorter than the pass-through time (the "cleared in
+    one pass" regime where a single-compartment half-life is not meaningful).
+    """
+    p = plan.pk
+    if p is None:
+        return
+
+    e = calc_pk.extraction_ratio(p.inlet_concentration_uM, p.outlet_concentration_uM)
+    if not _close(e, p.extraction_ratio):
+        issues.append(
+            Issue(
+                level="error",
+                field="pk.extraction_ratio",
+                message="extraction_ratio does not equal 1 − C_out/C_in",
+                expected=e,
+                found=p.extraction_ratio,
+            )
+        )
+    cl = calc_pk.clearance_uLmin(
+        p.inlet_concentration_uM, p.outlet_concentration_uM, p.flow_rate_uLmin
+    )
+    if not _close(cl, p.clearance_uLmin):
+        issues.append(
+            Issue(
+                level="error",
+                field="pk.clearance_uLmin",
+                message="clearance_uLmin does not equal extraction_ratio × flow_rate_uLmin",
+                expected=cl,
+                found=p.clearance_uLmin,
+            )
+        )
+
+    if p.system_volume_uL is not None:
+        if p.half_life_h is None:
+            issues.append(
+                Issue(
+                    level="error",
+                    field="pk.half_life_h",
+                    message="system_volume_uL present but half_life_h is not computed",
+                )
+            )
+        else:
+            t_half = calc_pk.half_life_h(p.system_volume_uL, p.clearance_uLmin)
+            if not _close(t_half, p.half_life_h):
+                issues.append(
+                    Issue(
+                        level="error",
+                        field="pk.half_life_h",
+                        message="half_life_h does not equal ln2·V/Cl",
+                        expected=t_half,
+                        found=p.half_life_h,
+                    )
+                )
+    elif p.half_life_h is not None:
+        issues.append(
+            Issue(
+                level="warning",
+                field="pk.half_life_h",
+                message="half_life_h present but system_volume_uL is missing — it cannot be re-derived",
+            )
+        )
+
+    if p.half_life_h is not None and p.dose_interval_h is not None:
+        r = calc_pk.accumulation_ratio(p.half_life_h, p.dose_interval_h)
+        if p.accumulation_ratio is None or not _close(r, p.accumulation_ratio):
+            issues.append(
+                Issue(
+                    level="error",
+                    field="pk.accumulation_ratio",
+                    message="accumulation_ratio does not equal 1/(1 − e^(−ln2·τ/t½))",
+                    expected=r,
+                    found=p.accumulation_ratio,
+                )
+            )
+    elif p.accumulation_ratio is not None:
+        issues.append(
+            Issue(
+                level="warning",
+                field="pk.accumulation_ratio",
+                message="accumulation_ratio present but half-life or dose interval is missing — it cannot be re-derived",
+            )
+        )
+
+    if p.molecular_weight_g_mol is not None:
+        if p.mass_cleared_ug_h is None:
+            issues.append(
+                Issue(
+                    level="error",
+                    field="pk.mass_cleared_ug_h",
+                    message="molecular_weight_g_mol present but mass_cleared_ug_h is not computed",
+                )
+            )
+        else:
+            m = calc_pk.mass_cleared_ug_h(
+                p.clearance_uLmin, p.inlet_concentration_uM, p.molecular_weight_g_mol
+            )
+            if not _close(m, p.mass_cleared_ug_h):
+                issues.append(
+                    Issue(
+                        level="error",
+                        field="pk.mass_cleared_ug_h",
+                        message="mass_cleared_ug_h does not equal Cl·C_in·MW·6e-5",
+                        expected=m,
+                        found=p.mass_cleared_ug_h,
+                    )
+                )
+    elif p.mass_cleared_ug_h is not None:
+        issues.append(
+            Issue(
+                level="warning",
+                field="pk.mass_cleared_ug_h",
+                message="mass_cleared_ug_h present but molecular_weight_g_mol is missing — it cannot be re-derived",
+            )
+        )
+
+    if p.extraction_ratio < 0:
+        issues.append(
+            Issue(
+                level="warning",
+                field="pk.extraction_ratio",
+                message=f"extraction_ratio {p.extraction_ratio:.3f} is negative — outlet exceeds inlet: "
+                "active secretion (influx transporters) or an inlet/outlet measurement error",
+            )
+        )
+    if (
+        p.clearance_uLmin > 0
+        and p.system_volume_uL is not None
+        and p.half_life_h is not None
+        and p.half_life_h * 3600 < p.system_volume_uL / p.flow_rate_uLmin
+    ):
+        issues.append(
+            Issue(
+                level="warning",
+                field="pk.half_life_h",
+                message=f"half-life {p.half_life_h:.3g} h is shorter than a single pass-through "
+                f"(~{p.system_volume_uL / p.flow_rate_uLmin:.0f} min) — the system is cleared in "
+                "~one pass and the single-compartment t½ = ln2·V/Cl is not physiologically meaningful",
+            )
+        )
+
+
 def verify_design(plan: DesignPlan) -> list[Issue]:
     """Run every cross-check on a design plan. Errors must be resolved before use.
 
@@ -455,6 +603,7 @@ def verify_design(plan: DesignPlan) -> list[Issue]:
     check_oxygen(plan, issues)
     check_dosing(plan, issues)
     check_stats(plan, issues)
+    check_pk(plan, issues)
     from labwright.verify.sanity import check_sanity
     from labwright.verify.safety import check_safety
     from labwright.verify.prose import check_prose_numbers

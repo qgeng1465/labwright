@@ -1,10 +1,10 @@
 # Benchmark gold data — provenance & invariants
 
-The benchmark rests on four hand-curated gold sets. Every number in them has a
+The benchmark rests on five hand-curated gold sets. Every number in them has a
 stated origin; no value is invented. This file says how to read that, and how
 to add a goal without breaking the invariants.
 
-## The four sets
+## The five sets
 
 | file | n | what it tests | does the goal state the answer? |
 |---|---|---|---|
@@ -12,6 +12,7 @@ to add a goal without breaking the invariants.
 | `gold_blind.json` | 12 | **recall**: target selection from domain knowledge | no — the goal states physiology ("recapitulate physiological venular wall shear"), the model must supply the canonical number |
 | `gold_cell_culture.json` | 14 | **reading + recall** in the plate-culture domain (wells, seeding, counting, viability, confluence) | 10 reading (plate geometry / density stated) and 4 blind-`cold` (model must recall the pinned PHH sandwich density or plate-table volume) |
 | `gold_spheroid.json` | 15 | **reading + recall + scenarios** in the 3D-culture domain (spheroid/organoid geometry, ULA & hanging-drop working volumes, necrotic-core limits) | 11 reading/scenario (geometry and targets stated, or a failure mode named) and 4 blind (2 `prompt-backed`: 1000 cells/spheroid, 96-ULA 100 µL — stated in the system prompt; 2 `cold`: 384-ULA 50 µL, hanging-drop 20 µL — in neither the goal nor the prompt) |
+| `gold_pk.json` | 14 | **reading + recall + scenarios** in the perfused-system PK domain (extraction ratio, clearance, half-life, accumulation, mass cleared; unit traps) | 12 reading/scenario (every input stated, or the formula's raw numbers given; 2 unit-ambiguity) and 2 blind `prompt-backed` (propranolol high-extraction / antipyrine low-extraction — the classification is stated in the system prompt) |
 
 Each entry is `{id, goal, expected, source}` (blind adds `blind_strength`).
 
@@ -24,7 +25,15 @@ Every `expected` value must fall into exactly one of three buckets:
    Koutsiaris (*Int J Nanomedicine*), HepG2 seeding
    (Sci Rep 10.1038/s41598-021-81733-3), primary-hepatocyte sandwich plating
    (Bioengineering 10.3390/bioengineering10020131), Sumida
-   (10.1177/0960327111399325).
+   (10.1177/0960327111399325); PK-classification and single-compartment equations
+   to Rowland & Tozer and Gibaldi & Perrier, and the propranolol intrinsic-clearance
+   design target to J Pharm Sci 2014 (doi:10.1002/jps.23796, Baudoin et al.).
+   An earlier draft cited a "PhysioMimix LC-12 media-exchange flow of 60 µL/min"
+   from "Docci et al., Lab Chip 2022" — that DOI (10.1039/d1lc00784f) does not
+   exist on Crossref, the real Docci paper is doi:10.1039/d1lc01161h, and the
+   specific flow-rate numbers could not be independently verified in accessible
+   full text, so the entry was removed rather than kept on an unverifiable
+   literature claim.
 2. **Explicit `design-target` / `self-consistent` label** — the entry does *not*
    claim a literature number; it is a construction target that the system
    should be able to derive from the goal's own stated inputs (a goal that
@@ -32,7 +41,8 @@ Every `expected` value must fall into exactly one of three buckets:
    self-consistent by construction). These are labelled as such in `source`;
    they must never be phrased as if they came from a paper.
 3. **`prompt-backed` blind entries** (liver, lung, BBB; spheroid 1000
-   cells/spheroid and 96-ULA 100 µL) — the canonical target *is* listed in the
+   cells/spheroid and 96-ULA 100 µL; PK propranolol high-extraction and
+   antipyrine low-extraction) — the canonical target *is* listed in the
    Labwright system prompt (as a range or an anchor value), but the model must
    still select the right value within it.
 
@@ -50,7 +60,11 @@ value cannot be sourced, it is removed or relabelled, not silently kept.
   so a culture gold is scored by the same "do its numbers follow from its own
   inputs" test as a flow gold; spheroid answers are cross-checked against
   spheroid_format + cells_per_spheroid + spheroid_count + cell_diameter_um, so a
-  spheroid gold is scored by the same self-consistency test.
+  spheroid gold is scored by the same self-consistency test; PK answers are
+  cross-checked against inlet/outlet concentration × flow (extraction ratio and
+  clearance), plus the extra fields only when their own inputs (system volume,
+  dose interval, molecular weight) are reported. A zero inlet concentration
+  makes the answer unverifiable (E is undefined) — scored 1.0, never a crash.
 - **String formats are extracted, and each derived field is recomputed from
   exactly the raws it needs** (fairness fix): `spheroid_format` / `plate_format`
   are found by name anywhere in the reported JSON (a `"384-well ULA plate"`
@@ -83,10 +97,11 @@ value cannot be sourced, it is removed or relabelled, not silently kept.
 4. Add a regression test that re-derives the entry's `expected` values from the
    goal's stated numbers, so transcription drift is caught at test time. For the
    culture set this is `tests/test_gold_culture.py::test_gold_is_self_consistent`,
-   for the spheroid set `tests/test_gold_spheroid.py::test_gold_is_self_consistent`
+   for the spheroid set `tests/test_gold_spheroid.py::test_gold_is_self_consistent`,
+   for the PK set `tests/test_gold_pk.py::test_gold_is_self_consistent`
    — each recomputes every gold `expected` through the domain calculators
-   (`labwright.calc.culture` / `labwright.calc.spheroid`) from the raw inputs
-   stated in the goal prose.
+   (`labwright.calc.culture` / `labwright.calc.spheroid` / `labwright.calc.pk`)
+   from the raw inputs stated in the goal prose.
 
 ## Reproducibility
 

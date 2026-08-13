@@ -78,6 +78,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -157,6 +167,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -234,6 +254,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -311,6 +341,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -390,6 +430,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -469,6 +519,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-well'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -544,6 +604,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.166667,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
       }
     },
     {
@@ -629,6 +699,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 1 validation error for DesignInput\nchip.width_um\n  Field required [type=missing, input_value={'channel_count': 1, 'hei...0.0, 'material': 'PDMS'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -708,6 +788,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -790,6 +880,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -879,6 +979,16 @@
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 1 validation error for CulturePlan\nspheroid_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -956,6 +1066,16 @@
         "unit_misread": {},
         "failure": "calculation_error",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got 'ULA'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -1035,6 +1155,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -1114,6 +1244,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-well'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -1193,6 +1333,16 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '2-well'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
       }
     }
   ],

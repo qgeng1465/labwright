@@ -1,0 +1,311 @@
+{
+  "n_gold": 15,
+  "per_entry": [
+    {
+      "id": "blind-liver-sinusoid",
+      "gold": {
+        "id": "blind-liver-sinusoid",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 1.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-kidney-ptec",
+      "gold": {
+        "id": "blind-kidney-ptec",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-arterial-shear",
+      "gold": {
+        "id": "blind-arterial-shear",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.333333
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-venular-shear",
+      "gold": {
+        "id": "blind-venular-shear",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 2.333333
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-lung-alveolar",
+      "gold": {
+        "id": "blind-lung-alveolar",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.966667
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-seed-hepg2-log",
+      "gold": {
+        "id": "blind-seed-hepg2-log",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 2.2
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-phh-seed",
+      "gold": {
+        "id": "blind-phh-seed",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 0.893333
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-bbb-shear",
+      "gold": {
+        "id": "blind-bbb-shear",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.99
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-pulmonary-artery-shear",
+      "gold": {
+        "id": "blind-pulmonary-artery-shear",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.9995
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-gut-epithelial-shear",
+      "gold": {
+        "id": "blind-gut-epithelial-shear",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 49.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-retinal-arteriole-shear",
+      "gold": {
+        "id": "blind-retinal-arteriole-shear",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.814815
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-lymphatic-shear",
+      "gold": {
+        "id": "blind-lymphatic-shear",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.5
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-kidney-ptec-unit-ambiguity",
+      "gold": {
+        "id": "blind-kidney-ptec-unit-ambiguity",
+        "blind_strength": null,
+        "scenario": "unit-ambiguity"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-24well-medium-partial",
+      "gold": {
+        "id": "blind-24well-medium-partial",
+        "blind_strength": "cold",
+        "scenario": "partial-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "blind-bbb-shear-residence-multitarget",
+      "gold": {
+        "id": "blind-bbb-shear-residence-multitarget",
+        "blind_strength": null,
+        "scenario": "multi-target"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    }
+  ],
+  "finetuned": {
+    "recovery": {
+      "shear_pa": 6.326405333333334,
+      "seed_count": 1.5466665000000002,
+      "total_medium_ml": 0.0
+    },
+    "hallucination_rate": 0.2,
+    "self_consistent_rate": 0.8,
+    "usable_design_rate": 0.06666666666666667
+  },
+  "system": "finetuned",
+  "generated_at": "2026-08-13T10:52:06+00:00"
+}
