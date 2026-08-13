@@ -111,18 +111,19 @@ _DIM_CANONICAL: dict[str, str] = {
 #: "mm/s" beats "mm", "µL/min" beats "µL", "Pa·s" beats "Pa".
 _UNIT_TO_DIM: list[tuple[str, str]] = [
     (r"mm/s", "velocity"),
-    (r"[µμ]L/min|uL/min|ul/min", "flow_rate"),
+    (r"[µμ]L/min|uL/min|ul/min|mL/min|ml/min", "flow_rate"),
     (r"[µμ]m|um", "length_um"),
     (r"[µμ]L|uL|ul", "volume_ul"),
     (r"mL|ml", "volume_ml"),
     (r"dyn/cm²|dyn/cm2|dyn/cm\^2|dyn/cm", "pressure"),
-    (r"Pa·s|Pa\.s|Pa s\b|Pa\*s", "viscosity"),
+    (r"Pa·s|Pa\.s|Pa s\b|Pa\*s|Pas\b", "viscosity"),
     (r"Pa", "pressure"),
     (r"cells/cm²|cells/cm2|cells/cm\^2|cells/cm", "density_cm2"),
     (r"cm²|cm2|cm\^2", "area_cm2"),
     (r"mM", "conc_mm"),
     (r"g/mol", "gmol"),
     (r"kg/m", "density"),
+    (r"%", "pct"),
     (r"cells", "count"),
     (r"mm", "length_mm"),
     (r"hours?|hrs?|h\b", "time_h"),
@@ -168,6 +169,8 @@ def _pint_unit(token: str) -> str | None:
         return "uL"
     if t == "ul/min":
         return "uL/min"
+    if t == "Pas":  # protocol shorthand for Pa·s (pint parses "Pas" as peta-atto-s)
+        return "Pa*s"
     if t.endswith("2"):
         t = t[:-1] + "**2"
     return t
@@ -265,10 +268,12 @@ def _numeric_fields(plan: DesignPlan) -> list[tuple[str, str, float]]:
 def check_prose_numbers(plan: DesignPlan, issues: list[Issue]) -> None:
     """Flag a number-with-unit written in the design's prose that no calculator produced.
 
-    Cross-checks ``rationale`` and every ``caveats`` entry against the plan's own
-    numeric fields (raw and derived). A number whose dimension the plan carries
-    but whose value matches none of the plan's values in that dimension is a
-    warning — it is asserted but not reproducible from this design.
+    Cross-checks the ``goal``, ``rationale`` and every ``caveats`` entry against
+    the plan's own numeric fields (raw and derived) — the goal is included
+    because it renders verbatim as the SOP heading. A number whose dimension the
+    plan carries but whose value matches none of the plan's values in that
+    dimension is a warning — it is asserted but not reproducible from this
+    design.
     """
     fields = _numeric_fields(plan)
     values_by_dim: dict[str, list[float]] = {}
@@ -276,6 +281,8 @@ def check_prose_numbers(plan: DesignPlan, issues: list[Issue]) -> None:
         values_by_dim.setdefault(dim, []).append(value)
 
     texts: list[str] = []
+    if plan.goal:
+        texts.append(plan.goal)
     if plan.rationale:
         texts.append(plan.rationale)
     texts.extend(plan.caveats or [])

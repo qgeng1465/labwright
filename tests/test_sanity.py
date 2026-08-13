@@ -82,6 +82,36 @@ def test_over_confluent_harvest_is_warning_not_error():
     assert "error" not in _levels_for("culture.expected_confluence_pct", issues)
 
 
+def test_channel_height_must_be_narrow_dimension():
+    """Parallel-plate shear requires height < width; a swapped geometry must error."""
+    plan = _plan(chip=dict(width_um=100, height_um=400, length_mm=20))
+    issues = _issues(plan)
+    assert "error" in _levels_for("chip.height_um", issues)
+
+
+def test_square_channel_warns_on_aspect_ratio():
+    """w/h approaching 1 pushes the wide-channel approximation error past ~10 %."""
+    plan = _plan(chip=dict(width_um=150, height_um=100, length_mm=20))
+    issues = _issues(plan)
+    assert "warning" in _levels_for("chip.height_um", issues)
+    assert "error" not in _levels_for("chip.height_um", issues)
+
+
+def test_standard_ooc_aspect_ratio_is_silent():
+    """w/h = 4 (400×100 µm) is the standard OOC regime — must not be flagged."""
+    issues = _issues(_plan())
+    assert "chip.height_um" not in {i.field for i in issues}
+
+
+def test_length_in_um_entered_as_mm_errors():
+    """A length shorter than the cross-section is a µm-typed-as-mm mistake."""
+    plan = _plan(chip=dict(width_um=400, height_um=100, length_mm=0.2))  # 200 µm
+    issues = _issues(plan)
+    assert "error" in _levels_for("chip.length_mm", issues)
+    msg = next(i.message for i in issues if i.field == "chip.length_mm")
+    assert "millimetres" in msg and "divide by 1000" in msg
+
+
 def test_all_bands_declared():
     for field in (
         "derived.shear_pa", "derived.reynolds", "derived.pressure_drop_pa",

@@ -80,6 +80,32 @@ def test_total_medium_volume():
     assert spheroid.total_medium_volume(48, 20.0) == pytest.approx(0.96)
 
 
+def test_total_medium_volume_adds_dead_volume():
+    # Reservoir + tubing on a perfusion circuit holds ~2 mL that never reaches a well.
+    assert spheroid.total_medium_volume(96, 100.0, dead_volume_ul=2000.0) == pytest.approx(11.6)
+    assert spheroid.total_medium_volume(96, 100.0, dead_volume_ul=0.0) == pytest.approx(9.6)
+    with pytest.raises(ValueError):
+        spheroid.total_medium_volume(96, 100.0, dead_volume_ul=-1.0)
+
+
+def test_packing_fraction_loosens_spheroid():
+    """Real (looser-than-solid) packing makes a spheroid larger / need fewer cells."""
+    # default 1.0 keeps the "1000 cells of 20 um -> 200 um" convention
+    assert spheroid.spheroid_volume_from_cells(1000.0, 20.0) == pytest.approx(4.18879e-3)
+    # packing 0.74 -> volume 1/0.74 times larger
+    assert spheroid.spheroid_volume_from_cells(1000.0, 20.0, packing_fraction=0.74) == pytest.approx(
+        4.18879e-3 / 0.74, rel=1e-4
+    )
+    # diameter grows: 1000 cells of 20 um at packing 0.74 -> ~222 um
+    assert spheroid.spheroid_diameter_from_cells(1000.0, 20.0, packing_fraction=0.74) == pytest.approx(
+        200.0 / (0.74 ** (1 / 3)), rel=1e-4
+    )
+    # fewer cells reach the same target diameter
+    assert spheroid.cells_per_spheroid_for_diameter(200.0, 20.0, packing_fraction=0.74) == pytest.approx(740.0, rel=1e-3)
+    with pytest.raises(ValueError):
+        spheroid.spheroid_diameter_from_cells(1000.0, 20.0, packing_fraction=1.5)
+
+
 def test_validate_positive():
     with pytest.raises(ValueError):
         spheroid.spheroid_volume_ul(0.0)

@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from labwright.agent.agent import DesignAgent
+from labwright.verify.checker import Issue
 
 
 class FakeLLM:
@@ -77,6 +78,38 @@ def test_agent_calls_tool_then_submits():
     # Tool execution is recorded
     assert any(s["tool"] == "flow_rate_for_shear_stress" for s in result.steps)
     assert any(s["tool"] == "submit_design" for s in result.steps)
+    # The verifier's real findings travel with the result as Issue objects, so
+    # the UI/SOP can render per-field verdicts instead of a hardcoded "ok".
+    assert result.verification == []
+    assert isinstance(result.verification, list)
+
+
+def test_agent_result_carries_issue_objects():
+    """A design submitted with a verification warning returns Issue objects, not dicts."""
+    bad = _RAW_INPUT_JSON.replace(
+        '"rationale":"Sinusoidal shear target 0.05 Pa; HepG2 at 1e5/cm2"',
+        '"rationale":"Sinusoidal shear will be 0.5 Pa"',  # contradicts the derived ~0.05
+    )
+
+    class WarnLLM:
+        def __init__(self):
+            self.calls = 0
+
+        def chat(self, messages, tools=None, **kwargs):
+            self.calls += 1
+            return SimpleNamespace(
+                content=None,
+                tool_calls=[SimpleNamespace(
+                    id=f"c{self.calls}",
+                    function=SimpleNamespace(name="submit_design", arguments=bad),
+                )],
+            )
+
+    result = DesignAgent(llm=WarnLLM(), max_iterations=3).run("design")
+    assert result.status == "review_required"
+    assert result.verification, "a warning-producing design must carry findings"
+    assert all(isinstance(i, Issue) for i in result.verification)
+    assert any(i.field == "prose" and i.level == "warning" for i in result.verification)
 
 
 def test_agent_refuses_prose_answer():

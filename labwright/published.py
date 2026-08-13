@@ -108,8 +108,9 @@ def verify_published_protocol(
     claimed : dict
         The derived values the paper asserts, e.g. ``{"shear_pa": 0.05,
         "reynolds": 0.3, "channel_volume_ul": 0.8}`` or ``{"seed_per_well":
-        3200}``. Keys not in :data:`METRICS` / :data:`CULTURE_METRICS` are
-        ignored.
+        3200}``. A key that is not a known metric name is *not* silently
+        ignored — it gets an ``unrecognized_claim`` verdict so a misspelled
+        claim (``sheer_pa``) cannot pass as verified.
     reference : str
         DOI / journal / patent the claims come from — mandatory for provenance.
     tolerance : float
@@ -121,11 +122,15 @@ def verify_published_protocol(
         ``{"status": "ok" | "review_required" | "unverifiable" | "validation_error",
         "reference", "checks": [...]}``. Each check has ``field``, ``computed``,
         ``claimed``, ``relative_error`` and ``verdict`` in
-        ``{"consistent", "discrepancy", "not_claimed", "unverifiable"}``.
+        ``{"consistent", "discrepancy", "not_claimed", "unverifiable",
+        "unrecognized_claim"}``.
 
         ``unverifiable`` means at least one *present* claim could not be
         recomputed from the reported inputs (e.g. a confluence figure with no
         growth inputs), so it is neither confirmed nor contradicted.
+        ``unrecognized_claim`` marks a claimed key that is not a metric this
+        verifier knows — present only so a misspelled name cannot pass
+        silently; it forces ``review_required``.
     """
     if not reference:
         return {"status": "validation_error", "error": "reference (DOI/journal) is required"}
@@ -184,9 +189,24 @@ def verify_published_protocol(
             "error": "no inputs: report chip+flow (fluidics) and/or culture (plate)",
         }
 
+    # Claimed keys that are not a metric this verifier knows — a misspelled
+    # name ("sheer_pa") must not pass as verified. Emitted explicitly and
+    # forces review_required so a wrong derived number cannot ride in silently.
+    recognized = set(METRICS) | set(CULTURE_METRICS)
+    for name, value in claimed.items():
+        if name not in recognized:
+            checks.append({
+                "field": name,
+                "computed": None,
+                "claimed": value,
+                "relative_error": None,
+                "verdict": "unrecognized_claim",
+            })
+
     discrepancies = [c for c in checks if c["verdict"] == "discrepancy"]
     unverifiable = [c for c in checks if c["verdict"] == "unverifiable"]
-    if discrepancies:
+    unrecognized = [c for c in checks if c["verdict"] == "unrecognized_claim"]
+    if discrepancies or unrecognized:
         status = "review_required"
     elif unverifiable:
         status = "unverifiable"
@@ -198,6 +218,7 @@ def verify_published_protocol(
         "tolerance_pct": tolerance * 100,
         "checks": checks,
         "n_discrepancies": len(discrepancies),
+        "n_unrecognized_claims": len(unrecognized),
     }
 
 

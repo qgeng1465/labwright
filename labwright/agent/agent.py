@@ -21,6 +21,7 @@ from typing import Any
 
 from labwright.agent.llm import LLMClient
 from labwright.design import submit_design
+from labwright.physiology import physiology_anchor_text
 from labwright.schema.design import DesignPlan
 from labwright.tools import REGISTRY, list_tools
 
@@ -54,10 +55,12 @@ Common physiological anchors (verify against literature before relying on them):
   microvascular endothelium ≈ 0.1-1 Pa.
 - Culture medium viscosity ≈ 1e-3 Pa·s (water-like).
 - DMSO vehicle ≥ ~0.5% v/v can be cytotoxic; keep ≤ 0.1% when possible.
-- Cells: HepG2 doubling ~30-40 h; primary hepatocytes do not divide.
 - Spheroids: one spheroid per well in a 96-well ULA plate (≈ 100 µL working volume/well);
   primary hepatocyte spheroids ≈ 1000 cells/spheroid ≈ 200 µm (20 µm cells, dense packing);
   spheroids above ~400 µm develop necrotic cores (oxygen diffuses ~200 µm from the surface).
+
+Cell physiology (literature ranges with sources — call `cell_physiology` for the full per-cell entry):
+""" + physiology_anchor_text() + """
 
 Be explicit about assumptions in `rationale` and list what the user must check in the lab in `caveats`."""
 
@@ -87,6 +90,9 @@ class AgentResult:
     """Outcome of a design session."""
 
     design: DesignPlan | None = None
+    #: The verifier's findings as ``Issue`` objects — carried so every consumer
+    #: (UI, SOP, provenance) renders the *real* verdict, never a hardcoded "ok".
+    verification: list[Any] = field(default_factory=list)
     verification_summary: str = ""
     status: str = "ok"
     error: str | None = None
@@ -190,6 +196,14 @@ class DesignAgent:
     def _finalize(self, submission: dict[str, Any], result: AgentResult) -> AgentResult:
         result.status = submission.get("status", "ok")
         result.verification_summary = submission.get("verification_summary", "")
+        # Rebuild the verifier's Issue objects (submit_design returns dicts) so
+        # the UI and the SOP provenance block can render per-field verdicts.
+        from labwright.verify.checker import Issue
+
+        result.verification = [
+            Issue(**v) if isinstance(v, dict) else v
+            for v in submission.get("verification", [])
+        ]
         try:
             result.design = DesignPlan(**submission["design"])
         except Exception as exc:  # noqa: BLE001

@@ -56,9 +56,25 @@ def _provenance_md(provenance: list[dict]) -> str:
     )
 
 
-def _run(goal: str, api_key: str, model: str, base_url: str) -> tuple[str, str, str, str, str]:
+def _badge(status: str) -> str:
+    """Two-axis verdict: the arithmetic is verified, the targets are proposed."""
+    if status == "ok":
+        return (
+            "🟢 **arithmetic: verified by calculators** — every computed number was "
+            "derived and cross-checked by the verifier.\n"
+            "🟠 **physiological targets: model-proposed** — the goal's targets are the "
+            "model's assumption; confirm each against literature before the bench."
+        )
+    return (
+        "🟠 **review required** — see the verification report below.\n"
+        "🟢 arithmetic (where present) is calculator-verified; the physiological targets "
+        "remain model-proposed — confirm against literature."
+    )
+
+
+def _run(goal: str, api_key: str, model: str, base_url: str) -> tuple[str, str, str, str]:
     if not goal.strip():
-        return "Please describe an experimental goal.", "", "", "idle", ""
+        return "Please describe an experimental goal.", "", "", "idle"
     try:
         llm = LLMClient(
             api_key=api_key.strip() or None,
@@ -66,21 +82,21 @@ def _run(goal: str, api_key: str, model: str, base_url: str) -> tuple[str, str, 
             base_url=base_url.strip() or None,
         )
     except ValueError as exc:
-        return str(exc), "", "", "error", ""
+        return str(exc), "", "", "error"
 
     result = DesignAgent(llm).run(goal)
     if result.status == "error":
-        return f"**Error:** {result.error}", "", "", "error", ""
+        return f"**Error:** {result.error}", "", "", "error"
 
-    sop = design_to_sop(result.design)
+    # The verifier's real findings (Issue objects) thread into the SOP, the
+    # provenance table and the badge — the trace panel shows actual verdicts,
+    # not a hardcoded "ok".
+    issues = result.verification
+    sop = design_to_sop(result.design, issues)
     js = json.dumps(result.design.model_dump(mode="json"), indent=2, ensure_ascii=False)
-    provenance = provenance_for(result.design)
-    badge = (
-        "🟢 **verified** — every number computed by the calculators"
-        if result.status == "ok"
-        else "🟠 **review required** — see verification report"
-    )
-    return sop, js, badge + "\n\n" + result.verification_summary, result.status, _provenance_md(provenance)
+    provenance = provenance_for(result.design, issues)
+    badge = _badge(result.status)
+    return sop, js, badge + "\n\n" + result.verification_summary, _provenance_md(provenance)
 
 
 def build_app() -> gr.Blocks:

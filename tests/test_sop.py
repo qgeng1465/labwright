@@ -4,6 +4,7 @@ import re
 
 from labwright.design import build_design, DesignInput
 from labwright.sop.render import design_to_sop
+from labwright.verify.checker import Issue, verify_design
 
 
 def _plan():
@@ -57,3 +58,48 @@ def test_sop_attributes_to_calculators():
     md = design_to_sop(_plan())
     assert "deterministic calculators" in md
     assert "language model proposed only the raw inputs" in md
+
+
+def test_sop_refuses_design_with_verification_errors():
+    """A design with unresolved errors is not a followable protocol."""
+    plan = _plan()
+    plan.derived.shear_pa *= 10.0  # a hand-edited derived number
+    issues = verify_design(plan)
+    md = design_to_sop(plan, issues)
+    assert "Not verified" in md
+    assert "derived.shear_pa" in md
+    assert "Do not follow this SOP" in md
+    # the protocol body must not ship when errors exist
+    assert "## 2. Perfusion" not in md
+
+
+def test_sop_surfaces_warnings_when_issues_passed():
+    """Verifier warnings (incl. prose contradictions) reach the SOP, not just the CLI."""
+    plan = _plan()
+    issues = verify_design(plan)
+    issues.append(Issue(level="warning", field="prose",
+                        message="number 0.5 (Pa) in the design text matches no value in this design"))
+    md = design_to_sop(plan, issues)
+    assert "Verification warnings" in md
+    assert "prose" in md
+
+
+def test_sop_provenance_status_renders_real_verdict():
+    """The audit trail shows the verifier's real per-field verdicts, not "ok"."""
+    plan = _plan()
+    issues = verify_design(plan)
+    issues.append(Issue(level="warning", field="prose",
+                        message="number 0.5 (Pa) matches no value in this design"))
+    md = design_to_sop(plan, issues)
+    # the verified shear still carries its true "ok" verdict — issues are threaded
+    assert "verify: ok" in md
+    assert "derived.shear_pa" in md
+
+
+def test_sop_reynolds_note_derived_from_computed_re():
+    """The laminar claim must follow the computed Reynolds number, not be asserted."""
+    plan = _plan()
+    md = design_to_sop(plan)
+    re_val = plan.derived.reynolds
+    assert re_val < 100, "test design should be deep-laminar"
+    assert "(laminar, Re << 2300)" in md

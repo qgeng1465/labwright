@@ -185,6 +185,9 @@ def check_sanity(plan: DesignPlan, issues: list[Issue]) -> None:
             continue
         _check_value(issues, field, value, band)
 
+    # Relational checks the range bands cannot express (aspect ratio, units).
+    check_channel_geometry(plan, issues)
+
 
 def _check_value(issues: list[Issue], field: str, value: float, band: Band) -> None:
     soft_lo = band.soft_min is not None and value < band.soft_min
@@ -222,4 +225,59 @@ def _fmt_hi(x: float | None) -> str:
     return "∞" if x is None else f"{x:.6g}"
 
 
-__all__ = ["Band", "SANITY_BANDS", "check_sanity"]
+def check_channel_geometry(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Relational geometry checks the range bands cannot express.
+
+    Two failure modes a per-field band would let through:
+
+    1. **Aspect ratio** — the parallel-plate wall-shear formula ``6μQ/(wh²)``
+       is valid only when *height is the narrow dimension*. A chip reported
+       with height ≥ width silently produces wrong shear/pressure numbers; an
+       aspect ratio close to square pushes the approximation error past ~10 %.
+    2. **Mixed length units** — ``length_mm`` is in millimetres while
+       ``width_um``/``height_um`` are in micrometres. A length that is shorter
+       than the channel's own cross-section means it was entered in µm (or the
+       geometry is not a channel at all) — the error message states the
+       conversion instead of letting a 1000× volume slip through as a value.
+    """
+    chip = plan.chip
+    if chip is None:
+        return
+    w, h = chip.width_um, chip.height_um
+    if h >= w:
+        issues.append(Issue(
+            level="error",
+            field="chip.height_um",
+            message=(
+                f"channel height {h:g} µm is not the narrow dimension "
+                f"(width {w:g} µm) — the parallel-plate wall-shear formula "
+                "requires height < width; swap the two or the derived shear/"
+                "pressure numbers are wrong"
+            ),
+        ))
+    elif w / h < 2:
+        issues.append(Issue(
+            level="warning",
+            field="chip.height_um",
+            message=(
+                f"channel aspect ratio w/h = {w / h:.2f} < 2 — the parallel-plate "
+                "wall-shear approximation error grows past ~10 % as the "
+                "cross-section approaches square; confirm the wide-channel "
+                "solution is appropriate"
+            ),
+        ))
+    length_um = chip.length_mm * 1000.0
+    if length_um < w or length_um < h:
+        issues.append(Issue(
+            level="error",
+            field="chip.length_mm",
+            message=(
+                f"channel length {chip.length_mm:g} mm (= {length_um:g} µm) is "
+                "shorter than the channel's own width/height — length_mm is in "
+                "millimetres (a 20 mm channel is 20,000 µm); if you meant µm, "
+                "divide by 1000"
+            ),
+        ))
+
+
+__all__ = ["Band", "SANITY_BANDS", "check_sanity", "check_channel_geometry"]

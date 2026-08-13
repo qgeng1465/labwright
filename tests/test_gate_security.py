@@ -178,6 +178,23 @@ def test_hallucination_rate_zero_only_for_clean_design():
 # ---------------------------------------------------------------------------
 
 
+def test_prose_hallucination_in_goal_is_flagged():
+    """The one-line goal renders verbatim as the SOP heading — an asserted number
+    there must be cross-checked like rationale/caveats, not trusted by omission."""
+    bad = dict(_RAW)
+    bad["goal"] = "Liver-chip at sinusoidal shear 0.5 Pa"  # derived is ~0.05
+    result = submit_design(bad)
+    assert _prose_warnings(result), "goal asserting a number the design does not deliver must be flagged"
+    assert result["status"] == "review_required"
+
+
+def test_prose_goal_restating_derived_value_is_fine():
+    ok = dict(_RAW)
+    ok["goal"] = "Liver-chip at sinusoidal shear 0.05 Pa"  # matches the derived value
+    result = submit_design(ok)
+    assert not _prose_warnings(result)
+
+
 def test_prose_contradiction_is_flagged():
     bad = dict(_RAW)
     bad["rationale"] = "Sinusoidal shear will be 0.5 Pa"  # derived is ~0.05

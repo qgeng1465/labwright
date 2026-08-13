@@ -45,6 +45,12 @@ class SafetyConfig:
     #: Guidance caps per compound (mM), merged over :data:`CHEMICAL_LIMITS`.
     #: A lab can add its own entries or tighten/relax the built-in ones.
     chemical_limits_mM: dict[str, dict] = field(default_factory=dict)
+    #: Generic caps for compounds NOT in :data:`CHEMICAL_LIMITS` / the lab's own
+    #: table. ``unknown_compound_guidance_mM`` warns ("confirm against your SOP");
+    #: ``unknown_compound_reject_mM`` errors (a far-beyond-bench dose of an
+    #: unlisted compound must not pass silently). ``None`` disables the guard.
+    unknown_compound_guidance_mM: float | None = 1.0
+    unknown_compound_reject_mM: float | None = 100.0
     #: Emit biosafety-containment hints (BSL assignment) for cell types.
     biosafety_hints: bool = True
     #: Emit animal-ethics reminders for animal-derived cell types.
@@ -123,25 +129,20 @@ def _caps_for(compound: str) -> dict | None:
 # Biosafety hint
 # ---------------------------------------------------------------------------
 
-_BSL_2_HINTS = (
-    ("hela", "HeLa is classed BSL-2 at ATCC"),
-    ("primary", "human-derived primary material warrants BSL-2 containment in most institutions"),
-    ("phh", "primary human hepatocytes — human-derived, handle under BSL-2 containment"),
-)
-
 
 def biosafety_level_for(cell_type: str) -> tuple[int, str | None]:
     """Conservative BSL assignment for a cell type: ``(level, hint)``.
 
-    Defaults to BSL-1 (the assignment of the common laboratory lines HepG2,
-    Caco-2, HUVEC, A549). Only clearly documented exceptions are raised to
-    BSL-2. The hint is emitted as a warning so the human confirms handling.
+    Delegates to the :mod:`labwright.physiology` registry — the single source
+    of truth for BSL levels and hints. Defaults to BSL-1 (the assignment of the
+    common laboratory lines HepG2, Caco-2, HUVEC, A549); only documented
+    exceptions are raised to BSL-2, and any unregistered "primary" material is
+    conservatively raised too. The hint is emitted as a warning so the human
+    confirms handling.
     """
-    name = (cell_type or "").strip().lower()
-    for token, hint in _BSL_2_HINTS:
-        if token in name:
-            return 2, hint
-    return 1, None
+    from labwright.physiology import biosafety_for
+
+    return biosafety_for(cell_type)
 
 
 # ---------------------------------------------------------------------------
@@ -179,10 +180,10 @@ def check_safety(plan: DesignPlan, issues: list, config: SafetyConfig | None = N
                 ),
             ))
         caps = _caps_for(plan.dosing.compound)
+        working = plan.dosing.working_mM
         if caps:
             merged = dict(caps)
             merged.update(cfg.chemical_limits_mM.get(plan.dosing.compound.strip().lower(), {}))
-            working = plan.dosing.working_mM
             if working > merged.get("reject_mM", float("inf")):
                 issues_to_add.append(Issue(
                     level="error",
@@ -204,6 +205,33 @@ def check_safety(plan: DesignPlan, issues: list, config: SafetyConfig | None = N
                         f"with your SOP"
                     ),
                 ))
+        elif cfg.unknown_compound_reject_mM is not None and working > cfg.unknown_compound_reject_mM:
+            # An unlisted compound at a far-beyond-bench dose must not pass with
+            # zero safety signal — reject it and demand confirmation.
+            issues_to_add.append(Issue(
+                level="error",
+                field="dosing.working_mM",
+                message=(
+                    f"{plan.dosing.compound} is not in the built-in safety database and its "
+                    f"working dose {working:g} mM exceeds the generic hard cap "
+                    f"{cfg.unknown_compound_reject_mM:g} mM — confirm the compound's in-vitro "
+                    f"toxicity range and this dose against your SOP before ordering"
+                ),
+            ))
+        elif (
+            cfg.unknown_compound_guidance_mM is not None
+            and working > cfg.unknown_compound_guidance_mM
+        ):
+            issues_to_add.append(Issue(
+                level="warning",
+                field="dosing.working_mM",
+                message=(
+                    f"{plan.dosing.compound} is not in the built-in safety database; the "
+                    f"working dose {working:g} mM is above the generic guidance cap "
+                    f"{cfg.unknown_compound_guidance_mM:g} mM — confirm the dose against "
+                    f"your SOP (no in-vitro toxicity cap is on record here)"
+                ),
+            ))
         if cfg.require_vehicle_control and not plan.dosing.vehicle_control:
             issues_to_add.append(Issue(
                 level="warning",
@@ -220,6 +248,12 @@ def check_safety(plan: DesignPlan, issues: list, config: SafetyConfig | None = N
     elif plan.culture is not None:
         cell_type = plan.culture.cell_type
         field = "culture.cell_type"
+    elif plan.spheroid is not None:
+        # Spheroid/organoid designs carry their own cell_type (schema
+        # ``spheroid.cell_type``) — a primary-human spheroid needs the same
+        # BSL-2 containment hint as any other primary-human material.
+        cell_type = plan.spheroid.cell_type
+        field = "spheroid.cell_type"
     if cell_type:
         level, hint = biosafety_level_for(cell_type)
         if cfg.biosafety_hints and level >= 2 and hint:

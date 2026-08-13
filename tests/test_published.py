@@ -55,6 +55,21 @@ def test_unclaimed_fields_marked_not_claimed():
     assert all(c["verdict"] == "not_claimed" for c in result["checks"])
 
 
+def test_misspelled_claim_is_flagged_not_silently_ignored():
+    """A claimed key this verifier doesn't know must not pass as verified."""
+    chip, flow, _ = _self_consistent_claims()
+    claimed = {"sheer_pa": 0.05}  # misspelling of shear_pa
+    result = verify_published_protocol(chip=chip, flow=flow, claimed=claimed, reference="10.1000/misspelled")
+    assert result["status"] == "review_required"
+    assert result["n_unrecognized_claims"] == 1
+    hit = next(c for c in result["checks"] if c["field"] == "sheer_pa")
+    assert hit["verdict"] == "unrecognized_claim"
+    assert hit["claimed"] == 0.05
+    # the real shear is not silently assumed to match the misspelled claim
+    shear = next(c for c in result["checks"] if c["field"] == "shear_pa")
+    assert shear["verdict"] == "not_claimed"
+
+
 def test_invalid_geometry_returns_error():
     result = verify_published_protocol(
         chip={"width_um": -1, "height_um": 100, "length_mm": 20},

@@ -186,16 +186,20 @@ def cell_volume_ul(cell_diameter_um: float) -> float:
 
 
 def spheroid_volume_from_cells(
-    cells_per_spheroid: float, cell_diameter_um: float
+    cells_per_spheroid: float, cell_diameter_um: float, packing_fraction: float = 1.0
 ) -> float:
     """Spheroid volume implied by a cell count (uL).
 
-    Treats the spheroid as a solid sphere of ``N`` cells of the given mean
-    diameter (dense packing, packing fraction 1.0 — an upper bound on volume).
-    Real spheroids pack cells with small intercellular space, so this is a good
-    first-order size estimate.
+    Treats the spheroid as ``N`` cells of the given mean diameter packed into a
+    sphere. ``packing_fraction`` is the fraction of spheroid volume actually
+    occupied by cell bodies (dense-sphere packing): 1.0 = a solid sphere of
+    cell material — the *upper bound* on volume; real spheroids pack cells with
+    small intercellular space, ~0.65–0.75 (e.g. hepatocyte spheroids, Lee et al.,
+    Biofabrication 2013). The default 1.0 keeps the documented "1000 cells of
+    20 µm → ≈200 µm spheroid" convention; pass a realistic fraction to model a
+    looser aggregate.
 
-    .. math:: V = N \\cdot V_\\text{cell}
+    .. math:: V = \\frac{N \\cdot V_\\text{cell}}{f_\\text{pack}}
 
     Parameters
     ----------
@@ -203,6 +207,8 @@ def spheroid_volume_from_cells(
         Cells seeded per spheroid.
     cell_diameter_um : float
         Mean single-cell diameter in micrometres.
+    packing_fraction : float, default 1.0
+        Volume fraction of the spheroid occupied by cells (0 < f ≤ 1).
 
     Returns
     -------
@@ -210,19 +216,23 @@ def spheroid_volume_from_cells(
         Spheroid volume in uL.
     """
     _validate_positive(
-        cells_per_spheroid=cells_per_spheroid, cell_diameter_um=cell_diameter_um
+        cells_per_spheroid=cells_per_spheroid,
+        cell_diameter_um=cell_diameter_um,
+        packing_fraction=packing_fraction,
     )
-    return cells_per_spheroid * cell_volume_ul(cell_diameter_um)
+    _validate_packing_fraction(packing_fraction)
+    return cells_per_spheroid * cell_volume_ul(cell_diameter_um) / packing_fraction
 
 
 def spheroid_diameter_from_cells(
-    cells_per_spheroid: float, cell_diameter_um: float
+    cells_per_spheroid: float, cell_diameter_um: float, packing_fraction: float = 1.0
 ) -> float:
     """Spheroid diameter implied by a cell count (um).
 
-    .. math:: d = \\sqrt[3]{\\frac{6 N V_\\text{cell}}{\\pi}}
+    .. math:: d = \\sqrt[3]{\\frac{6 N V_\\text{cell}}{\\pi f_\\text{pack}}}
 
-    1000 cells of 20 um → ≈ 200 um spheroid; 100 cells → ≈ 93 um.
+    1000 cells of 20 um → ≈ 200 um spheroid at packing 1.0, ≈ 222 um at the
+    realistic 0.74; 100 cells → ≈ 93 um / ≈ 103 um.
 
     Parameters
     ----------
@@ -230,6 +240,9 @@ def spheroid_diameter_from_cells(
         Cells seeded per spheroid.
     cell_diameter_um : float
         Mean single-cell diameter in micrometres.
+    packing_fraction : float, default 1.0
+        Volume fraction of the spheroid occupied by cells (see
+        :func:`spheroid_volume_from_cells`).
 
     Returns
     -------
@@ -237,18 +250,24 @@ def spheroid_diameter_from_cells(
         Spheroid diameter in micrometres.
     """
     _validate_positive(
-        cells_per_spheroid=cells_per_spheroid, cell_diameter_um=cell_diameter_um
+        cells_per_spheroid=cells_per_spheroid,
+        cell_diameter_um=cell_diameter_um,
+        packing_fraction=packing_fraction,
     )
-    v_um3 = spheroid_volume_from_cells(cells_per_spheroid, cell_diameter_um) * _UM3_PER_UL
+    _validate_packing_fraction(packing_fraction)
+    v_um3 = (
+        spheroid_volume_from_cells(cells_per_spheroid, cell_diameter_um, packing_fraction)
+        * _UM3_PER_UL
+    )
     return (6.0 * v_um3 / math.pi) ** (1.0 / 3.0)
 
 
 def cells_per_spheroid_for_diameter(
-    target_diameter_um: float, cell_diameter_um: float
+    target_diameter_um: float, cell_diameter_um: float, packing_fraction: float = 1.0
 ) -> float:
     """Cells needed to reach a target spheroid diameter.
 
-    .. math:: N = \\frac{V_\\text{spheroid}}{V_\\text{cell}}
+    .. math:: N = \\frac{f_\\text{pack}\\, V_\\text{spheroid}}{V_\\text{cell}}
 
     Parameters
     ----------
@@ -256,6 +275,9 @@ def cells_per_spheroid_for_diameter(
         Target spheroid diameter in micrometres.
     cell_diameter_um : float
         Mean single-cell diameter in micrometres.
+    packing_fraction : float, default 1.0
+        Volume fraction of the spheroid occupied by cells (see
+        :func:`spheroid_volume_from_cells`).
 
     Returns
     -------
@@ -263,11 +285,14 @@ def cells_per_spheroid_for_diameter(
         Cells per spheroid (≈1000 for a 200 um spheroid of 20 um cells).
     """
     _validate_positive(
-        target_diameter_um=target_diameter_um, cell_diameter_um=cell_diameter_um
+        target_diameter_um=target_diameter_um,
+        cell_diameter_um=cell_diameter_um,
+        packing_fraction=packing_fraction,
     )
+    _validate_packing_fraction(packing_fraction)
     v_sph = spheroid_volume_ul(target_diameter_um) * _UM3_PER_UL
     v_cell = cell_volume_ul(cell_diameter_um) * _UM3_PER_UL
-    return v_sph / v_cell
+    return v_sph * packing_fraction / v_cell
 
 
 # ---------------------------------------------------------------------------
@@ -338,11 +363,17 @@ def medium_volume_per_spheroid(spheroid_format: str) -> float:
 
 
 def total_medium_volume(
-    spheroid_count: float, per_spheroid_ul: float
+    spheroid_count: float, per_spheroid_ul: float, dead_volume_ul: float = 0.0
 ) -> float:
     """Total medium volume for ``spheroid_count`` spheroids (mL).
 
-    .. math:: V_\\text{total} = n \\cdot V_\\text{spheroid} / 1000
+    The *working* volume is ``n · V_spheroid``; the volume you actually need to
+    prep adds the system's dead volume — the fluid trapped in reservoirs,
+    tubing or a pump circuit that never reaches a well. Perfusion and
+    semi-static chips routinely lose 1–5 mL to tubing + reservoir, so planning
+    on working volume alone leaves a culture short.
+
+    .. math:: V_\\text{total} = \\frac{n \\cdot V_\\text{spheroid} + V_\\text{dead}}{1000}
 
     Parameters
     ----------
@@ -350,14 +381,27 @@ def total_medium_volume(
         Number of spheroids.
     per_spheroid_ul : float
         Medium volume per spheroid in uL.
+    dead_volume_ul : float, default 0.0
+        Reservoir/tubing dead volume in uL (0 when dispensing from a pipette
+        into wells only).
 
     Returns
     -------
     float
-        Total medium volume in mL.
+        Total medium volume to prepare, in mL.
     """
     _validate_positive(spheroid_count=spheroid_count, per_spheroid_ul=per_spheroid_ul)
-    return spheroid_count * per_spheroid_ul / 1000.0
+    if not math.isfinite(float(dead_volume_ul)) or float(dead_volume_ul) < 0:
+        raise ValueError(
+            f"dead_volume_ul must be a finite number >= 0, got {dead_volume_ul!r}"
+        )
+    return (spheroid_count * per_spheroid_ul + dead_volume_ul) / 1000.0
+
+
+def _validate_packing_fraction(packing_fraction: float) -> None:
+    """A volume fraction is between 0 (exclusive) and 1 (inclusive)."""
+    if not math.isfinite(float(packing_fraction)) or not (0.0 < float(packing_fraction) <= 1.0):
+        raise ValueError(f"packing_fraction must be in (0, 1], got {packing_fraction!r}")
 
 
 def _validate_positive(**values: float) -> None:

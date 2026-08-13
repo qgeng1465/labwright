@@ -177,11 +177,14 @@ _TOOL_NOTES: dict[str, tuple[str, str]] = {
     ),
     "spheroid_diameter_from_cells": (
         "spheroid_diameter_from_cells(1000, 20) -> ~200 µm",
-        "cell diameter in µm; 1000 cells of 20 µm ≈ a 200 µm spheroid (solid-sphere packing)",
+        "cell diameter in µm; 1000 cells of 20 µm ≈ a 200 µm spheroid at solid packing "
+        "(packing_fraction 1.0). Real aggregates pack looser — pass packing_fraction ≈ 0.7 "
+        "for a realistic estimate (~222 µm).",
     ),
     "cells_per_spheroid_for_diameter": (
         "cells_per_spheroid_for_diameter(200, 20) -> ~1000",
-        "target diameter in µm; keep ≤ ~200 µm to avoid necrotic cores (oxygen diffuses ~200 µm)",
+        "target diameter in µm; keep ≤ ~200 µm to avoid necrotic cores (oxygen diffuses ~200 µm). "
+        "packing_fraction < 1 (real aggregates ≈ 0.65-0.75) needs fewer cells per spheroid.",
     ),
     "medium_volume_per_spheroid": (
         "medium_volume_per_spheroid('96-ula') -> 100 µL",
@@ -190,6 +193,11 @@ _TOOL_NOTES: dict[str, tuple[str, str]] = {
     "spheroids_from_suspension": (
         "spheroids_from_suspension(2.4e5, 1000) -> 240",
         "total cells ÷ cells per spheroid, floored",
+    ),
+    "cell_physiology": (
+        "cell_physiology('HepG2') -> {organ: liver, doubling 48-60 h, shear 0.05-0.15 Pa, ...}",
+        "literature-based reference ranges (with sources); call before choosing a physiological "
+        "target rather than guessing, and never pass a registry range off as your own measurement",
     ),
 }
 
@@ -372,11 +380,22 @@ class SpheroidVolumeParams(BaseModel):
 class SpheroidDiameterFromCellsParams(BaseModel):
     cells_per_spheroid: float = Field(gt=0, description="Cells seeded per spheroid")
     cell_diameter_um: float = Field(gt=0, description="Mean single-cell diameter in micrometres (hepatocytes ≈ 20)")
+    packing_fraction: float = Field(
+        default=1.0, gt=0, le=1,
+        description="Volume fraction of the spheroid occupied by cells (0-1). 1.0 = solid-sphere "
+        "packing (the convention behind '1000 cells ≈ 200 µm'); real aggregates pack looser, "
+        "~0.65-0.75 — pass e.g. 0.74 for a realistic size estimate.",
+    )
 
 
 class CellsPerSpheroidParams(BaseModel):
     target_diameter_um: float = Field(gt=0, description="Target spheroid diameter in micrometres")
     cell_diameter_um: float = Field(gt=0, description="Mean single-cell diameter in micrometres")
+    packing_fraction: float = Field(
+        default=1.0, gt=0, le=1,
+        description="Volume fraction of the spheroid occupied by cells (0-1). 1.0 = solid-sphere "
+        "packing; real aggregates pack looser, ~0.65-0.75 — fewer cells are needed at lower packing.",
+    )
 
 
 class MediumPerSpheroidParams(BaseModel):
@@ -386,6 +405,13 @@ class MediumPerSpheroidParams(BaseModel):
 class SpheroidCountParams(BaseModel):
     total_cells: float = Field(gt=0, description="Total viable cells in the suspension")
     cells_per_spheroid: float = Field(gt=0, description="Cells per spheroid")
+
+
+class CellPhysiologyParams(BaseModel):
+    cell_type: str = Field(
+        description="Cell type or line to look up, e.g. 'HepG2', 'primary human "
+        "hepatocytes', 'Caco-2', 'HUVEC' — fuzzy matching, names are normalized"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -631,8 +657,9 @@ register_tool(
 register_tool(
     SpheroidDiameterFromCellsParams,
     "spheroid_diameter_from_cells",
-    "Spheroid diameter implied by a cell count: cells packed as a solid sphere, each of the given mean "
-    "cell diameter. Estimate the size a seeding density will produce (1000 cells of 20 µm → ~200 µm).",
+    "Spheroid diameter implied by a cell count: cells packed into a sphere, each of the given mean "
+    "cell diameter, at the given packing_fraction (default 1.0 = solid-sphere packing; "
+    "1000 cells of 20 µm → ~200 µm at 1.0, ~222 µm at the realistic 0.74).",
     spheroid.spheroid_diameter_from_cells,
     "3d_culture",
     units_out="µm",
@@ -641,8 +668,9 @@ register_tool(
 register_tool(
     CellsPerSpheroidParams,
     "cells_per_spheroid_for_diameter",
-    "Cells needed to reach a target spheroid diameter: spheroid volume ÷ single-cell volume. Plan "
-    "seeding for a desired spheroid size; keep spheroids ≤ ~200 µm to avoid necrotic cores.",
+    "Cells needed to reach a target spheroid diameter: spheroid volume × packing_fraction ÷ "
+    "single-cell volume. Plan seeding for a desired spheroid size; keep spheroids ≤ ~200 µm to "
+    "avoid necrotic cores. Lower packing_fraction (real aggregates ≈ 0.65-0.75) needs fewer cells.",
     spheroid.cells_per_spheroid_for_diameter,
     "3d_culture",
     units_out="cells/spheroid",
@@ -666,6 +694,57 @@ register_tool(
     spheroid.spheroid_count_from_suspension,
     "3d_culture",
     units_out="spheroids",
+)
+
+
+def _cell_physiology(cell_type: str) -> dict[str, Any]:
+    """Look up a cell type's reference physiology from the registry."""
+    from labwright.physiology import lookup_cell
+
+    prof = lookup_cell(cell_type)
+    if prof is None:
+        return {
+            "cell_type": cell_type,
+            "resolved": None,
+            "message": "no profile in the physiology registry — treat physiological targets as unverified",
+        }
+    return {
+        "cell_type": cell_type,
+        "resolved": prof.key,
+        "organ": prof.organ,
+        "barrier": prof.barrier,
+        "human_primary": prof.human_primary,
+        "animal_derived": prof.animal_derived,
+        "bsl": prof.bsl,
+        "bsl_hint": prof.bsl_hint,
+        "cell_diameter_um": prof.cell_diameter_um,
+        "doubling_time_h": list(prof.doubling_time_h) if prof.doubling_time_h else None,
+        "doubling_note": prof.doubling_note,
+        "seeding_density_cells_cm2": list(prof.seeding_density_cells_cm2)
+        if prof.seeding_density_cells_cm2
+        else None,
+        "shear_range_pa": list(prof.shear_range_pa) if prof.shear_range_pa else None,
+        "o2_consumption_nmol_min_1e6": list(prof.o2_consumption_nmol_min_1e6)
+        if prof.o2_consumption_nmol_min_1e6
+        else None,
+        "teer_ohm_cm2": list(prof.teer_ohm_cm2) if prof.teer_ohm_cm2 else None,
+        "teer_physiological_ohm_cm2": list(prof.teer_physiological_ohm_cm2)
+        if prof.teer_physiological_ohm_cm2
+        else None,
+        "notes": prof.notes,
+        "sources": list(prof.sources),
+    }
+
+
+register_tool(
+    CellPhysiologyParams,
+    "cell_physiology",
+    "Reference physiology of a cell type/line, from the physiology registry: organ, BSL, mean cell "
+    "diameter, doubling time, seeding density, physiological shear range, oxygen consumption, and "
+    "(for barrier lines) TEER. Call before choosing a physiological target so the design matches a "
+    "defensible range instead of a guessed one. Ranges are literature-based with sources.",
+    _cell_physiology,
+    "physiology",
 )
 
 
