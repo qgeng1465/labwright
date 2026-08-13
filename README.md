@@ -695,41 +695,51 @@ for one that cannot.**
   `selfconsistent-pressure-drop-40mm`); k3 in fact hits all three. The misses
   are per-backend tool-loop idiosyncrasies, not systematic blind spots in
   particular goal types.
-- **kimi-for-coding fails the tool loop.** Labwright usable **0 %** on the
-  24-reading set. It called `submit_design` on **1/24** goals, and that design
-  missed the target; the other 23 never reached `submit_design` at all. On a
-  traced goal it fixated on calling `wall_shear_stress` with `viscosity_pas=0`,
-  replayed the same validation error (`input must be > 0`) across all 12
-  iterations, and never corrected itself. Notably it is *better without* the
-  agent loop (soft-gate reaches 8 % usable on reading, Labwright 0 %): for a
-  backend that cannot self-correct a tool argument, the extra machinery is net
-  negative. That is an honest boundary condition on the architecture, not a
-  cherry-picked failure.
+- **The transfer is set-wide, not reading-only.** Across the other four sets k3
+  lands **47 %** usable blind, **73 %** spheroid, **93 %** culture and **86 %**
+  PK — the same transfer the DeepSeek backends show — while kimi-for-coding
+  stays at **0 %** usable on blind, culture and PK. kimi-for-coding's one
+  partial success is the 15-spheroid set (33 % usable, up from 20 % bare): a
+  design space simple enough that its tool-loop defect is not exercised on every
+  goal. The pattern is uniform: a backend that can run the loop gets the
+  Labwright benefit; one that cannot stays flat or worsens.
+- **kimi-for-coding fails the tool loop** on 4 of the 5 sets (reading, blind,
+  culture, PK all **0 %** usable). On the 24-reading set it called
+  `submit_design` on **1/24** goals, and that design missed the target; the
+  other 23 never reached `submit_design` at all. On a traced goal it fixated on
+  calling `wall_shear_stress` with `viscosity_pas=0`, replayed the same
+  validation error (`input must be > 0`) across all 12 iterations, and never
+  corrected itself. Notably it is *better without* the agent loop (soft-gate
+  reaches 8 % usable on reading, Labwright 0 %): for a backend that cannot
+  self-correct a tool argument, the extra machinery is net negative. That is an
+  honest boundary condition on the architecture, not a cherry-picked failure.
 
 | set | model | bare | soft-gate | self-verify | Labwright |
 |---|---|---|---|---|---|
 | 24-reading | `kimi-for-coding` | 4 % | 8 % | 0 % | **0 %** |
 | 24-reading | `k3` | 8 % | 8 % | 0 % | **92 %** |
 | 15-blind | `kimi-for-coding` | 0 % | 0 % | 0 % | **0 %** |
-| 15-blind | `k3` | _running_ | _running_ | _running_ | _running_ |
-| 15-3D-spheroid | `kimi-for-coding` | _running_ | _running_ | _running_ | _running_ |
-| 15-3D-spheroid | `k3` | _running_ | _running_ | _running_ | _running_ |
-| 14-plate-culture | `kimi-for-coding` | _running_ | _running_ | _running_ | _running_ |
-| 14-plate-culture | `k3` | _running_ | _running_ | _running_ | _running_ |
-| 14-perfused-PK | `kimi-for-coding` | _running_ | _running_ | _running_ | _running_ |
-| 14-perfused-PK | `k3` | _running_ | _running_ | _running_ | _running_ |
+| 15-blind | `k3` | 0 % | 0 % | 0 % | **47 %** |
+| 15-3D-spheroid | `kimi-for-coding` | 20 % | 13 % | 7 % | **33 %** |
+| 15-3D-spheroid | `k3` | 13 % | 7 % | 13 % | **73 %** |
+| 14-plate-culture | `kimi-for-coding` | 0 % | 0 % | 0 % | **0 %** |
+| 14-plate-culture | `k3` | 7 % | 7 % | 0 % | **93 %** |
+| 14-perfused-PK | `kimi-for-coding` | 21 % | 36 % | 29 % | **0 %** |
+| 14-perfused-PK | `k3` | 29 % | 36 % | 29 % | **86 %** |
 
-*Usable designs (%). Cells still running are filled as the sweep lands. Full
-per-system self-consistent / hallucination columns are in the committed result
-files (`results/eval_{set}_{k3,kimicode}.json`). Config note: the Kimi runs used
+![Cross-provider usable rate: the four backends (flash, pro, k3, kimi-for-coding) on the five sets, Labwright (left) vs bare-LLM (right). flash and pro are near the ceiling with the gate; k3 transfers to a new backend in the same family; kimi-for-coding — the backend that cannot run the tool loop — collapses to 0 % everywhere except its one spheroid success. The two panels share one y-axis.](paper/fig_model_compare.png)
+
+*Usable designs (%). Full per-system self-consistent / hallucination columns are
+in the committed result files (`results/eval_{set}_{k3,kimicode}.json`). The
+five sets × two backends are the complete sweep. Config note: the Kimi runs used
 temperature **0.6** with thinking disabled; the DeepSeek runs used **0.2** — the
 Kimi coding endpoint's plain completion path validates temperature to 1.0, and
 the Labwright request shape (thinking-disabled `extra_body`) accepts 0.6
 (`LABWRIGHT_TEMPERATURE` overrides the 0.2 default). A higher temperature cannot
-explain k3's 92 % (it would if anything hurt a consistency-based metric), and
-kimi-for-coding's failure is argument fixation, not temperature sensitivity. The
-fine-tuned extractor is a fixed local model and is not re-benchmarked per
-backend.*
+explain k3's high usable rates (it would if anything hurt a consistency-based
+metric), and kimi-for-coding's failure is argument fixation, not temperature
+sensitivity. The fine-tuned extractor is a fixed local model and is not
+re-benchmarked per backend.*
 
 ## Reproducibility: prompts, models & provenance
 

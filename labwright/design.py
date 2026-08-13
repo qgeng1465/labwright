@@ -367,27 +367,42 @@ def _reject_derived_fields(input_dict: dict[str, Any]) -> None:
         )
 
 
-def submit_design(input_dict: dict[str, Any]) -> dict[str, Any]:
-    """Validate raw input, derive everything, verify, and report.
+def submit_design(input_dict: dict[str, Any], verify: bool = True) -> dict[str, Any]:
+    """Validate raw input, derive everything, and (optionally) verify.
 
-    This is the final tool the agent calls. The result carries the complete
+    This is the final tool the agent calls. With ``verify=True`` (the default
+    and the only mode the shipped agent uses), the result carries the complete
     design plus the verifier's report, so a design with unresolved errors is
     visible to the agent and can be corrected in a follow-up turn.
+
+    ``verify=False`` is the *no-gate ablation* used only by the benchmark's
+    ``tool_no_gate`` system: the calculators still derive every number, but the
+    verifier never runs and the submission is always accepted. Post-hoc the
+    benchmark runs the identical ``_score_design`` on the resulting plan, so a
+    design the verifier would have rejected still reads as a failed submission.
     """
     _reject_derived_fields(input_dict)
     inp = DesignInput(**input_dict)
     plan = build_design(inp)
-    issues = verify_design(plan)
     from labwright.sop.provenance import provenance_for
 
+    if verify:
+        issues = verify_design(plan)
+        return {
+            "design": plan.model_dump(mode="json"),
+            "verification": [i.__dict__ for i in issues],
+            "verification_summary": format_issues(issues),
+            # Full computation path: every derived number's formula, inputs,
+            # units, code version and verification status (ELN/LIMS-exportable).
+            "provenance": provenance_for(plan, issues),
+            "status": "ok" if not issues else "review_required",
+        }
     return {
         "design": plan.model_dump(mode="json"),
-        "verification": [i.__dict__ for i in issues],
-        "verification_summary": format_issues(issues),
-        # Full computation path: every derived number's formula, inputs, units,
-        # code version and verification status (exportable to an ELN/LIMS).
-        "provenance": provenance_for(plan, issues),
-        "status": "ok" if not issues else "review_required",
+        "verification": [],
+        "verification_summary": "",
+        "provenance": provenance_for(plan, []),
+        "status": "ok",  # no-gate ablation: the verifier is switched off
     }
 
 

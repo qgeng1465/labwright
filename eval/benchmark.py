@@ -988,15 +988,36 @@ def bare_hallucination(extracted: dict[str, float | str | None]) -> float:
     return 1.0
 
 
-def run_labwright(goal: str, agent_factory: Callable) -> tuple[DesignPlan | None, str | None]:
+def run_labwright(goal: str, agent_factory: Callable) -> tuple[DesignPlan | None, str | None, Any]:
     """Run the real Labwright pipeline.
 
-    Returns ``(design, error)``. When the agent produced no design (``plan:
+    Returns ``(design, error, result)``. When the agent produced no design (``plan:
     false``), ``error`` carries the agent's own failure reason so a silent
-    refusal is auditable rather than an unexplained blank.
+    refusal is auditable rather than an unexplained blank. The third value is the
+    agent's full :class:`~labwright.agent.AgentResult` (tool-call trace).
     """
     result = agent_factory().run(goal)
-    return result.design, result.error
+    return result.design, result.error, result
+
+
+def run_tools_no_gate(goal: str, agent_factory_nogate: Callable) -> tuple[DesignPlan | None, str | None, Any]:
+    """Run the *no-gate ablation*: the same tool loop, verifier switched off.
+
+    ``agent_factory_nogate`` builds a :class:`~labwright.agent.DesignAgent`
+    with ``verify_gate=False`` — same calculators, same loop, but
+    ``submit_design`` never verifies and always accepts, and the system prompt
+    drops the verification discipline. The plans are scored post-hoc by the
+    identical :func:`_score_design`, so the only difference from ``labwright``
+    is the verification layer. That isolates what the verifier adds beyond the
+    calculators themselves (the response to the "circular verification"
+    criticism).
+
+    The third return value is the agent's full :class:`~labwright.agent.AgentResult`
+    (tool-call trace) so the record can report how many calculators the no-gate
+    agent actually called.
+    """
+    result = agent_factory_nogate().run(goal)
+    return result.design, result.error, result
 
 
 def _extract_json(text: str) -> dict[str, Any]:
@@ -1112,11 +1133,31 @@ def _run_system(
     chat: Callable,
     agent_factory: Callable,
     extractor: Callable | None = None,
+    agent_factory_nogate: Callable | None = None,
 ) -> dict[str, Any]:
     """Run one named system on one gold entry and return its scored record."""
     if name == "labwright":
-        lw, lw_error = run_labwright(gold.goal, agent_factory)
-        return _score_design(lw, lw_error, gold)
+        lw, lw_error, lw_result = run_labwright(gold.goal, agent_factory)
+        rec = _score_design(lw, lw_error, gold)
+        # Same tool-use trace as tool_no_gate, for the ablation comparison.
+        rec["tool_calls"] = sum(1 for s in lw_result.steps if isinstance(s, dict) and s.get("tool"))
+        rec["prose_refusals"] = sum(
+            1 for s in lw_result.steps if isinstance(s, dict) and s.get("type") == "prose-refused"
+        )
+        rec["no_plan"] = lw is None
+        return rec
+    if name == "tool_no_gate":
+        if agent_factory_nogate is None:
+            raise ValueError("the 'tool_no_gate' system requires a no-gate agent factory (verify_gate=False)")
+        plan, error, result = run_tools_no_gate(gold.goal, agent_factory_nogate)
+        rec = _score_design(plan, error, gold)
+        # Diagnostic trace: did removing verification change tool usage / refusals?
+        rec["tool_calls"] = sum(1 for s in result.steps if isinstance(s, dict) and s.get("tool"))
+        rec["prose_refusals"] = sum(
+            1 for s in result.steps if isinstance(s, dict) and s.get("type") == "prose-refused"
+        )
+        rec["no_plan"] = plan is None
+        return rec
     if name == "finetuned":
         if extractor is None:
             raise ValueError("the 'finetuned' system requires an extractor with extract_plan()")
@@ -1133,18 +1174,23 @@ def evaluate(
     checkpoint: Callable[[dict[str, Any]], None] | None = None,
     systems: tuple[str, ...] = ("bare", "labwright"),
     extractor: Callable | None = None,
+    agent_factory_nogate: Callable | None = None,
 ) -> dict[str, Any]:
     """Run the requested systems on every gold experiment and aggregate metrics.
 
     ``systems`` names which systems to run (bare / soft_gate / self_verify /
-    labwright / finetuned, any subset). The default keeps the historical
-    bare-vs-Labwright comparison; the competitor baselines are extra systems
-    scored by the same rules.
+    labwright / tool_no_gate / finetuned, any subset). The default keeps the
+    historical bare-vs-Labwright comparison; the competitor baselines are extra
+    systems scored by the same rules.
 
     ``extractor`` supplies :meth:`extract_plan` for the ``finetuned`` system —
     the fine-tuned raw-input extractor run as Labwright's deterministic fast
     path (no API cost). Its in-distribution / out-of-distribution split across
     gold domains is documented on :func:`run_finetuned`.
+
+    ``agent_factory_nogate`` supplies the ``tool_no_gate`` ablation system — a
+    :class:`~labwright.agent.DesignAgent` built with ``verify_gate=False``. It
+    is required only when ``tool_no_gate`` is named in ``systems``.
     """
     summary: dict[str, Any] = {"n_gold": len(gold), "per_entry": []}
     for name in systems:
@@ -1162,7 +1208,10 @@ def evaluate(
         for name in systems:
             if progress:
                 progress(f"[{g.id}] {name} ...")
-            rec = _run_system(name, g, chat, agent_factory, extractor=extractor)
+            rec = _run_system(
+                name, g, chat, agent_factory,
+                extractor=extractor, agent_factory_nogate=agent_factory_nogate,
+            )
             entry[name] = rec
             summary[name]["hallucination_rate"].append(rec["hallucination_rate"])
             for key, err in rec["recovery"].items():
@@ -1201,6 +1250,7 @@ __all__ = [
     "run_soft_gate",
     "run_self_verify",
     "run_finetuned",
+    "run_tools_no_gate",
     "bare_prompt_for",
     "soft_gate_prompt_for",
     "self_verify_prompt_for",

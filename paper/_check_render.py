@@ -96,6 +96,21 @@ def main() -> int:
     ])
     bad += _overlaps(_captured["figs"][-1], "fig_benchmark")
 
+    fcmp = importlib.import_module("fig_model_compare")
+    fcmp.main([
+        "results/eval_flash.json", "results/eval_pro.json",
+        "results/eval_k3.json", "results/eval_kimicode.json",
+        "results/eval_blind_flash.json", "results/eval_blind_pro.json",
+        "results/eval_blind_k3.json", "results/eval_blind_kimicode.json",
+        "results/eval_spheroid_flash.json", "results/eval_spheroid_pro.json",
+        "results/eval_spheroid_k3.json", "results/eval_spheroid_kimicode.json",
+        "results/eval_culture_flash.json", "results/eval_culture_pro.json",
+        "results/eval_culture_k3.json", "results/eval_culture_kimicode.json",
+        "results/eval_pk_flash.json", "results/eval_pk_pro.json",
+        "results/eval_pk_k3.json", "results/eval_pk_kimicode.json",
+    ])
+    bad += _overlaps(_captured["figs"][-1], "fig_model_compare")
+
     print(f"\nTOTAL overlaps: {bad}")
     return 1 if bad else 0
 

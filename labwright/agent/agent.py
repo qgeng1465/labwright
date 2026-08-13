@@ -75,19 +75,64 @@ def _input_schema() -> dict[str, Any]:
     return DesignInput.model_json_schema()
 
 
-_SUBMIT_TOOL_SCHEMA = {
-    "type": "function",
-    "function": {
-        "name": "submit_design",
-        "description": (
+def _submit_tool_schema(verify_gate: bool = True) -> dict[str, Any]:
+    if verify_gate:
+        description = (
             "Final action. Submit the settled design as RAW inputs only "
             "(no derived numbers — they are computed and verified for you). "
             "Returns the complete verified design. On `review_required`, fix ONLY "
             "your raw inputs and resubmit — never hand-write a derived number."
-        ),
-        "parameters": _input_schema(),
-    },
-}
+        )
+    else:
+        description = (
+            "Final action. Submit the settled design as design inputs. "
+            "Returns the complete design with every computed number."
+        )
+    return {
+        "type": "function",
+        "function": {
+            "name": "submit_design",
+            "description": description,
+            "parameters": _input_schema(),
+        },
+    }
+
+
+#: The *no-gate ablation* system prompt. The calculator tools, the field-type
+#: rules and the physiological anchors are unchanged; everything that depends on
+#: the verifier is removed — the "never invent a computed number" rule, the
+#: "derived fields are computed and verified for you" contract, and the
+#: ``review_required`` fix loop. The benchmark runs this prompt (with the
+#: verifier switched off in ``submit_design``) as the ``tool_no_gate`` system to
+#: isolate what the verification layer adds beyond the calculators themselves.
+NO_VERIFY_SYSTEM_PROMPT = """You are a wet-lab experimental design assistant for organ-on-chip and \
+perfused cell-culture experiments. You help design reproducible experiments.
+
+You have calculator tools that compute standard assay quantities (shear stress, Reynolds number, \
+pressure, residence time, volumes, seed counts, DMSO fraction, sample size, ...). Use them whenever \
+you need a number for the design.
+
+When the design is settled, call `submit_design` with the design fields. `submit_design` field types \
+matter: `dosing.vehicle_control` is a JSON boolean (`true`/`false`); do NOT put prose there.
+
+Common physiological anchors (verify against literature before relying on them):
+- Hepatic sinusoidal shear ≈ 0.05-0.15 Pa (0.5-1.5 dyn/cm²); lung alveolar-capillary ≈ 0.03 Pa;
+  microvascular endothelium ≈ 0.1-1 Pa.
+- Culture medium viscosity ≈ 1e-3 Pa·s (water-like).
+- DMSO vehicle ≥ ~0.5% v/v can be cytotoxic; keep ≤ 0.1% when possible.
+- Spheroids: one spheroid per well in a 96-well ULA plate (≈ 100 µL working volume/well);
+  primary hepatocyte spheroids ≈ 1000 cells/spheroid ≈ 200 µm (20 µm cells, dense packing);
+  spheroids above ~400 µm develop necrotic cores (oxygen diffuses ~200 µm from the surface).
+- Perfused PK: drug extraction in a recirculating liver-on-chip is reported as the fraction
+  cleared per pass (E = 1 − C_out/C_in). Hepatic extraction classes (Rowland & Tozer):
+  low (E < 0.3, e.g. antipyrine — capacity-limited, reflects enzyme activity), intermediate
+  (0.3–0.7), high (E > 0.7, e.g. propranolol — flow-limited, reflects perfusion). Clearance
+  Cl = E·Q; the perfused volume to clear is the system volume (reservoir + chip + tubing).
+
+Cell physiology (literature ranges with sources — call `cell_physiology` for the full per-cell entry):
+""" + physiology_anchor_text() + """
+
+Be explicit about assumptions in `rationale` and list what the user must check in the lab in `caveats`."""
 
 
 @dataclass
@@ -109,20 +154,36 @@ class AgentResult:
 
 
 class DesignAgent:
-    """Run the ReAct loop against a pluggable LLM."""
+    """Run the ReAct loop against a pluggable LLM.
 
-    def __init__(self, llm: LLMClient, max_iterations: int = 12, max_tool_calls_per_turn: int = 8) -> None:
+    ``verify_gate=False`` selects the *no-gate ablation*: the same calculators
+    and loop, but the verifier is switched off — ``submit_design`` always
+    accepts, never reports ``review_required``, and the system prompt carries no
+    verification discipline. The benchmark runs this as the ``tool_no_gate``
+    system and scores the resulting plans post-hoc with the identical rules, so
+    the only difference from ``labwright`` is the verification layer.
+    """
+
+    def __init__(
+        self,
+        llm: LLMClient,
+        max_iterations: int = 12,
+        max_tool_calls_per_turn: int = 8,
+        verify_gate: bool = True,
+    ) -> None:
         self.llm = llm
         self.max_iterations = max_iterations
         self.max_tool_calls_per_turn = max_tool_calls_per_turn
-        self._tools = [t.schema for t in list_tools()] + [_SUBMIT_TOOL_SCHEMA]
+        self.verify_gate = verify_gate
+        self.system_prompt = SYSTEM_PROMPT if verify_gate else NO_VERIFY_SYSTEM_PROMPT
+        self._tools = [t.schema for t in list_tools()] + [_submit_tool_schema(verify_gate)]
 
     # -- plumbing ----------------------------------------------------------
 
     def _execute_tool(self, name: str, arguments: str) -> str:
         if name == "submit_design":
             try:
-                result = submit_design(json.loads(arguments))
+                result = submit_design(json.loads(arguments), verify=self.verify_gate)
             except Exception as exc:  # noqa: BLE001 - feed the schema error back to the model
                 result = {"status": "validation_error", "error": str(exc)}
             return json.dumps(result, ensure_ascii=False, default=str)
@@ -137,7 +198,7 @@ class DesignAgent:
 
     def run(self, goal: str) -> AgentResult:
         messages: list[dict] = [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": goal},
         ]
         result = AgentResult()
@@ -148,12 +209,17 @@ class DesignAgent:
             messages.append({"role": "assistant", "content": assistant.content or "", **self._tool_call_dump(assistant)})
 
             if not assistant.tool_calls:
-                # Model tried to answer in prose — refuse to accept prose numbers.
-                messages.append({
-                    "role": "user",
-                    "content": "You must call `submit_design` with the settled raw inputs. Do not output a "
-                    "design in prose — numbers you type are not trusted.",
-                })
+                # Model tried to answer in prose. With the gate on, refuse to
+                # accept prose numbers (they are unverifiable); in the no-gate
+                # ablation, still steer it back to the tool interface so it
+                # stays in the calculator loop rather than drifting to prose.
+                refusal = (
+                    "You must call `submit_design` with the settled raw inputs. Do not output a "
+                    "design in prose — numbers you type are not trusted."
+                    if self.verify_gate
+                    else "You must call `submit_design` with the design inputs."
+                )
+                messages.append({"role": "user", "content": refusal})
                 result.steps.append({"type": "prose-refused"})
                 continue
 
@@ -217,4 +283,4 @@ class DesignAgent:
         return result
 
 
-__all__ = ["AgentResult", "DesignAgent", "SYSTEM_PROMPT"]
+__all__ = ["AgentResult", "DesignAgent", "SYSTEM_PROMPT", "NO_VERIFY_SYSTEM_PROMPT"]

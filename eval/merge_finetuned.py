@@ -30,11 +30,16 @@ RESULTS = _HERE.parent / "results"
 #: finetuned result file -> main result files to merge it into (both model
 #: variants of the same set, since the extractor is model-independent).
 SETS = {
-    "eval_finetuned_reading.json": ("eval_flash.json", "eval_pro.json"),
-    "eval_finetuned_blind.json": ("eval_blind_flash.json", "eval_blind_pro.json"),
-    "eval_finetuned_spheroid.json": ("eval_spheroid_flash.json", "eval_spheroid_pro.json"),
-    "eval_finetuned_culture.json": ("eval_culture_flash.json", "eval_culture_pro.json"),
-    "eval_finetuned_pk.json": ("eval_pk_flash.json", "eval_pk_pro.json"),
+    "eval_finetuned_reading.json": ("eval_flash.json", "eval_pro.json",
+                                    "eval_k3.json", "eval_kimicode.json"),
+    "eval_finetuned_blind.json": ("eval_blind_flash.json", "eval_blind_pro.json",
+                                  "eval_blind_k3.json", "eval_blind_kimicode.json"),
+    "eval_finetuned_spheroid.json": ("eval_spheroid_flash.json", "eval_spheroid_pro.json",
+                                     "eval_spheroid_k3.json", "eval_spheroid_kimicode.json"),
+    "eval_finetuned_culture.json": ("eval_culture_flash.json", "eval_culture_pro.json",
+                                    "eval_culture_k3.json", "eval_culture_kimicode.json"),
+    "eval_finetuned_pk.json": ("eval_pk_flash.json", "eval_pk_pro.json",
+                               "eval_pk_k3.json", "eval_pk_kimicode.json"),
 }
 
 

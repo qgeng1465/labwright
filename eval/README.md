@@ -536,7 +536,7 @@ transfers, the same five sets × four systems were re-run against **`k3`** and
 identical harness — no re-typed numbers, all derived from the committed
 per-entry records (`results/eval_{set}_{k3,kimicode}.json`). The `finetuned-ext`
 row is a fixed local model and is identical under every backend, so it is not
-repeated here. Cells for the still-running sets are marked `_running_`.
+repeated here. The five sets × two backends below are the complete sweep.
 
 | model | set | system | self-consistent | usable | hallucination |
 |---|---|---|---|---|---|
@@ -552,13 +552,34 @@ repeated here. Cells for the still-running sets are marked `_running_`.
 | `kimi-for-coding` | 15-blind | soft-gate | 7 % | 0 % | 0.933 |
 | `kimi-for-coding` | 15-blind | self-verify | 0 % | 0 % | 0.967 |
 | `kimi-for-coding` | 15-blind | **Labwright** | **7 %** | **0 %** | **0.933** |
-| `k3` | 15-blind | … | _running_ | _running_ | _running_ |
-| `kimi-for-coding` | 15-3D-spheroid | … | _running_ | _running_ | _running_ |
-| `k3` | 15-3D-spheroid | … | _running_ | _running_ | _running_ |
-| `kimi-for-coding` | 14-plate-culture | … | _running_ | _running_ | _running_ |
-| `k3` | 14-plate-culture | … | _running_ | _running_ | _running_ |
-| `kimi-for-coding` | 14-perfused-PK | … | _running_ | _running_ | _running_ |
-| `k3` | 14-perfused-PK | … | _running_ | _running_ | _running_ |
+| `k3` | 15-blind | bare-LLM | 0 % | 0 % | 0.967 |
+| `k3` | 15-blind | soft-gate | 7 % | 0 % | 0.900 |
+| `k3` | 15-blind | self-verify | 0 % | 0 % | 0.878 |
+| `k3` | 15-blind | **Labwright** | **100 %** | **47 %** | **0.000** |
+| `kimi-for-coding` | 15-3D-spheroid | bare-LLM | 20 % | 20 % | 0.800 |
+| `kimi-for-coding` | 15-3D-spheroid | soft-gate | 13 % | 13 % | 0.867 |
+| `kimi-for-coding` | 15-3D-spheroid | self-verify | 7 % | 7 % | 0.600 |
+| `kimi-for-coding` | 15-3D-spheroid | **Labwright** | **40 %** | **33 %** | **0.600** |
+| `k3` | 15-3D-spheroid | bare-LLM | 13 % | 13 % | 0.867 |
+| `k3` | 15-3D-spheroid | soft-gate | 7 % | 7 % | 0.933 |
+| `k3` | 15-3D-spheroid | self-verify | 13 % | 13 % | 0.613 |
+| `k3` | 15-3D-spheroid | **Labwright** | **93 %** | **73 %** | **0.067** |
+| `kimi-for-coding` | 14-plate-culture | bare-LLM | 0 % | 0 % | 0.929 |
+| `kimi-for-coding` | 14-plate-culture | soft-gate | 0 % | 0 % | 0.893 |
+| `kimi-for-coding` | 14-plate-culture | self-verify | 0 % | 0 % | 0.881 |
+| `kimi-for-coding` | 14-plate-culture | **Labwright** | **64 %** | **0 %** | **0.357** |
+| `k3` | 14-plate-culture | bare-LLM | 7 % | 7 % | 0.750 |
+| `k3` | 14-plate-culture | soft-gate | 7 % | 7 % | 0.750 |
+| `k3` | 14-plate-culture | self-verify | 0 % | 0 % | 0.786 |
+| `k3` | 14-plate-culture | **Labwright** | **93 %** | **93 %** | **0.071** |
+| `kimi-for-coding` | 14-perfused-PK | bare-LLM | 36 % | 21 % | 0.643 |
+| `kimi-for-coding` | 14-perfused-PK | soft-gate | 50 % | 36 % | 0.500 |
+| `kimi-for-coding` | 14-perfused-PK | self-verify | 79 % | 29 % | 0.214 |
+| `kimi-for-coding` | 14-perfused-PK | **Labwright** | **7 %** | **0 %** | **0.929** |
+| `k3` | 14-perfused-PK | bare-LLM | 50 % | 29 % | 0.500 |
+| `k3` | 14-perfused-PK | soft-gate | 50 % | 36 % | 0.500 |
+| `k3` | 14-perfused-PK | self-verify | 79 % | 29 % | 0.214 |
+| `k3` | 14-perfused-PK | **Labwright** | **100 %** | **86 %** | **0.000** |
 
 **The gate transfers to any backend that can run the tool loop.** `k3` ≈
 `flash`: Labwright takes it from 8 % bare to **92 % usable** on the reading set
@@ -567,7 +588,12 @@ called `submit_design`; `selfconsistent-channel-volume` — wrong target) are no
 the three goals `flash` misses (`power-80-effect-half`, `reynolds-laminar-check`,
 `selfconsistent-pressure-drop-40mm`) — k3 in fact hits all three, so no goal
 type is a systematic blind spot; the misses are per-backend tool-loop
-idiosyncrasies.
+idiosyncrasies. The transfer is set-wide, not reading-only: on the other sets
+k3 lands 47 % usable blind, 73 % spheroid, **93 % plate-culture** and 86 % PK,
+with **0.000 hallucination** on blind and PK — the same pattern as the DeepSeek
+backends. Its one non-zero-hallucination row on culture (0.071, one plan) is the
+same plan the DeepSeek backends flag there; the culture set's `*_hallucination`
+cells are explained in the Results section.
 
 **…and collapses for a backend that cannot.** `kimi-for-coding` called
 `submit_design` on 1/24 reading goals (and that design missed the target); the
@@ -575,9 +601,11 @@ other 23 never reached it. A traced goal fixated on `wall_shear_stress` with
 `viscosity_pas=0`, replayed the same validation error (`input must be > 0`)
 across all 12 iterations, and never corrected itself. It is even *better
 without* the agent loop (soft-gate 8 % usable > Labwright 0 % on reading; the
-same 0 % usable on the blind set) — for a backend that cannot self-correct a
-tool argument, Labwright's machinery is net negative. That is an honest
-boundary condition on the architecture.
+same 0 % usable on the blind and culture sets, and 0 % on PK) — for a backend
+that cannot self-correct a tool argument, Labwright's machinery is net negative.
+That is an honest boundary condition on the architecture. Its one partial
+success is the 15-spheroid set (33 % usable, up from 20 % bare): a design space
+simple enough that the tool-loop defect is not exercised on every goal.
 
 **Config caveat.** The Kimi runs used temperature **0.6** with thinking
 disabled; the DeepSeek runs used **0.2** — the Kimi coding endpoint's plain

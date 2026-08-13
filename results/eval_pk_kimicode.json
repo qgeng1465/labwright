@@ -1,0 +1,1211 @@
+{
+  "n_gold": 14,
+  "per_entry": [
+    {
+      "id": "pk-extraction-ratio",
+      "gold": {
+        "id": "pk-extraction-ratio",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "extraction_ratio": 0.3,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "extraction_ratio": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "extraction_ratio": 0.3,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "extraction_ratio": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "extraction_ratio": 0.3,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "extraction_ratio": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 8 validation errors for DesignInput\nchemical\n  Extra inputs are not permitted [type=extra_forbidden, input_value='diclofenac', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nconcentration_mM\n  Extra inputs are not permitted [type=extra_forbidden, input_value=10.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow_rate_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=28.666667, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ninlet_concentration_mM\n  Extra inputs are not permitted [type=extra_forbidden, input_value=7.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\noutlet_concentration_mM\n  Extra inputs are not permitted [type=extra_forbidden, input_value=3.5, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nplate_format\n  Extra inputs are not permitted [type=extra_forbidden, input_value='4CHx0.1mm', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nseeding_density_kgm2\n  Extra inputs are not permitted [type=extra_forbidden, input_value=10000.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nthickness_um\n  Extra inputs are not permitted [type=extra_forbidden, input_value=100.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-clearance",
+      "gold": {
+        "id": "pk-clearance",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "clearance_uLmin": 0.6,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "clearance_uLmin": 0.6,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "clearance_uLmin": 0.6,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0,
+          "extraction_ratio": 0.3
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-half-life",
+      "gold": {
+        "id": "pk-half-life",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "flow_rate_uLmin": 2.0,
+          "half_life_h": 23.1,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "half_life_h": 4.998726
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "flow_rate_uLmin": 2.0,
+          "half_life_h": 46.209812,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "half_life_h": 11.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0,
+          "extraction_ratio": 0.3,
+          "clearance_uLmin": 0.6
+        },
+        "verifiable": true,
+        "recovery": {
+          "half_life_h": Infinity
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 4 validation errors for DesignInput\nk_m_s-1\n  Extra inputs are not permitted [type=extra_forbidden, input_value=4.5, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nm_uL\n  Extra inputs are not permitted [type=extra_forbidden, input_value=200.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nQ_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nV_uL\n  Extra inputs are not permitted [type=extra_forbidden, input_value=200.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-accumulation-ratio",
+      "gold": {
+        "id": "pk-accumulation-ratio",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "accumulation_ratio": 2.85,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "accumulation_ratio": 1.812095
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "accumulation_ratio": 1.00346420827446,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "accumulation_ratio": 0.009882
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0,
+          "extraction_ratio": 0.3,
+          "clearance_uLmin": 0.6
+        },
+        "verifiable": true,
+        "recovery": {
+          "accumulation_ratio": Infinity
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '200mmx10uM'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-mass-cleared",
+      "gold": {
+        "id": "pk-mass-cleared",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "mass_cleared_ug_h": 0.16704,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "mass_cleared_ug_h": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "mass_cleared_ug_h": 0.33408,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "mass_cleared_ug_h": 1.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0,
+          "extraction_ratio": 0.3,
+          "clearance_uLmin": 0.6
+        },
+        "verifiable": true,
+        "recovery": {
+          "mass_cleared_ug_h": Infinity
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 1 validation error for DesignInput\nchemical\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'compound': 'drug', 'mol...ar_weight_g_mol': 464.0}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-complete-clearance-panel",
+      "gold": {
+        "id": "pk-complete-clearance-panel",
+        "blind_strength": null,
+        "scenario": "multi-target"
+      },
+      "bare": {
+        "reported": {
+          "clearance_uLmin": 0.6,
+          "extraction_ratio": 0.3,
+          "flow_rate_uLmin": 2.0,
+          "half_life_h": 231.04906018664843,
+          "inlet_concentration_uM": 10.0,
+          "mass_cleared_ug_h": 0.16724137931034483,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "extraction_ratio": 0.0,
+          "clearance_uLmin": 0.0,
+          "half_life_h": 59.0,
+          "mass_cleared_ug_h": 0.001206
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {
+          "half_life_h": {
+            "alias": "min read as h",
+            "from": "min",
+            "to": "h",
+            "ratio": 60.0,
+            "expected_in_from": 231.04906
+          }
+        },
+        "failure": "wrong_target",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "clearance_uLmin": 0.6,
+          "extraction_ratio": 0.3,
+          "flow_rate_uLmin": 2.0,
+          "half_life_h": 231.049,
+          "inlet_concentration_uM": 10.0,
+          "mass_cleared_ug_h": 0.16704,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "extraction_ratio": 0.0,
+          "clearance_uLmin": 0.0,
+          "half_life_h": 58.999984,
+          "mass_cleared_ug_h": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {
+          "half_life_h": {
+            "alias": "min read as h",
+            "from": "min",
+            "to": "h",
+            "ratio": 59.999984,
+            "expected_in_from": 231.04906
+          }
+        },
+        "failure": "wrong_target",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "clearance_uLmin": 0.6,
+          "extraction_ratio": 0.3,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "extraction_ratio": 0.0,
+          "clearance_uLmin": 0.0,
+          "half_life_h": Infinity,
+          "mass_cleared_ug_h": Infinity
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 3 validation errors for DesignInput\nflow.flow_rate_uLmin\n  Field required [type=missing, input_value={'density_kgm3': 1000.0, ...lar_weight_gmol': 464.0}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nflow.flow_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow.molecular_weight_gmol\n  Extra inputs are not permitted [type=extra_forbidden, input_value=464.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-mM-unit-trap",
+      "gold": {
+        "id": "pk-mM-unit-trap",
+        "blind_strength": null,
+        "scenario": "unit-ambiguity"
+      },
+      "bare": {
+        "reported": {
+          "flow_rate_uLmin": 0.0,
+          "inlet_concentration_uM": 500.0,
+          "outlet_concentration_uM": 350.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "inlet_concentration_uM": 0.0,
+          "outlet_concentration_uM": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "flow_rate_uLmin": 100.0,
+          "inlet_concentration_uM": 500.0,
+          "outlet_concentration_uM": 350.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "inlet_concentration_uM": 0.0,
+          "outlet_concentration_uM": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "inlet_concentration_uM": 500.0,
+          "outlet_concentration_uM": 350.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "inlet_concentration_uM": 0.0,
+          "outlet_concentration_uM": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-half-life-min-trap",
+      "gold": {
+        "id": "pk-half-life-min-trap",
+        "blind_strength": null,
+        "scenario": "unit-ambiguity"
+      },
+      "bare": {
+        "reported": {
+          "flow_rate_uLmin": 2.0,
+          "half_life_h": 3.85,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "half_life_h": 0.000212
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "flow_rate_uLmin": 2.0,
+          "half_life_h": 3.85,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "half_life_h": 0.000212
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 7.0,
+          "extraction_ratio": 0.3,
+          "clearance_uLmin": 0.6
+        },
+        "verifiable": true,
+        "recovery": {
+          "half_life_h": Infinity
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 3 validation errors for DesignInput\nflow.flow_rate_uLmin\n  Field required [type=missing, input_value={'density_kgm3': 1000.0, ... 'viscosity_pas': 0.001}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nflow.flow_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow.half_life_minutes\n  Extra inputs are not permitted [type=extra_forbidden, input_value=231.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-cell-free-subtraction",
+      "gold": {
+        "id": "pk-cell-free-subtraction",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "clearance_uLmin": 0.4,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 1.0,
+          "outlet_concentration_uM": 0.55
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "clearance_uLmin": 0.4,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 5.5
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "clearance_uLmin": 0.1,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 9.0,
+          "extraction_ratio": 0.1
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 0.75
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-repeat-dose-24h",
+      "gold": {
+        "id": "pk-repeat-dose-24h",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "accumulation_ratio": 1.3333333333333333,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 10.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "accumulation_ratio": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "accumulation_ratio": 2.0,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 1.0,
+          "outlet_concentration_uM": 0.5
+        },
+        "verifiable": true,
+        "recovery": {
+          "accumulation_ratio": 0.5
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "accumulation_ratio": 1.0,
+          "flow_rate_uLmin": 0.0,
+          "inlet_concentration_uM": 0.0,
+          "outlet_concentration_uM": 0.0,
+          "mass_cleared_ug_h": 0.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "accumulation_ratio": 0.25
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-high-extraction-clearance",
+      "gold": {
+        "id": "pk-high-extraction-clearance",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "clearance_uLmin": 4.0,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 1.0,
+          "outlet_concentration_uM": 0.2
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 4.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "clearance_uLmin": 0.8,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 1.0,
+          "outlet_concentration_uM": 0.2
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "clearance_uLmin": 0.8,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 1.0,
+          "outlet_concentration_uM": 0.2,
+          "extraction_ratio": 0.8
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-low-extraction-clearance",
+      "gold": {
+        "id": "pk-low-extraction-clearance",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "clearance_uLmin": 0.2,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 1.0,
+          "outlet_concentration_uM": 0.9
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "clearance_uLmin": 0.2,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 100.0,
+          "outlet_concentration_uM": 90.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "clearance_uLmin": 0.2,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 1.0,
+          "outlet_concentration_uM": 0.9,
+          "extraction_ratio": 0.1
+        },
+        "verifiable": true,
+        "recovery": {
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 3 validation errors for DesignInput\ndrug\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Antipyrine', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow_rate_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntarget_extraction_ratio\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0.1, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-pk-high-extraction-propranolol",
+      "gold": {
+        "id": "blind-pk-high-extraction-propranolol",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "clearance_uLmin": 0.99,
+          "extraction_ratio": 0.99,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 1.0,
+          "outlet_concentration_uM": 0.01
+        },
+        "verifiable": true,
+        "recovery": {
+          "extraction_ratio": 0.2375,
+          "clearance_uLmin": 0.2375
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "clearance_uLmin": 0.9,
+          "extraction_ratio": 0.9,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 1.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "extraction_ratio": 0.125,
+          "clearance_uLmin": 0.125
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "clearance_uLmin": 0.9,
+          "extraction_ratio": 0.9,
+          "flow_rate_uLmin": 1.0,
+          "inlet_concentration_uM": 1.0,
+          "outlet_concentration_uM": 0.1
+        },
+        "verifiable": true,
+        "recovery": {
+          "extraction_ratio": 0.125,
+          "clearance_uLmin": 0.125
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '200mm x 10uM'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-pk-low-extraction-antipyrine",
+      "gold": {
+        "id": "blind-pk-low-extraction-antipyrine",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "clearance_uLmin": 0.2,
+          "extraction_ratio": 0.1,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 9.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "extraction_ratio": 0.0,
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "clearance_uLmin": 0.2,
+          "extraction_ratio": 0.1,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 100.0,
+          "outlet_concentration_uM": 90.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "extraction_ratio": 0.0,
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "clearance_uLmin": 0.2,
+          "extraction_ratio": 0.1,
+          "flow_rate_uLmin": 2.0,
+          "inlet_concentration_uM": 10.0,
+          "outlet_concentration_uM": 9.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "extraction_ratio": 0.0,
+          "clearance_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    }
+  ],
+  "bare": {
+    "recovery": {
+      "extraction_ratio": 0.059375,
+      "clearance_uLmin": 0.6053571428571428,
+      "half_life_h": 21.33297933333333,
+      "accumulation_ratio": 0.9060475,
+      "mass_cleared_ug_h": 0.000603,
+      "inlet_concentration_uM": 0.0,
+      "outlet_concentration_uM": 0.0
+    },
+    "hallucination_rate": 0.6428571428571429,
+    "self_consistent_rate": 0.35714285714285715,
+    "usable_design_rate": 0.21428571428571427
+  },
+  "soft_gate": {
+    "recovery": {
+      "extraction_ratio": 0.03125,
+      "clearance_uLmin": 0.017857142857142856,
+      "half_life_h": 23.333398666666668,
+      "accumulation_ratio": 0.254941,
+      "mass_cleared_ug_h": 0.5,
+      "inlet_concentration_uM": 0.0,
+      "outlet_concentration_uM": 0.0
+    },
+    "hallucination_rate": 0.5,
+    "self_consistent_rate": 0.5,
+    "usable_design_rate": 0.35714285714285715
+  },
+  "self_verify": {
+    "recovery": {
+      "extraction_ratio": 0.03125,
+      "clearance_uLmin": 0.125,
+      "half_life_h": Infinity,
+      "accumulation_ratio": Infinity,
+      "mass_cleared_ug_h": Infinity,
+      "inlet_concentration_uM": 0.0,
+      "outlet_concentration_uM": 0.0
+    },
+    "hallucination_rate": 0.21428571428571427,
+    "self_consistent_rate": 0.7857142857142857,
+    "usable_design_rate": 0.2857142857142857
+  },
+  "labwright": {
+    "recovery": {},
+    "hallucination_rate": 0.9285714285714286,
+    "self_consistent_rate": 0.07142857142857142,
+    "usable_design_rate": 0.0
+  },
+  "model": "kimi-for-coding",
+  "generated_at": "2026-08-13T12:45:49+00:00"
+}

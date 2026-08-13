@@ -55,9 +55,13 @@ def _make_chat(model: str, base_url: str | None, max_tokens: int = 8192):
     return chat
 
 
-def _make_agent_factory(model: str, base_url: str | None, max_iterations: int = 12):
+def _make_agent_factory(model: str, base_url: str | None, max_iterations: int = 12, verify_gate: bool = True):
     def factory() -> DesignAgent:
-        return DesignAgent(LLMClient(model=model, base_url=base_url), max_iterations=max_iterations)
+        return DesignAgent(
+            LLMClient(model=model, base_url=base_url),
+            max_iterations=max_iterations,
+            verify_gate=verify_gate,
+        )
 
     return factory
 
@@ -72,13 +76,13 @@ def main() -> int:
     ap.add_argument("--gold", default=None, help="Path to a gold JSON (default: eval/gold_experiments.json)")
     ap.add_argument(
         "--systems", default="bare,labwright",
-        help="Comma-separated systems to run (bare, soft_gate, self_verify, labwright)",
+        help="Comma-separated systems to run (bare, soft_gate, self_verify, labwright, tool_no_gate)",
     )
     args = ap.parse_args()
 
     systems = tuple(s.strip() for s in args.systems.split(",") if s.strip())
     for name in systems:
-        if name not in ("bare", "soft_gate", "self_verify", "labwright"):
+        if name not in ("bare", "soft_gate", "self_verify", "labwright", "tool_no_gate"):
             print(f"unknown system: {name}", file=sys.stderr)
             return 2
 
@@ -89,6 +93,8 @@ def main() -> int:
 
     chat = _make_chat(args.model, args.base_url)
     agent_factory = _make_agent_factory(args.model, args.base_url, args.max_iterations)
+    # The no-gate ablation reuses the same model/loop but with the verifier off.
+    agent_factory_nogate = _make_agent_factory(args.model, args.base_url, args.max_iterations, verify_gate=False)
 
     def progress(msg: str) -> None:
         print(f"  {msg}", flush=True)
@@ -103,7 +109,10 @@ def main() -> int:
         with open(out, "w", encoding="utf-8") as fh:
             json.dump(partial, fh, indent=2, ensure_ascii=False)
 
-    summary = evaluate(gold, agent_factory, chat, progress, checkpoint=checkpoint, systems=systems)
+    summary = evaluate(
+        gold, agent_factory, chat, progress,
+        checkpoint=checkpoint, systems=systems, agent_factory_nogate=agent_factory_nogate,
+    )
 
     summary["model"] = args.model
     summary["generated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")

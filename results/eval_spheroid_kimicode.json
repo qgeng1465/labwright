@@ -1,0 +1,1388 @@
+{
+  "n_gold": 15,
+  "per_entry": [
+    {
+      "id": "spheroid-volume-from-diameter",
+      "gold": {
+        "id": "spheroid-volume-from-diameter",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 20.0,
+          "cells_per_spheroid": 1000.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "3D",
+          "spheroid_volume_ul": 0.00418879
+        },
+        "verifiable": true,
+        "recovery": {
+          "spheroid_volume_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 20.0,
+          "cells_per_spheroid": 500.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "single",
+          "spheroid_volume_ul": 0.00418879
+        },
+        "verifiable": true,
+        "recovery": {
+          "spheroid_volume_ul": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 20.0,
+          "cells_per_spheroid": 4190.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "single",
+          "spheroid_volume_ul": 8.38,
+          "expected_diameter_um": 250.0,
+          "cells_total": 4190.0,
+          "medium_volume_per_spheroid_ul": 50.0,
+          "total_medium_ml": 50.0,
+          "expected_cells_after_growth": 4190.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "spheroid_volume_ul": 1999.577732
+        },
+        "hallucination_rate": 0.666667,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "spheroid-diameter-from-cells",
+      "gold": {
+        "id": "spheroid-diameter-from-cells",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 20.0,
+          "cells_per_spheroid": 1000.0,
+          "expected_diameter_um": 200.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "single_spheroid"
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 20.0,
+          "cells_per_spheroid": 1000.0,
+          "expected_diameter_um": 200.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "single-spheroid"
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 20.0,
+          "cells_per_spheroid": 1000.0,
+          "expected_diameter_um": 200.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "solid sphere",
+          "spheroid_volume_ul": 4.1887902047863905,
+          "cells_total": 1000.0,
+          "medium_volume_per_spheroid_ul": 40.0,
+          "total_medium_ml": 0.04,
+          "expected_cells_after_growth": 1000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.333333,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "spheroid-200um-hypoxic",
+      "gold": {
+        "id": "spheroid-200um-hypoxic",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 20.0,
+          "cells_per_spheroid": 125.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "single"
+        },
+        "verifiable": false,
+        "recovery": {
+          "cells_per_spheroid": 0.875
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 20.0,
+          "cells_per_spheroid": 125.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "hanging-drop"
+        },
+        "verifiable": false,
+        "recovery": {
+          "cells_per_spheroid": 0.875
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 20.0,
+          "cells_per_spheroid": 523.5987755982989,
+          "spheroid_count": 1.0,
+          "spheroid_format": "single_spheroid",
+          "spheroid_volume_ul": 104.71975511965978,
+          "expected_diameter_um": 572.4332247528802,
+          "cells_total": 523.5987755982989,
+          "medium_volume_per_spheroid_ul": 1047.1975511965977,
+          "total_medium_ml": 1.0471975511965979,
+          "expected_cells_after_growth": 523.5987755982989
+        },
+        "verifiable": true,
+        "recovery": {
+          "cells_per_spheroid": 0.476401
+        },
+        "hallucination_rate": 0.666667,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "spheroid-count-from-suspension",
+      "gold": {
+        "id": "spheroid-count-from-suspension",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 10.0,
+          "cells_per_spheroid": 1000.0,
+          "spheroid_count": 240.0,
+          "spheroid_format": "96-well U-bottom"
+        },
+        "verifiable": false,
+        "recovery": {
+          "spheroid_count": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 1000.0,
+          "spheroid_count": 240.0,
+          "spheroid_format": "96"
+        },
+        "verifiable": false,
+        "recovery": {
+          "spheroid_count": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 17.0,
+          "cells_per_spheroid": 1000.0,
+          "spheroid_count": 240.0,
+          "spheroid_format": "96-well U-bottom",
+          "spheroid_volume_ul": 0.002572,
+          "expected_diameter_um": 168.6,
+          "cells_total": 240000.0,
+          "medium_volume_per_spheroid_ul": 100.0,
+          "total_medium_ml": 24.0,
+          "expected_cells_after_growth": 960000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "spheroid_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "spheroid-96ula-medium",
+      "gold": {
+        "id": "spheroid-96ula-medium",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 5000.0,
+          "medium_volume_per_spheroid_ul": 200.0,
+          "spheroid_count": 96.0,
+          "spheroid_format": "one_per_well_96_well_ULA_plate"
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 1.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 5000.0,
+          "medium_volume_per_spheroid_ul": 200.0,
+          "spheroid_count": 96.0,
+          "spheroid_format": "96-well ULA plate"
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 1.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 5000.0,
+          "medium_volume_per_spheroid_ul": 75.0,
+          "spheroid_count": 96.0,
+          "spheroid_format": "one_per_well_96_well_ULA_plate",
+          "spheroid_volume_ul": 0.8835729338221293,
+          "expected_diameter_um": 243.43468320893018,
+          "cells_total": 480000.0,
+          "total_medium_ml": 7.2,
+          "expected_cells_after_growth": 960000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.25
+        },
+        "hallucination_rate": 0.666667,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "spheroid-384ula-medium",
+      "gold": {
+        "id": "spheroid-384ula-medium",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 5000.0,
+          "medium_volume_per_spheroid_ul": 50.0,
+          "spheroid_count": 384.0,
+          "spheroid_format": "384-well ULA plate"
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 1000.0,
+          "medium_volume_per_spheroid_ul": 50.0,
+          "spheroid_count": 384.0,
+          "spheroid_format": "384-well ULA plate"
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 5000.0,
+          "medium_volume_per_spheroid_ul": 50.0,
+          "spheroid_count": 384.0,
+          "spheroid_format": "384-well ULA plate",
+          "spheroid_volume_ul": 0.884,
+          "expected_diameter_um": 120.0,
+          "cells_total": 1920000.0,
+          "total_medium_ml": 19.2,
+          "expected_cells_after_growth": 7680000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.4,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-well'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "spheroid-hanging-drop-total",
+      "gold": {
+        "id": "spheroid-hanging-drop-total",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "plate_format": "hanging-drop",
+          "total_medium_ml": 0.96,
+          "wells": 48.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "plate_format": "hanging_drop_96",
+          "seeding_density_cells_cm2": 0.0,
+          "total_medium_ml": 0.96,
+          "wells": 48.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "plate_format": "hanging-drop",
+          "total_medium_ml": 0.96,
+          "wells": 48.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.166667,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "spheroid-um-mm-unit-ambiguity",
+      "gold": {
+        "id": "spheroid-um-mm-unit-ambiguity",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 10.0,
+          "cells_per_spheroid": 256.0,
+          "expected_diameter_um": 200.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "single",
+          "spheroid_volume_ul": 0.00418879
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_diameter_um": 0.0,
+          "spheroid_volume_ul": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 1865.0,
+          "expected_diameter_um": 200.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "96-well_U-bottom",
+          "spheroid_volume_ul": 4.1887902047863905e-06
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_diameter_um": 0.0,
+          "spheroid_volume_ul": 0.999
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {
+          "spheroid_volume_ul": {
+            "alias": "mL read as uL",
+            "from": "mL",
+            "to": "uL",
+            "ratio": 0.001,
+            "expected_in_from": 4e-06
+          }
+        },
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 10.0,
+          "cells_per_spheroid": 1000.0,
+          "expected_diameter_um": 100.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "single",
+          "spheroid_volume_ul": 0.5235987755982989,
+          "cells_total": 1000.0,
+          "medium_volume_per_spheroid_ul": 50.0,
+          "total_medium_ml": 0.05,
+          "expected_cells_after_growth": 1000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_diameter_um": 0.5,
+          "spheroid_volume_ul": 124.000006
+        },
+        "hallucination_rate": 0.333333,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 1 validation error for DesignInput\nchip.width_um\n  Field required [type=missing, input_value={'channel_count': 1, 'hei...0.0, 'material': 'PDMS'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "spheroid-growth-72h",
+      "gold": {
+        "id": "spheroid-growth-72h",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 10.0,
+          "cells_per_spheroid": 1000.0,
+          "expected_cells_after_growth": 4854.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "single"
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_cells_after_growth": 0.080339
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 1000.0,
+          "expected_cells_after_growth": 4800.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "96-well U-bottom"
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_cells_after_growth": 0.09057
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 1000.0,
+          "expected_cells_after_growth": 1000.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "single",
+          "spheroid_volume_ul": 1.7671458676442586,
+          "expected_diameter_um": 149.99999999999997,
+          "cells_total": 1000.0,
+          "medium_volume_per_spheroid_ul": 40.0,
+          "total_medium_ml": 40.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_cells_after_growth": 0.810535
+        },
+        "hallucination_rate": 0.333333,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "spheroid-96well-total",
+      "gold": {
+        "id": "spheroid-96well-total",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cells_total": 96000.0,
+          "plate_format": "96",
+          "seeding_density_cells_cm2": 31830.0,
+          "total_medium_ml": 19.2,
+          "wells": 96.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 1.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "cells_total": 96000.0,
+          "plate_format": "96",
+          "seeding_density_cells_cm2": 63662.0,
+          "total_medium_ml": 19.2,
+          "wells": 96.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 1.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cells_total": 96000.0,
+          "plate_format": "96",
+          "total_medium_ml": 19.2,
+          "wells": 96.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 1.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "spheroid-doxorubicin-dosing",
+      "gold": {
+        "id": "spheroid-doxorubicin-dosing",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cells_total": 96000.0,
+          "dmso_fraction_vv": 0.001,
+          "plate_format": "96",
+          "seeding_density_cells_cm2": 39809.0,
+          "total_medium_ml": 19.2,
+          "wells": 96.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 1.0,
+          "dmso_fraction_vv": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "cells_total": 96000.0,
+          "dmso_fraction_vv": 0.001,
+          "plate_format": "96",
+          "seeding_density_cells_cm2": 15874.0,
+          "total_medium_ml": 19.2,
+          "wells": 96.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 1.0,
+          "dmso_fraction_vv": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cells_total": 96000.0,
+          "dmso_fraction_vv": 0.001,
+          "plate_format": "96",
+          "seeding_density_cells_cm2": 15915.0,
+          "total_medium_ml": 9.6,
+          "wells": 96.0,
+          "seed_per_well": 15891.84,
+          "total_seed_count": 1525616.64,
+          "medium_volume_per_well_ml": 0.1,
+          "expected_confluence_pct": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 0.0,
+          "dmso_fraction_vv": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 1 validation error for CulturePlan\nspheroid_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-spheroid-hepatocyte-formation",
+      "gold": {
+        "id": "blind-spheroid-hepatocyte-formation",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 21.0,
+          "cells_per_spheroid": 5000.0,
+          "spheroid_count": 96.0,
+          "spheroid_format": "96-well ULA plate"
+        },
+        "verifiable": false,
+        "recovery": {
+          "cells_per_spheroid": 4.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 20.0,
+          "cells_per_spheroid": 2000.0,
+          "spheroid_count": 96.0,
+          "spheroid_format": "96-well ULA plate"
+        },
+        "verifiable": false,
+        "recovery": {
+          "cells_per_spheroid": 1.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 21.0,
+          "cells_per_spheroid": 5000.0,
+          "spheroid_count": 96.0,
+          "spheroid_format": "96-well ULA plate",
+          "spheroid_volume_ul": 0.4849,
+          "expected_diameter_um": 490.0,
+          "cells_total": 480000.0,
+          "medium_volume_per_spheroid_ul": 50.0,
+          "total_medium_ml": 4.8,
+          "expected_cells_after_growth": 2400000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "cells_per_spheroid": 4.0
+        },
+        "hallucination_rate": 0.8,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_per_spheroid": 0.26
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got 'ULA'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-spheroid-96ula-medium",
+      "gold": {
+        "id": "blind-spheroid-96ula-medium",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 5000.0,
+          "medium_volume_per_spheroid_ul": 200.0,
+          "spheroid_count": 96.0,
+          "spheroid_format": "96-well ultra-low-attachment plate"
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 1.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 2500.0,
+          "medium_volume_per_spheroid_ul": 200.0,
+          "spheroid_count": 96.0,
+          "spheroid_format": "96-well ultra-low-attachment plate"
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 1.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 10.0,
+          "cells_per_spheroid": 5000.0,
+          "medium_volume_per_spheroid_ul": 100.0,
+          "spheroid_count": 96.0,
+          "spheroid_format": "96-well ultra-low-attachment plate",
+          "spheroid_volume_ul": 0.2617993877991494,
+          "expected_diameter_um": 395.28470752104744,
+          "cells_total": 480000.0,
+          "total_medium_ml": 9.6,
+          "expected_cells_after_growth": 960000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.666667,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-spheroid-384ula-medium",
+      "gold": {
+        "id": "blind-spheroid-384ula-medium",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 10.0,
+          "cells_per_spheroid": 5000.0,
+          "medium_volume_per_spheroid_ul": 50.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "384-well ultra-low-attachment plate"
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 1000.0,
+          "medium_volume_per_spheroid_ul": 50.0,
+          "spheroid_count": 384.0,
+          "spheroid_format": "384-well ultra-low-attachment plate"
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 10.0,
+          "cells_per_spheroid": 1000.0,
+          "medium_volume_per_spheroid_ul": 50.0,
+          "spheroid_count": 384.0,
+          "spheroid_format": "384-well ultra-low-attachment plate",
+          "spheroid_volume_ul": 0.5235987755982989,
+          "expected_diameter_um": 100.0,
+          "cells_total": 384000.0,
+          "total_medium_ml": 19.2,
+          "expected_cells_after_growth": 384000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.333333,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-well'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-spheroid-hanging-drop",
+      "gold": {
+        "id": "blind-spheroid-hanging-drop",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 5000.0,
+          "medium_volume_per_spheroid_ul": 25.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "hanging_drop"
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.25
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "cell_diameter_um": 15.0,
+          "cells_per_spheroid": 5000.0,
+          "medium_volume_per_spheroid_ul": 25.0,
+          "spheroid_count": 96.0,
+          "spheroid_format": "96-well_hanging_drop_plate"
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.25
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "cell_diameter_um": 10.0,
+          "cells_per_spheroid": 5000.0,
+          "medium_volume_per_spheroid_ul": 40.0,
+          "spheroid_count": 1.0,
+          "spheroid_format": "hanging-drop",
+          "spheroid_volume_ul": 0.2617993877991494,
+          "expected_diameter_um": 79.37005259840902,
+          "cells_total": 5000.0,
+          "total_medium_ml": 0.04,
+          "expected_cells_after_growth": 5000.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 1.0
+        },
+        "hallucination_rate": 0.8,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '2-well'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    }
+  ],
+  "bare": {
+    "recovery": {
+      "spheroid_volume_ul": 0.0,
+      "expected_diameter_um": 0.0,
+      "cells_per_spheroid": 2.4375,
+      "spheroid_count": 0.0,
+      "medium_volume_per_spheroid_ul": 0.45,
+      "total_medium_ml": 0.6666666666666666,
+      "expected_cells_after_growth": 0.080339,
+      "cells_total": 0.0,
+      "dmso_fraction_vv": 0.0
+    },
+    "hallucination_rate": 0.8,
+    "self_consistent_rate": 0.2,
+    "usable_design_rate": 0.2
+  },
+  "soft_gate": {
+    "recovery": {
+      "spheroid_volume_ul": 0.4995,
+      "expected_diameter_um": 0.0,
+      "cells_per_spheroid": 0.9375,
+      "spheroid_count": 0.0,
+      "medium_volume_per_spheroid_ul": 0.45,
+      "total_medium_ml": 0.6666666666666666,
+      "expected_cells_after_growth": 0.09057,
+      "cells_total": 0.0,
+      "dmso_fraction_vv": 0.0
+    },
+    "hallucination_rate": 0.8666666666666667,
+    "self_consistent_rate": 0.13333333333333333,
+    "usable_design_rate": 0.13333333333333333
+  },
+  "self_verify": {
+    "recovery": {
+      "spheroid_volume_ul": 1061.788869,
+      "expected_diameter_um": 0.25,
+      "cells_per_spheroid": 2.2382005,
+      "spheroid_count": 0.0,
+      "medium_volume_per_spheroid_ul": 0.25,
+      "total_medium_ml": 0.3333333333333333,
+      "expected_cells_after_growth": 0.810535,
+      "cells_total": 0.0,
+      "dmso_fraction_vv": 0.0
+    },
+    "hallucination_rate": 0.6,
+    "self_consistent_rate": 0.06666666666666667,
+    "usable_design_rate": 0.06666666666666667
+  },
+  "labwright": {
+    "recovery": {
+      "expected_diameter_um": 0.0,
+      "medium_volume_per_spheroid_ul": 0.0,
+      "total_medium_ml": 0.0,
+      "cells_total": 0.0,
+      "cells_per_spheroid": 0.26
+    },
+    "hallucination_rate": 0.6,
+    "self_consistent_rate": 0.4,
+    "usable_design_rate": 0.3333333333333333
+  },
+  "model": "kimi-for-coding",
+  "generated_at": "2026-08-13T12:24:55+00:00"
+}

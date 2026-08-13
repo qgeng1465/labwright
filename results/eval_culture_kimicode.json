@@ -1,0 +1,1286 @@
+{
+  "n_gold": 14,
+  "per_entry": [
+    {
+      "id": "plate-96well-hepg2-seed",
+      "gold": {
+        "id": "plate-96well-hepg2-seed",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.1,
+          "plate_format": "96",
+          "seed_per_well": 3200.0,
+          "seeding_density_cells_cm2": 10000.0,
+          "wells": 96.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "medium_volume_per_well_ml": 0.411765
+        },
+        "hallucination_rate": 0.5,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.1,
+          "plate_format": "96",
+          "seed_per_well": 3200.0,
+          "seeding_density_cells_cm2": 10000.0,
+          "wells": 96.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "medium_volume_per_well_ml": 0.411765
+        },
+        "hallucination_rate": 0.5,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.1,
+          "plate_format": "96",
+          "seed_per_well": 3140.0,
+          "seeding_density_cells_cm2": 10000.0,
+          "wells": 96.0,
+          "total_seed_count": 301440.0,
+          "total_medium_ml": 9.6,
+          "expected_confluence_pct": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.01875,
+          "medium_volume_per_well_ml": 0.411765
+        },
+        "hallucination_rate": 0.5,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "medium_volume_per_well_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-6well-phh-seed",
+      "gold": {
+        "id": "plate-6well-phh-seed",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "plate_format": "6",
+          "seed_per_well": 142000.0,
+          "seeding_density_cells_cm2": 150000.0,
+          "total_medium_ml": 12.0,
+          "wells": 6.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.901389,
+          "total_medium_ml": 0.259259
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "plate_format": "6",
+          "seed_per_well": 285000.0,
+          "seeding_density_cells_cm2": 150000.0,
+          "total_medium_ml": 12.0,
+          "wells": 6.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.802083,
+          "total_medium_ml": 0.259259
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "plate_format": "6",
+          "seed_per_well": 4800000.0,
+          "seeding_density_cells_cm2": 150000.0,
+          "total_medium_ml": 12.0,
+          "wells": 6.0,
+          "total_seed_count": 28800000.0,
+          "medium_volume_per_well_ml": 2.0,
+          "expected_confluence_pct": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 2.333333,
+          "total_medium_ml": 0.259259
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-hemocytometer-seed-96well",
+      "gold": {
+        "id": "plate-hemocytometer-seed-96well",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 0.0,
+          "height_um": 100.0,
+          "length_mm": 0.0,
+          "viscosity_pas": 0.001,
+          "wells": 24.0,
+          "width_um": 0.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "wells": 0.733333
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 60.0,
+          "height_um": 100.0,
+          "length_mm": 10.0,
+          "viscosity_pas": 0.001,
+          "wells": 24.0,
+          "width_um": 200.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "wells": 0.733333
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 0.0,
+          "height_um": 100.0,
+          "length_mm": 1.0,
+          "viscosity_pas": 0.001,
+          "wells": 6.0,
+          "width_um": 1000.0,
+          "shear_pa": 0.0,
+          "reynolds": 0.0,
+          "pressure_drop_pa": 0.0,
+          "residence_time_s": 0.0,
+          "channel_volume_ul": 10.0,
+          "mean_velocity_mms": 0.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "wells": 0.933333
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "plate-confluence-hepg2-72h",
+      "gold": {
+        "id": "plate-confluence-hepg2-72h",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "expected_confluence_pct": 16.0,
+          "plate_format": "96",
+          "seeding_density_cells_cm2": 20000.0,
+          "wells": 96.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_confluence_pct": 0.515717
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "expected_confluence_pct": 160.0,
+          "plate_format": "96",
+          "seeding_density_cells_cm2": 20000.0,
+          "wells": 96.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_confluence_pct": 14.157166
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "expected_confluence_pct": 100.0,
+          "plate_format": "96",
+          "seeding_density_cells_cm2": 20000.0,
+          "wells": 96.0,
+          "seed_per_well": 6400.0,
+          "total_seed_count": 614400.0,
+          "medium_volume_per_well_ml": 0.2,
+          "total_medium_ml": 19.2
+        },
+        "verifiable": true,
+        "recovery": {
+          "expected_confluence_pct": 8.473229
+        },
+        "hallucination_rate": 0.5,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "expected_confluence_pct": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-24well-seed-from-count",
+      "gold": {
+        "id": "plate-24well-seed-from-count",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.5,
+          "plate_format": "24",
+          "seed_per_well": 152000.0,
+          "seeding_density_cells_cm2": 80000.0,
+          "wells": 24.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "medium_volume_per_well_ml": 0.264706
+        },
+        "hallucination_rate": 0.5,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.5,
+          "plate_format": "24",
+          "seed_per_well": 152000.0,
+          "seeding_density_cells_cm2": 80000.0,
+          "wells": 24.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "medium_volume_per_well_ml": 0.264706
+        },
+        "hallucination_rate": 0.5,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.5,
+          "plate_format": "24",
+          "seed_per_well": 152000.0,
+          "seeding_density_cells_cm2": 80000.0,
+          "wells": 24.0,
+          "total_seed_count": 3648000.0,
+          "total_medium_ml": 12.0,
+          "expected_confluence_pct": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "medium_volume_per_well_ml": 0.264706
+        },
+        "hallucination_rate": 0.5,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "medium_volume_per_well_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-split-replating",
+      "gold": {
+        "id": "plate-split-replating",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "plate_format": "6",
+          "seeding_density_cells_cm2": 20000.0,
+          "total_seed_count": 190476.0,
+          "wells": 4.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "total_seed_count": 0.751984
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "plate_format": "6",
+          "seeding_density_cells_cm2": 20000.0,
+          "total_seed_count": 480000.0,
+          "wells": 4.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "total_seed_count": 0.375
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "plate_format": "6",
+          "seeding_density_cells_cm2": 20000.0,
+          "total_seed_count": 76264.0,
+          "wells": 4.0,
+          "seed_per_well": 19066.0,
+          "medium_volume_per_well_ml": 2.0,
+          "total_medium_ml": 8.0,
+          "expected_confluence_pct": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "total_seed_count": 0.900698
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_seed_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-48well-medium",
+      "gold": {
+        "id": "plate-48well-medium",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.25,
+          "plate_format": "48",
+          "wells": 48.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "medium_volume_per_well_ml": 0.264706
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.3,
+          "plate_format": "48",
+          "seeding_density_cells_cm2": 50000.0,
+          "wells": 48.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_well_ml": 0.117647
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.25,
+          "plate_format": "48",
+          "seeding_density_cells_cm2": 30000.0,
+          "wells": 48.0,
+          "seed_per_well": 9600.0,
+          "total_seed_count": 460800.0,
+          "total_medium_ml": 12.0,
+          "expected_confluence_pct": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_well_ml": 0.264706
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_well_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-thaw-viability-6well",
+      "gold": {
+        "id": "plate-thaw-viability-6well",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 1000.0,
+          "height_um": 1000.0,
+          "length_mm": 1.0,
+          "viscosity_pas": 0.001,
+          "wells": 96.0,
+          "width_um": 1000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "wells": 8.6
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 10.0,
+          "viscosity_pas": 0.001,
+          "wells": 96.0,
+          "width_um": 100.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "wells": 8.6
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 1000.0,
+          "height_um": 20000.0,
+          "length_mm": 127.76,
+          "viscosity_pas": 0.001,
+          "wells": 96.0,
+          "width_um": 85400.0,
+          "shear_pa": 2.133,
+          "reynolds": 7.8125,
+          "pressure_drop_pa": 213300.0,
+          "residence_time_s": 10.2208,
+          "channel_volume_ul": 170.8,
+          "mean_velocity_mms": 12.5
+        },
+        "verifiable": true,
+        "recovery": {
+          "wells": 8.6
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "plate-12well-seed-hepg2",
+      "gold": {
+        "id": "plate-12well-seed-hepg2",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "medium_volume_per_well_ml": 1.0,
+          "plate_format": "12",
+          "seed_per_well": 190476.0,
+          "seeding_density_cells_cm2": 100000.0,
+          "wells": 12.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.498747,
+          "medium_volume_per_well_ml": 0.259259
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "medium_volume_per_well_ml": 1.0,
+          "plate_format": "12",
+          "seed_per_well": 380000.0,
+          "seeding_density_cells_cm2": 100000.0,
+          "wells": 12.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "medium_volume_per_well_ml": 0.259259
+        },
+        "hallucination_rate": 0.5,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "medium_volume_per_well_ml": 1.0,
+          "plate_format": "12",
+          "seed_per_well": 38000.0,
+          "seeding_density_cells_cm2": 100000.0,
+          "wells": 12.0,
+          "total_seed_count": 456000.0,
+          "total_medium_ml": 12.0,
+          "expected_confluence_pct": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.9,
+          "medium_volume_per_well_ml": 0.259259
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "medium_volume_per_well_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-96well-total-medium",
+      "gold": {
+        "id": "plate-96well-total-medium",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "plate_format": "96",
+          "total_medium_ml": 9.6,
+          "wells": 96.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "total_medium_ml": 0.411765
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "plate_format": "96",
+          "seeding_density_cells_cm2": 50000.0,
+          "total_medium_ml": 19.2,
+          "wells": 96.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "total_medium_ml": 0.176471
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "plate_format": "96",
+          "total_medium_ml": 19.2,
+          "wells": 96.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "total_medium_ml": 0.176471
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "blind-6well-phh-sandwich-seed",
+      "gold": {
+        "id": "blind-6well-phh-sandwich-seed",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "plate_format": "6",
+          "seed_per_well": 225000.0,
+          "seeding_density_cells_cm2": 112500.0,
+          "total_medium_ml": 11.4,
+          "wells": 6.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.84375,
+          "total_medium_ml": 0.296296
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "plate_format": "6",
+          "seed_per_well": 350000.0,
+          "seeding_density_cells_cm2": 70000.0,
+          "total_medium_ml": 12.0,
+          "wells": 6.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.756944,
+          "total_medium_ml": 0.259259
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "plate_format": "6",
+          "seed_per_well": 35721.0,
+          "seeding_density_cells_cm2": 112500.0,
+          "total_medium_ml": 12.0,
+          "wells": 6.0,
+          "total_seed_count": 214326.0,
+          "medium_volume_per_well_ml": 2.0,
+          "expected_confluence_pct": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.975194,
+          "total_medium_ml": 0.259259
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.933333,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-24well-phh-seed",
+      "gold": {
+        "id": "blind-24well-phh-seed",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "plate_format": "24",
+          "seed_per_well": 135000.0,
+          "seeding_density_cells_cm2": 135000.0,
+          "wells": 1.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.526316
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "plate_format": "24",
+          "seed_per_well": 135000.0,
+          "seeding_density_cells_cm2": 90000.0,
+          "wells": 1.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.526316
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "plate_format": "24",
+          "seed_per_well": 25200.0,
+          "seeding_density_cells_cm2": 112500.0,
+          "wells": 1.0,
+          "total_seed_count": 25200.0,
+          "medium_volume_per_well_ml": 0.5,
+          "total_medium_ml": 0.5,
+          "expected_confluence_pct": 100.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "seed_per_well": 0.911579
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.333333
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-96well-area-and-medium",
+      "gold": {
+        "id": "blind-96well-area-and-medium",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.2,
+          "plate_format": "96",
+          "wells": 96.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "medium_volume_per_well_ml": 0.176471
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.1,
+          "plate_format": "96",
+          "seeding_density_cells_cm2": 50000.0,
+          "wells": 96.0
+        },
+        "verifiable": true,
+        "recovery": {
+          "medium_volume_per_well_ml": 0.411765
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "self_verify": {
+        "reported": {
+          "medium_volume_per_well_ml": 0.2,
+          "plate_format": "96",
+          "wells": 96.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "medium_volume_per_well_ml": 0.176471
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_well_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "blind-hemocytometer-phh-96well",
+      "gold": {
+        "id": "blind-hemocytometer-phh-96well",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "density_kgm3": 1025.0,
+          "flow_rate_uLmin": 0.0,
+          "height_um": 0.0,
+          "length_mm": 0.0,
+          "viscosity_pas": 0.001,
+          "wells": 2.0,
+          "width_um": 0.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "wells": 0.666667
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "density_kgm3": 1000.0,
+          "flow_rate_uLmin": 0.0,
+          "height_um": 0.0,
+          "length_mm": 0.0,
+          "viscosity_pas": 0.001,
+          "wells": 6.0,
+          "width_um": 0.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "wells": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "density_kgm3": 1025.0,
+          "flow_rate_uLmin": 100.0,
+          "height_um": 100.0,
+          "length_mm": 10.0,
+          "viscosity_pas": 0.001,
+          "wells": 24.0,
+          "width_um": 100.0,
+          "shear_pa": 12.0,
+          "reynolds": 16.666666666666668,
+          "pressure_drop_pa": 4800000.0,
+          "residence_time_s": 6.0,
+          "channel_volume_ul": 10.0,
+          "mean_velocity_mms": 1666.6666666666667
+        },
+        "verifiable": true,
+        "recovery": {
+          "wells": 3.0
+        },
+        "hallucination_rate": 0.833333,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    }
+  ],
+  "bare": {
+    "recovery": {
+      "seed_per_well": 0.4617003333333333,
+      "medium_volume_per_well_ml": 0.2753814,
+      "total_medium_ml": 0.32244,
+      "wells": 3.3333333333333335,
+      "expected_confluence_pct": 0.515717,
+      "total_seed_count": 0.751984
+    },
+    "hallucination_rate": 0.9285714285714286,
+    "self_consistent_rate": 0.0,
+    "usable_design_rate": 0.0
+  },
+  "soft_gate": {
+    "recovery": {
+      "seed_per_well": 0.34755716666666664,
+      "medium_volume_per_well_ml": 0.2930284,
+      "total_medium_ml": 0.23166300000000004,
+      "wells": 3.1111109999999997,
+      "expected_confluence_pct": 14.157166,
+      "total_seed_count": 0.375
+    },
+    "hallucination_rate": 0.8928571428571429,
+    "self_consistent_rate": 0.0,
+    "usable_design_rate": 0.0
+  },
+  "self_verify": {
+    "recovery": {
+      "seed_per_well": 0.8564759999999999,
+      "medium_volume_per_well_ml": 0.2753814,
+      "total_medium_ml": 0.23166300000000004,
+      "wells": 4.177777666666667,
+      "expected_confluence_pct": 8.473229,
+      "total_seed_count": 0.900698
+    },
+    "hallucination_rate": 0.8809523571428571,
+    "self_consistent_rate": 0.0,
+    "usable_design_rate": 0.0
+  },
+  "labwright": {
+    "recovery": {},
+    "hallucination_rate": 0.35714285714285715,
+    "self_consistent_rate": 0.6428571428571429,
+    "usable_design_rate": 0.0
+  },
+  "model": "kimi-for-coding",
+  "generated_at": "2026-08-13T13:00:45+00:00"
+}
