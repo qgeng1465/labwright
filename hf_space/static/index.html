@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labwright — verified wet-lab design assistant</title>
+<style>
+  :root {
+    --blue: #2E5598;
+    --dark: #1f2a44;
+    --ink: #262522;
+    --mut: #6b675f;
+    --bg: #f7f6f4;
+    --card: #ffffff;
+    --line: #e3e0da;
+    --red: #C00000;
+    --ok: #2f7d5a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans",
+                 "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+  header {
+    background: linear-gradient(135deg, var(--dark) 0%, var(--blue) 100%);
+    color: #fff;
+    padding: 64px 0 56px;
+  }
+  header .wrap { text-align: center; }
+  .logo { font-size: 40px; font-weight: 800; letter-spacing: -0.5px; }
+  .tag { margin-top: 10px; font-size: 19px; opacity: 0.92; }
+  .sub { margin-top: 18px; font-size: 15px; opacity: 0.78; max-width: 720px; margin-left: auto; margin-right: auto; }
+  .cta { margin-top: 28px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .cta a {
+    display: inline-block; padding: 11px 22px; border-radius: 8px;
+    text-decoration: none; font-weight: 600; font-size: 15px;
+    border: 1px solid rgba(255,255,255,0.35); color: #fff; transition: background 0.15s;
+  }
+  .cta a.primary { background: #fff; color: var(--blue); border-color: #fff; }
+  .cta a.primary:hover { background: #eef1f7; }
+  .cta a:hover { background: rgba(255,255,255,0.12); }
+
+  section { padding: 44px 0 10px; }
+  h2 { font-size: 24px; color: var(--dark); margin-bottom: 6px; }
+  .kicker { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--red); font-weight: 700; }
+  p.lead { color: var(--mut); font-size: 15.5px; max-width: 760px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-top: 24px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }
+  .card h3 { font-size: 16.5px; margin-bottom: 8px; color: var(--dark); }
+  .card p { font-size: 14px; color: var(--mut); }
+  .card code { background: #f0ede8; border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+
+  .fig { margin-top: 26px; }
+  .fig img { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+  .fig figcaption { font-size: 13px; color: var(--mut); margin-top: 8px; text-align: center; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--card); border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+  th, td { padding: 10px 12px; font-size: 14px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { background: var(--dark); color: #fff; font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  td.hl { font-weight: 700; color: var(--blue); }
+  .note { font-size: 13px; color: var(--mut); margin-top: 12px; }
+
+  ul.feats { margin: 16px 0 0 20px; }
+  ul.feats li { font-size: 14.5px; margin-bottom: 8px; color: var(--ink); }
+  ul.feats b { color: var(--dark); }
+
+  footer { margin-top: 60px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--mut); font-size: 13px; text-align: center; }
+  footer a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="logo">🧪 Labwright</div>
+    <div class="tag">A verified wet-lab design assistant</div>
+    <div class="sub">You describe an experiment goal. The language model proposes the raw
+      inputs; deterministic calculators derive every number; a verifier re-proves each
+      derived value from its own inputs — so a design cannot carry a hallucinated number.</div>
+    <div class="cta">
+      <a class="primary" href="https://github.com/qgeng1465/labwright">GitHub repo</a>
+      <a href="#benchmark">Benchmark results</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section id="how">
+    <div class="kicker">How it works</div>
+    <h2>The calculator, not the model, is the knowledge base</h2>
+    <p class="lead">Frontier LLMs write confident-but-wrong numbers. Labwright changes the
+      contract: the model only <i>proposes raw inputs</i> (geometry, flows, seeding), and
+      everything derived — shear stress, volumes, cell counts, dosing — is computed by
+      deterministic physics calculators and re-proved by a verifier before a design is ever
+      submitted.</p>
+    <div class="fig">
+      <img src="assets/fig_pipeline.png" alt="Labwright pipeline: goal → LLM proposes raw inputs → calculators derive → verifier re-proves → verified design">
+      <figcaption>Pipeline: raw-in / derived-out. A number may not enter a design unless a
+        calculator produced it and the verifier re-proved it.</figcaption>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="kicker">What you get</div>
+    <h2>Verified numbers, reverse-verified protocols</h2>
+    <ul class="feats">
+      <li><b>No fabricated numbers.</b> Every derived value is recomputed from its own raw
+        inputs — an internally inconsistent design is rejected, not shipped.</li>
+      <li><b>Reverse-verify published protocols.</b> Paste a paper's geometry and flow; the
+        verifier recomputes its shear/volumes and flags numbers that don't follow from the
+        paper's own inputs.</li>
+      <li><b>Domain-aware sanity.</b> Physiological bands and unit aliases (µm↔mm, µL↔mL,
+        dyn/cm²↔Pa) catch order-of-magnitude and unit-misread errors.</li>
+      <li><b>Cross-domain.</b> Microfluidics (OOC), plate culture, and 3D spheroid/organoid
+        working volumes — one verified-design path.</li>
+    </ul>
+  </section>
+
+  <section id="benchmark">
+    <div class="kicker">Benchmark</div>
+    <h2>Bare LLM vs Labwright</h2>
+    <p class="lead">Two frontier models (deepseek-v4-flash / deepseek-v4-pro), four systems,
+      three gold sets. A design is <b>usable</b> only if it is internally consistent
+      <i>and</i> recovers every target within ±5 %.</p>
+
+    <table>
+      <tr><th>Set</th><th>System</th><th>usable (flash)</th><th>usable (pro)</th></tr>
+      <tr><td rowspan="2">24-reading<br><span class="note" style="margin:0">targets stated in goal</span></td><td>bare-LLM</td><td>0 %</td><td>12 %</td></tr>
+      <tr><td class="hl">Labwright</td><td class="hl">88 %</td><td class="hl">100 %</td></tr>
+      <tr><td rowspan="2">15-blind<br><span class="note" style="margin:0">targets not stated</span></td><td>bare-LLM</td><td>0 %</td><td>0 %</td></tr>
+      <tr><td class="hl">Labwright</td><td class="hl">40 %</td><td class="hl">47 %</td></tr>
+      <tr><td rowspan="2">15-3D-spheroid<br><span class="note" style="margin:0">3D-culture conventions</span></td><td>bare-LLM</td><td>0 %</td><td>0 %</td></tr>
+      <tr><td class="hl">Labwright</td><td class="hl">87 %</td><td class="hl">87 %</td></tr>
+    </table>
+    <p class="note">Memory-only systems (bare, soft-gate, self-verify) never produce a usable
+      design. Labwright's derived numbers are <i>architecturally</i> consistent — the honest
+      headline is the blind-set drop: the gate stops fabricated numbers, but it cannot supply
+      domain knowledge the model does not have. That boundary is the point.</p>
+
+    <div class="fig">
+      <img src="assets/fig_benchmark.png" alt="Benchmark: self-consistent rate, usable rate and hallucination rate across three sets and two models">
+      <figcaption>Self-consistent rate, usable rate and hallucination rate across the
+        24-reading, 15-blind and 15-3D-spheroid sets.</figcaption>
+    </div>
+
+    <div class="fig">
+      <img src="assets/fig_verify.png" alt="Reverse-verify: per-field verdict matrix on published protocols">
+      <figcaption>Reverse-verification verdict matrix on published protocols — each field
+        flagged as consistent, inconsistent, or unverifiable.</figcaption>
+    </div>
+  </section>
+
+  <section id="try">
+    <div class="kicker">Try it</div>
+    <h2>Run it yourself</h2>
+    <p class="lead">Clone the repo and verify a published protocol's numbers in seconds — no
+      API key needed for reverse verification (pure deterministic physics):</p>
+    <ul class="feats">
+      <li><code>pip install -e .</code> then <code>labwright verify-protocol "…"</code> for the
+        CLI, or <code>labwright ui</code> for the interactive app.</li>
+      <li>The interactive design tab calls an OpenAI-compatible API (a Space secret in the
+        Gradio deployment; a <code>DEEPSEEK_API_KEY</code> locally).</li>
+      <li>Full benchmark protocol, per-entry records, and honest caveats: the repo's
+        <code>eval/</code> directory.</li>
+    </ul>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    Labwright is an open research project by <a href="https://github.com/qgeng1465">qgeng1465</a>,
+    released under the Apache-2.0 license. No number in the benchmark is invented; every gold
+    entry pins a citable source or a self-consistent derivation. Repo:
+    <a href="https://github.com/qgeng1465/labwright">github.com/qgeng1465/labwright</a>.
+  </div>
+</footer>
+
+</body>
+</html>
