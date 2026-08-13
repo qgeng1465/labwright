@@ -29,13 +29,74 @@ Two gold sets:
    drive the calculators to them*. They do **not** test domain knowledge.
 2. **`gold_blind.json` — 12 "recall" goals.** The goal states no number at all
    ("recapitulate physiological venular wall shear"); the model must supply the
-   canonical target from its own knowledge. Nine are `cold` (answer in neither
-   goal nor the system prompt: kidney, arterial, venular, HepG2 density,
-   primary-hepatocyte density, pulmonary artery, gut, retinal arteriole,
-   lymphatic); three are `prompt-backed` (liver, lung, BBB — the Labwright
-   system prompt lists a range that contains the answer, so the model must still
-   select the right value). Every entry pins a citable source in its `source`
-   field; no number is invented.
+   canonical target from its own knowledge. Seven are `cold` (answer in neither
+   goal nor the system prompt: kidney, arterial, HepG2 density,
+   primary-hepatocyte density, pulmonary artery, gut, retinal arteriole); five
+   are `prompt-backed` (liver, lung, BBB, venular, lymphatic — the target sits
+   inside a range listed in the Labwright system prompt, so the model must still
+   *select* the right value; venular 0.3 Pa and lymphatic 0.2 Pa fall inside the
+   prompt's "microvascular endothelium ≈ 0.1-1 Pa", by the same
+   range-contains-answer criterion as liver/lung/BBB). Every entry pins a
+   citable source in its `source` field; no number is invented.
+
+### Prompts & models (verbatim)
+
+The ablation changes *only* prompt/stage structure on fixed models, so both are
+pinned. All rows use the DeepSeek v4 API (`https://api.deepseek.com`,
+OpenAI-compatible): **`deepseek-v4-flash`** and **`deepseek-v4-pro`**, at
+temperature **0.2**, thinking **disabled** (`LLMClient(disable_thinking=True)`
+default); Labwright's agent runs the same client at 0.2 with a 12-iteration
+tool budget. These are API models — no weight pin exists; `generated_at` in each
+result JSON records the run date. `LABWRIGHT_MODEL` / `LABWRIGHT_BASE_URL`
+override, but the committed numbers are exactly these two models.
+
+The three LLM-memory prompts (`eval/benchmark.py`; each is joined with the
+per-goal key list `_prompt_keys_for(gold)` and the goal text):
+
+**bare** (`bare_prompt_for`):
+```
+You are a wet-lab design expert. For the goal below, compute the design numbers
+yourself and return a single flat JSON object with ONLY these keys (use exactly
+these names; do the arithmetic; omit nothing): <keys>.
+Return ONLY the JSON object (no prose, no markdown fences).
+
+Goal: <goal>
+```
+
+**soft-gate** (`soft_gate_prompt_for`) — bare + a check step, domain-appropriate:
+```
+... <bare preamble> ...
+BEFORE you finalize: re-derive every derived flow number (<keys>) from your own
+width_um/height_um/length_mm/flow_rate_uLmin/viscosity_pas/density_kgm3 using
+the standard rectangular-channel formulas, and correct any value that does not
+match.
+Return ONLY the JSON object (no prose, no markdown fences).
+
+Goal: <goal>
+```
+(culture goals substitute the plate-dimension / hemocytometer / viability
+phrasing from `_CULTURE_DERIVED_KEYS`.)
+
+**self-verify pass 2** (`self_verify_prompt_for`) — the model is handed its own
+first-pass raw inputs and asked to recompute:
+```
+A design proposed these raw inputs: <key=value,…>.
+Using the standard rectangular-channel microfluidic formulas, recompute EXACTLY
+these derived values yourself (<keys>) from those inputs, and return a single
+flat JSON object with ONLY those keys (use exactly these names; do the
+arithmetic):
+Return ONLY the JSON object (no prose, no markdown fences).
+```
+
+**Labwright system prompt** — the treatment under test, quoted in full in
+`labwright/agent/agent.py` (`SYSTEM_PROMPT`). The parts that matter for the
+blind set are the physiological anchors it leaks, which is why five blind goals
+are labelled `prompt-backed`:
+
+> Common physiological anchors (verify against literature before relying on
+> them):
+> - Hepatic sinusoidal shear ≈ 0.05-0.15 Pa (0.5-1.5 dyn/cm²); lung
+>   alveolar-capillary ≈ 0.03 Pa; microvascular endothelium ≈ 0.1-1 Pa.
 
 ### Fairness, honestly stated
 
@@ -94,6 +155,9 @@ verifier add to the bare model.
       hand-checked against the governing equations.
 - [x] Curate the 12-blind gold set (`gold_blind.json`, expanded 6 → 12 in
       Aug 2026), each entry labelled `cold`/`prompt-backed` with a pinned source.
+      Labels re-audited in Aug 2026 against the *actual* system-prompt ranges:
+      venular and lymphatic sit inside "microvascular endothelium ≈ 0.1-1 Pa",
+      so 5 are `prompt-backed` and 7 `cold`.
 - [x] Run bare-LLM + Labwright on `deepseek-v4-flash` and `deepseek-v4-pro` on
       the 24-reading set → `results/eval_flash.json`, `results/eval_pro.json`.
       The runner checkpoints after every entry.
@@ -155,20 +219,25 @@ The blind-set drop is the honest headline: when the goal does not hand over the
 target, Labwright's verified designs hit the wrong physiology. On the expanded
 12 goals, `flash` recovers 3 (arterial 1.5 Pa, lung 0.03 Pa, BBB 1.0 Pa) and
 `pro` recovers 4 (venular 0.3 Pa, lung 0.03 Pa, HepG2 seeding 4000, BBB 1.0 Pa).
-**Cold-only sub-rates:** three of the 12 goals are `prompt-backed` (liver, lung,
-BBB), so the headline 25 %/33 % usable overstates recall on the genuinely cold
-goals — on the nine cold entries `flash` recovers only 1 (arterial) and `pro`
-only 2 (venular, HepG2), i.e. cold-only usable ≈ **11 %/22 %**.
-Both models correctly select the two prompt-backed entries they are primed for
-(lung, BBB) yet both miss the third prompt-backed entry (liver, 0.05 Pa): they
-propose the mid-range 0.10 Pa — inside the prompt's 0.05–0.15 Pa range but not
-the low-shear convention. Cold entries are mostly wrong (recovery = relative
-error of the proposed shear vs the target): kidney PTEC 0.02 Pa is proposed at
-0.50 Pa (`flash`, recovery 24) / 0.20 Pa (`pro`, recovery 9 — treating
-dyn/cm² as Pa), gut epithelium 0.002 Pa at 0.01 Pa (recovery 4), retinal
-arteriole within 7 % (`flash` — the closest miss, just outside the ±5 % usable
-tolerance) but 44 % off on `pro`, pulmonary artery off by 25–50 %, lymphatic
-off by 75 %, and both seeding densities off by a third to a half. The gate
+**Cold-only sub-rates:** five of the 12 goals are `prompt-backed` (liver, lung,
+BBB, venular, lymphatic), so the headline 25 %/33 % usable overstates recall on
+the genuinely cold goals — on the seven cold entries `flash` recovers only 1
+(arterial) and `pro` only 1 (HepG2 seeding), i.e. cold-only usable ≈ **14 % /
+14 %**. Of the recoveries that look like domain knowledge, only arterial
+(`flash`) and HepG2 seeding (`pro`) are actually cold; lung, BBB and venular sit
+inside prompted ranges.
+Both models correctly select the prompt-backed entries they are primed for
+(lung, BBB; `pro` also recovers venular 0.3 Pa, `flash` also recovers the cold
+arterial 1.5 Pa) yet both miss liver (0.05 Pa): they propose the mid-range
+0.10 Pa — inside the prompt's 0.05–0.15 Pa range but not the low-shear
+convention — and neither recovers lymphatic (0.2 Pa). The remaining cold
+entries are mostly wrong (recovery = relative error of the proposed shear vs
+the target): kidney PTEC 0.02 Pa is proposed at 0.50 Pa (`flash`, recovery 24)
+/ 0.20 Pa (`pro`, recovery 9 — treating dyn/cm² as Pa), gut epithelium 0.002 Pa
+at 0.01 Pa (recovery 4), retinal arteriole within 7 % (`flash` — the closest
+miss, just outside the ±5 % usable tolerance) but 44 % off on `pro`, pulmonary
+artery off by 25–50 %, and both seeding densities off by a third to a half. The
+gate
 never failed — every plan was internally verified — it just could not supply
 domain knowledge the model did not have.
 
@@ -185,6 +254,29 @@ tests (`../tests/test_benchmark_prompts.py`), and **every memory-system number
 in this table is from a single post-fix re-run** at temperature 0.2. The
 Labwright numbers are the committed run, preserved verbatim — Labwright's agent
 always received the goal through a separate code path and was never affected.
+
+### Statistical precision: single runs vs 5-seed intervals
+
+The headline cells above are **single runs** over 24/12 goals. A 5-seed re-run
+of the 24-reading set (`results/eval_seed_benchmark.json`: 24 goals × 5 seeds =
+120 trials per system/model, Wilson 95 % CI via `eval/ci.py`) bounds the
+point estimates:
+
+| model | system | usable rate (k/n) | 95 % CI |
+|---|---|---|---|
+| `flash` | bare | 8/120 = 0.067 | [0.034, 0.126] |
+| `flash` | soft-gate | 15/120 = 0.125 | [0.077, 0.196] |
+| `flash` | self-verify | 0/120 = 0.000 | [0.000, 0.031] |
+| `flash` | **Labwright** | 111/120 = 0.925 | [0.864, 0.960] |
+| `pro` | bare | 13/120 = 0.108 | [0.064, 0.177] |
+| `pro` | soft-gate | 19/120 = 0.158 | [0.104, 0.234] |
+| `pro` | self-verify | 0/120 = 0.000 | [0.000, 0.031] |
+| `pro` | **Labwright** | 115/120 = 0.958 | [0.906, 0.982] |
+
+The qualitative ordering (Labwright ≫ memory systems; flash vs pro within ~5 %)
+is stable across seeds; the blind-set cells and the thinking-ablation cells are
+single-run point estimates and should be read as such — a single point is a
+pilot, not a precision claim.
 
 ### Ablation: thinking on vs off
 

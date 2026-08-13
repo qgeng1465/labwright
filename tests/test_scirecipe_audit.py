@@ -111,3 +111,17 @@ def test_audit_domain_raw_mismatch_unverifiable():
     rec = audit_row(orc, raw, reference="ref-6")
     assert rec["verdict"] == "unverifiable"
     assert rec["reason"] == "no_culture_raw"
+
+
+def test_audit_no_derived_claims_gate():
+    # Regression: a row that states a number but no *derived* metric (raw inputs
+    # only, e.g. a seeding density) must be unverifiable, not vacuously "ok".
+    # Before the no_derived_claims gate this fell through to
+    # verify_published_protocol with an empty claimed dict and returned "ok",
+    # inflating the consistency headline (625/655 "ok" rows had no claims).
+    orc = "Seed 80,000 cells/cm2 in a 96-well plate."
+    raw = {"culture": {"plate_format": 96, "seeding_density_cells_cm2": 80000.0}}
+    rec = audit_row(orc, raw, reference="ref-7")
+    assert rec["verdict"] == "unverifiable"
+    assert rec["reason"] == "no_derived_claims"
+    assert not rec["has_claims"]

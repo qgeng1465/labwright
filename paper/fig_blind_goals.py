@@ -92,7 +92,14 @@ GOAL_LABELS = {
 
 #: goals whose target is hinted (as a range) in the Labwright system prompt.
 #: Marked with † so the cold-only recovery is countable from the figure.
-PROMPT_BACKED = {"blind-liver-sinusoid", "blind-lung-alveolar", "blind-bbb-shear"}
+#: venular (0.3 Pa) and lymphatic (0.2 Pa) sit inside the prompt's
+#: "microvascular endothelium ≈ 0.1-1 Pa" range, so by the same
+#: range-contains-answer criterion as liver/lung/BBB they are prompt-backed —
+#: seven goals are genuinely cold.
+PROMPT_BACKED = {
+    "blind-liver-sinusoid", "blind-lung-alveolar", "blind-bbb-shear",
+    "blind-venular-shear", "blind-lymphatic-shear",
+}
 
 def _val(rec: dict | None, key: str) -> float | None:
     if not rec:

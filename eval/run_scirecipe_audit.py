@@ -203,6 +203,16 @@ def audit_row(
         record["verdict"] = "unverifiable"
         record["reason"] = "no_flow_raw"
         return record
+    # Honest gate: a row that asserts no *derived* number has nothing for the
+    # verifier to confirm or contradict. Without it such rows fall through to
+    # verify_published_protocol with an empty ``claimed`` dict and come back "ok"
+    # vacuously (625 of the first run's 655 "ok" rows), inflating "internally
+    # consistent" to 0.898 when consistency among rows that actually stated a
+    # derived number was 30/104 = 0.288.
+    if not claimed:
+        record["verdict"] = "unverifiable"
+        record["reason"] = "no_derived_claims"
+        return record
     result = verify_published_protocol(
         chip=chip, flow=flow, culture=culture,
         claimed=claimed, reference=reference,

@@ -87,9 +87,9 @@ state that plainly instead of claiming a head-to-head. One honest boundary,
 stated in [the benchmark](eval/README.md): verification is *necessary, not
 sufficient*. Labwright proves numbers are internally consistent; it cannot
 supply physiology the model doesn't know. The blind-set usable rate collapses
-to 25–33 % (11–22 % on goals with no hint at all) for exactly that reason. That
-boundary is the real research frontier, and closing it is where this project is
-headed.
+to 25–33 % (14 % on the seven goals with no hint at all) for exactly that
+reason. That boundary is the real research frontier, and closing it is where
+this project is headed.
 
 ## What you get
 
@@ -220,10 +220,14 @@ Two capabilities the above don't have:
    published protocols + explicitly-labelled synthetic controls
    ([`eval/published_protocols/`](eval/published_protocols/)). Scaled to the
    literature, `eval/run_scirecipe_audit.py` ran the same check over **21,094**
-   real SciRecipe protocol summaries (14,589 numeric → 5,700 audited): **655**
-   internally consistent, **74** contradicted by the papers' own numbers, the
-   rest too vague to check — the reproducibility-gap measurement behind the
-   audit figure in `paper/fig_scirecipe.py`.
+   real SciRecipe protocol summaries (14,589 numeric → 5,700 audited → 457
+   stated a derived number → 104 checkable): **30** internally consistent, **74**
+   contradicted by the papers' own numbers, the rest too vague to check. The
+   honest rate over rows that actually *stated a number* is **30/104 = 29 %** —
+   an early run inflated this to 655 / 0.898 by counting rows that stated no
+   derived number as "ok"; those are now `unverifiable` (a regression test pins
+   the fix) — the reproducibility-gap measurement behind the audit figure in
+   `paper/fig_scirecipe.py`.
 2. **A benchmark with a reproducibility yardstick** — `eval/` measures both
    parameter recovery *and* the fraction of derived numbers that fail the
    verifier (see below).
@@ -254,9 +258,10 @@ re-proves) — on two gold sets:
    to them. It deliberately does *not* test domain knowledge.
 2. **12 "recall" goals** (`eval/gold_blind.json`) — the goal states no number
    ("recapitulate physiological venular wall shear"); the model must supply the
-   canonical target itself. Nine are `cold` (answer nowhere); three are
-   `prompt-backed` (the system prompt lists a range, but the model must still
-   pick the right value).
+   canonical target itself. Seven are `cold` (answer nowhere); five are
+   `prompt-backed` (the answer sits inside a range in the system prompt — the
+   model must still pick the right value, and range-membership is the criterion,
+   so venular and lymphatic count as prompted too).
 
 Four systems are compared, on two frontier models. The three LLM-memory
 systems (bare-LLM, soft-gate, self-verify) write numbers from memory and are
@@ -339,17 +344,81 @@ Read the numbers honestly — and the boundary of what they mean.
   was internally verified, hallucination 0.000. But the designs aimed at the
   wrong physiology. On the 12 goals `flash` recovers 3 (arterial 1.5 Pa, lung
   0.03 Pa, BBB 1.0 Pa), `pro` 4 (venular 0.3 Pa, lung 0.03 Pa, HepG2 seeding
-  4000 cells per channel, BBB 1.0 Pa). **Cold-only honesty check:** three of
-  the 12 goals are `prompt-backed` (the answer sits in the system prompt —
-  liver, lung, BBB), so on the nine genuinely cold goals `flash` recovers only
-  **1** (arterial) and `pro` only **2** (venular, HepG2): cold-only usable ≈
-  **11 % / 22 %**, not 25 % / 33 %. The hint is not even enough for the liver,
-  which both models propose at 0.10 Pa instead of the 0.05 Pa convention. Both
-  also miss the kidney (`flash` 0.50 Pa, `pro` 0.20 Pa — 24× / 9× off
-  the 0.02 Pa target, the `pro` error reading dyn/cm² as Pa). **The gate stops
-  fabricated numbers; it cannot supply domain knowledge the model does not
-  have.** That boundary is the honest headline, and it is exactly what a
+  4000 cells per channel, BBB 1.0 Pa). **Cold-only honesty check:** five of the
+  12 goals are `prompt-backed` (the answer sits inside the system prompt's
+  physiological-anchor range — liver, lung, BBB, venular, lymphatic), so on the
+  seven genuinely cold goals `flash` recovers only **1** (arterial) and `pro`
+  only **1** (HepG2): cold-only usable ≈ **14 % / 14 %**, not 25 % / 33 %. Of
+  the recoveries that look like domain knowledge, only arterial (`flash`) and
+  HepG2 seeding (`pro`) are actually cold; the other flash/pro recoveries (lung,
+  BBB, venular) sit inside the prompted range. The hint is not even enough for
+  the liver, which both models propose at 0.10 Pa instead of the 0.05 Pa
+  convention. Both also miss the kidney (`flash` 0.50 Pa, `pro` 0.20 Pa — 24× /
+  9× off the 0.02 Pa target, the `pro` error reading dyn/cm² as Pa). **The gate
+  stops fabricated numbers; it cannot supply domain knowledge the model does
+  not have.** That boundary is the honest headline, and it is exactly what a
   wet-lab user must not forget: verify the target, not just the arithmetic.
+
+## Reproducibility: prompts, models & provenance
+
+The benchmark is an ablation of *prompts and stage structure* on fixed models, so
+both are pinned and committed. Everything below is reproducible from the repo
+alone — no unrecorded prompt, model or scoring choice.
+
+**Models.** All benchmark rows use the DeepSeek v4 API
+(`https://api.deepseek.com`, OpenAI-compatible): **`deepseek-v4-flash`**
+(cheap, thinking disabled) and **`deepseek-v4-pro`**. Temperature **0.2**,
+thinking **disabled** (`LLMClient(disable_thinking=True)` default) — the
+arithmetic lives in the calculators, not the model. Labwright's agent runs the
+same client at temperature 0.2 with a 12-iteration tool budget
+(`--max-iterations 12`). `LABWRIGHT_MODEL` / `LABWRIGHT_BASE_URL` override the
+model; any OpenAI-compatible model works, but the committed numbers are exactly
+these two. These are API models, so no weight pin is possible; the API snapshots
+are the models as served on the run dates in the result JSONs (`generated_at`).
+
+**The three LLM-memory prompts** are the controllable variables of the ablation,
+so they are pinned verbatim (with the exact per-goal key lists) in
+[`eval/README.md`](eval/README.md#prompts--models-verbatim) — `bare_prompt_for`,
+`soft_gate_prompt_for` and `self_verify_prompt_for` in `eval/benchmark.py`.
+
+**The Labwright system prompt** (`labwright/agent/agent.py`, `SYSTEM_PROMPT`)
+is the treatment under test, not an unrecorded variable: it forbids inventing
+computed numbers, requires every derived value to come from the calculator
+tools, mandates `submit_design` with raw inputs only, and — critically for the
+blind set — *leaks physiological anchors* ("Hepatic sinusoidal shear ≈
+0.05-0.15 Pa; lung alveolar-capillary ≈ 0.03 Pa; microvascular endothelium ≈
+0.1-1 Pa"). The blind goals whose target falls inside one of those ranges are
+labelled `prompt-backed`; the seven that do not are `cold`.
+
+**Fine-tuned extractor scores** (`results/extractor/eval_report.json`,
+n = 400 eval rows + 12 blind goals, Qwen2.5-1.5B-Instruct LoRA, adapter at
+`results/extractor/lora`):
+
+| system | JSON parse | schema-ok | extract→verify consistency | field recovery (≤5 %) | target recovery |
+|---|---|---|---|---|---|
+| **fine-tuned 1.5B** | 1.0 | 0.9976 | **0.9976** | 0.72 | 0.0 |
+| `deepseek-v4-flash` (untuned) | 1.0 | 0.4005 | 0.4005 | 0.3875 | 0.0 |
+| `deepseek-v4-pro` (untuned) | 1.0 | 0.4005 | 0.4005 | 0.3875 | 0.2 |
+
+Target recovery is 0 even for the fine-tuned model: the extractor recovers the
+*raw inputs* a goal implies, not the physiological target number (that is the
+agent's job). `mean_field_rel_error` is 0.0059 for the fine-tuned model.
+
+**Statistical caveat.** The headline cells in the table above are **single
+runs** over 24/12 goals. A 5-seed re-run of the 24-reading set
+(`results/eval_seed_benchmark.json`, 24 goals × 5 seeds = 120 trials per
+system/model) gives Wilson 95 % CIs (`eval/ci.py`):
+
+| model | system | usable rate (k/n) | 95 % CI |
+|---|---|---|---|
+| `flash` | bare | 8/120 = 0.067 | [0.034, 0.126] |
+| `flash` | **Labwright** | 111/120 = 0.925 | [0.864, 0.960] |
+| `pro` | bare | 13/120 = 0.108 | [0.064, 0.177] |
+| `pro` | **Labwright** | 115/120 = 0.958 | [0.906, 0.982] |
+
+The qualitative ordering (Labwright ≫ bare; flash vs pro within ~5 %) is
+stable across seeds; the blind-set cells are single-run point estimates and
+should be read as such.
 
 The bare model's own numbers are worse than the earliest commits reported, for
 two reasons, both reported honestly. First, the earliest figures (62 %/50 %

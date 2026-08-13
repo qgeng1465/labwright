@@ -1,86 +1,110 @@
 [
   {
     "id": "blind-liver-sinusoid",
-    "goal": "Perfuse a liver-on-chip so that hepatocytes experience the in vivo hepatic sinusoidal wall shear stress — the very low shear characteristic of sinusoids. Choose geometry and flow that achieve the physiological target.",
-    "expected": {"shear_pa": 0.05},
+    "goal": "Perfuse a liver-on-chip so that hepatocytes experience the in vivo hepatic sinusoidal wall shear stress \u2014 the very low shear characteristic of sinusoids. Choose geometry and flow that achieve the physiological target.",
+    "expected": {
+      "shear_pa": 0.05
+    },
     "blind_strength": "prompt-backed",
-    "source": "Blind design target: the low-shear convention for liver-on-chip (~0.5 dyn/cm^2 = 0.05 Pa). In vivo sinusoid WSS is very low (locally near zero), peaks only under disturbed flow — CFD model of mouse liver microcirculation, 10.1016/j.jbiomech.2017.08.011. The goal text does NOT state the number. NOTE: the Labwright system prompt lists 'Hepatic sinusoidal shear ≈ 0.05-0.15 Pa', so this entry is partially leakable from the prompt (the model must still pick 0.05, not mid-range)."
+    "source": "Blind design target: the low-shear convention for liver-on-chip (~0.5 dyn/cm^2 = 0.05 Pa). In vivo sinusoid WSS is very low (locally near zero), peaks only under disturbed flow \u2014 CFD model of mouse liver microcirculation, 10.1016/j.jbiomech.2017.08.011. The goal text does NOT state the number. NOTE: the Labwright system prompt lists 'Hepatic sinusoidal shear \u2248 0.05-0.15 Pa', so this entry is partially leakable from the prompt (the model must still pick 0.05, not mid-range)."
   },
   {
     "id": "blind-kidney-ptec",
     "goal": "Culture human proximal tubular epithelial cells in a microchannel that reproduces the apical fluid shear stress these cells experience in the human kidney. Choose geometry and flow that achieve the physiological target.",
-    "expected": {"shear_pa": 0.02},
+    "expected": {
+      "shear_pa": 0.02
+    },
     "blind_strength": "cold",
     "source": "Blind design target: the canonical kidney PTEC value, apical FSS 0.2 dyn/cm^2 = 0.02 Pa (Jang et al., Integrative Biology 2013, 10.1039/c3ib40049b). The goal text does NOT state the number; not in the system prompt either."
   },
   {
     "id": "blind-arterial-shear",
     "goal": "Design an endothelial-lined arterial channel that recapitulates physiological arterial wall shear stress. Choose geometry and flow that achieve the physiological target.",
-    "expected": {"shear_pa": 1.5},
+    "expected": {
+      "shear_pa": 1.5
+    },
     "blind_strength": "cold",
     "source": "Blind design target: mid-range arterial WSS 15 dyn/cm^2 = 1.5 Pa (arterial range ~10-20 dyn/cm^2). Papaioannou & Stefanadis, Hellenic J Cardiol 2005;46(1):9-15, PMID 15807389. The goal text does NOT state the number."
   },
   {
     "id": "blind-venular-shear",
     "goal": "Design a venular channel recapitulating physiological venular wall shear stress. Choose geometry and flow that achieve the physiological target.",
-    "expected": {"shear_pa": 0.3},
-    "blind_strength": "cold",
+    "expected": {
+      "shear_pa": 0.3
+    },
+    "blind_strength": "prompt-backed",
     "source": "Blind design target: mid-range venular WSS 3 dyn/cm^2 = 0.3 Pa (venular range ~1-6 dyn/cm^2). Papaioannou & Stefanadis 2005, PMID 15807389; Koutsiaris et al., Biorheology 2007;44(5-6):375-386, PMID 18401076. The goal text does NOT state the number."
   },
   {
     "id": "blind-lung-alveolar",
     "goal": "Design an alveolar-capillary barrier chip under the very low physiological shear of the lung alveolus. Choose geometry and flow that achieve the physiological target.",
-    "expected": {"shear_pa": 0.03},
+    "expected": {
+      "shear_pa": 0.03
+    },
     "blind_strength": "prompt-backed",
-    "source": "Blind design target: alveolar-channel WSS is very low, ~0.385 dyn/cm^2 = 0.0385 Pa at 100 uL/min (computational lung-on-a-chip analysis, OATD thesis 'Alveoli-on-a-chip'); 0.03 Pa is the same order of magnitude and the low-shear convention. The goal text does NOT state the number. NOTE: the Labwright system prompt lists 'lung alveolar-capillary ≈ 0.03 Pa', so this entry is partially leakable from the prompt."
+    "source": "Blind design target: alveolar-channel WSS is very low, ~0.385 dyn/cm^2 = 0.0385 Pa at 100 uL/min (computational lung-on-a-chip analysis, OATD thesis 'Alveoli-on-a-chip'); 0.03 Pa is the same order of magnitude and the low-shear convention. The goal text does NOT state the number. NOTE: the Labwright system prompt lists 'lung alveolar-capillary \u2248 0.03 Pa', so this entry is partially leakable from the prompt."
   },
   {
     "id": "blind-seed-hepg2-log",
     "goal": "Seed HepG2 cells in logarithmic growth phase onto the culture area of a 400 um wide, 20 mm long channel. Report the cells to seed per channel.",
-    "expected": {"seed_count": 4000.0},
+    "expected": {
+      "seed_count": 4000.0
+    },
     "blind_strength": "cold",
     "source": "Blind design target: HepG2 growth-phase seeding density 5e4 cells/cm^2 (Scientific Reports 2021, 10.1038/s41598-021-81733-3); area 0.08 cm^2 for a 400 um x 20 mm channel; N = 5e4 x 0.08 = 4000. The goal states the geometry but NOT the density."
   },
   {
     "id": "blind-phh-seed",
     "goal": "Seed primary human hepatocytes onto the culture area of a 400 um wide, 20 mm long channel. Report the cells to seed per channel.",
-    "expected": {"seed_count": 12000.0},
+    "expected": {
+      "seed_count": 12000.0
+    },
     "blind_strength": "cold",
     "source": "Blind design target: standard plating density for primary hepatocytes in collagen-sandwich culture ~1.5e5 cells/cm^2 (Bioengineering 2023;10(2):131, 10.3390/bioengineering10020131); area 0.08 cm^2 for a 400 um x 20 mm channel; N = 1.5e5 x 0.08 = 12000. The goal states the geometry but NOT the density; not in the system prompt either."
   },
   {
     "id": "blind-bbb-shear",
     "goal": "Design a blood-brain barrier channel reproducing the fluid shear that human brain microvascular endothelial cells experience in vivo. Choose geometry and flow that achieve the physiological target.",
-    "expected": {"shear_pa": 1.0},
+    "expected": {
+      "shear_pa": 1.0
+    },
     "blind_strength": "prompt-backed",
-    "source": "Blind design target: physiologic shear for human brain microvascular endothelial cells ~10-20 dyn/cm^2 = 1-2 Pa (substrate-stiffness/shear study, Fluids and Barriers of the CNS 2025, 10.1186/s12987-025-00683-4); target 1.0 Pa = lower end of the physiologic range. The goal text does NOT state the number. NOTE: the Labwright system prompt lists 'microvascular endothelium ≈ 0.1-1 Pa', so 1.0 Pa sits at the top of that range — the model must still select the max, not the middle."
+    "source": "Blind design target: physiologic shear for human brain microvascular endothelial cells ~10-20 dyn/cm^2 = 1-2 Pa (substrate-stiffness/shear study, Fluids and Barriers of the CNS 2025, 10.1186/s12987-025-00683-4); target 1.0 Pa = lower end of the physiologic range. The goal text does NOT state the number. NOTE: the Labwright system prompt lists 'microvascular endothelium \u2248 0.1-1 Pa', so 1.0 Pa sits at the top of that range \u2014 the model must still select the max, not the middle."
   },
   {
     "id": "blind-pulmonary-artery-shear",
     "goal": "Design an endothelial pulmonary-artery channel recapitulating the resting wall shear of the human proximal pulmonary artery. Choose geometry and flow that achieve the physiological target.",
-    "expected": {"shear_pa": 2.0},
+    "expected": {
+      "shear_pa": 2.0
+    },
     "blind_strength": "cold",
     "source": "Blind design target: resting proximal pulmonary artery WSS ~19.8 +/- 4.0 dyn/cm^2 = ~2.0 Pa (subject-specific MRI/CFD, Tang et al., Ann Biomed Eng 2011, PMID 20640512); healthy controls ~20.5 dyn/cm^2 (Pulmonary Circulation 2012). The goal text does NOT state the number; not in the system prompt either (2 Pa sits above the listed microvascular 0.1-1 Pa)."
   },
   {
     "id": "blind-gut-epithelial-shear",
     "goal": "Design an intestinal lumen-on-chip channel recapitulating the very low fluid shear that Caco-2 / intestinal epithelial cells experience under physiological gut flow. Choose geometry and flow that achieve the physiological target.",
-    "expected": {"shear_pa": 0.002},
+    "expected": {
+      "shear_pa": 0.002
+    },
     "blind_strength": "cold",
     "source": "Blind design target: physiological gut luminal shear is extremely low, ~0.02 dyn/cm^2 = 0.002 Pa (the seminal human gut-on-a-chip flowed 30 uL/h over Caco-2, producing 0.02 dyn/cm^2, Kim et al., Lab Chip 2012, 10.1039/c2lc40074j). The goal text does NOT state the number; not in the system prompt either."
   },
   {
     "id": "blind-retinal-arteriole-shear",
     "goal": "Design a retinal arteriole chip recapitulating the wall shear of first-order human retinal arterioles, a vascular bed known for unusually high shear. Choose geometry and flow that achieve the physiological target.",
-    "expected": {"shear_pa": 5.4},
+    "expected": {
+      "shear_pa": 5.4
+    },
     "blind_strength": "cold",
     "source": "Blind design target: first-order human retinal arteriole WSS 54 +/- 13 dyn/cm^2 = 5.4 Pa (noninvasive laser-Doppler + viscometry, Nagaoka & Yoshida, Invest Ophthalmol Vis Sci 2006;47(3), PMID 16505049). The goal text does NOT state the number; not in the system prompt either."
   },
   {
     "id": "blind-lymphatic-shear",
     "goal": "Design a lymphatic-vessel channel recapitulating the normal low shear of lymphatic endothelium. Choose geometry and flow that achieve the physiological target.",
-    "expected": {"shear_pa": 0.2},
-    "blind_strength": "cold",
+    "expected": {
+      "shear_pa": 0.2
+    },
+    "blind_strength": "prompt-backed",
     "source": "Blind design target: 2 dyn/cm^2 = 0.2 Pa is the standard 'normal' shear reference for lymphatic endothelial cells in vitro (0/2/20 dyn/cm^2 = lymphedema/normal/inflammation; Swartz lab, GEO GSE8852 'Evaluation of the effects of shear stress on human dermal microvascular blood and lymphatic endothelial cells'; EPFL thesis, 2011). The goal text does NOT state the number; not in the system prompt either."
   }
 ]

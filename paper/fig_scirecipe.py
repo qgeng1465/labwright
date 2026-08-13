@@ -2,12 +2,17 @@
 
 Turns ``results/eval_scirecipe_audit.json`` into a two-panel figure. Left: the
 funnel — from all protocol summaries, how many carry numbers, how many route to
-a domain we can recompute, how many were audited, how many were *checkable*.
-Right: the verdict distribution over audited rows (ok / review_required /
-unverifiable) with the counts set in white inside the segments. The top
-contradictions are quoted verbatim in the figure's bottom margin — outside both
-panels so they can never collide with the bars — and an arrow draws the eye from
-that note up to the unverifiable (gray) segment they live in.
+a domain we can recompute, how many were audited, how many *stated a derived
+number* (the only rows a verdict can speak to), and how many of those were
+*checkable*. Right: the verdict distribution over audited rows (ok /
+review_required / unverifiable) with the counts set in white inside the
+segments. "ok" counts only rows that asserted a derived number which re-computed
+within tolerance — rows that stated no derived number are unverifiable, never
+vacuously "ok" (625 of the first run's 655 "ok" rows had no claims; the honest
+consistency is 30/104 = 0.288, not 0.898). The top contradictions are quoted
+verbatim in the figure's bottom margin — outside both panels so they can never
+collide with the bars — and an arrow draws the eye from that note up to the
+unverifiable (gray) segment they live in.
 
 Layout invariants (kept in the code so the figure can't drift):
 - ``gridspec_kw={'wspace': 0.4, 'width_ratios': [1, 2]}`` on ``figsize=(16, 6)``:
@@ -83,6 +88,10 @@ def main(argv: list[str]) -> int:
     n_review = verdicts.get("review_required", 0)
     n_unv = verdicts.get("unverifiable", 0)
     n_check = n_ok + n_review
+    # Rows that asserted at least one *derived* number (the only rows a verdict
+    # can speak to); the funnel stages this so "ok" is never counted on empty
+    # claims. n_ok now means "stated derived numbers that all re-computed".
+    n_claimed = d.get("n_stated_derived", sum(1 for r in d.get("rows", []) if r.get("has_claims")))
 
     # No constrained_layout: it silently ignores the subplots_adjust below (which
     # would leave the legend overlapping the panels). Manual fractions instead.
@@ -103,7 +112,8 @@ def main(argv: list[str]) -> int:
         ("all protocols", total, None),
         ("numeric", numeric, f"{100.0 * numeric / total:.0f}% of all"),
         ("audited (culture + flow)", dom, f"{100.0 * dom / numeric:.0f}% of numeric"),
-        ("checkable", n_check, f"{100.0 * n_check / audited:.0f}% of audited"),
+        ("stated a derived number", n_claimed, f"{100.0 * n_claimed / audited:.0f}% of audited"),
+        ("checkable", n_check, f"{100.0 * n_check / n_claimed:.0f}% of stated"),
     ]
     ymax = stages[0][1]
     for i, (name, value, pct) in enumerate(stages):
@@ -137,6 +147,7 @@ def main(argv: list[str]) -> int:
               (n_unv, NEUTRAL, "unverifiable")]
     xmax = audited * 1.12  # the axis xlim, in the same data units as value
     bottom = 0
+    thin: list[tuple[int, str]] = []  # slices too narrow to label in place
     for value, color, label in counts:
         if not value:
             continue
@@ -153,12 +164,22 @@ def main(argv: list[str]) -> int:
                 ax.text(cx, -0.22, label, ha="center", va="center", fontsize=9.5,
                         color="white" if color in (GOOD, WARN) else INK)
         else:
-            # thin slice: count + name float above the bar, clear of neighbours
-            ax.text(cx, 0.52, f"{value:,}", ha="center", va="center", fontsize=10,
-                    color=WARN, fontweight="bold")
-            ax.text(cx, 0.28, label, ha="center", va="bottom", fontsize=9,
-                    color=INK)
+            thin.append((value, label))
         bottom += value
+    # Thin slices (ok + review are 30 and 74 of 5,700 here): their centres sit
+    # ~52 data units apart, so two floating labels at cx collide. Render ONE
+    # combined annotation anchored at the bar's left edge above it instead —
+    # the legend and the green/amber slivers carry the colour mapping.
+    if len(thin) == 1:
+        (value, label), = thin
+        ax.text(value / 2, 0.52, f"{value:,}", ha="center", va="center",
+                fontsize=10, color=WARN, fontweight="bold")
+        ax.text(value / 2, 0.28, label, ha="center", va="bottom", fontsize=9,
+                color=INK)
+    elif len(thin) > 1:
+        ax.text(0, 0.60, "  ·  ".join(f"{v:,} {lab}" for v, lab in thin),
+                ha="left", va="center", fontsize=10, color=INK,
+                fontweight="bold")
     ax.set_ylim(-1.6, 0.72)
     ax.set_xlim(0, xmax)
     ax.set_yticks([])
