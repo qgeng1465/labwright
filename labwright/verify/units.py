@@ -51,6 +51,16 @@ CANONICAL_UNITS: dict[str, str] = {
     "culture.viability_pct": "%",
     "culture.doubling_time_h": "h",
     "culture.culture_duration_h": "h",
+    # spheroid
+    "spheroid.cells_per_spheroid": "cells",
+    "spheroid.spheroid_count": "n",
+    "spheroid.expected_diameter_um": "um",
+    "spheroid.spheroid_volume_ul": "uL",
+    "spheroid.cell_diameter_um": "um",
+    "spheroid.medium_volume_per_spheroid_ul": "uL",
+    "spheroid.total_medium_ml": "mL",
+    "spheroid.cells_total": "cells",
+    "spheroid.expected_cells_after_growth": "cells",
     # dosing
     "dosing.stock_mM": "mM",
     "dosing.working_mM": "mM",
@@ -84,6 +94,8 @@ UNIT_ALIASES: list[tuple[str, str, str, float]] = [
     ("s read as min", "s", "min", 60.0),
     ("uL read as mL", "uL", "mL", 1000.0),
     ("mL read as uL", "mL", "uL", 0.001),
+    ("um read as mm", "um", "mm", 1000.0),
+    ("mm read as um", "mm", "um", 0.001),
     ("ng/mL read as ug/mL", "ng/mL", "ug/mL", 1000.0),
 ]
 

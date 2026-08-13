@@ -245,3 +245,92 @@ def test_hallucination_rate_ignores_culture_when_absent():
     plan.culture = None
     rate = hallucination_rate(plan)
     assert 0 < rate < 1  # flow fields counted, culture fields not in denominator
+
+
+# --- 3D-spheroid domain: bare metrics are spheroid-aware, not flow/culture-only ---
+
+_SPHEROID_GOLD = GoldExperiment(
+    id="s1",
+    goal="Form one HepG2 spheroid per well in a 96-well ULA plate at 1000 "
+    "cells/spheroid (20 um cells); report the expected diameter and the total "
+    "cells for a full plate.",
+    expected={"expected_diameter_um": 200.0, "cells_total": 96000.0},
+    source="self-consistent (solid-sphere packing); 96-ULA one spheroid/well",
+)
+
+
+def test_is_spheroid_gold_routing():
+    from eval.benchmark import _is_spheroid_gold
+
+    assert _is_spheroid_gold(_SPHEROID_GOLD)
+    assert not _is_spheroid_gold(_CULTURE_GOLD)
+
+
+def test_bare_prompt_for_spheroid_uses_spheroid_keys():
+    from eval.benchmark import _prompt_keys_for
+
+    prompt = bare_prompt_for(_SPHEROID_GOLD)
+    assert "spheroid_format" in prompt
+    assert "expected_diameter_um" in prompt
+    assert "width_um" not in prompt  # no flow keys for a spheroid goal
+    keys = _prompt_keys_for(_SPHEROID_GOLD)
+    assert {"spheroid_format", "spheroid_count", "cells_per_spheroid",
+            "cell_diameter_um"} <= set(keys)
+
+
+def test_bare_hallucination_spheroid_consistent():
+    extracted = {
+        "spheroid_format": "96-ula", "spheroid_count": 96.0,
+        "cells_per_spheroid": 1000.0, "cell_diameter_um": 20.0,
+        "expected_diameter_um": 200.0, "spheroid_volume_ul": 4.18879e-3,
+        "cells_total": 96000.0, "medium_volume_per_spheroid_ul": 100.0,
+        "total_medium_ml": 9.6,
+    }
+    assert bare_hallucination(extracted) == 0.0
+    assert bare_checkable(extracted) is True
+
+
+def test_bare_hallucination_spheroid_wrong():
+    extracted = {
+        "spheroid_format": "96-ula", "spheroid_count": 96.0,
+        "cells_per_spheroid": 1000.0, "cell_diameter_um": 20.0,
+        "cells_total": 50000.0,  # does not equal 96 × 1000
+    }
+    assert bare_hallucination(extracted) > 0
+
+
+def test_bare_hallucination_spheroid_no_derived_is_unverifiable():
+    # format + cells + count but no spheroid derived number → nothing checkable
+    extracted = {"spheroid_format": "96-ula", "spheroid_count": 96.0,
+                 "cells_per_spheroid": 1000.0}
+    assert bare_hallucination(extracted) == 1.0
+    assert bare_checkable(extracted) is False
+
+
+def test_bare_hallucination_spheroid_bad_format_is_unverifiable():
+    # an unrecognised spheroid_format cannot be cross-checked → 1.0
+    extracted = {"spheroid_format": "petri-dish", "spheroid_count": 96.0,
+                 "cells_per_spheroid": 1000.0, "expected_diameter_um": 200.0}
+    assert bare_hallucination(extracted) == 1.0
+
+
+def test_parameter_recovery_spheroid_exact():
+    from labwright.design import derive_spheroid
+    from labwright.schema.design import SpheroidPlan
+
+    plan = _verified_plan()
+    plan.spheroid = SpheroidPlan(**derive_spheroid(
+        dict(cell_type="HepG2", spheroid_format="96-ula", spheroid_count=96,
+             cells_per_spheroid=1000.0, cell_diameter_um=20.0)
+    ))
+    errs = parameter_recovery(_SPHEROID_GOLD, plan)
+    assert errs["expected_diameter_um"] == pytest.approx(0.0)
+    assert errs["cells_total"] == pytest.approx(0.0)
+
+
+def test_hallucination_rate_ignores_spheroid_when_absent():
+    # A chip-only plan must not be scored against spheroid fields.
+    plan = _verified_plan(shear=1.0)  # flow error present
+    plan.spheroid = None
+    rate = hallucination_rate(plan)
+    assert 0 < rate < 1  # flow fields counted, spheroid fields not in denominator

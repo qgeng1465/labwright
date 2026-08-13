@@ -27,6 +27,7 @@ from labwright.calc import cell as calc_cell
 from labwright.calc import culture as calc_culture
 from labwright.calc import dosing as calc_dosing
 from labwright.calc import microfluidics as mf
+from labwright.calc import spheroid as calc_spheroid
 from labwright.schema.design import DesignPlan
 
 # Relative tolerance for float re-comparison (below experimental precision)
@@ -248,6 +249,126 @@ def check_culture(plan: DesignPlan, issues: list[Issue]) -> None:
         )
 
 
+def check_spheroid(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the 3D spheroid/organoid plan when present.
+
+    Re-runs :mod:`labwright.calc.spheroid` on the raw inputs and verifies every
+    derived field; warns on necrotic-core sizes and on missing growth inputs
+    that make the harvest cell count unpredictable.
+    """
+    s = plan.spheroid
+    if s is None:
+        return
+
+    expected_d = calc_spheroid.spheroid_diameter_from_cells(
+        s.cells_per_spheroid, s.cell_diameter_um
+    )
+    if not _close(expected_d, s.expected_diameter_um):
+        issues.append(
+            Issue(
+                level="error",
+                field="spheroid.expected_diameter_um",
+                message="expected_diameter_um does not match cells_per_spheroid × "
+                "single-cell volume (solid-sphere packing)",
+                expected=expected_d,
+                found=s.expected_diameter_um,
+            )
+        )
+    expected_v = calc_spheroid.spheroid_volume_from_cells(
+        s.cells_per_spheroid, s.cell_diameter_um
+    )
+    if not _close(expected_v, s.spheroid_volume_ul):
+        issues.append(
+            Issue(
+                level="error",
+                field="spheroid.spheroid_volume_ul",
+                message="spheroid_volume_ul does not match cells_per_spheroid × single-cell volume",
+                expected=expected_v,
+                found=s.spheroid_volume_ul,
+            )
+        )
+    expected_total = s.spheroid_count * s.cells_per_spheroid
+    if not _close(expected_total, s.cells_total):
+        issues.append(
+            Issue(
+                level="error",
+                field="spheroid.cells_total",
+                message="cells_total does not equal spheroid_count × cells_per_spheroid",
+                expected=expected_total,
+                found=s.cells_total,
+            )
+        )
+    expected_med = calc_spheroid.medium_volume_per_spheroid(s.spheroid_format)
+    if not _close(expected_med, s.medium_volume_per_spheroid_ul):
+        issues.append(
+            Issue(
+                level="error",
+                field="spheroid.medium_volume_per_spheroid_ul",
+                message="medium_volume_per_spheroid_ul does not equal the standard working volume",
+                expected=expected_med,
+                found=s.medium_volume_per_spheroid_ul,
+            )
+        )
+    expected_total_med = s.spheroid_count * s.medium_volume_per_spheroid_ul / 1000.0
+    if not _close(expected_total_med, s.total_medium_ml):
+        issues.append(
+            Issue(
+                level="error",
+                field="spheroid.total_medium_ml",
+                message="total_medium_ml does not equal per-spheroid volume × spheroid_count",
+                expected=expected_total_med,
+                found=s.total_medium_ml,
+            )
+        )
+
+    if s.expected_diameter_um > 400:
+        issues.append(
+            Issue(
+                level="warning",
+                field="spheroid.expected_diameter_um",
+                message=f"expected spheroid diameter {s.expected_diameter_um:.1f} µm exceeds "
+                "~400 µm — oxygen diffuses only ~200 µm, so a necrotic core is likely",
+            )
+        )
+
+    can_predict = (
+        s.doubling_time_h is not None and s.culture_duration_h is not None
+    )
+    if s.expected_cells_after_growth is not None:
+        if not can_predict:
+            issues.append(
+                Issue(
+                    level="warning",
+                    field="spheroid.expected_cells_after_growth",
+                    message="expected_cells_after_growth present but growth inputs "
+                    "(doubling_time_h / culture_duration_h) are missing — it cannot be re-derived",
+                )
+            )
+        else:
+            expected_g = calc_cell.cell_count_after_time(
+                s.cells_per_spheroid, s.doubling_time_h, s.culture_duration_h
+            )
+            if not _close(expected_g, s.expected_cells_after_growth):
+                issues.append(
+                    Issue(
+                        level="error",
+                        field="spheroid.expected_cells_after_growth",
+                        message="expected_cells_after_growth does not match the growth prediction",
+                        expected=expected_g,
+                        found=s.expected_cells_after_growth,
+                    )
+                )
+    else:
+        if can_predict:
+            issues.append(
+                Issue(
+                    level="warning",
+                    field="spheroid.expected_cells_after_growth",
+                    message="growth inputs are present but expected_cells_after_growth is not predicted",
+                )
+            )
+
+
 def check_stats(plan: DesignPlan, issues: list[Issue]) -> None:
     """Cross-check the replicate count against the stated effect/power."""
     if plan.stats is None:
@@ -285,6 +406,7 @@ def verify_design(plan: DesignPlan) -> list[Issue]:
     check_flow(plan, issues)
     check_seeding(plan, issues)
     check_culture(plan, issues)
+    check_spheroid(plan, issues)
     check_dosing(plan, issues)
     check_stats(plan, issues)
     from labwright.verify.sanity import check_sanity

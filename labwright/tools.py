@@ -21,7 +21,7 @@ from typing import Any, Callable
 
 from pydantic import BaseModel, Field
 
-from labwright.calc import cell, culture, dosing, microfluidics as mf, stats
+from labwright.calc import cell, culture, dosing, microfluidics as mf, spheroid, stats
 from labwright.published import verify_published_protocol
 
 # ---------------------------------------------------------------------------
@@ -170,6 +170,26 @@ _TOOL_NOTES: dict[str, tuple[str, str]] = {
         "verify_published_protocol({chip: {...}, flow: {...}, claimed: {'shear_pa': 0.05}, reference: 'DOI'}) "
         "-> per-field verdict",
         "claimed values that do not follow from the paper's own inputs are flagged",
+    ),
+    "spheroid_volume": (
+        "spheroid_volume(200) -> 0.004189 µL",
+        "diameter in µm; volume comes out in µL (1000 µm³ = 1 nL)",
+    ),
+    "spheroid_diameter_from_cells": (
+        "spheroid_diameter_from_cells(1000, 20) -> ~200 µm",
+        "cell diameter in µm; 1000 cells of 20 µm ≈ a 200 µm spheroid (solid-sphere packing)",
+    ),
+    "cells_per_spheroid_for_diameter": (
+        "cells_per_spheroid_for_diameter(200, 20) -> ~1000",
+        "target diameter in µm; keep ≤ ~200 µm to avoid necrotic cores (oxygen diffuses ~200 µm)",
+    ),
+    "medium_volume_per_spheroid": (
+        "medium_volume_per_spheroid('96-ula') -> 100 µL",
+        "format is 96-ula / 384-ula / hanging-drop; volume per spheroid (one spheroid per well/drop)",
+    ),
+    "spheroids_from_suspension": (
+        "spheroids_from_suspension(2.4e5, 1000) -> 240",
+        "total cells ÷ cells per spheroid, floored",
     ),
 }
 
@@ -343,6 +363,29 @@ class VerifyProtocolParams(BaseModel):
         '"channel_volume_ul": 0.8}'
     )
     reference: str = Field(description="DOI / journal citation of the paper being checked (required)")
+
+
+class SpheroidVolumeParams(BaseModel):
+    diameter_um: float = Field(gt=0, description="Spheroid diameter in micrometres")
+
+
+class SpheroidDiameterFromCellsParams(BaseModel):
+    cells_per_spheroid: float = Field(gt=0, description="Cells seeded per spheroid")
+    cell_diameter_um: float = Field(gt=0, description="Mean single-cell diameter in micrometres (hepatocytes ≈ 20)")
+
+
+class CellsPerSpheroidParams(BaseModel):
+    target_diameter_um: float = Field(gt=0, description="Target spheroid diameter in micrometres")
+    cell_diameter_um: float = Field(gt=0, description="Mean single-cell diameter in micrometres")
+
+
+class MediumPerSpheroidParams(BaseModel):
+    spheroid_format: str = Field(description="Vessel/format: 96-ula / 384-ula / hanging-drop")
+
+
+class SpheroidCountParams(BaseModel):
+    total_cells: float = Field(gt=0, description="Total viable cells in the suspension")
+    cells_per_spheroid: float = Field(gt=0, description="Cells per spheroid")
 
 
 # ---------------------------------------------------------------------------
@@ -573,6 +616,56 @@ register_tool(
     verify_published_protocol,
     "published",
     units_out="verdict per field",
+)
+
+register_tool(
+    SpheroidVolumeParams,
+    "spheroid_volume",
+    "Volume of a solid spheroid from its diameter: V = 4/3·π·(d/2)³. Convert a target spheroid size "
+    "into the culture volume it represents, or cross-check a reported spheroid volume.",
+    spheroid.spheroid_volume_ul,
+    "3d_culture",
+    units_out="µL",
+)
+
+register_tool(
+    SpheroidDiameterFromCellsParams,
+    "spheroid_diameter_from_cells",
+    "Spheroid diameter implied by a cell count: cells packed as a solid sphere, each of the given mean "
+    "cell diameter. Estimate the size a seeding density will produce (1000 cells of 20 µm → ~200 µm).",
+    spheroid.spheroid_diameter_from_cells,
+    "3d_culture",
+    units_out="µm",
+)
+
+register_tool(
+    CellsPerSpheroidParams,
+    "cells_per_spheroid_for_diameter",
+    "Cells needed to reach a target spheroid diameter: spheroid volume ÷ single-cell volume. Plan "
+    "seeding for a desired spheroid size; keep spheroids ≤ ~200 µm to avoid necrotic cores.",
+    spheroid.cells_per_spheroid_for_diameter,
+    "3d_culture",
+    units_out="cells/spheroid",
+)
+
+register_tool(
+    MediumPerSpheroidParams,
+    "medium_volume_per_spheroid",
+    "Standard working medium volume for one spheroid in the common vessels: 96-ULA ≈ 100 µL, "
+    "384-ULA ≈ 50 µL, hanging drop ≈ 20 µL (one spheroid per well/drop).",
+    spheroid.medium_volume_per_spheroid,
+    "3d_culture",
+    units_out="µL/spheroid",
+)
+
+register_tool(
+    SpheroidCountParams,
+    "spheroids_from_suspension",
+    "How many spheroids a counted cell suspension can form at a given cells-per-spheroid: total cells ÷ "
+    "cells per spheroid (floored). Plan the number of wells/drops a harvest can seed.",
+    spheroid.spheroid_count_from_suspension,
+    "3d_culture",
+    units_out="spheroids",
 )
 
 

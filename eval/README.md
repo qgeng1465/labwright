@@ -30,7 +30,7 @@ The three LLM-memory systems (bare, soft-gate, self-verify) are scored by
 verifiability, unverifiable=1.0. Only the prompt/stage structure differs, so any
 measured difference between them is caused by the *approach*, not by scoring.
 
-Two gold sets:
+Three gold sets:
 
 1. **`gold_experiments.json` — 24 "reading" goals.** Every goal states the
    answer (the geometry/flow/density/effect-size, or the physiological target
@@ -58,6 +58,26 @@ Two gold sets:
    invented, and `tests/test_metrics.py` re-derives each scenario entry to prove
    the gold itself is satisfiable (an unwinnable gold would inflate failure
    rates for the wrong reason).
+3. **`gold_spheroid.json` — 15 "3D-spheroid" goals.** A third domain —
+   3D culture (spheroid/organoid) — where spheroid conventions are fragmented
+   across ULA and hanging-drop vendors, a deliberately knowledge-weak area for
+   LLMs. Four are reading (solid-sphere geometry and cells-per-size, stated in
+   the goal); three exercise a standard vessel working volume (96-ULA 100 µL,
+   384-ULA 50 µL, hanging-drop 20 µL — partial-info, the convention must be
+   recalled); four are failure-mode scenarios:
+   - **unit-ambiguity** (`spheroid-um-mm-unit-ambiguity`) — the goal states a
+     diameter in mm and asks for µm; a mm-as-µm misread is exactly 1000× off.
+   - **growth** (`spheroid-growth-72h`) — exponential growth from seed count.
+   - **multi-target** (`spheroid-96well-total`) — total cells *and* total medium
+     for a full 96-ULA plate, jointly.
+   - **cross-domain** (`spheroid-doxorubicin-dosing`) — spheroid size/medium
+     *and* a DMSO vehicle fraction from a drug stock.
+   Four are blind: two `prompt-backed` (1000 cells/spheroid and the 96-ULA
+   100 µL volume are stated in the Labwright system-prompt anchors) and two
+   `cold` (the 384-ULA 50 µL and hanging-drop 20 µL volumes are in neither the
+   goal text nor the system prompt). Every entry pins a citable source or an
+   explicit self-consistent derivation; `tests/test_gold_spheroid.py`
+   re-derives each entry from its goal raws with `calc/spheroid.py`.
 
 ### Prompts & models (verbatim)
 
@@ -221,7 +241,7 @@ New in the 15-entry blind run, every record also carries:
 
 ## Results (honest)
 
-All systems, both sets, two models (`flash`, `pro`). Self-consistent = zero
+All systems, all three sets, two models (`flash`, `pro`). Self-consistent = zero
 verifier errors; usable = self-consistent *and* recovers every gold target
 within ±5 %. The memory systems (bare, soft-gate, self-verify) are scored by
 identical extraction/tolerance/unverifiable=1.0 rules — only the prompt/stage
@@ -245,6 +265,14 @@ structure differs.
 | `pro` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
 | `pro` | 15-blind | self-verify | 0 % | 0 % | 0.733 |
 | `pro` | 15-blind | **Labwright** | **100 %** | **47 %** | **0.000** |
+| `flash` | 15-3D-spheroid | bare-LLM | 0 % | 0 % | 1.000 |
+| `flash` | 15-3D-spheroid | soft-gate | 0 % | 0 % | 1.000 |
+| `flash` | 15-3D-spheroid | self-verify | 0 % | 0 % | 1.000 |
+| `flash` | 15-3D-spheroid | **Labwright** | **93 %** | **87 %** | **0.011** |
+| `pro` | 15-3D-spheroid | bare-LLM | 0 % | 0 % | 1.000 |
+| `pro` | 15-3D-spheroid | soft-gate | 0 % | 0 % | 1.000 |
+| `pro` | 15-3D-spheroid | self-verify | 0 % | 0 % | 1.000 |
+| `pro` | 15-3D-spheroid | **Labwright** | **93 %** | **87 %** | **0.067** |
 
 The memory systems never produce a usable *design* on either set, and the two
 naive "fixes" do not help. The only usable memory-system entries anywhere are
@@ -316,6 +344,33 @@ liver; pro bare/soft-gate on kidney PTEC, both proposing 0.20 Pa for the
 0.02 Pa target; pro self-verify on the unit-ambiguity scenario), and the two
 scenario goals exist precisely to prove the layer would catch it inside a
 verified design too — `flash` recovers both, `pro` the unit-ambiguity one.
+
+**The 15-3D-spheroid set is the third domain and the strongest separation.** It
+mixes stated-goal geometry (spheroid volume/diameter from the goal's own numbers)
+with the fragmented conventions of 3D culture (ULA and hanging-drop working
+volumes, hepatocyte spheroid seeding density) that the model must recall. On the
+stated-goal arithmetic Labwright is close to the reading set: `flash` 13/15 and
+`pro` 13/15 usable (both **87 %**, Wilson CI 62–96 %), and both models recover
+every gold target within tolerance on 13 of the 15 goals. The conventions still
+generalize — both recover the cold 384-ULA 50 µL and hanging-drop 20 µL at
+**100 %** (2/2 each) precisely because those values live in the calculator's
+tool registry, not in model memory: the bare model scores 0 % on the same two
+entries (its answers are `calculation_error`, 0 % verifiable — the format-driven
+medium volume never appears). This is the paper's "the calculator is the
+knowledge base" claim made literal: a convention encoded once in `SPHEROID_FORMATS`
+is available to both models on every run, cold or not. The remaining failures
+are the honest residue: `flash` mis-targets the doxorubicin dosing goal (proposes
+24 spheroids against the gold 96 — internally consistent, `hall 0.000`, so the
+gate held and the design was rejected) and fails the blind hepatocyte-formation
+goal by inconsistency (`hall 0.167`: correct 1000 cells/spheroid but a derived
+diameter that does not follow from its own cell size); `pro` proposes 54
+spheroids on the same dosing goal and returns *silence* on the pure-geometry
+`spheroid-volume-from-diameter` goal — a one-line sphere-volume derivation, yet
+no design was submitted at all. Target-selection accuracy is 93 % (`flash`
+Labwright) and 87 % (`pro` Labwright, equal across systems) — the model names
+the right target, but only the calculator path turns that into a verified,
+usable design. As with the blind set, these are single-run point estimates; the
+differences between the two models' two failures each are noise at n=15.
 
 Two corrections make these numbers what they are, both reported honestly. First,
 earlier committed figures counted unverifiable answers (geometry and flow with

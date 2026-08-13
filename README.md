@@ -5,7 +5,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
 [![CI](https://github.com/qgeng1465/labwright/actions/workflows/tests.yml/badge.svg)](https://github.com/qgeng1465/labwright/actions)
-[![Tests](https://img.shields.io/badge/tests-226%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-264%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
 Frontier LLMs hallucinate ~100 % of the derived numbers in a wet-lab design.
@@ -228,7 +228,10 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
   cell culture, dosing, stats). The moat: an LLM cannot compute these reliably,
   but a calculator can. A second domain — well-format geometry, seeding density,
   hemocytometer counts, viability, passaging — ships as `calc/culture.py` with
-  its own gold set (`eval/gold_cell_culture.json`).
+  its own gold set (`eval/gold_cell_culture.json`). A third domain — 3D culture:
+  spheroid/organoid geometry, cells-per-size, ULA and hanging-drop working
+  volumes, necrotic-core limits — ships as `calc/spheroid.py` with its own gold
+  set (`eval/gold_spheroid.json`).
 - **`agent/`** — a ReAct loop over the tool registry. It may call any
   calculator and must finish by calling `submit_design`. Prose answers are
   refused: *"numbers you type are not trusted."*
@@ -310,7 +313,7 @@ instantly callable, verifiable and demonstrable. See [CONTRIBUTING.md](CONTRIBUT
 Can an LLM write a wet-lab design without hallucinating the numbers? We measure
 it. `eval/` runs two systems — **bare LLM** (the model writes every number from
 memory) vs **Labwright** (the model proposes, calculators compute, the verifier
-re-proves) — on two gold sets:
+re-proves) — on three gold sets:
 
 1. **24 "reading" goals** (`eval/gold_experiments.json`) — every goal states
    the answer (geometry, flow, or the physiological target number). This tests
@@ -332,6 +335,19 @@ re-proves) — on two gold sets:
      jointly satisfiable at Q ≈ 40 µL/min in a 400×100 µm × 100 mm channel; the
      model must hit both at once.
    Every entry pins a citable source; no number is invented.
+3. **15 "3D-spheroid" goals** (`eval/gold_spheroid.json`) — a third domain:
+   3D culture (spheroid/organoid). Four are reading (solid-sphere geometry,
+   cells-per-size), three exercise a standard vessel working volume
+   (96-ULA 100 µL, 384-ULA 50 µL, hanging drop), four are failure-mode
+   scenarios (**unit-ambiguity** mm-vs-µm, **growth** projection, **multi-target**
+   total-cell + total-medium, **cross-domain** spheroid + DMSO dosing), and four
+   are blind (two `prompt-backed`: 1000 cells/spheroid and 96-ULA volume live in
+   the system-prompt anchors; two `cold`: 384-ULA and hanging-drop volumes are
+   nowhere in the prompt). 3D culture is a deliberately knowledge-weak area for
+   LLMs — spheroid conventions are fragmented across ULA/hanging-drop vendors —
+   so this set stresses recall and cross-domain reasoning rather than a single
+   geometry. Every entry pins a citable source or a self-consistent derivation;
+   no number is invented.
 
 Four systems are compared, on two frontier models. The three LLM-memory
 systems (bare-LLM, soft-gate, self-verify) write numbers from memory and are
@@ -346,7 +362,7 @@ blind-set cells are split by hint strength (cold vs prompt-backed). The `eval.re
 renderer prints all of it; the classification and misread logic are unit-tested
 (`tests/test_metrics.py`).
 
-![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading and 15-blind sets (flash & pro). The memory systems (stone / ochre / sage) never reach a usable design; Labwright (deep blue) holds the gate but misses the blind-set physiology.](paper/fig_benchmark.png)
+![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind and 15-3D-spheroid sets (flash & pro). The memory systems (stone / ochre / sage) never reach a usable design; Labwright (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on the spheroid set.](paper/fig_benchmark.png)
 
 A *usable* design is internally consistent **and** hits every target within
 ±5 %. This is an *ablation*, not an equal-resource race: Labwright's
@@ -395,6 +411,14 @@ rows show (100 % self-consistent, 40–47 % usable).*
 | 15-blind | `pro` | soft-gate | 13 % | 0 % | 0.867 |
 | 15-blind | `pro` | self-verify | 0 % | 0 % | 0.733 |
 | 15-blind | `pro` | **Labwright** | **100 %** | **47 %** | **0.000** |
+| 15-3D-spheroid | `flash` | bare-LLM | 0 % | 0 % | 1.000 |
+| 15-3D-spheroid | `flash` | soft-gate | 0 % | 0 % | 1.000 |
+| 15-3D-spheroid | `flash` | self-verify | 0 % | 0 % | 1.000 |
+| 15-3D-spheroid | `flash` | **Labwright** | **93 %** | **87 %** | **0.011** |
+| 15-3D-spheroid | `pro` | bare-LLM | 0 % | 0 % | 1.000 |
+| 15-3D-spheroid | `pro` | soft-gate | 0 % | 0 % | 1.000 |
+| 15-3D-spheroid | `pro` | self-verify | 0 % | 0 % | 1.000 |
+| 15-3D-spheroid | `pro` | **Labwright** | **93 %** | **87 %** | **0.067** |
 
 *All memory-system rows come from a single re-run at temperature 0.2 after a
 prompt regression that dropped the goal text was found and fixed (see the
@@ -468,6 +492,19 @@ Read the numbers honestly — and the boundary of what they mean.
   domain knowledge the model does not have.** That boundary is the honest
   headline, and it is exactly what a wet-lab user must not forget: verify the
   target, not just the arithmetic.
+- **The 3D-spheroid set shows the calculator itself carrying domain
+  conventions.** 13/15 usable for both models (87 %) — near the reading-set
+  ceiling, despite 3D culture being a knowledge-weak area for LLMs. The two
+  cold entries (384-ULA 50 µL, hanging-drop 20 µL) are recovered at **100 %**
+  by Labwright on both models but 0 % by the bare model, because those volumes
+  live once in `SPHEROID_FORMATS` (the tool registry), not in model memory —
+  the "calculator is the knowledge base" claim, made literal. The two residual
+  failures per model are the honest residue: both mis-target the cross-domain
+  doxorubicin goal (proposing 24 and 54 spheroids against the gold 96, each
+  internally consistent at `hall 0.000` — the gate rejected both), `flash`
+  additionally fails the blind hepatocyte-formation goal by a derived-diameter
+  inconsistency, and `pro` returns silence on a one-line sphere-volume goal.
+  Single-run point estimates; the model-pair differences are noise at n=15.
 
 ## Reproducibility: prompts, models & provenance
 

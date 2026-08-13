@@ -55,6 +55,9 @@ Common physiological anchors (verify against literature before relying on them):
 - Culture medium viscosity ≈ 1e-3 Pa·s (water-like).
 - DMSO vehicle ≥ ~0.5% v/v can be cytotoxic; keep ≤ 0.1% when possible.
 - Cells: HepG2 doubling ~30-40 h; primary hepatocytes do not divide.
+- Spheroids: one spheroid per well in a 96-well ULA plate (≈ 100 µL working volume/well);
+  primary hepatocyte spheroids ≈ 1000 cells/spheroid ≈ 200 µm (20 µm cells, dense packing);
+  spheroids above ~400 µm develop necrotic cores (oxygen diffuses ~200 µm from the surface).
 
 Be explicit about assumptions in `rationale` and list what the user must check in the lab in `caveats`."""
 

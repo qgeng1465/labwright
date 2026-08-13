@@ -1,0 +1,96 @@
+[
+  {
+    "id": "spheroid-volume-from-diameter",
+    "goal": "A hepatocyte spheroid is 200 um in diameter. Assuming a solid sphere, what is its volume in uL?",
+    "expected": {"spheroid_volume_ul": 4.18879e-3},
+    "source": "Self-consistent geometry: V = 4/3*pi*r^3 = 4/3*pi*(100 um)^3 = 4.18879e6 um^3; 1 um^3 = 1e-9 uL, so V = 4.18879e-3 uL."
+  },
+  {
+    "id": "spheroid-diameter-from-cells",
+    "goal": "A spheroid is formed from 1000 hepatocytes with a mean cell diameter of 20 um, packed as a solid sphere. What diameter (um) should the spheroid reach?",
+    "expected": {"expected_diameter_um": 200.0},
+    "source": "Self-consistent geometry: single-cell volume = 4/3*pi*(10 um)^3 = 4188.79 um^3; total = 1000 * 4188.79 = 4.18879e6 um^3; d = (6*V/pi)^(1/3) = 200 um."
+  },
+  {
+    "id": "spheroid-200um-hypoxic",
+    "goal": "You want spheroids safely below the ~400 um necrotic-core threshold (oxygen diffuses only ~200 um from the surface). With a mean cell diameter of 20 um, how many cells per spheroid give a 200 um diameter?",
+    "expected": {"cells_per_spheroid": 1000.0},
+    "source": "Design target: necrotic cores form in spheroids above ~400 um (oxygen diffusion ~200 um) — Drug Metab Dispos 2024, doi:10.1124/dmd.124.001653. Geometry: V(200 um) / V(20 um cell) = 4.18879e6 / 4188.79 = 1000 cells/spheroid (self-consistent)."
+  },
+  {
+    "id": "spheroid-count-from-suspension",
+    "goal": "A cell suspension contains 2.4e5 cells. You want spheroids of 1000 cells each. How many spheroids can you seed?",
+    "expected": {"spheroid_count": 240.0},
+    "source": "Self-consistent: floor(2.4e5 / 1000) = 240 spheroids."
+  },
+  {
+    "id": "spheroid-96ula-medium",
+    "goal": "You form spheroids one per well in a 96-well ultra-low-attachment (ULA) plate. What is the standard working medium volume per spheroid (uL)?",
+    "expected": {"medium_volume_per_spheroid_ul": 100.0},
+    "source": "96-well round-bottom ULA plates use a 100 uL working volume per well — standard Corning spheroid-microplate protocol (CLS-AN-235); Sartorius/IncuCyte spheroid assay; PerkinElmer ATPlite 3D is run directly in 100 uL/well. Goal text does NOT state the volume (partial-info: the standard value must be recalled)."
+  },
+  {
+    "id": "spheroid-384ula-medium",
+    "goal": "You form spheroids one per well in a 384-well ULA plate. What is the standard working medium volume per spheroid (uL)?",
+    "expected": {"medium_volume_per_spheroid_ul": 50.0},
+    "source": "InSphero Akura 384 spheroid microplate: working volume 50 uL per well (total well volume 120 uL) — InSphero Akura 384 Quick-Start Guide; Fisher Scientific product spec. Goal text does NOT state the volume (partial-info)."
+  },
+  {
+    "id": "spheroid-hanging-drop-total",
+    "goal": "A hanging-drop array forms 48 spheroids in standard 20 uL droplets. What total medium volume in mL does this require?",
+    "expected": {"total_medium_ml": 0.96},
+    "source": "Hanging-drop spheroid protocol: recommended drop volume 10-20 uL — Wanigasekara et al., PLOS ONE 2023, doi:10.1371/journal.pone.0276248 (20 uL used here, the upper end of the recommended range). Total = 48 * 20 uL = 960 uL = 0.96 mL."
+  },
+  {
+    "id": "spheroid-um-mm-unit-ambiguity",
+    "goal": "A protocol states a target spheroid diameter of 0.2 mm. Express this diameter in um and compute the spheroid volume in uL, assuming a solid sphere.",
+    "expected": {"expected_diameter_um": 200.0, "spheroid_volume_ul": 4.18879e-3},
+    "source": "Unit-ambiguity scenario: 1 mm = 1000 um, so 0.2 mm = 200 um; V = 4/3*pi*(100 um)^3 = 4.18879e6 um^3 = 4.18879e-3 uL (self-consistent). A model that reports the diameter as 0.2 um (misreading mm as um) is off by factor 1000."
+  },
+  {
+    "id": "spheroid-growth-72h",
+    "goal": "Spheroids are seeded at 1000 cells each (doubling time 30 h) and cultured for 72 h. Assuming exponential growth, how many cells per spheroid at harvest?",
+    "expected": {"expected_cells_after_growth": 5278.03},
+    "source": "Self-consistent: N(t) = N0 * 2^(t/td) = 1000 * 2^(72/30) = 1000 * 2^2.4 = 5278.03 cells/spheroid."
+  },
+  {
+    "id": "spheroid-96well-total",
+    "goal": "Form one HepG2 spheroid per well across a full 96-well ULA plate, 1000 cells/spheroid of 20 um mean cell diameter. What total number of cells and what total medium volume (mL) are needed?",
+    "expected": {"cells_total": 96000.0, "total_medium_ml": 9.6},
+    "source": "Multi-target: cells_total = 96 * 1000 = 96000 cells (self-consistent). Total medium = 96 wells * 100 uL (standard 96-ULA working volume, Corning CLS-AN-235) / 1000 = 9.6 mL."
+  },
+  {
+    "id": "spheroid-doxorubicin-dosing",
+    "goal": "Doxorubicin dose-response on spheroids: form one HepG2 spheroid per well in a 96-well ULA plate, 1000 cells/spheroid of 20 um cells. The drug is delivered from a 5 mM DMSO stock at a 5 uM working concentration. Report the total cell number, the total medium volume (mL), and the DMSO vehicle fraction.",
+    "expected": {"cells_total": 96000.0, "total_medium_ml": 9.6, "dmso_fraction_vv": 0.001},
+    "source": "Cross-domain (spheroid + dosing): cells_total = 96 * 1000 = 96000; total medium = 96 * 100 uL (96-ULA working volume, Corning CLS-AN-235) / 1000 = 9.6 mL; DMSO vehicle fraction = working/stock = 5 uM / 5 mM = 0.001 (self-consistent)."
+  },
+  {
+    "id": "blind-spheroid-hepatocyte-formation",
+    "goal": "Primary human hepatocytes are formed into spheroids in ULA plates at the Labwright design target for spheroid size. How many cells per spheroid?",
+    "expected": {"cells_per_spheroid": 1000.0},
+    "blind_strength": "prompt-backed",
+    "source": "Design target: the Labwright copilot's physiological anchor is 1000 cells/spheroid (~200 um, solid-sphere geometry) — stated in the Labwright system prompt, so the value is prompt-backed, not cold. Consistent with the published PHH spheroid seeding range (InSphero Akura 3D: 750-1,150 cells; Gibco 3D spheroid protocol: 1,500 cells/well)."
+  },
+  {
+    "id": "blind-spheroid-96ula-medium",
+    "goal": "A lab sets up 3D culture in 96-well ultra-low-attachment plates, one spheroid per well. What is the standard working medium volume per well?",
+    "expected": {"medium_volume_per_spheroid_ul": 100.0},
+    "blind_strength": "prompt-backed",
+    "source": "96-ULA working volume 100 uL/well — Corning spheroid-microplate protocol (CLS-AN-235), Sartorius/IncuCyte, PerkinElmer ATPlite 3D. Stated in the Labwright system prompt (96-ULA = 100 uL/well), so prompt-backed."
+  },
+  {
+    "id": "blind-spheroid-384ula-medium",
+    "goal": "A high-throughput 3D screen uses 384-well ultra-low-attachment plates. What is the standard working medium volume per well?",
+    "expected": {"medium_volume_per_spheroid_ul": 50.0},
+    "blind_strength": "cold",
+    "source": "Blind design target (not in the goal text nor the Labwright system prompt): InSphero Akura 384 spheroid microplate working volume 50 uL/well — InSphero Akura 384 Quick-Start Guide; Fisher Scientific product spec (total well volume 120 uL)."
+  },
+  {
+    "id": "blind-spheroid-hanging-drop",
+    "goal": "A hanging-drop spheroid protocol is being set up. What is the standard recommended droplet volume (uL) per spheroid?",
+    "expected": {"medium_volume_per_spheroid_ul": 20.0},
+    "blind_strength": "cold",
+    "source": "Blind design target (not in the goal text nor the Labwright system prompt): hanging-drop spheroid protocol recommends 10-20 uL droplets — Wanigasekara et al., PLOS ONE 2023, doi:10.1371/journal.pone.0276248. Gold uses 20 uL (upper end of the recommended range)."
+  }
+]

@@ -76,6 +76,31 @@ class CulturePlan(BaseModel):
     expected_confluence_pct: float | None = Field(default=None, ge=0, description="DERIVED: predicted confluence at harvest (may exceed 100 for over-confluent cultures)")
 
 
+class SpheroidPlan(BaseModel):
+    """3D spheroid/organoid culture plan.
+
+    Derived fields (``spheroid_volume_ul``, ``expected_diameter_um``,
+    ``cells_total``, ``medium_volume_per_spheroid_ul``, ``total_medium_ml``,
+    ``expected_cells_after_growth``) are *always* computed by
+    :mod:`labwright.calc.spheroid` — never proposed by the LLM — and re-checked
+    by the verifier.
+    """
+
+    cell_type: str = Field(description="Cell type, e.g. HepG2, primary hepatocytes, tumour cells")
+    spheroid_format: str = Field(description="Vessel/format: 96-ula / 384-ula / hanging-drop")
+    spheroid_count: int = Field(ge=1, description="Number of spheroids to form")
+    cells_per_spheroid: float = Field(gt=0, description="Cells seeded per spheroid")
+    cell_diameter_um: float = Field(gt=0, description="Mean single-cell diameter (um), used for volume-to-size estimates")
+    spheroid_volume_ul: float = Field(gt=0, description="DERIVED: cells_per_spheroid × single-cell volume (solid-sphere packing)")
+    expected_diameter_um: float = Field(gt=0, description="DERIVED: spheroid diameter implied by cells_per_spheroid × cell volume")
+    cells_total: float = Field(gt=0, description="DERIVED: spheroid_count × cells_per_spheroid")
+    medium_volume_per_spheroid_ul: float = Field(gt=0, description="DERIVED: standard working volume for the vessel format")
+    total_medium_ml: float = Field(gt=0, description="DERIVED: per-spheroid volume × spheroid_count")
+    doubling_time_h: float | None = Field(default=None, gt=0, description="Population doubling time (h), if proliferative")
+    culture_duration_h: float | None = Field(default=None, ge=0, description="Culture duration (h)")
+    expected_cells_after_growth: float | None = Field(default=None, ge=0, description="DERIVED: predicted cells per spheroid at harvest, N(t) = N0 * 2^(t/td), when growth inputs are present")
+
+
 class DosePlan(BaseModel):
     """Compound dosing plan."""
 
@@ -109,6 +134,7 @@ class DesignPlan(BaseModel):
     derived: DerivedFlowMetrics | None = Field(default=None, description="Deterministically computed flow metrics")
     cells: CellPlan | None = Field(default=None, description="Channel-based cell plan (absent for plate-only culture designs)")
     culture: CulturePlan | None = Field(default=None, description="Plate-based culture plan (only when plating on multi-well plates)")
+    spheroid: SpheroidPlan | None = Field(default=None, description="3D spheroid/organoid culture plan (only when forming spheroids)")
     dosing: DosePlan | None = None
     stats: StatsPlan | None = None
     caveats: list[str] = Field(default_factory=list, description="Things to verify in the lab")

@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 from labwright.calc import cell as calc_cell
 from labwright.calc import culture as calc_culture
 from labwright.calc import microfluidics as mf
+from labwright.calc import spheroid as calc_spheroid
 from labwright.schema.design import (
     CellPlan,
     ChipGeometry,
@@ -27,6 +28,7 @@ from labwright.schema.design import (
     DesignPlan,
     DosePlan,
     FlowParams,
+    SpheroidPlan,
     StatsPlan,
 )
 from labwright.verify.checker import format_issues, verify_design
@@ -69,6 +71,14 @@ class DesignInput(BaseModel):
         "culture_duration_h (no seed_per_well / total_seed_count / "
         "medium_volume_per_well_ml / total_medium_ml / expected_confluence_pct; "
         "they are computed)",
+    )
+    spheroid: dict[str, Any] | None = Field(
+        default=None,
+        description="cell_type, spheroid_format (96-ula / 384-ula / hanging-drop), "
+        "spheroid_count, cells_per_spheroid, cell_diameter_um, doubling_time_h, "
+        "culture_duration_h (no spheroid_volume_ul / expected_diameter_um / "
+        "cells_total / medium_volume_per_spheroid_ul / total_medium_ml / "
+        "expected_cells_after_growth; they are computed)",
     )
     caveats: list[str] = Field(default_factory=list, description="What must be checked in the lab")
 
@@ -122,6 +132,50 @@ def derive_culture(raw: dict[str, Any]) -> dict[str, Any]:
         )
     else:
         out["expected_confluence_pct"] = None
+    return out
+
+
+def derive_spheroid(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived SpheroidPlan field from the raw 3D-culture inputs.
+
+    The LLM never writes a derived spheroid number: volume, expected diameter,
+    total cells, medium volume and post-growth cell count all come from
+    :mod:`labwright.calc.spheroid` (with growth math from
+    :mod:`labwright.calc.cell`).
+
+    Parameters
+    ----------
+    raw : dict
+        cell_type, spheroid_format, spheroid_count, cells_per_spheroid,
+        cell_diameter_um, and any of doubling_time_h, culture_duration_h.
+
+    Returns
+    -------
+    dict
+        ``raw`` plus ``spheroid_volume_ul``, ``expected_diameter_um``,
+        ``cells_total``, ``medium_volume_per_spheroid_ul``, ``total_medium_ml``
+        and — when the growth inputs are present — ``expected_cells_after_growth``.
+    """
+    n = int(raw.get("spheroid_count", 1))
+    per_sph = raw["cells_per_spheroid"]
+    cell_d = raw["cell_diameter_um"]
+    per_med = calc_spheroid.medium_volume_per_spheroid(raw["spheroid_format"])
+    out = dict(raw)
+    out["spheroid_count"] = n
+    out["spheroid_volume_ul"] = calc_spheroid.spheroid_volume_from_cells(per_sph, cell_d)
+    out["expected_diameter_um"] = calc_spheroid.spheroid_diameter_from_cells(per_sph, cell_d)
+    out["cells_total"] = calc_spheroid.cells_needed_for_spheroids(n, per_sph)
+    out["medium_volume_per_spheroid_ul"] = per_med
+    out["total_medium_ml"] = calc_spheroid.total_medium_volume(n, per_med)
+    if (
+        raw.get("doubling_time_h") is not None
+        and raw.get("culture_duration_h") is not None
+    ):
+        out["expected_cells_after_growth"] = calc_cell.cell_count_after_time(
+            per_sph, raw["doubling_time_h"], raw["culture_duration_h"]
+        )
+    else:
+        out["expected_cells_after_growth"] = None
     return out
 
 
@@ -193,6 +247,10 @@ def build_design(inp: DesignInput) -> DesignPlan:
     if inp.culture is not None:
         culture = CulturePlan(**derive_culture(inp.culture))
 
+    spheroid = None
+    if inp.spheroid is not None:
+        spheroid = SpheroidPlan(**derive_spheroid(inp.spheroid))
+
     plan = DesignPlan(
         goal=inp.goal,
         rationale=inp.rationale,
@@ -201,6 +259,7 @@ def build_design(inp: DesignInput) -> DesignPlan:
         derived=derived,
         cells=cells,
         culture=culture,
+        spheroid=spheroid,
         dosing=dosing,
         stats=stats,
         caveats=inp.caveats,

@@ -1,20 +1,21 @@
 # Benchmark gold data — provenance & invariants
 
-The benchmark rests on three hand-curated gold sets. Every number in them has a
+The benchmark rests on four hand-curated gold sets. Every number in them has a
 stated origin; no value is invented. This file says how to read that, and how
 to add a goal without breaking the invariants.
 
-## The three sets
+## The four sets
 
 | file | n | what it tests | does the goal state the answer? |
 |---|---|---|---|
 | `gold_experiments.json` | 24 | **reading**: number-extraction + tool-calling | yes — every goal states the geometry/flow/density/effect-size or the physiological target |
 | `gold_blind.json` | 12 | **recall**: target selection from domain knowledge | no — the goal states physiology ("recapitulate physiological venular wall shear"), the model must supply the canonical number |
 | `gold_cell_culture.json` | 14 | **reading + recall** in the plate-culture domain (wells, seeding, counting, viability, confluence) | 10 reading (plate geometry / density stated) and 4 blind-`cold` (model must recall the pinned PHH sandwich density or plate-table volume) |
+| `gold_spheroid.json` | 15 | **reading + recall + scenarios** in the 3D-culture domain (spheroid/organoid geometry, ULA & hanging-drop working volumes, necrotic-core limits) | 11 reading/scenario (geometry and targets stated, or a failure mode named) and 4 blind (2 `prompt-backed`: 1000 cells/spheroid, 96-ULA 100 µL — stated in the system prompt; 2 `cold`: 384-ULA 50 µL, hanging-drop 20 µL — in neither the goal nor the prompt) |
 
 Each entry is `{id, goal, expected, source}` (blind adds `blind_strength`).
 
-## Provenance rules (both sets)
+## Provenance rules (all sets)
 
 Every `expected` value must fall into exactly one of three buckets:
 
@@ -30,8 +31,9 @@ Every `expected` value must fall into exactly one of three buckets:
    hands over geometry + flow and asks for the resulting shear is
    self-consistent by construction). These are labelled as such in `source`;
    they must never be phrased as if they came from a paper.
-3. **`prompt-backed` blind entries** (liver, lung, BBB) — the canonical target
-   *is* listed as a range in the Labwright system prompt, but the model must
+3. **`prompt-backed` blind entries** (liver, lung, BBB; spheroid 1000
+   cells/spheroid and 96-ULA 100 µL) — the canonical target *is* listed in the
+   Labwright system prompt (as a range or an anchor value), but the model must
    still select the right value within it.
 
 No bucket may be empty and no number may sit in an unnamed fourth bucket. If a
@@ -46,7 +48,9 @@ value cannot be sourced, it is removed or relabelled, not silently kept.
   checkers are domain-aware: flow answers are cross-checked against geometry +
   flow, plate-culture answers against plate_format + seeding density (+ wells),
   so a culture gold is scored by the same "do its numbers follow from its own
-  inputs" test as a flow gold.
+  inputs" test as a flow gold; spheroid answers are cross-checked against
+  spheroid_format + cells_per_spheroid + spheroid_count + cell_diameter_um, so a
+  spheroid gold is scored by the same self-consistency test.
 - **Reading-set recovery is constructive**: the self-consistent anchors are
   computed from the same equations Labwright uses, so recovery ≈ 0 there is by
   construction. The real signal is extraction and tool-calling.
@@ -65,8 +69,10 @@ value cannot be sourced, it is removed or relabelled, not silently kept.
 4. Add a regression test that re-derives the entry's `expected` values from the
    goal's stated numbers, so transcription drift is caught at test time. For the
    culture set this is `tests/test_gold_culture.py::test_gold_is_self_consistent`,
-   which recomputes every gold `expected` through `labwright.calc.culture` from
-   the raw inputs stated in the goal prose.
+   for the spheroid set `tests/test_gold_spheroid.py::test_gold_is_self_consistent`
+   — each recomputes every gold `expected` through the domain calculators
+   (`labwright.calc.culture` / `labwright.calc.spheroid`) from the raw inputs
+   stated in the goal prose.
 
 ## Reproducibility
 

@@ -83,6 +83,28 @@ SANITY_BANDS: dict[str, Band] = {
         "population doubling time", "h"),
     "culture.culture_duration_h": Band(0.0, 2000, 0.0, 1e5,
         "culture duration", "h"),
+    "spheroid.cells_per_spheroid": Band(100, 1e5, 1.0, 1e6,
+        "cells seeded per spheroid", "cells"),
+    "spheroid.expected_diameter_um": Band(30, 2000, 5, 1e4,
+        "spheroid diameter (functional spheroids stay < ~400 µm to avoid necrotic cores)", "um"),
+    "spheroid.spheroid_volume_ul": Band(1e-4, 1e2, 1e-6, 1e4,
+        "spheroid volume (a 200 µm spheroid ≈ 4.2e-3 uL)", "uL"),
+    "spheroid.cell_diameter_um": Band(5, 60, 1.0, 200,
+        "mean single-cell diameter", "um"),
+    "spheroid.medium_volume_per_spheroid_ul": Band(10, 300, 1.0, 2000,
+        "working medium volume per spheroid", "uL"),
+    "spheroid.total_medium_ml": Band(0.01, 1e3, 1e-4, 1e4,
+        "total medium volume for the spheroid culture", "mL"),
+    "spheroid.cells_total": Band(1e2, 1e10, 1.0, 1e11,
+        "total cells for spheroid seeding", "cells"),
+    "spheroid.spheroid_count": Band(1, 1e5, 1.0, 1e6,
+        "number of spheroids", "n"),
+    "spheroid.doubling_time_h": Band(10, 200, 0.1, 1000,
+        "population doubling time", "h"),
+    "spheroid.culture_duration_h": Band(0.0, 2000, 0.0, 1e5,
+        "culture duration", "h"),
+    "spheroid.expected_cells_after_growth": Band(10, 1e8, 1.0, 1e10,
+        "predicted cells per spheroid at harvest", "cells"),
     "dosing.stock_mM": Band(0.1, 1e4, 1e-4, 1e6,
         "compound stock concentration", "mM"),
     "dosing.working_mM": Band(1e-3, 100, 1e-6, 1e4,
@@ -130,6 +152,22 @@ def check_sanity(plan: DesignPlan, issues: list[Issue]) -> None:
         })
         if c.expected_confluence_pct is not None:
             values["culture.expected_confluence_pct"] = c.expected_confluence_pct
+    if plan.spheroid is not None:
+        s = plan.spheroid
+        values.update({
+            "spheroid.cells_per_spheroid": s.cells_per_spheroid,
+            "spheroid.expected_diameter_um": s.expected_diameter_um,
+            "spheroid.spheroid_volume_ul": s.spheroid_volume_ul,
+            "spheroid.cell_diameter_um": s.cell_diameter_um,
+            "spheroid.medium_volume_per_spheroid_ul": s.medium_volume_per_spheroid_ul,
+            "spheroid.total_medium_ml": s.total_medium_ml,
+            "spheroid.cells_total": s.cells_total,
+            "spheroid.spheroid_count": float(s.spheroid_count),
+            "spheroid.doubling_time_h": s.doubling_time_h,
+            "spheroid.culture_duration_h": s.culture_duration_h,
+        })
+        if s.expected_cells_after_growth is not None:
+            values["spheroid.expected_cells_after_growth"] = s.expected_cells_after_growth
     if plan.dosing is not None:
         values.update({
             "dosing.stock_mM": plan.dosing.stock_mM,

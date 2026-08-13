@@ -57,6 +57,22 @@ _CULTURE_DERIVED_KEYS = [
 #: cross-checkable (analogue of _CONSISTENCY_KEYS for the plate domain).
 _CULTURE_CONSISTENCY_KEYS = ["plate_format", "seeding_density_cells_cm2", "wells"]
 
+#: Spheroid / 3D-culture raw inputs and derived fields (3D domain).
+_SPHEROID_RAW_KEYS = [
+    "spheroid_format", "spheroid_count", "cells_per_spheroid",
+    "cell_diameter_um", "doubling_time_h", "culture_duration_h",
+]
+_SPHEROID_DERIVED_KEYS = [
+    "spheroid_volume_ul", "expected_diameter_um", "cells_total",
+    "medium_volume_per_spheroid_ul", "total_medium_ml",
+    "expected_cells_after_growth",
+]
+#: The minimal raw set a bare model must report for its spheroid numbers to be
+#: cross-checkable.
+_SPHEROID_CONSISTENCY_KEYS = [
+    "spheroid_format", "spheroid_count", "cells_per_spheroid", "cell_diameter_um",
+]
+
 
 @dataclass
 class GoldExperiment:
@@ -143,6 +159,14 @@ _FIELD_MAP = {
     "medium_volume_per_well_ml": "culture.medium_volume_per_well_ml",
     "total_medium_ml": "culture.total_medium_ml",
     "expected_confluence_pct": "culture.expected_confluence_pct",
+    "spheroid_volume_ul": "spheroid.spheroid_volume_ul",
+    "expected_diameter_um": "spheroid.expected_diameter_um",
+    "cells_total": "spheroid.cells_total",
+    "medium_volume_per_spheroid_ul": "spheroid.medium_volume_per_spheroid_ul",
+    "total_medium_ml": "spheroid.total_medium_ml",
+    "cells_per_spheroid": "spheroid.cells_per_spheroid",
+    "spheroid_count": "spheroid.spheroid_count",
+    "expected_cells_after_growth": "spheroid.expected_cells_after_growth",
 }
 
 
@@ -210,6 +234,21 @@ def parameter_recovery(gold: GoldExperiment, plan: DesignPlan) -> dict[str, floa
         for key, value in culture_map.items():
             if key in gold.expected and value is not None:
                 errs[key] = relative_error(value, gold.expected[key])
+    # Spheroid domain (3D): expected keys map onto SpheroidPlan fields.
+    if plan.spheroid is not None:
+        spheroid_map = {
+            "spheroid_volume_ul": plan.spheroid.spheroid_volume_ul,
+            "expected_diameter_um": plan.spheroid.expected_diameter_um,
+            "cells_total": plan.spheroid.cells_total,
+            "medium_volume_per_spheroid_ul": plan.spheroid.medium_volume_per_spheroid_ul,
+            "total_medium_ml": plan.spheroid.total_medium_ml,
+            "cells_per_spheroid": plan.spheroid.cells_per_spheroid,
+            "spheroid_count": float(plan.spheroid.spheroid_count),
+            "expected_cells_after_growth": plan.spheroid.expected_cells_after_growth,
+        }
+        for key, value in spheroid_map.items():
+            if key in gold.expected and value is not None:
+                errs[key] = relative_error(value, gold.expected[key])
     return errs
 
 
@@ -245,6 +284,21 @@ def _design_claimed(plan: DesignPlan, gold: GoldExperiment) -> dict[str, float |
         for key in gold.expected:
             if key in cmap and cmap[key] is not None:
                 out[key] = cmap[key]
+    if plan.spheroid is not None:
+        s = plan.spheroid
+        smap = {
+            "spheroid_volume_ul": s.spheroid_volume_ul,
+            "expected_diameter_um": s.expected_diameter_um,
+            "cells_total": s.cells_total,
+            "medium_volume_per_spheroid_ul": s.medium_volume_per_spheroid_ul,
+            "total_medium_ml": s.total_medium_ml,
+            "cells_per_spheroid": s.cells_per_spheroid,
+            "spheroid_count": float(s.spheroid_count),
+            "expected_cells_after_growth": s.expected_cells_after_growth,
+        }
+        for key in gold.expected:
+            if key in smap and smap[key] is not None:
+                out[key] = smap[key]
     return out
 
 
@@ -259,6 +313,9 @@ _DERIVED_FIELDS = [
     "culture.seed_per_well", "culture.total_seed_count",
     "culture.medium_volume_per_well_ml", "culture.total_medium_ml",
     "culture.expected_confluence_pct",
+    "spheroid.spheroid_volume_ul", "spheroid.expected_diameter_um",
+    "spheroid.cells_total", "spheroid.medium_volume_per_spheroid_ul",
+    "spheroid.total_medium_ml", "spheroid.expected_cells_after_growth",
 ]
 
 
@@ -291,6 +348,11 @@ def hallucination_rate(plan: DesignPlan) -> float:
                   "culture.medium_volume_per_well_ml", "culture.total_medium_ml",
                   "culture.expected_confluence_pct"):
             present.discard(f)
+    if plan.spheroid is None:
+        for f in ("spheroid.spheroid_volume_ul", "spheroid.expected_diameter_um",
+                  "spheroid.cells_total", "spheroid.medium_volume_per_spheroid_ul",
+                  "spheroid.total_medium_ml", "spheroid.expected_cells_after_growth"):
+            present.discard(f)
     return len(errored & present) / max(len(present), 1)
 
 
@@ -307,15 +369,29 @@ def _is_culture_gold(gold: GoldExperiment) -> bool:
     return bool(set(gold.expected) & set(_CULTURE_DERIVED_KEYS))
 
 
+def _is_spheroid_gold(gold: GoldExperiment) -> bool:
+    """True when the gold's expected keys are spheroid numbers.
+
+    Includes the raw design targets (``cells_per_spheroid``, ``spheroid_count``)
+    because for 3D culture the seeding decision is itself a target the model
+    must get right, and it is only checkable when the model also reports the
+    raws that produce the derived sizes.
+    """
+    return bool(set(gold.expected) & (set(_SPHEROID_DERIVED_KEYS) | set(_SPHEROID_CONSISTENCY_KEYS)))
+
+
 def _prompt_keys_for(gold: GoldExperiment) -> list[str]:
     """Key set a bare model must report, chosen per gold domain.
 
     Flow goals need geometry+flow raws (``_CONSISTENCY_KEYS``); plate-culture
-    goals need plate_format + seeding density + wells to make the derived
-    culture numbers re-checkable. Everything else is the goal's own targets.
+    goals need plate_format + seeding density + wells; spheroid goals need the
+    vessel format + count + cells-per-spheroid + cell diameter. Everything else
+    is the goal's own targets.
     """
     if _is_culture_gold(gold):
         return sorted(set(gold.expected) | set(_CULTURE_CONSISTENCY_KEYS))
+    if _is_spheroid_gold(gold):
+        return sorted(set(gold.expected) | set(_SPHEROID_CONSISTENCY_KEYS))
     return sorted(set(gold.expected) | set(_CONSISTENCY_KEYS))
 
 
@@ -518,6 +594,12 @@ def bare_checkable(extracted: dict[str, float | None]) -> bool:
         return any(extracted.get(k) is not None for k in _DERIVED_KEYS)
     if extracted.get("plate_format") and extracted.get("seeding_density_cells_cm2") is not None:
         return any(extracted.get(k) is not None for k in _CULTURE_DERIVED_KEYS)
+    if (
+        extracted.get("spheroid_format")
+        and extracted.get("cells_per_spheroid") is not None
+        and extracted.get("spheroid_count") is not None
+    ):
+        return any(extracted.get(k) is not None for k in _SPHEROID_DERIVED_KEYS)
     return False
 
 
@@ -600,22 +682,67 @@ def _culture_hallucination(extracted: dict[str, float | None]) -> float | None:
     return wrong / len(present)
 
 
+def _spheroid_hallucination(extracted: dict[str, float | None]) -> float | None:
+    """Cross-check reported 3D-spheroid numbers against the model's own raws.
+
+    Recomputes medium_volume_per_spheroid_ul / expected_diameter_um /
+    spheroid_volume_ul / cells_total / total_medium_ml from the reported
+    spheroid_format + cells_per_spheroid + cell_diameter_um + spheroid_count
+    with the spheroid calculators. Returns the error fraction, or ``None`` when
+    the answer is not spheroid-verifiable.
+    """
+    from labwright.calc import spheroid as calc_spheroid
+
+    fmt = extracted.get("spheroid_format")
+    per_sph = extracted.get("cells_per_spheroid")
+    cell_d = extracted.get("cell_diameter_um")
+    count = extracted.get("spheroid_count")
+    if not fmt or per_sph is None or cell_d is None or count is None:
+        return None
+    try:
+        med = calc_spheroid.medium_volume_per_spheroid(fmt)
+        computed = {
+            "expected_diameter_um": calc_spheroid.spheroid_diameter_from_cells(per_sph, cell_d),
+            "spheroid_volume_ul": calc_spheroid.spheroid_volume_from_cells(per_sph, cell_d),
+            "medium_volume_per_spheroid_ul": med,
+            "cells_total": calc_spheroid.cells_needed_for_spheroids(count, per_sph),
+            "total_medium_ml": calc_spheroid.total_medium_volume(count, med),
+        }
+    except (ValueError, TypeError):
+        return None
+    if not all(math.isfinite(v) for v in computed.values()):
+        return None
+    claimed = {k: extracted.get(k) for k in _SPHEROID_DERIVED_KEYS}
+    present = [k for k in _SPHEROID_DERIVED_KEYS if claimed[k] is not None]
+    if not present:
+        return None  # no derived spheroid number reported → nothing to check
+    wrong = sum(
+        1 for k in present
+        if abs(claimed[k] - computed[k]) > BARE_CONSISTENCY_TOL * max(abs(computed[k]), 1e-12)
+    )
+    return wrong / len(present)
+
+
 def bare_hallucination(extracted: dict[str, float | None]) -> float:
     """Fraction of reported derived numbers inconsistent with the model's own raw inputs.
 
-    Checks whichever domain the answer is verifiable in (flow, then culture).
-    An answer that is not verifiable in either — no geometry+flow, or
-    geometry+flow but **no derived flow numbers at all**, or no plate+density
-    and no culture numbers — is scored 1.0. The second case matters: a design
-    whose every number is typed from memory and cannot be re-derived from the
-    model's own inputs is exactly the case Labwright refuses to trust ("numbers
-    you type are not trusted"). This mirrors the Labwright convention where a
-    run that never submits a plan is scored hallucination 1.0.
+    Checks whichever domain the answer is verifiable in (flow, then culture,
+    then spheroid). An answer that is not verifiable in any — no geometry+flow,
+    or geometry+flow but **no derived flow numbers at all**, or no plate+density
+    and no culture numbers, or no spheroid raws and no spheroid numbers — is
+    scored 1.0. The second case matters: a design whose every number is typed
+    from memory and cannot be re-derived from the model's own inputs is exactly
+    the case Labwright refuses to trust ("numbers you type are not trusted").
+    This mirrors the Labwright convention where a run that never submits a plan
+    is scored hallucination 1.0.
     """
     rate = _flow_hallucination(extracted)
     if rate is not None:
         return rate
     rate = _culture_hallucination(extracted)
+    if rate is not None:
+        return rate
+    rate = _spheroid_hallucination(extracted)
     if rate is not None:
         return rate
     return 1.0

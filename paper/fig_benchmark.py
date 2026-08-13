@@ -1,14 +1,15 @@
 """Render the paper's benchmark figure from the committed result JSONs.
 
-Two gold sets side by side — the 24-reading set (every goal states the target)
-and the 15-blind set (no target stated) — as 3 × 2 small multiples, one row per
-headline metric (self-consistent rate, usable rate, hallucination rate). Within
-each panel the two model families (deepseek-v4-flash, deepseek-v4-pro) are
-grouped; the four systems (bare-LLM, soft-gate, self-verify, Labwright) sit as
-adjacent bars. Color follows the *system*: one categorical hue per system —
-neutral stone, warm ochre, cool sage, and the deep academic blue for Labwright —
-so the texture channel (45° hatch on Labwright) plus the legend keep identity
-readable in print and for CVD.
+Three gold sets side by side — the 24-reading set (every goal states the
+target), the 15-blind set (no target stated), and the 15-3D-spheroid set (a
+third domain with fragmented 3D-culture conventions) — as 3 × 3 small
+multiples, one row per headline metric (self-consistent rate, usable rate,
+hallucination rate). Within each panel the two model families
+(deepseek-v4-flash, deepseek-v4-pro) are grouped; the four systems (bare-LLM,
+soft-gate, self-verify, Labwright) sit as adjacent bars. Color follows the
+*system*: one categorical hue per system — neutral stone, warm ochre, cool sage,
+and the deep academic blue for Labwright — so the texture channel (45° hatch on
+Labwright) plus the legend keep identity readable in print and for CVD.
 
 The blind set is where the honest boundary of the gate shows: self-consistency
 stays high for Labwright while the usable rate collapses, and the naive
@@ -16,10 +17,11 @@ alternatives (soft-gate, self-verify) never reach a usable design at all — so
 the figure carries the paper's central caveat visually.
 
 Data source: each result file (``eval_flash.json`` / ``eval_pro.json`` /
-``eval_blind_*.json``) already contains all four systems after the post-fix
-re-run, so the figure reads straight from the per-entry records of one file per
-set × model — no competitor-file merging. Numbers are recomputed by
-``eval.report.derive()`` from the raw per-entry records, never re-typed.
+``eval_blind_*.json`` / ``eval_spheroid_*.json``) already contains all four
+systems after the post-fix re-run, so the figure reads straight from the
+per-entry records of one file per set × model — no competitor-file merging.
+Numbers are recomputed by ``eval.report.derive()`` from the raw per-entry
+records, never re-typed.
 
 Layout: the set headers live in a reserved band above the panels (not as axes
 text at y>1, which collided with the first-row titles), and each panel keeps
@@ -31,7 +33,8 @@ Usage::
 
     python paper/fig_benchmark.py \\
         results/eval_flash.json results/eval_pro.json \\
-        results/eval_blind_flash.json results/eval_blind_pro.json
+        results/eval_blind_flash.json results/eval_blind_pro.json \\
+        results/eval_spheroid_flash.json results/eval_spheroid_pro.json
     # writes paper/fig_benchmark.pdf and paper/fig_benchmark.png
 """
 
@@ -68,10 +71,13 @@ METRICS = [
     ("hallucination_rate", "Hallucination rate"),
 ]
 #: (column title, column subtitle). The reading set hands over the answer; the
-#: blind set does not — that is the boundary the figure makes visible.
+#: blind set does not — that is the boundary the figure makes visible; the
+#: spheroid set mixes a stated-goal arithmetic with fragmented 3D-culture
+#: conventions (ULA / hanging-drop working volumes) that are domain knowledge.
 SETS = [
     ("24-reading set", "target stated in the goal"),
     ("15-blind set", "no target stated"),
+    ("15 3D-spheroid set", "3D-culture conventions"),
 ]
 #: (system key, legend label, bar color, edge/hatch color, hatch).
 #: Categorical, one hue per system: a neutral light stone for the plain baseline,
@@ -110,24 +116,26 @@ def _load_set(path: str) -> dict:
 
 
 def main(argv: list[str]) -> int:
-    # argv: [reading-flash, reading-pro, blind-flash, blind-pro]
-    if len(argv) < 4:
+    # argv: [reading-flash, reading-pro, blind-flash, blind-pro,
+    #        spheroid-flash, spheroid-pro]
+    if len(argv) < 6:
         print(__doc__)
         return 1
     sets = [
         [_load_set(argv[0]), _load_set(argv[1])],  # reading: flash, pro
         [_load_set(argv[2]), _load_set(argv[3])],  # blind: flash, pro
+        [_load_set(argv[4]), _load_set(argv[5])],  # spheroid: flash, pro
     ]
 
     # Reserved top band for the set headers + legend so they never collide
     # with the first row of panels.
     fig, axes = plt.subplots(
-        len(METRICS), len(SETS), figsize=(8.6, 5.1),
+        len(METRICS), len(SETS), figsize=(10.9, 5.1),
         sharey="row",
     )
     fig.patch.set_facecolor("white")
-    fig.subplots_adjust(top=0.72, bottom=0.09, left=0.09, right=0.985,
-                        hspace=0.42, wspace=0.22)
+    fig.subplots_adjust(top=0.72, bottom=0.09, left=0.08, right=0.985,
+                        hspace=0.42, wspace=0.20)
 
     for col in range(len(SETS)):
         for row, (key, title) in enumerate(METRICS):
