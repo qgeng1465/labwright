@@ -152,14 +152,16 @@ def main(argv: list[str]) -> int:
                     # One label format (percent) for every row; a tall bar puts
                     # the label inside with a per-bar ink color, a short bar
                     # floats it above in dark ink. v == 0.0 needs no label.
-                    txt = f"{100 * v:.0f}%" if v >= 0.005 else ""
+                    # One label format (percent) for every bar — including 0%
+                    # bars, so "nothing happened" is countable, not a gap.
+                    txt = f"{100 * v:.0f}%"
                     if v >= 0.85:
                         ax.text(pos + off, v - 0.015, txt, ha="center", va="top",
                                 fontsize=8.0, color=_label_color(color))
                     elif v > 0.30:
                         ax.text(pos + off, v - 0.015, txt, ha="center", va="top",
                                 fontsize=8.0, color=_label_color(color))
-                    elif v >= 0.005:
+                    else:
                         ax.text(pos + off, v + 0.015, txt, ha="center", va="bottom",
                                 fontsize=8.0, color=INK)
 

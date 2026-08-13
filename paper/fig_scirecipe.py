@@ -4,8 +4,19 @@ Turns ``results/eval_scirecipe_audit.json`` into a two-panel figure. Left: the
 funnel — from all protocol summaries, how many carry numbers, how many route to
 a domain we can recompute, how many were audited, how many were *checkable*.
 Right: the verdict distribution over audited rows (ok / review_required /
-unverifiable) plus the top contradictions quoted verbatim, so "the numbers don't
-follow" is shown with the exact text, not a count.
+unverifiable) with the counts set in white inside the segments. The top
+contradictions are quoted verbatim in the figure's bottom margin — outside both
+panels so they can never collide with the bars — and an arrow draws the eye from
+that note up to the unverifiable (gray) segment they live in.
+
+Layout invariants (kept in the code so the figure can't drift):
+- ``gridspec_kw={'wspace': 0.4, 'width_ratios': [1, 2]}`` on ``figsize=(16, 6)``:
+  the verdict panel is twice as wide as the funnel, and the gap keeps the funnel
+  labels clear of the right panel;
+- the two panels share one axes row, so their bar baselines (and heights) align;
+- the contradiction note is a global ``fig.text`` in the bottom margin (y≈0.05),
+  below ``bottom=0.24``, with a figure-space arrow pointing up to the gray bar —
+  never inside a panel where it would overlap the verdict bar.
 
 Status colours are reserved for their meaning: verified/ok=good (green),
 needs-review=warning (amber), unverifiable=neutral (gray). Text is ink
@@ -43,6 +54,18 @@ WARN = "#b26a00"    # status: review_required / discrepancy
 NEUTRAL = "#a8a39d"  # status: unverifiable
 BLUE = "#2E5598"    # funnel bars
 
+FIELD_NAMES = {
+    "shear_pa": "shear", "reynolds": "Re", "pressure_drop_pa": "ΔP",
+    "residence_time_s": "t_res", "channel_volume_ul": "V_ch",
+    "mean_velocity_mms": "ū", "seed_per_well": "seed count",
+    "medium_volume_per_well_ml": "medium volume",
+    "expected_confluence_pct": "confluence",
+}
+
+
+def _ellipsis(s: str, n: int = 74) -> str:
+    return s if len(s) <= n else s[: n - 1].rstrip() + "…"
+
 
 def main(argv: list[str]) -> int:
     if len(argv) < 1:
@@ -63,112 +86,127 @@ def main(argv: list[str]) -> int:
 
     # No constrained_layout: it silently ignores the subplots_adjust below (which
     # would leave the legend overlapping the panels). Manual fractions instead.
-    fig, axes = plt.subplots(1, 2, figsize=(9.2, 4.4), width_ratios=[1.2, 1.7])
+    # Right panel is twice as wide as the funnel; the wspace keeps the long
+    # funnel labels clear of the verdict bar.
+    fig, axes = plt.subplots(
+        1, 2, figsize=(16, 6),
+        gridspec_kw={"wspace": 0.4, "width_ratios": [1, 2]},
+    )
     fig.patch.set_facecolor("white")
-    fig.subplots_adjust(top=0.80)
+    # top margin for the legend+title, bottom margin for the global contradiction
+    # note and its arrow (the note sits below bottom=0.24, never in a panel).
+    fig.subplots_adjust(top=0.82, bottom=0.24, left=0.05, right=0.98)
 
-    # ---- left: funnel (each % states its denominator) ----
+    # ---- left: funnel (each stage's % states its denominator) ----
     ax = axes[0]
     stages = [
-        (f"all protocols  {total:,}", total),
-        (f"numeric  {numeric:,}  · {100.0 * numeric / total:.0f}% of all", numeric),
-        (f"audited (culture + flow)  {dom:,}  · {100.0 * dom / numeric:.0f}% of numeric", dom),
-        (f"checkable  {n_check:,}  · {100.0 * n_check / audited:.0f}% of audited", n_check),
+        ("all protocols", total, None),
+        ("numeric", numeric, f"{100.0 * numeric / total:.0f}% of all"),
+        ("audited (culture + flow)", dom, f"{100.0 * dom / numeric:.0f}% of numeric"),
+        ("checkable", n_check, f"{100.0 * n_check / audited:.0f}% of audited"),
     ]
     ymax = stages[0][1]
-    for i, (label, value) in enumerate(stages):
+    for i, (name, value, pct) in enumerate(stages):
         w = value / ymax
-        ax.barh(i, w, height=0.62, color=BLUE, ec="none")
-        ax.text(w + 0.01, i, label, va="center", ha="left", fontsize=8.5, color=INK)
-    for i in range(len(stages) - 1):
-        y0 = i - 0.31
-        y1 = i + 1 + 0.31
-        ax.add_patch(FancyArrowPatch((0.55, y0), (0.55, y1),
-                                     arrowstyle="->", mutation_scale=8,
-                                     color=GRID, lw=0.8, zorder=0))
+        c = ax.barh(i, w, height=0.6, color=BLUE, ec="none")
+        outside = name + (f" · {pct}" if pct else "")
+        if w >= 0.06:
+            # wide enough for the count in white inside the bar
+            ax.bar_label(c, labels=[f"{value:,}"], label_type="center",
+                         color="white", fontsize=12, fontweight="bold")
+            ax.text(w + 0.01, i, outside, va="center", ha="left", fontsize=10,
+                    color=INK)
+        else:
+            # thin bar: keep the count in the outside label instead
+            ax.text(w + 0.01, i, f"{value:,} · {outside}", va="center", ha="left",
+                    fontsize=10, color=INK)
     ax.set_ylim(-0.6, len(stages) - 0.4)
     ax.invert_yaxis()
     ax.set_xticks([])
     ax.set_yticks([])
     for spine in ax.spines.values():
         spine.set_visible(False)
-    ax.set_title("protocol audit funnel", fontsize=9.5, color=INK, pad=4)
+    ax.set_title("protocol audit funnel", fontsize=12, color=INK, pad=20)
 
     # ---- right: verdicts over the audited rows (the funnel's audited stage) ----
-    # A slice carries its count inside only when it is wide enough to hold text;
-    # a thin slice (here the 74 review-required rows, ~1% of the bar) cannot, so
-    # its count floats above the bar. Coloured slices wide enough hold their name
-    # under the count; light slices put the name above the bar instead; the thin
-    # slice's name lives in the legend.
+    # Counts are set via bar_label (white, centered, bold); a slice only carries
+    # its count inside when it is wide enough — the thin needs-review slice
+    # floats its count above the bar instead.
     ax = axes[1]
     counts = [(n_ok, GOOD, "verified"), (n_review, WARN, "needs review"),
               (n_unv, NEUTRAL, "unverifiable")]
-    xmax = audited * 1.15  # the axis xlim, in the same data units as value
+    xmax = audited * 1.12  # the axis xlim, in the same data units as value
     bottom = 0
     for value, color, label in counts:
-        ax.barh([0], [value], left=[bottom], color=color, height=0.7, ec="white", lw=1.0)
-        if value:
-            frac = value / xmax
-            cx = bottom + value / 2
-            if frac >= 0.045:
-                # wide enough for the count inside the slice
-                ax.text(cx, 0, f"{value:,}", va="center", ha="center", fontsize=9,
-                        color="white" if color in (GOOD, WARN) else INK, zorder=3)
-            else:
-                # thin slice: count floats above the bar, clear of the neighbours
-                ax.text(cx, 0.58, f"{value:,}", va="center", ha="center",
-                        fontsize=8, color=WARN, zorder=3)
-            if frac >= 0.055 and color in (GOOD, WARN):
-                # coloured slice wide enough for the name, under the count
-                ax.text(cx, -0.15, label, ha="center", va="center", fontsize=8,
-                        color="white", zorder=3)
-            elif frac >= 0.045:
-                # light/wide slice: name above the bar
-                ax.text(cx, 0.47, label, ha="center", va="bottom", fontsize=8,
-                        color=INK)
+        if not value:
+            continue
+        c = ax.barh([0], [value], left=[bottom], color=color, height=0.72,
+                    ec="white", lw=1.2)
+        frac = value / xmax
+        cx = bottom + value / 2
+        if frac >= 0.06:
+            # wide enough for the count inside the slice
+            ax.bar_label(c, labels=[f"{value:,}"], label_type="center",
+                         color="white", fontsize=12, fontweight="bold")
+            if frac >= 0.09:
+                # and for the slice name, under the count
+                ax.text(cx, -0.22, label, ha="center", va="center", fontsize=9.5,
+                        color="white" if color in (GOOD, WARN) else INK)
+        else:
+            # thin slice: count + name float above the bar, clear of neighbours
+            ax.text(cx, 0.52, f"{value:,}", ha="center", va="center", fontsize=10,
+                    color=WARN, fontweight="bold")
+            ax.text(cx, 0.28, label, ha="center", va="bottom", fontsize=9,
+                    color=INK)
         bottom += value
-    ax.set_ylim(-1.5, 0.72)
-    ax.set_xlim(0, audited * 1.15)
+    ax.set_ylim(-1.6, 0.72)
+    ax.set_xlim(0, xmax)
     ax.set_yticks([])
     ax.set_xticks([])
     for spine in ax.spines.values():
         spine.set_visible(False)
-    ax.set_title(f"verdicts over the {audited:,} audited", fontsize=9.5, color=INK, pad=4)
+    ax.set_title(f"verdicts over the {audited:,} audited",
+                 fontsize=12, color=INK, pad=20)
 
-    # contradiction quotes under the verdict bar, in a bounded block with prose
-    # field names and an ellipsis where the text was cut.
-    rows = d.get("rows", [])
-    disc = [r for r in rows if r.get("verdict") == "review_required"]
-    disc.sort(key=lambda r: len(r.get("discrepancy_fields", [])), reverse=True)
-    FIELD_NAMES = {
-        "shear_pa": "shear", "reynolds": "Re", "pressure_drop_pa": "ΔP",
-        "residence_time_s": "t_res", "channel_volume_ul": "V_ch",
-        "mean_velocity_mms": "ū", "seed_per_well": "seed count",
-        "medium_volume_per_well_ml": "medium volume",
-        "expected_confluence_pct": "confluence",
-    }
-
-    def _ellipsis(s: str, n: int = 74) -> str:
-        return s if len(s) <= n else s[: n - 1].rstrip() + "…"
-
-    quote_lines = []
-    for r in disc[:3]:
-        names = ", ".join(FIELD_NAMES.get(f, f) for f in r.get("discrepancy_fields", []))
-        q = _ellipsis(r.get("quote") or "")
-        quote_lines.append(f"{names}: {q}")
-    if quote_lines:
-        ax.text(0, -0.55, "contradictions, verbatim:\n" + "\n".join(quote_lines),
-                fontsize=8, color=WARN, va="top", ha="left", linespacing=1.5,
-                bbox=dict(boxstyle="round,pad=0.35", fc="#faf8f5", ec=GRID, lw=0.8))
-
-    # legend
+    # legend (one row, above both panels)
     handles = [
         Patch(facecolor=GOOD, label="verified (numbers follow)"),
         Patch(facecolor=WARN, label="needs review"),
         Patch(facecolor=NEUTRAL, label="unverifiable"),
     ]
-    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 0.90),
-               ncol=3, frameon=False, fontsize=8.5)
+    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 0.96),
+               ncol=3, frameon=False, fontsize=10)
+
+    # contradiction quotes: global note in the figure's bottom margin, NOT inside
+    # the right panel, so it can never overlap the verdict bar.
+    rows = d.get("rows", [])
+    disc = [r for r in rows if r.get("verdict") == "review_required"]
+    disc.sort(key=lambda r: len(r.get("discrepancy_fields", [])), reverse=True)
+    quote_lines = []
+    for r in disc[:3]:
+        names = ", ".join(FIELD_NAMES.get(f, f) for f in r.get("discrepancy_fields", []))
+        quote_lines.append(f"{names}: {_ellipsis(r.get('quote') or '')}")
+    note_txt = "contradictions, verbatim:\n" + "\n".join(quote_lines) if quote_lines \
+        else "no contradictions found in the audited rows"
+    note = fig.text(0.5, 0.05, note_txt, fontsize=10, color=WARN, ha="center",
+                    va="bottom", linespacing=1.5, zorder=5,
+                    bbox=dict(boxstyle="round,pad=0.4", fc="#faf8f5", ec=GRID,
+                              lw=0.8))
+
+    # arrow from the note up to the unverifiable (gray) segment of the right bar.
+    # Both endpoints are computed in figure space after a draw, so they track the
+    # actual rendered geometry instead of hand-tuned fractions.
+    fig.canvas.draw()
+    if n_unv > 0:
+        rnd = fig.canvas.get_renderer()
+        bb = note.get_window_extent(rnd)
+        src = fig.transFigure.inverted().transform((bb.x0 + bb.width / 2, bb.y1 + 12))
+        gray_cx = audited - n_unv / 2
+        tgt = fig.transFigure.inverted().transform(
+            ax.transData.transform((gray_cx, -0.36)))
+        fig.add_artist(FancyArrowPatch(src, tgt, transform=fig.transFigure,
+                                       arrowstyle="-|>", mutation_scale=14,
+                                       color=MUT, lw=1.2, zorder=4))
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_scirecipe.pdf", bbox_inches="tight", facecolor="white")
