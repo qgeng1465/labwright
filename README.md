@@ -659,6 +659,59 @@ Read the numbers honestly — and the boundary of what they mean.
   saw, blind beyond it. (The extractor's bars are identical under flash and pro
   by construction.)
 
+## Cross-provider check: does the gate transfer to Kimi Code?
+
+The table above is one backend (DeepSeek). To check the architecture is
+backend-agnostic, the same five sets × four systems were re-run against two
+Kimi Code models (**`kimi-for-coding`** and **`k3`**, OpenAI-compatible coding
+endpoint) under the identical harness. The headline: **the Labwright benefit
+transfers to any backend that can reliably run the tool loop — and collapses
+for one that cannot.**
+
+- **k3 ≈ DeepSeek.** On the 24-reading set, Labwright turns k3 from 8 % bare →
+  **92 % usable** (flash 88 %, pro 100 %), self-consistent 96 %, hallucination
+  0.042. k3's two reading misses (`lung-alveolar-shear` — never called
+  `submit_design`; `selfconsistent-channel-volume` — wrong target) are *not* the
+  three goals flash misses (`power-80-effect-half`, `reynolds-laminar-check`,
+  `selfconsistent-pressure-drop-40mm`); k3 in fact hits all three. The misses
+  are per-backend tool-loop idiosyncrasies, not systematic blind spots in
+  particular goal types.
+- **kimi-for-coding fails the tool loop.** Labwright usable **0 %** on the
+  24-reading set. It called `submit_design` on **1/24** goals, and that design
+  missed the target; the other 23 never reached `submit_design` at all. On a
+  traced goal it fixated on calling `wall_shear_stress` with `viscosity_pas=0`,
+  replayed the same validation error (`input must be > 0`) across all 12
+  iterations, and never corrected itself. Notably it is *better without* the
+  agent loop (soft-gate reaches 8 % usable on reading, Labwright 0 %): for a
+  backend that cannot self-correct a tool argument, the extra machinery is net
+  negative. That is an honest boundary condition on the architecture, not a
+  cherry-picked failure.
+
+| set | model | bare | soft-gate | self-verify | Labwright |
+|---|---|---|---|---|---|
+| 24-reading | `kimi-for-coding` | 4 % | 8 % | 0 % | **0 %** |
+| 24-reading | `k3` | 8 % | 8 % | 0 % | **92 %** |
+| 15-blind | `kimi-for-coding` | 0 % | 0 % | 0 % | **0 %** |
+| 15-blind | `k3` | _running_ | _running_ | _running_ | _running_ |
+| 15-3D-spheroid | `kimi-for-coding` | _running_ | _running_ | _running_ | _running_ |
+| 15-3D-spheroid | `k3` | _running_ | _running_ | _running_ | _running_ |
+| 14-plate-culture | `kimi-for-coding` | _running_ | _running_ | _running_ | _running_ |
+| 14-plate-culture | `k3` | _running_ | _running_ | _running_ | _running_ |
+| 14-perfused-PK | `kimi-for-coding` | _running_ | _running_ | _running_ | _running_ |
+| 14-perfused-PK | `k3` | _running_ | _running_ | _running_ | _running_ |
+
+*Usable designs (%). Cells still running are filled as the sweep lands. Full
+per-system self-consistent / hallucination columns are in the committed result
+files (`results/eval_{set}_{k3,kimicode}.json`). Config note: the Kimi runs used
+temperature **0.6** with thinking disabled; the DeepSeek runs used **0.2** — the
+Kimi coding endpoint's plain completion path validates temperature to 1.0, and
+the Labwright request shape (thinking-disabled `extra_body`) accepts 0.6
+(`LABWRIGHT_TEMPERATURE` overrides the 0.2 default). A higher temperature cannot
+explain k3's 92 % (it would if anything hurt a consistency-based metric), and
+kimi-for-coding's failure is argument fixation, not temperature sensitivity. The
+fine-tuned extractor is a fixed local model and is not re-benchmarked per
+backend.*
+
 ## Reproducibility: prompts, models & provenance
 
 The benchmark is an ablation of *prompts and stage structure* on fixed models, so
@@ -679,9 +732,11 @@ are the models as served on the run dates in the result JSONs (`generated_at`).
 A cross-provider sweep over the same five sets is run against the **Kimi Code**
 endpoint (`https://api.kimi.com/coding/v1`), models `kimi-for-coding` and `k3`,
 so the same protocol can be read across provider families (temperature **0.6** —
-the only temperature that endpoint accepts; `LABWRIGHT_TEMPERATURE` overrides
-the 0.2 DeepSeek default). Rows land in `results/eval_*_kimicode.json` /
-`results/eval_*_k3.json` and are merged into the table once complete.
+the endpoint's plain completion path validates temperature to 1.0, and the
+Labwright request shape (thinking disabled) accepts 0.6; `LABWRIGHT_TEMPERATURE`
+overrides the 0.2 DeepSeek default). Rows land in
+`results/eval_*_kimicode.json` / `results/eval_*_k3.json` and are summarized in
+the cross-provider table above.
 
 **The three LLM-memory prompts** are the controllable variables of the ablation,
 so they are pinned verbatim (with the exact per-goal key lists) in

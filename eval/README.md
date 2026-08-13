@@ -114,8 +114,9 @@ override, but the committed numbers are exactly these two models.
 A cross-provider sweep over the same five sets runs against the **Kimi Code**
 endpoint (`https://api.kimi.com/coding/v1`), models `kimi-for-coding` and `k3`
 (`results/eval_*_kimicode.json` / `results/eval_*_k3.json`), at temperature
-**0.6** — the only value that endpoint accepts; `LABWRIGHT_TEMPERATURE`
-overrides the 0.2 DeepSeek default. The finetuned-ext rows come from
+**0.6** — the endpoint's plain completion path validates temperature to 1.0,
+and the Labwright request shape (thinking disabled) accepts 0.6;
+`LABWRIGHT_TEMPERATURE` overrides the 0.2 DeepSeek default. The finetuned-ext rows come from
 `eval/run_finetuned_benchmark.py` (a fixed local Qwen2.5-1.5B LoRA, adapter at
 `results/extractor/lora`) and are grafted into both model files of their set by
 `eval/merge_finetuned.py` — model-independent by construction.
@@ -521,6 +522,65 @@ three competitor systems were rerun — the Labwright records are carried from t
 pre-fix run because Labwright scores typed `DesignPlan`s through a separate
 path the fix does not touch. The previously committed 0 % / 1.000 cells were
 this artifact; the Labwright cells never changed.
+
+### Cross-provider: Kimi Code
+
+The tables above are one backend (DeepSeek). To check the architecture
+transfers, the same five sets × four systems were re-run against **`k3`** and
+**`kimi-for-coding`** (Kimi Code, OpenAI-compatible coding endpoint) under the
+identical harness — no re-typed numbers, all derived from the committed
+per-entry records (`results/eval_{set}_{k3,kimicode}.json`). The `finetuned-ext`
+row is a fixed local model and is identical under every backend, so it is not
+repeated here. Cells for the still-running sets are marked `_running_`.
+
+| model | set | system | self-consistent | usable | hallucination |
+|---|---|---|---|---|---|
+| `k3` | 24-reading | bare-LLM | 8 % | 8 % | 0.917 |
+| `k3` | 24-reading | soft-gate | 8 % | 8 % | 0.917 |
+| `k3` | 24-reading | self-verify | 0 % | 0 % | 0.882 |
+| `k3` | 24-reading | **Labwright** | **96 %** | **92 %** | **0.042** |
+| `kimi-for-coding` | 24-reading | bare-LLM | 4 % | 4 % | 0.958 |
+| `kimi-for-coding` | 24-reading | soft-gate | 8 % | 8 % | 0.917 |
+| `kimi-for-coding` | 24-reading | self-verify | 0 % | 0 % | 0.944 |
+| `kimi-for-coding` | 24-reading | **Labwright** | **4 %** | **0 %** | **0.958** |
+| `kimi-for-coding` | 15-blind | bare-LLM | 0 % | 0 % | 1.000 |
+| `kimi-for-coding` | 15-blind | soft-gate | 7 % | 0 % | 0.933 |
+| `kimi-for-coding` | 15-blind | self-verify | 0 % | 0 % | 0.967 |
+| `kimi-for-coding` | 15-blind | **Labwright** | **7 %** | **0 %** | **0.933** |
+| `k3` | 15-blind | … | _running_ | _running_ | _running_ |
+| `kimi-for-coding` | 15-3D-spheroid | … | _running_ | _running_ | _running_ |
+| `k3` | 15-3D-spheroid | … | _running_ | _running_ | _running_ |
+| `kimi-for-coding` | 14-plate-culture | … | _running_ | _running_ | _running_ |
+| `k3` | 14-plate-culture | … | _running_ | _running_ | _running_ |
+| `kimi-for-coding` | 14-perfused-PK | … | _running_ | _running_ | _running_ |
+| `k3` | 14-perfused-PK | … | _running_ | _running_ | _running_ |
+
+**The gate transfers to any backend that can run the tool loop.** `k3` ≈
+`flash`: Labwright takes it from 8 % bare to **92 % usable** on the reading set
+(flash 88 %, pro 100 %). Its two reading misses (`lung-alveolar-shear` — never
+called `submit_design`; `selfconsistent-channel-volume` — wrong target) are not
+the three goals `flash` misses (`power-80-effect-half`, `reynolds-laminar-check`,
+`selfconsistent-pressure-drop-40mm`) — k3 in fact hits all three, so no goal
+type is a systematic blind spot; the misses are per-backend tool-loop
+idiosyncrasies.
+
+**…and collapses for a backend that cannot.** `kimi-for-coding` called
+`submit_design` on 1/24 reading goals (and that design missed the target); the
+other 23 never reached it. A traced goal fixated on `wall_shear_stress` with
+`viscosity_pas=0`, replayed the same validation error (`input must be > 0`)
+across all 12 iterations, and never corrected itself. It is even *better
+without* the agent loop (soft-gate 8 % usable > Labwright 0 % on reading; the
+same 0 % usable on the blind set) — for a backend that cannot self-correct a
+tool argument, Labwright's machinery is net negative. That is an honest
+boundary condition on the architecture.
+
+**Config caveat.** The Kimi runs used temperature **0.6** with thinking
+disabled; the DeepSeek runs used **0.2** — the Kimi coding endpoint's plain
+completion path validates temperature to 1.0, and the Labwright request shape
+(thinking-disabled `extra_body`) accepts 0.6. A higher temperature cannot
+explain `k3`'s high usable rate (it would if anything hurt a consistency-based
+metric), and `kimi-for-coding`'s failure is argument fixation, not temperature
+sensitivity.
 
 ### Statistical precision: single runs vs 5-seed intervals
 
