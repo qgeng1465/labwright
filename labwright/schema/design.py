@@ -8,11 +8,13 @@ the verifier.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ChipGeometry(BaseModel):
     """Microfluidic channel geometry."""
+
+    model_config = ConfigDict(extra="forbid")
 
     width_um: float = Field(gt=0, description="Channel width (µm), typical OOC: 400-1000")
     height_um: float = Field(gt=0, description="Channel height (µm), typical OOC: 50-200")
@@ -23,6 +25,8 @@ class ChipGeometry(BaseModel):
 
 class FlowParams(BaseModel):
     """Perfusion inputs."""
+
+    model_config = ConfigDict(extra="forbid")
 
     flow_rate_uLmin: float = Field(gt=0, description="Per-channel volumetric flow rate (µL/min)")
     viscosity_pas: float = Field(default=1e-3, gt=0, description="Dynamic viscosity (Pa·s)")
@@ -43,6 +47,8 @@ class DerivedFlowMetrics(BaseModel):
 class CellPlan(BaseModel):
     """Seeding and culture plan."""
 
+    model_config = ConfigDict(extra="forbid")
+
     cell_type: str = Field(description="Cell type, e.g. HepG2, primary hepatocytes")
     seeding_density_cells_cm2: float = Field(gt=0, description="Seeding density (cells/cm²)")
     culture_area_cm2: float = Field(gt=0, description="Effective culture area (cm²)")
@@ -60,6 +66,8 @@ class CulturePlan(BaseModel):
     :mod:`labwright.calc.culture` — never proposed by the LLM — and re-checked
     by the verifier.
     """
+
+    model_config = ConfigDict(extra="forbid")
 
     plate_format: str = Field(description="Plate format: 6/12/24/48/96-well")
     wells: int = Field(default=1, ge=1, description="Number of wells plated")
@@ -86,6 +94,8 @@ class SpheroidPlan(BaseModel):
     by the verifier.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     cell_type: str = Field(description="Cell type, e.g. HepG2, primary hepatocytes, tumour cells")
     spheroid_format: str = Field(description="Vessel/format: 96-ula / 384-ula / hanging-drop")
     spheroid_count: int = Field(ge=1, description="Number of spheroids to form")
@@ -104,6 +114,8 @@ class SpheroidPlan(BaseModel):
 class DosePlan(BaseModel):
     """Compound dosing plan."""
 
+    model_config = ConfigDict(extra="forbid")
+
     compound: str = Field(description="Compound name")
     molecular_weight_g_mol: float = Field(gt=0, description="Molecular weight (g/mol)")
     stock_mM: float = Field(gt=0, description="Stock concentration (mM)")
@@ -115,6 +127,8 @@ class DosePlan(BaseModel):
 
 class StatsPlan(BaseModel):
     """Statistical design of the comparison."""
+
+    model_config = ConfigDict(extra="forbid")
 
     effect_size: float = Field(gt=0, description="Expected between-group difference (measurement units)")
     std_dev: float = Field(gt=0, description="Expected pooled standard deviation")

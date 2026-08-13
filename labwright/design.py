@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from labwright.calc import cell as calc_cell
 from labwright.calc import culture as calc_culture
@@ -63,6 +63,11 @@ _DERIVED_FIELD_NAMES = {
 
 class DesignInput(BaseModel):
     """Everything the agent is allowed to choose. No derived numbers here."""
+
+    # A key the extractor/LLM invents (e.g. ``cell_count``, ``flow_rate_ml_min``)
+    # is a schema error, not something to silently drop — the whole point of the
+    # gate is that a hallucinated field must surface loudly, not pass unnoticed.
+    model_config = ConfigDict(extra="forbid")
 
     goal: str = Field(description="Experimental goal in one sentence")
     rationale: str = Field(description="Why this design; assumptions and references")

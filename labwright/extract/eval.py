@@ -30,7 +30,7 @@ import math
 from pathlib import Path
 from typing import Any, Callable
 
-from labwright.design import DesignInput, build_design
+from labwright.design import DesignInput, _reject_derived_fields, build_design
 from labwright.extract.data import SCHEMA_PROMPT, SYSTEM_PROMPT
 from labwright.extract.pipeline import Extractor, parse_json
 from labwright.verify.checker import has_errors, verify_design
@@ -74,14 +74,25 @@ def errors_all_within(errs: dict[str, float | None], tol: float = _RECOVERY_TOL)
 
 
 def build_from_raw(goal: str, raw: dict) -> tuple[object | None, list | None, str | None]:
-    """Run raw through the real pipeline; return (plan, issues, error)."""
+    """Run raw through the real pipeline; return (plan, issues, error).
+
+    The audit path crosses the same gate as the agent's ``submit_design``: a
+    derived field invented by the extractor is rejected, and a malformed block
+    that would raise ``TypeError`` (e.g. a duplicate keyword from a ``goal``
+    key in the raw block, or ``cells.seed_count`` reaching ``CellPlan``) is a
+    clean ``schema_error``, never a crash.
+    """
+    try:
+        _reject_derived_fields(raw)
+    except ValueError:
+        return None, None, "derived_field_rejected"
     try:
         inp = DesignInput(goal=goal, rationale="eval", **raw)
-    except Exception as exc:  # pydantic ValidationError
+    except Exception as exc:  # pydantic ValidationError / duplicate keyword
         return None, None, f"schema_error"
     try:
         plan = build_design(inp)
-    except (ValueError, KeyError) as exc:  # partial raw block, e.g. cells w/o density
+    except (ValueError, KeyError, TypeError) as exc:  # partial/typed raw block
         return None, None, f"schema_error"
     issues = verify_design(plan)
     return plan, issues, None

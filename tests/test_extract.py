@@ -5,12 +5,13 @@ from __future__ import annotations
 import json
 
 import pytest
+from pydantic import ValidationError
 
-from labwright.design import DesignInput, build_design
+from labwright.design import DesignInput, _reject_derived_fields, build_design
 from labwright.extract.data import encode_example, raw_to_json
 from labwright.extract.eval import build_from_raw, field_errors, errors_all_within, score_batch, score_one
 from labwright.extract.gold_pairs import gold_pairs
-from labwright.extract.pipeline import configure_tokenizer, parse_json
+from labwright.extract.pipeline import Extractor, configure_tokenizer, parse_json
 from labwright.extract.synthetic import generate
 from labwright.verify.checker import has_errors, verify_design
 
@@ -207,6 +208,87 @@ def test_partial_cells_block_is_schema_error_not_crash():
          "flow": {"flow_rate_uLmin": 2, "viscosity_pas": 0.001}},
     )
     assert err is None and plan is not None
+
+
+# ---------------------------------------------------------------------------
+# The extractor gate: raw inputs cross the same derived-field gate and schema
+# strictness as the agent's submit_design
+# ---------------------------------------------------------------------------
+
+
+def test_gate_rejects_top_level_derived_field():
+    with pytest.raises(ValueError, match="derived field"):
+        _reject_derived_fields({"shear_pa": 0.05})
+
+
+def test_gate_rejects_nested_derived_field():
+    with pytest.raises(ValueError, match="culture.seed_per_well"):
+        _reject_derived_fields({"culture": {"plate_format": "96-well",
+                                            "seeding_density_cells_cm2": 1e5,
+                                            "seed_per_well": 3200}})
+
+
+def test_design_input_rejects_unknown_top_level_key():
+    # A hallucinated field (e.g. cell_count) is a loud schema error, not silently dropped.
+    with pytest.raises(ValidationError, match="Extra inputs"):
+        DesignInput(goal="g", rationale="r", cell_count=5000)
+
+
+def test_block_models_reject_unknown_nested_key():
+    # DesignInput blocks are dict[str, Any]; the real strictness sits on the
+    # block models built in build_design.
+    from labwright.schema.design import CellPlan, ChipGeometry
+
+    with pytest.raises(ValidationError):
+        ChipGeometry(width_um=400, height_um=100, length_mm=20, width_mm=0.4)
+    with pytest.raises(ValidationError):
+        CellPlan(cell_type="HepG2", seeding_density_cells_cm2=1e5,
+                 culture_area_cm2=0.08, seed_count=8000, viability=90)
+
+
+def _mock_extractor(raw: dict | None):
+    """An Extractor that skips model loading and returns ``raw`` from extract()."""
+    ext = object.__new__(Extractor)
+    ext.extract = lambda goal, max_new_tokens=384: raw
+    return ext
+
+
+def test_extract_plan_rejects_derived_field_via_gate():
+    ext = _mock_extractor({"cells": {"cell_type": "HepG2", "seed_count": 8000,
+                                     "seeding_density_cells_cm2": 1e5,
+                                     "culture_area_cm2": 0.08}})
+    plan, _issues, error = ext.extract_plan("goal")
+    assert plan is None
+    assert error is not None and error.startswith("derived_field_rejected")
+
+
+def test_extract_plan_rejects_unknown_key():
+    ext = _mock_extractor({"chip": {"width_um": 400, "height_um": 100,
+                                    "length_mm": 20, "width_mm": 0.4},
+                           "flow": {"flow_rate_uLmin": 10, "viscosity_pas": 1e-3}})
+    plan, _issues, error = ext.extract_plan("goal")
+    assert plan is None
+    assert error is not None and error.startswith("schema_error")
+
+
+def test_extract_plan_catches_duplicate_keyword_typeerror():
+    # The extractor emitting a "goal" key collides with the injected goal
+    # keyword — must be a schema_error, never a crash.
+    ext = _mock_extractor({"goal": "the model tried to restate the goal",
+                           "chip": {"width_um": 400, "height_um": 100, "length_mm": 20}})
+    plan, _issues, error = ext.extract_plan("original goal")
+    assert plan is None
+    assert error is not None and error.startswith("schema_error")
+
+
+def test_extract_plan_happy_path():
+    ext = _mock_extractor({"chip": {"width_um": 400, "height_um": 100, "length_mm": 20},
+                           "flow": {"flow_rate_uLmin": 10, "viscosity_pas": 1e-3}})
+    plan, issues, error = ext.extract_plan("goal")
+    assert error is None
+    assert plan is not None
+    assert plan.derived is not None
+    assert not has_errors(verify_design(plan))
 
 
 def test_score_batch_with_stub_extractor():

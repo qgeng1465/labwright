@@ -20,7 +20,7 @@ from peft import PeftModel
 from pydantic import ValidationError
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from labwright.design import DesignInput, build_design
+from labwright.design import DesignInput, _reject_derived_fields, build_design
 from labwright.extract.data import SYSTEM_PROMPT
 from labwright.verify.checker import Issue, format_issues, verify_design
 
@@ -112,13 +112,20 @@ class Extractor:
         raw = self.extract(goal)
         if raw is None:
             return None, None, "unparseable_json"
+        # The extracted raw inputs cross the *same* gate as the agent's
+        # submit_design: a derived field (seed_count, expected_diameter_um, ...)
+        # invented by the extractor is rejected, never silently overwritten.
+        try:
+            _reject_derived_fields(raw)
+        except ValueError as exc:
+            return None, None, f"derived_field_rejected: {exc}"
         try:
             inp = DesignInput(goal=goal, rationale="Auto-extracted raw inputs", **raw)
-        except ValidationError as exc:
-            return None, None, f"schema_error: {exc.errors()[0]['loc']} {exc.errors()[0]['msg']}"
+        except (ValidationError, TypeError) as exc:
+            return None, None, f"schema_error: {exc}"
         try:
             plan = build_design(inp)
-        except (ValueError, KeyError) as exc:
+        except (ValueError, KeyError, TypeError) as exc:
             return None, None, f"schema_error: {exc}"
         issues = verify_design(plan)
         return plan, issues, None
