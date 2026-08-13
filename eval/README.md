@@ -152,14 +152,23 @@ verifier add to the bare model.
 
 ## Metrics (from `benchmark.evaluate`)
 
-- **hallucination rate** — fraction of a system's derived numbers the verifier
-  rejects. A system that produces no checkable output scores 1.0.
+- **hallucination rate** — the fraction of a plan's *derived* fields the
+  verifier rejects at error level, averaged over goals. A system that produces
+  no checkable output scores 1.0. Because the denominator is derived fields per
+  plan, not goals, one goal with a single rejected field moves the set-level
+  number by 1/(goals × fields); and a raw-input absurdity the verifier flags
+  (e.g. an unphysical doubling time) makes a plan *invalid* without moving
+  hallucination at all — so hallucination and the valid/usable flag must be
+  read together.
   - Labwright: derived numbers come from the calculators and the verifier
-    recomputes them from the *same* calculators, so for any plan that submits,
-    this is **0 by construction**. That is the point: it is an architectural
-    guarantee, not a measured win — the metric exists to *make* the guarantee
-    checkable. The only way it is non-zero is a `plan: false` run (the agent
-    produced no design), scored 1.0. The guarantee is also **attack-tested**:
+    recomputes them from the *same* calculators, so for a plan that submits
+    cleanly this is **0 by construction**. That is the point: it is an
+    architectural guarantee, not a measured win — the metric exists to *make*
+    the guarantee checkable. It is non-zero only when the verifier actually
+    rejects something: a `plan: false` run (no design) scores 1.0, and the
+    3D-spheroid set shows the other case — `flash`'s hepatocyte-formation plan
+    had 1 of 6 derived spheroid fields rejected by the physiological-range
+    layer (0.167 → set-level 0.011). The guarantee is also **attack-tested**:
     `tests/test_gate_security.py` proves every other path a hallucinated number
     could take is closed — a derived field smuggled into `submit_design` is
     rejected (not silently dropped), a tampered plan field is caught by the
@@ -339,8 +348,11 @@ the model did not have.
 
 The new per-entry metrics on the same run: the failure-reason breakdown for
 Labwright is `ok` 6/15 (`flash`) / 7/15 (`pro`) and `wrong_target` 9/15 / 8/15 —
-`silence` and `calculation_error` are architecturally excluded from the
-Labwright path (a plan either submits verified or fails to submit). The memory
+`silence` and `calculation_error` do not occur on the blind set (a plan either
+submits verified or fails to submit). The spheroid set is the exception that
+proves the taxonomy: `flash` 1/15 `calculation_error` (hepatocyte-formation —
+one derived field rejected by the verifier) and `pro` 1/15 `silence`
+(sphere-volume — no design). The memory
 systems fail almost entirely with `calculation_error` (14/15 for bare on both
 models). **Target-selection accuracy** (headline target within ±5 %) is 40 %
 (`flash`) / 53 % (`pro`) for Labwright vs 33 % for the bare model — a bare model
@@ -367,18 +379,22 @@ entries (its answers are `calculation_error`, 0 % verifiable — the format-driv
 medium volume never appears). This is the paper's "the calculator is the
 knowledge base" claim made literal: a convention encoded once in `SPHEROID_FORMATS`
 is available to both models on every run, cold or not. The remaining failures
-are the honest residue: `flash` mis-targets the doxorubicin dosing goal (proposes
-24 spheroids against the gold 96 — internally consistent, `hall 0.000`, so the
-gate held and the design was rejected) and fails the blind hepatocyte-formation
-goal by inconsistency (`hall 0.167`: correct 1000 cells/spheroid but a derived
-diameter that does not follow from its own cell size); `pro` proposes 54
-spheroids on the same dosing goal and returns *silence* on the pure-geometry
+are the honest residue, and each is also why the set-level hallucination is
+non-zero. Both models mis-target the doxorubicin dosing goal (`flash` 24
+spheroids against the gold 96, `pro` 54 — internally consistent, `hall 0.000`
+on *that goal*, so the gate held and the design was rejected: a target miss,
+not a fabricated number, contributing 0 to the set-level hallucination);
+`flash` additionally fails the blind hepatocyte-formation goal — it recovered
+the correct 1000 cells/spheroid, but the verifier's physiological-range layer
+rejected one of the plan's six derived spheroid fields (`hall 0.167`, the whole
+of flash's set-level 0.011); `pro` returns *silence* on the pure-geometry
 `spheroid-volume-from-diameter` goal — a one-line sphere-volume derivation, yet
-no design was submitted at all. Target-selection accuracy is 93 % (`flash`
-Labwright) and 87 % (`pro` Labwright, equal across systems) — the model names
-the right target, but only the calculator path turns that into a verified,
-usable design. As with the blind set, these are single-run point estimates; the
-differences between the two models' two failures each are noise at n=15.
+no design was submitted at all (scores hall 1.0, the whole of pro's set-level
+0.067). Target-selection accuracy is 93 % (`flash` Labwright) and 87 % (`pro`
+Labwright, equal across systems) — the model names the right target, but only
+the calculator path turns that into a verified, usable design. As with the
+blind set, these are single-run point estimates; the differences between the
+two models' two failures each are noise at n=15.
 
 Two corrections make these numbers what they are, both reported honestly. First,
 earlier committed figures counted unverifiable answers (geometry and flow with

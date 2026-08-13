@@ -20,10 +20,18 @@ before the design is accepted. One yardstick, one rule for every row
 | "check yourself" / LLM-as-verifier | self-derived (soft-gate, self-verify) | **0 %** on design goals — only the 3 no-choice single-step goals ever reach 12 %; the second pass actively corrupts the first | ~0.75–1.0 |
 | **Labwright** | calculators compute; verifier re-proves | **88–100 %** | **0.000** |
 
-*hallucination = 1.0 also covers a no-submit run. The one non-zero Labwright
-cell anywhere is `flash` on the 24-reading set at **0.125** — three
-pure-calculation goals where the agent produced no design at all: silence, not
-wrong numbers (full table below).*
+*Snapshot — the **24-reading set only**. The 15-goal blind set and the 15-goal
+3D-spheroid set are in the full table below.*
+
+*hallucination = the fraction of a plan's `derived` fields the verifier
+rejects (error-level), averaged over goals; a run that submits no design
+scores 1.0 (the denominator is derived fields per plan, not goals — see
+Definitions below). The only non-zero Labwright cells anywhere: `flash` **0.125** on the
+24-reading set — three pure-calculation goals where the agent produced no
+design at all: silence, not wrong numbers — and `flash` **0.011** / `pro`
+**0.067** on the 15-3D-spheroid set, each from exactly one goal (`flash`: one
+plan with 1 of 6 derived spheroid fields rejected by the verifier; `pro`: one
+no-submit silence). Zero elsewhere.*
 
 ![Labwright graphical abstract: goal → LLM proposes raw inputs → deterministic calculators → verifier re-proves every number → SOP + design JSON; naive alternatives rejected at the hard gate](paper/fig_abstract.png)
 
@@ -91,11 +99,13 @@ of GPU memory; MMFT is a deterministic geometry synthesizer, not an LLM), so we
 state that plainly instead of claiming a head-to-head. One honest boundary,
 stated in [the benchmark](eval/README.md): verification is *necessary, not
 sufficient*. Labwright proves numbers are internally consistent; it cannot
-supply physiology the model doesn't know. The blind-set usable rate collapses
-from 88–100 % on the reading set to 40–47 % on the blind set (each model
-recovers only 3 of the 8 no-hint goals — 38 %, 95 % Wilson CI 14–69 %) for
-exactly that reason. That boundary is the real research frontier, and closing
-it is where this project is headed.
+supply physiology the model doesn't know. On the 15-goal blind set the usable
+rate collapses from 88–100 % on the reading set to **40–47 %** (`flash` 6/15,
+`pro` 7/15). Restricting to the eight genuinely **cold** goals — the answer is
+in neither the goal nor the system prompt — each model recovers only **3
+(38 %**, 95 % Wilson CI 14–69 %); the other five are prompt-backed, the answer
+sitting inside a range in the prompt. That boundary is the real research
+frontier, and closing it is where this project is headed.
 
 ## What you get
 
@@ -105,7 +115,7 @@ it is where this project is headed.
 | "n per group" | made up | power analysis from your effect size & σ |
 | DMSO carry-over | "negligible" | `working/stock`, flagged if > 0.5% v/v |
 | internal consistency | unverifiable | every derived field re-checked by the verifier |
-| unit of that shear | whoever read the paper | dyn/cm²-as-Pa misreads detected and converted (0.2 dyn/cm² ≠ 0.2 Pa) |
+| unit of that shear | whoever read the paper | dyn/cm²-as-Pa misreads detected and flagged as unit errors (0.2 dyn/cm² ≠ 0.2 Pa) |
 | shear that can't exist | passes | outside the physiological band → warning; outside physical limits → error |
 | a cytotoxic dose | passes | rejected with a reason against the institution's safety boundary |
 | "where did this number come from?" | "trust me" | formula + every input (name, value, unit) + code version, in the SOP and the design JSON |
@@ -152,10 +162,14 @@ fails it may **only fix the raw inputs it proposed — never hand-write a derive
 number** to silence a check. Every tool's description carries a worked example
 and its common mistakes.
 
-**The gate is attack-tested** — the benchmark's `hallucination_rate == 0.000`
-is not "0 because we said so"; every alternative path a hallucinated number
-could take into a design is closed and proven closed by an adversarial test
-suite ([`tests/test_gate_security.py`](tests/test_gate_security.py)):
+**The gate is attack-tested** — the `hallucination_rate == 0.000` cells are
+not "0 because we said so"; every alternative path a hallucinated number could
+take into a design is closed and proven closed by an adversarial test suite
+([`tests/test_gate_security.py`](tests/test_gate_security.py)). The gate's
+claim is that a derived number enters a design only when a calculator produced
+it and the verifier re-proved it — a rejected plan on the spheroid set (flash
+0.011) and a no-submit silence (`pro` 0.067) are the gate *working*, not
+failing:
 
 | attack | defense | test |
 |---|---|---|
@@ -405,9 +419,17 @@ check.*
 
 *Definitions: **self-consistent** = every submitted number was re-derived from
 its own raw inputs (zero verifier errors); **usable** = self-consistent
-**and** every physiological target within ±5 %. A plan can be fully
-self-consistent and still miss the target — that is exactly what the 15-blind
-rows show (100 % self-consistent, 40–47 % usable).*
+**and** every physiological target within ±5 %; **hallucination** = the
+fraction of a plan's `derived` fields the verifier rejects at error level,
+averaged over goals (a run that submits no design scores 1.0). The
+hallucination denominator is derived fields per plan, not goals — a single
+goal with one rejected field moves the set-level number by 1/(goals × fields),
+so a goal that scores 0.000 does not pull the set to 0.000, and a raw-input
+absurdity that the verifier flags (e.g. an unphysical doubling time) makes a
+plan invalid without moving hallucination at all — the two signals must be
+read together. A plan can be fully self-consistent and still miss the target —
+that is exactly what the 15-blind rows show (100 % self-consistent, 40–47 %
+usable).*
 
 | set | model | system | self-consistent | usable | hallucination |
 |---|---|---|---|---|---|
@@ -503,23 +525,33 @@ Read the numbers honestly — and the boundary of what they mean.
   range fails even with the hint — both models propose liver at 0.10 Pa
   (inside the range but 100 % off the 0.05 Pa convention), and neither
   recovers lymphatic. Both miss the kidney (`flash` 0.50 Pa — 24× off the
-  0.02 Pa target; `pro` 0.05 Pa — 1.5×) and the primary-hepatocyte seeding
+  0.02 Pa target; `pro` 0.05 Pa — 2.5×) and the primary-hepatocyte seeding
   density (0.33×). **The gate stops fabricated numbers; it cannot supply
   domain knowledge the model does not have.** That boundary is the honest
   headline, and it is exactly what a wet-lab user must not forget: verify the
   target, not just the arithmetic.
 - **The 3D-spheroid set shows the calculator itself carrying domain
-  conventions.** 13/15 usable for both models (87 %) — near the reading-set
-  ceiling, despite 3D culture being a knowledge-weak area for LLMs. The two
-  cold entries (384-ULA 50 µL, hanging-drop 20 µL) are recovered at **100 %**
-  by Labwright on both models but 0 % by the bare model, because those volumes
-  live once in `SPHEROID_FORMATS` (the tool registry), not in model memory —
-  the "calculator is the knowledge base" claim, made literal. The two residual
-  failures per model are the honest residue: both mis-target the cross-domain
-  doxorubicin goal (proposing 24 and 54 spheroids against the gold 96, each
-  internally consistent at `hall 0.000` — the gate rejected both), `flash`
-  additionally fails the blind hepatocyte-formation goal by a derived-diameter
-  inconsistency, and `pro` returns silence on a one-line sphere-volume goal.
+  conventions.** Both models land on the same table row — self-consistent
+  **93 %** / usable **87 %** (13/15) — with hallucination **0.011** (`flash`)
+  / **0.067** (`pro`), near the reading-set ceiling despite 3D culture being a
+  knowledge-weak area for LLMs. The two cold entries (384-ULA 50 µL,
+  hanging-drop 20 µL) are recovered at **100 %** by Labwright on both models
+  but 0 % by the bare model, because those volumes live once in
+  `SPHEROID_FORMATS` (the tool registry), not in model memory — the "calculator
+  is the knowledge base" claim, made literal. The two failures per model are
+  the honest residue, and each is *why* the set-level hallucination is
+  non-zero:
+  - both models mis-target the cross-domain doxorubicin goal (24 and 54
+    spheroids against the gold 96) — internally consistent, `hall 0.000` on
+    *that goal* (a target miss, not a fabricated number; the gate rejected the
+    design), so it contributes 0 to the set-level hallucination;
+  - `flash` additionally fails the blind hepatocyte-formation goal: it
+    recovered the 1000 cells/spheroid target, but one of the plan's six
+    derived spheroid fields was rejected by the verifier's physiological-range
+    layer, so that goal scores **1/6 ≈ 0.167** — flash's whole set-level
+    **0.011** is just this one goal (0.167 ÷ 15);
+  - `pro` returns silence on the one-line sphere-volume goal — no design at
+    all, which scores **1.0** and is pro's whole set-level **0.067** (1.0 ÷ 15).
   Single-run point estimates; the model-pair differences are noise at n=15.
 
 ## Reproducibility: prompts, models & provenance
