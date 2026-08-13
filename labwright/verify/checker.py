@@ -369,6 +369,51 @@ def check_spheroid(plan: DesignPlan, issues: list[Issue]) -> None:
             )
 
 
+def check_oxygen(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Warn when a perfused design's O2 supply is below cellular demand.
+
+    Supply is perfused O2 at maximal extraction (:func:`~labwright.calc.microfluidics.o2_delivery_rate`,
+    air-equilibrated inlet); demand uses the physiology registry's OCR
+    (nmol/min per 10⁶ cells, mid-range) converted to fmol/s/cell. Fires only
+    when the design is perfused *and* the cell type resolves to a registry OCR
+    — otherwise demand cannot be quantified without inventing numbers, so the
+    check stays silent.
+    """
+    from labwright.calc import o2 as calc_o2
+    from labwright.physiology import lookup_cell
+
+    if plan.flow is None:
+        return  # not perfused — O2 supply is diffusive, not computable here
+    if plan.cells is not None and plan.cells.seed_count is not None:
+        total_cells, cell_type = plan.cells.seed_count, plan.cells.cell_type
+    elif plan.spheroid is not None:
+        total_cells, cell_type = plan.spheroid.cells_total, plan.spheroid.cell_type
+    else:
+        return  # no quantitative cell load to match against supply
+
+    profile = lookup_cell(cell_type)
+    if profile is None or profile.o2_consumption_nmol_min_1e6 is None:
+        return  # no registry OCR for this cell type — do not guess
+    lo, hi = profile.o2_consumption_nmol_min_1e6
+    mid_ocr = (lo + hi) / 2.0
+    per_cell_fmol_s = calc_o2.nmol_min_per_1e6_to_fmol_s(mid_ocr)
+
+    supply = mf.o2_delivery_rate(plan.flow.flow_rate_uLmin, calc_o2.AIR_SATURATED_O2_MM * 1e-3)
+    demand = calc_o2.o2_demand_umol_min(total_cells, per_cell_fmol_s)
+    if supply < demand:
+        issues.append(
+            Issue(
+                level="warning",
+                field="flow.flow_rate_uLmin",
+                message=f"perfused O2 supply ≈ {supply:.4g} µmol/min is below cellular demand ≈ "
+                f"{demand:.4g} µmol/min (registry OCR {lo:g}-{hi:g} nmol/min per 10⁶ cells, mid-range) "
+                "— the culture is likely hypoxic; raise flow, reduce cell load, or oxygenate the medium",
+                expected=demand,
+                found=supply,
+            )
+        )
+
+
 def check_stats(plan: DesignPlan, issues: list[Issue]) -> None:
     """Cross-check the replicate count against the stated effect/power."""
     if plan.stats is None:
@@ -407,6 +452,7 @@ def verify_design(plan: DesignPlan) -> list[Issue]:
     check_seeding(plan, issues)
     check_culture(plan, issues)
     check_spheroid(plan, issues)
+    check_oxygen(plan, issues)
     check_dosing(plan, issues)
     check_stats(plan, issues)
     from labwright.verify.sanity import check_sanity

@@ -21,7 +21,7 @@ from typing import Any, Callable
 
 from pydantic import BaseModel, Field
 
-from labwright.calc import cell, culture, dosing, microfluidics as mf, spheroid, stats
+from labwright.calc import barrier, cell, culture, dosing, microfluidics as mf, o2, spheroid, stats
 from labwright.published import verify_published_protocol
 
 # ---------------------------------------------------------------------------
@@ -198,6 +198,62 @@ _TOOL_NOTES: dict[str, tuple[str, str]] = {
         "cell_physiology('HepG2') -> {organ: liver, doubling 48-60 h, shear 0.05-0.15 Pa, ...}",
         "literature-based reference ranges (with sources); call before choosing a physiological "
         "target rather than guessing, and never pass a registry range off as your own measurement",
+    ),
+    "o2_penetration_depth": (
+        "o2_penetration_depth(0.1) -> ~89 µm",
+        "consumption is mol/m³/s — pass volumetric_o2_consumption(cell OCR fmol/s × density) "
+        "rather than a raw OCR; dense tissue ≈ 0.1 mol/m³/s → tens of µm",
+    ),
+    "spheroid_necrotic_fraction": (
+        "spheroid_necrotic_fraction(500, 200) -> 0.008 (0.8%)",
+        "penetration deeper than the radius (diameter/2) returns 0 — a 200 µm spheroid with "
+        "200 µm penetration is fully oxygenated; compare the SAME units (µm)",
+    ),
+    "o2_supply_vs_demand": (
+        "o2_supply_vs_demand(50, 1e6, 0.03) -> {ratio: 5.56, hypoxic: False}",
+        "per_cell_fmol_s is the registry OCR ÷ 60 (nmol/min/1e6 cells ÷ 60); supply assumes "
+        "maximal extraction, so ratio < 1 is unambiguously hypoxic",
+    ),
+    "o2_peclet": (
+        "o2_peclet(0.5, 20) -> 5000",
+        "velocity in mm/s, length in mm; Pe ≪ 1 well mixed, Pe ≫ 1 flow sweeps O2 past the cells",
+    ),
+    "o2_damkohler": (
+        "o2_damkohler(0.1, 20, 0.5) -> 20",
+        "Da > 1 means outlet O2 is depleted — downstream cells hypoxic",
+    ),
+    "o2_po2_conversion": (
+        "o2_po2_conversion(po2_mmHg=150) -> {conc_mM: 0.201}",
+        "pass exactly one of po2_mmHg or conc_mM; 150 mmHg ≈ 0.2 mM (air-equilibrated medium)",
+    ),
+    "teer_from_resistance": (
+        "teer_from_resistance(300, 100, 1.12) -> 224 Ω·cm²",
+        "must subtract the blank and multiply by area — a bare (R_total − R_blank) without "
+        "× area is not a TEER; kΩ readings must be converted to Ω first",
+    ),
+    "transendothelial_resistance": (
+        "transendothelial_resistance(224, 1.12) -> 200 Ω",
+        "target TEER ÷ area; if this R is below the blank, the TEER target is unreachable "
+        "on that insert size",
+    ),
+    "papp_from_flux": (
+        "papp_from_flux(0.006, 1, 100) -> 1e-6 cm/s",
+        "flux in nmol/min (÷60 → nmol/s), donor in µM (= nmol/cm³); a tight barrier is "
+        "~1e-7-1e-6 cm/s, leaky ~1e-5",
+    ),
+    "flux_from_papp": (
+        "flux_from_papp(1e-6, 100, 1.12) -> ~6.7e-3 nmol/min",
+        "a low-Papp probe across a small insert is pmol/min — check the assay can resolve "
+        "the flux before designing the transport study",
+    ),
+    "clearance_from_papp": (
+        "clearance_from_papp(1e-6, 1.12) -> 6.7e-5 mL/min",
+        "Papp × area × 60 (cm³/s → mL/min); clearer than bare Papp when comparing inserts",
+    ),
+    "effective_permeability": (
+        "effective_permeability(1e-13, 20) -> 5e-7 cm/s",
+        "diffusivity in m²/s, thickness in µm; this is the purely-diffusive reference — a "
+        "monolayer Papp far above its passive-membrane P means active/paracellular transport",
     ),
 }
 
@@ -412,6 +468,84 @@ class CellPhysiologyParams(BaseModel):
         description="Cell type or line to look up, e.g. 'HepG2', 'primary human "
         "hepatocytes', 'Caco-2', 'HUVEC' — fuzzy matching, names are normalized"
     )
+
+
+class O2PenetrationParams(BaseModel):
+    volumetric_consumption_mol_m3s: float = Field(
+        gt=0,
+        description="Volumetric O2 consumption in mol/m³/s. Estimate as "
+        "per-cell rate (fmol/s) × cell density (cells/mL): hepatocytes ≈ "
+        "0.007-0.08 fmol/s/cell; a 200 µm spheroid ≈ 2.4e11 cells/mL.",
+    )
+    surface_conc_mM: float = Field(default=0.2, gt=0, description="O2 at the oxygenated surface, mM (air-saturated medium ≈ 0.2)")
+    diffusivity_m2s: float = Field(default=2e-9, gt=0, description="O2 diffusivity in tissue/medium, m²/s (standard ≈ 2e-9)")
+
+
+class O2NecroticParams(BaseModel):
+    diameter_um: float = Field(gt=0, description="Spheroid diameter in µm")
+    penetration_um: float = Field(gt=0, description="O2 penetration depth in µm (see o2_penetration_depth)")
+
+
+class O2SupplyDemandParams(BaseModel):
+    flow_rate_uLmin: float = Field(gt=0, description="Perfusion flow rate, µL/min")
+    total_cells: float = Field(gt=0, description="Total cells in the perfused culture")
+    per_cell_fmol_s: float = Field(
+        gt=0,
+        description="O2 consumption per cell, fmol/s (hepatocytes ≈ 0.007-0.08; "
+        "see cell_physiology for the registry OCR range, /60 to convert nmol/min/10⁶ → fmol/s)",
+    )
+    o2_in_mM: float = Field(default=0.2, gt=0, description="Inlet dissolved O2, mM (air-saturated medium ≈ 0.2)")
+
+
+class O2PecletParams(BaseModel):
+    velocity_mms: float = Field(ge=0, description="Mean flow velocity, mm/s")
+    length_mm: float = Field(gt=0, description="Channel length, mm")
+    diffusivity_m2s: float = Field(default=2e-9, gt=0, description="O2 diffusivity, m²/s")
+
+
+class O2DamkohlerParams(BaseModel):
+    volumetric_consumption_mol_m3s: float = Field(gt=0, description="Volumetric O2 consumption, mol/m³/s")
+    length_mm: float = Field(gt=0, description="Channel length, mm")
+    velocity_mms: float = Field(gt=0, description="Mean flow velocity, mm/s")
+    inlet_o2_mM: float = Field(default=0.2, gt=0, description="Inlet O2 concentration, mM")
+
+
+class O2Po2ConversionParams(BaseModel):
+    po2_mmHg: float | None = Field(default=None, ge=0, description="O2 partial pressure, mmHg (room air ≈ 150-160)")
+    conc_mM: float | None = Field(default=None, ge=0, description="Dissolved O2 concentration, mM")
+
+
+class TeerFromResistanceParams(BaseModel):
+    resistance_total_ohm: float = Field(gt=0, description="Measured total resistance across the insert, Ω")
+    resistance_blank_ohm: float = Field(gt=0, description="Cell-free (blank) insert resistance — electrode/medium contribution, Ω")
+    area_cm2: float = Field(gt=0, description="Membrane growth area, cm² (24-well ≈ 0.33, 12-well ≈ 1.12)")
+
+
+class TransendothelialResistanceParams(BaseModel):
+    teer_ohm_cm2: float = Field(gt=0, description="Target area-normalised TEER, Ω·cm² (see cell_physiology for the cell's model range)")
+    area_cm2: float = Field(gt=0, description="Membrane growth area, cm²")
+
+
+class PappFromFluxParams(BaseModel):
+    flux_nmol_min: float = Field(ge=0, description="Steady-state probe flux across the monolayer, nmol/min")
+    area_cm2: float = Field(gt=0, description="Membrane growth area, cm²")
+    donor_conc_um: float = Field(gt=0, description="Donor-chamber probe concentration, µM")
+
+
+class FluxFromPappParams(BaseModel):
+    papp_cm_s: float = Field(ge=0, description="Apparent permeability, cm/s (tight barrier ≈ 1e-7-1e-6)")
+    donor_conc_um: float = Field(gt=0, description="Donor-chamber probe concentration, µM")
+    area_cm2: float = Field(gt=0, description="Membrane growth area, cm²")
+
+
+class ClearanceParams(BaseModel):
+    papp_cm_s: float = Field(ge=0, description="Apparent permeability, cm/s")
+    area_cm2: float = Field(gt=0, description="Membrane growth area, cm²")
+
+
+class EffectivePermeabilityParams(BaseModel):
+    diffusivity_m2s: float = Field(gt=0, description="Solute diffusivity in the membrane, m²/s (small molecules in water ≈ 1e-9; in PDMS ≈ 1e-12-1e-10)")
+    thickness_um: float = Field(gt=0, description="Membrane thickness, µm")
 
 
 # ---------------------------------------------------------------------------
@@ -745,6 +879,149 @@ register_tool(
     "defensible range instead of a guessed one. Ranges are literature-based with sources.",
     _cell_physiology,
     "physiology",
+)
+
+
+def _o2_po2_conversion(po2_mmHg: float | None = None, conc_mM: float | None = None) -> dict[str, Any]:
+    """Bidirectional Henry's-law O2 conversion (give exactly one input)."""
+    from labwright.calc import o2 as o2c
+
+    if (po2_mmHg is None) == (conc_mM is None):
+        return {"error": "pass exactly one of po2_mmHg or conc_mM"}
+    if po2_mmHg is not None:
+        conc = o2c.o2_conc_mm_from_po2(po2_mmHg)
+        return {"po2_mmHg": po2_mmHg, "conc_mM": round(conc, 4)}
+    po2 = o2c.o2_po2_mmhg_from_conc(conc_mM)
+    return {"conc_mM": conc_mM, "po2_mmHg": round(po2, 1)}
+
+
+register_tool(
+    O2PenetrationParams,
+    "o2_penetration_depth",
+    "Krogh O2 penetration depth into a consuming tissue layer: sqrt(2·D·C₀/q). The thickness O2 "
+    "diffusing from a surface can still oxygenate; beyond it the tissue is anoxic. Answer 'how "
+    "thick can my cell layer be before it suffocates?'. Typical dense tissue: ~10-100 µm.",
+    o2.o2_penetration_depth_um,
+    "o2",
+    units_out="µm",
+)
+
+register_tool(
+    O2NecroticParams,
+    "spheroid_necrotic_fraction",
+    "Anoxic (necrotic-core) volume fraction of a spheroid given its diameter and the O2 "
+    "penetration depth: (1 - δ/R)³. 0 when fully oxygenated. Check whether a planned spheroid "
+    "size will develop a dead core before committing to it.",
+    o2.spheroid_necrotic_fraction,
+    "o2",
+    units_out="volume fraction",
+)
+
+register_tool(
+    O2SupplyDemandParams,
+    "o2_supply_vs_demand",
+    "Compare perfused O2 supply (flow × inlet O2, maximal extraction) with cellular demand "
+    "(cells × per-cell OCR). Returns supply/demand in µmol/min and hypoxic=True when supply < "
+    "demand. Call to check whether a perfused design starves its cells. Use cell_physiology for "
+    "the OCR range (÷60 to get fmol/s/cell).",
+    o2.o2_supply_vs_demand,
+    "o2",
+)
+
+register_tool(
+    O2PecletParams,
+    "o2_peclet",
+    "Péclet number for O2 along the channel: u·L/D. ≪1 diffusion dominates (well mixed); ≫1 "
+    "flow sweeps O2 past before it diffuses to the cells — a boundary-layer barrier.",
+    o2.peclet_number,
+    "o2",
+    units_out="dimensionless",
+)
+
+register_tool(
+    O2DamkohlerParams,
+    "o2_damkohler",
+    "Damköhler I for O2: q·L/(u·C₀). >1 means cells consume O2 faster than flow supplies it — "
+    "the outlet is depleted and downstream cells are hypoxic. Call to check longitudinal O2 "
+    "depletion in a perfused channel.",
+    o2.damkohler_number,
+    "o2",
+    units_out="dimensionless",
+)
+
+register_tool(
+    O2Po2ConversionParams,
+    "o2_po2_conversion",
+    "Henry's-law conversion between dissolved O2 concentration (mM) and partial pressure (mmHg) "
+    "at 37 °C. Air-equilibrated medium ≈ 0.2 mM ≈ 150 mmHg. Give exactly one of the two.",
+    _o2_po2_conversion,
+    "o2",
+)
+
+register_tool(
+    TeerFromResistanceParams,
+    "teer_from_resistance",
+    "TEER from raw insert resistance readings: (R_total − R_blank) × area. Area-normalised "
+    "resistance is what the literature reports — never quote a bare ohm reading as a TEER. "
+    "Call before accepting a barrier readout or planning a transport study; compare against "
+    "cell_physiology's model TEER range for the line.",
+    barrier.teer_ohm_cm2,
+    "barrier",
+    units_out="Ω·cm²",
+)
+
+register_tool(
+    TransendothelialResistanceParams,
+    "transendothelial_resistance",
+    "Raw insert resistance a target TEER should read at: TEER / area. Inverse of "
+    "teer_from_resistance — use to pre-check whether the planned R_total is even in the "
+    "instrument's range.",
+    barrier.transendothelial_resistance_ohm,
+    "barrier",
+    units_out="Ω",
+)
+
+register_tool(
+    PappFromFluxParams,
+    "papp_from_flux",
+    "Apparent permeability Papp from a steady-state flux measurement: (flux/60)/(area × donor "
+    "concentration). cm/s. Tight barriers ≈ 1e-7-1e-6 cm/s; leaky monolayers push to 1e-5. "
+    "Call to convert raw transport data into the comparable permeability number.",
+    barrier.papp_cm_s,
+    "barrier",
+    units_out="cm/s",
+)
+
+register_tool(
+    FluxFromPappParams,
+    "flux_from_papp",
+    "Steady-state flux a target Papp implies: Papp × C₀ × area × 60. nmol/min. Use to check "
+    "the measurement is feasible — low-Papp probes across small inserts produce pmol/min "
+    "fluxes that a plate reader may not resolve.",
+    barrier.flux_nmol_min,
+    "barrier",
+    units_out="nmol/min",
+)
+
+register_tool(
+    ClearanceParams,
+    "clearance_from_papp",
+    "Permeability-surface-area product (clearance): Papp × area, mL/min. A flow-like number "
+    "that is easier to reason about than bare Papp when comparing inserts.",
+    barrier.clearance_mL_min,
+    "barrier",
+    units_out="mL/min",
+)
+
+register_tool(
+    EffectivePermeabilityParams,
+    "effective_permeability",
+    "Effective Fick permeability of a passive membrane: D/L, cm/s. A purely diffusive "
+    "reference — compare a monolayer's Papp against it to tell diffusion-limited from "
+    "barrier-limited transport.",
+    barrier.effective_permeability_cm_s,
+    "barrier",
+    units_out="cm/s",
 )
 
 

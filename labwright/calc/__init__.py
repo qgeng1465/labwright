@@ -11,12 +11,15 @@ microfluidics : channel geometry, flow, shear stress, pressure, oxygen delivery
 cell          : seeding, growth, expansion, confluence
 culture       : plate-based culture (wells, seeding, counting, viability)
 spheroid      : 3D culture (spheroid geometry, size-from-cells, media volume)
+o2            : oxygen transport — Henry's law, Krogh penetration, necrotic
+                core, supply-vs-demand, Péclet / Damköhler
+barrier       : barrier function — TEER, apparent permeability, flux, clearance
 dosing        : molarity, dilution, drug preparation
 stats         : sample size, power, replicates, effect size
 units         : pint-based unit registry and conversion helpers
 """
 
-from labwright.calc import cell, culture, dosing, microfluidics, spheroid, stats  # noqa: F401
+from labwright.calc import barrier, cell, culture, dosing, microfluidics, o2, spheroid, stats  # noqa: F401
 from labwright.calc.units import Q, ureg  # noqa: F401
 
-__all__ = ["cell", "culture", "dosing", "microfluidics", "spheroid", "stats", "Q", "ureg"]
+__all__ = ["barrier", "cell", "culture", "dosing", "microfluidics", "o2", "spheroid", "stats", "Q", "ureg"]
