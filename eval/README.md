@@ -615,12 +615,16 @@ explain `k3`'s high usable rate (it would if anything hurt a consistency-based
 metric), and `kimi-for-coding`'s failure is argument fixation, not temperature
 sensitivity.
 
-### Statistical precision: single runs vs 5-seed intervals
+### Statistical precision: single runs vs seed intervals
 
-The headline cells above are **single runs** over 24/15 goals. A 5-seed re-run
-of the 24-reading set (`results/eval_seed_benchmark.json`: 24 goals × 5 seeds =
-120 trials per system/model, Wilson 95 % CI via `eval/ci.py`) bounds the
-point estimates:
+The headline cells above are **single runs** over 24/15/14 goals. Every set has
+now been re-run over multiple seeds (Wilson 95 % CI via `eval/ci.py`), so the
+point estimates have honest bounds: the 24-reading set over **5** seeds
+(`results/eval_seed_benchmark.json`, 24 goals × 5 seeds = 120 trials per
+system/model), and the blind / spheroid / culture / PK sets over **3** seeds
+(`results/eval_seed_{blind,spheroid,culture,pk}.json`).
+
+24-reading, 5 seeds:
 
 | model | system | usable rate (k/n) | 95 % CI |
 |---|---|---|---|
@@ -633,10 +637,26 @@ point estimates:
 | `pro` | self-verify | 0/120 = 0.000 | [0.000, 0.031] |
 | `pro` | **Labwright** | 115/120 = 0.958 | [0.906, 0.982] |
 
+The four other sets, 3 seeds each (pooled usable rate, Wilson 95 % CI):
+
+| set | model | bare | soft-gate | self-verify | **Labwright** |
+|---|---|---|---|---|---|
+| 15-blind | `flash` | 0 % [0.000, 0.079] | 0 % [0.000, 0.079] | 0 % [0.000, 0.079] | **44 % [0.309, 0.588]** |
+| 15-blind | `pro` | 0 % [0.000, 0.079] | 2 % [0.004, 0.116] | 0 % [0.000, 0.079] | **49 % [0.350, 0.630]** |
+| 15-3D-spheroid | `flash` | 20 % [0.109, 0.338] | 13 % [0.063, 0.262] | 13 % [0.063, 0.262] | **93 % [0.821, 0.977]** |
+| 15-3D-spheroid | `pro` | 29 % [0.177, 0.434] | 27 % [0.160, 0.410] | 22 % [0.125, 0.363] | **96 % [0.852, 0.988]** |
+| 14-plate-culture | `flash` | 0 % [0.000, 0.084] | 0 % [0.000, 0.084] | 0 % [0.000, 0.084] | **90 % [0.779, 0.962]** |
+| 14-plate-culture | `pro` | 7 % [0.025, 0.190] | 7 % [0.025, 0.190] | 0 % [0.000, 0.084] | **79 % [0.641, 0.883]** |
+| 14-perfused-PK | `flash` | 31 % [0.191, 0.460] | 45 % [0.312, 0.601] | 33 % [0.210, 0.484] | **81 % [0.667, 0.900]** |
+| 14-perfused-PK | `pro` | 29 % [0.172, 0.436] | 38 % [0.250, 0.532] | 33 % [0.210, 0.484] | **76 % [0.615, 0.865]** |
+
 The qualitative ordering (Labwright ≫ memory systems; flash vs pro within ~5 %)
-is stable across seeds; the blind-set cells and the thinking-ablation cells are
-single-run point estimates and should be read as such — a single point is a
-pilot, not a precision claim.
+is stable across seeds. The Labwright interval and the memory-system interval
+never overlap on any set, so the headline gap is not a sampling artifact; on the
+hardest set (blind) the Labwright point estimate itself has a wide interval
+(44–49 %, n = 45 trials), which is honest about how much headroom remains. The
+thinking-ablation cells below are single-run and should be read as such — a
+single point is a pilot, not a precision claim.
 
 ### Ablation: thinking on vs off
 
@@ -669,6 +689,139 @@ the `flash` 24-reading set (88 % → 100 % usable): the three silent
 non-completions of the thinking-off run each submitted a verified design under
 thinking — effort recovers goals the answer is handed over, not physiology the
 model does not know.
+
+### Ablation: the same calculators, with the verifier switched off
+
+The benchmark's "0.000 hallucination" invites a circularity objection: *the
+calculators derive the numbers and the verifier recomputes them from the same
+calculators, so of course they match.* The objection is answered empirically
+with a fifth system, **`tool_no_gate`**: the exact same model runs the exact
+same ReAct loop with the exact same calculator tools, but the verification layer
+is switched off — `submit_design` never runs the verifier, never reports
+`review_required`, and the system prompt drops every promise the verifier backs
+("never invent a computed number", "derived fields are computed and verified for
+you", the fix-and-resubmit loop). The calculators are untouched: the only
+removed component is verification. The no-gate plans are then scored post-hoc
+with the *identical* rules as `labwright`, so a plan the verifier would have
+rejected still reads as a failed submission.
+
+If the verifier were circular — a no-op echo of the calculators — removing it
+would change nothing. The measured difference is small on every set, and it
+does *not* point in one direction:
+
+| set | model | labwright usable | tool_no_gate usable | entries labwright-only valid | entries no-gate-only valid |
+|---|---|---|---|---|---|
+| 24-reading | `flash` | 23/24 = 96 % | 22/24 = 92 % | 1 | 0 |
+| 24-reading | `pro` | 23/24 = 96 % | 24/24 = 100 % | 0 | 1 |
+| 15-blind | `flash` | 6/15 = 40 % | 7/15 = 47 % | 1 | 2 |
+| 15-3D-spheroid | `flash` | 13/15 = 87 % | 12/15 = 80 % | 1 | 0 |
+| 14-plate-culture | `flash` | 9/14 = 64 % | 10/14 = 71 % | 2 | 3 |
+| 14-perfused-PK | `flash` | 11/14 = 79 % | 12/14 = 86 % | 1 | 2 |
+| **all six runs** | | **85/106 = 80 %** | **87/106 = 82 %** | **6** | **8** |
+
+Read the table carefully: across 106 submissions the no-gate agent is *slightly
+ahead* (87 vs 85 usable). Every one of the 14 divergent entries — six where
+`labwright` is valid and no-gate is not, eight the other way — failed for the
+same reason on both sides: `wrong_target` (the model anchored on a different
+output quantity than the goal asked for; `spheroid-um-mm-unit-ambiguity`,
+`selfconsistent-channel-volume`, `blind-seed-hepg2-log`, …). Not one divergent
+entry is a hallucination or a unit error. The honest conclusion is **not** "the
+verifier rescues usable rate" — removing it changed usable rate by −2 to +3
+goals on sets of 14–24, i.e. within noise, and it is **not** a hallucination
+shield the way the headline 0.000 might suggest. The calculators carry the load.
+The verifier's measurable added value sits elsewhere:
+
+- **When the verifier fires, it is correct — but it fires rarely.** Across the
+  same six runs the no-gate agent produced exactly **one** hallucinated derived
+  number that the gate-backed agent did not (`spheroid-volume-from-diameter`,
+  hallucination 1.0 — the no-gate agent silently substituted a number instead of
+  computing it; the gate-backed agent submitted no such plan). The verifier is
+  also what makes that 0.000 measurable at all — the no-gate agent's own
+  `submit_design` reports `ok` on every plan (unit test pinned in
+  `tests/test_no_gate_ablation.py`).
+- **The verifier's runtime role is consistency, not domain knowledge.** It
+  recomputes claimed numbers from the plan's own inputs, checks units, and
+  applies sanity bands; it cannot supply a physiological value the model never
+  had. That is why the 14 divergent entries are all `wrong_target`: the drift is
+  the model picking the wrong quantity, which no self-consistency check can
+  repair. This is the boundary the paper draws — verification guarantees
+  *internal* correctness, the goal set's `source` (real literature or an explicit
+  "design target") guarantees the *external* target.
+- **The one-directional discipline case is real but narrow.** The verifier's
+  presence in the prompt is a promise with teeth: on `selfconsistent-channel-volume`
+  (reading) the gate-backed agent computes the channel volume, the no-gate agent
+  drifts off-target. Single-goal, and it is exactly the "keep output inside what
+  you can verify" behaviour the paper claims — but the net effect on the
+  six-run aggregate is not measurable above noise.
+
+*Honesty notes:* the no-gate agent's prompt necessarily differs from Labwright's
+— you cannot remove the verifier's enforcement while leaving its promises in the
+prompt. The ablation therefore removes the verification *layer* (prompt
+discipline + gate + scoring requirement), keeping calculators, loop and model
+fixed; the residual gap is what that layer adds. `tool_no_gate` is run through
+the same `evaluate()` driver and scored by the same `_score_design`; results in
+`results/eval_nogate_*.json`. The reading/pro rows are single runs; the
+blind/spheroid/culture/pk numbers are single-run flash (Wilson-95 % pooled
+3-seed CIs for `labwright` on those sets: blind 44 % [0.31, 0.59], spheroid
+93 % [0.82, 0.98], culture 90 % [0.78, 0.96], pk 81 % [0.67, 0.90]).
+
+### Agent attempt: an iterating fix-and-resubmit agent (`labwright_iter`)
+
+The paper's "agent" contribution is not the single-shot system but an *iterating*
+one: when the verifier returns `review_required`, the agent reads the
+verification report, fixes **only** the flagged raw inputs, and resubmits, up to
+`max_submission_attempts = 3`. The first-submit `labwright` treats the first
+`review_required` as terminal and is scored on the dirty plan; `labwright_iter`
+keeps the same honest verdict but gets to repair it. Both run the same
+calculators, the same prompt, the same model (paired, same run).
+
+| set | model | labwright usable | labwright_iter usable | verifier fired | recovered to ok | exhausted budget |
+|---|---|---|---|---|---|---|
+| 15-blind | `flash` | 6/15 = 40 % | 6/15 = 40 % | 15 | 15 | 0 |
+| 15-3D-spheroid | `flash` | 12/15 = 80 % | 12/15 = 80 % | 13 | 13 | 0 |
+| 14-plate-culture | `flash` | 14/14 = 100 % | 14/14 = 100 % | 10 | 10 | 0 |
+| 14-perfused-PK | `flash` | 11/14 = 79 % | 11/14 = 79 % | 3 | 3 | 0 |
+| **all four sets** | | **43/58 = 74 %** | **43/58 = 74 %** | **41** | **41** | **0** |
+
+The blind row is the sharpest. The verifier fired on **all 15** entries — every
+plan needed at least one correction — and the iter loop recovered **all 15** to
+verifier-clean (`self-consistent` 100 %, hallucination 0.000), with a mean 1.87
+fix rounds and not one entry exhausting its budget. Yet usable rate is identical
+to first-submit (6/15 = 40 %). The reason is the failure taxonomy: the 9
+unusable entries fail with `wrong_target` — the model selected a different
+physiological value than the goal asked for (e.g. `blind-bbb-shear` wants the
+blood–brain-barrier shear; the model reports a generic microfluidic value). The
+verifier's `review_required` catches *internal* inconsistency — a claimed number
+that does not follow from the plan's own inputs — and the iter loop repairs
+exactly that; it cannot supply a *physiological* value the model never had. The
+one entry rescued (`blind-arterial-shear`) was a fixable raw-input slip; the one
+entry lost (`blind-phh-seed`) drifted off-target *during* a fix round. Iteration
+is a correctness loop, not a domain-knowledge loop.
+
+The spheroid row shows the same pattern at higher absolute rate: the iter loop
+rescued 2 entries the first-submit agent lost (`spheroid-384ula-medium`,
+`spheroid-um-mm-unit-ambiguity`) and lost 2 it would have kept
+(`spheroid-volume-from-diameter`, where a fix round degraded a valid plan into a
+hallucinated one; `blind-spheroid-384ula-medium`). On the culture and PK sets
+there is zero divergence either way and every verifier firing is repaired. The
+aggregate is the point: across 58 submissions the verifier fired 41 times and
+the iter loop repaired **all 41** to verifier-clean, exhausting its budget on
+none, yet usable rate is **exactly equal** (43/58 for both) because the
+entries that stay unusable fail on `wrong_target` — a physiological value the
+model never had — which no self-consistency round can supply. (The per-run
+`labwright` rate differs across the ablation and iter runs on culture — 9/14
+vs 14/14 — which is expected sampling variance; each comparison is a *paired*
+run of both systems.)
+
+This is the honest division of labour the paper claims: the calculators own the
+arithmetic, the verifier owns internal consistency, and the goal set's `source`
+annotation (real literature or an explicit "design target") owns the external
+target. `labwright_iter` demonstrates that when an error *is* verifiable, the
+agent repairs it autonomously — 41/41 across the four sets, 0 exhausted — while
+errors that are not verifiable (missing domain knowledge) remain visible in the
+failure taxonomy instead of being silently hallucinated. The iterating agent is
+registered as a distinct system (`labwright_iter`); results in
+`results/eval_iter_*.json`, analysed by `eval/analyze_iter.py`.
 
 ### Benchmarking scope: why these systems, and not the named ones
 

@@ -156,3 +156,73 @@ def test_no_gate_prompt_keeps_tools_but_drops_verification_discipline():
     for forbidden in ("never invent", "review_required", "numbers you type are not trusted",
                       "derived fields are computed"):
         assert forbidden not in NO_VERIFY_SYSTEM_PROMPT.lower()
+
+
+# ---------------------------------------------------------------------------
+# labwright_iter: the review_required fix-and-resubmit loop.
+# ---------------------------------------------------------------------------
+
+
+def _mk_llm(script: list[dict]):
+    """A mock LLM that replays a script of tool calls, one per chat() call."""
+    calls = []
+
+    def call(name, arguments):
+        return SimpleNamespace(id=f"c{len(calls)}",
+                               function=SimpleNamespace(name=name, arguments=arguments))
+
+    class ScriptLLM:
+        def chat(self, messages, tools=None, **kwargs):
+            calls.append(messages)
+            return SimpleNamespace(content=None, tool_calls=[call(**script[len(calls) - 1])])
+
+    return ScriptLLM(), calls
+
+
+def test_iter_agent_fixes_review_required_and_resubmits():
+    """A review_required verdict feeds back; the agent fixes and resubmits ok."""
+    script = [
+        {"name": "submit_design", "arguments": json.dumps(_RAW_BAD)},  # 500 Pa → review_required
+        {"name": "submit_design", "arguments": json.dumps(_RAW_GOOD)},  # fixed
+    ]
+    llm, messages = _mk_llm(script)
+    agent = DesignAgent(llm=llm, max_iterations=6, verify_gate=True,
+                        max_submission_attempts=3)
+    result = agent.run("design a perfused liver-chip")
+    assert result.status == "ok"
+    assert result.design is not None
+    # The nudge was injected between the two submissions.
+    assert any(
+        isinstance(m, dict) and "review_required" in (m.get("content") or "")
+        for hist in messages[1:]
+        for m in hist
+    )
+    fix_rounds = sum(1 for s in result.steps
+                     if isinstance(s, dict) and s.get("type") == "review_required")
+    assert fix_rounds == 1
+
+
+def test_iter_agent_exhausts_attempts_keeps_honest_verdict():
+    """A model that never fixes still ends with the honest review_required."""
+    script = [{"name": "submit_design", "arguments": json.dumps(_RAW_BAD)}] * 5
+    llm, _ = _mk_llm(script)
+    agent = DesignAgent(llm=llm, max_iterations=6, verify_gate=True,
+                        max_submission_attempts=3)
+    result = agent.run("design a perfused liver-chip")
+    assert result.status == "review_required"
+    assert result.verification, "the dirty plan's real findings must be carried"
+    fix_rounds = sum(1 for s in result.steps
+                     if isinstance(s, dict) and s.get("type") == "review_required")
+    assert fix_rounds == 2  # attempts 1 and 2 feed back; attempt 3 is terminal
+
+
+def test_first_submit_default_unchanged():
+    """Default max_submission_attempts=1 keeps the historical first-submit loop."""
+    script = [{"name": "submit_design", "arguments": json.dumps(_RAW_BAD)}] * 3
+    llm, _ = _mk_llm(script)
+    agent = DesignAgent(llm=llm, max_iterations=6, verify_gate=True)
+    result = agent.run("design a perfused liver-chip")
+    assert result.status == "review_required"
+    fix_rounds = sum(1 for s in result.steps
+                     if isinstance(s, dict) and s.get("type") == "review_required")
+    assert fix_rounds == 0  # first review_required is terminal, as before

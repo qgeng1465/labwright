@@ -1,0 +1,625 @@
+{
+  "n_gold": 15,
+  "per_entry": [
+    {
+      "id": "spheroid-volume-from-diameter",
+      "gold": {
+        "id": "spheroid-volume-from-diameter",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_volume_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 3,
+        "prose_refusals": 3,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 2,
+        "prose_refusals": 1,
+        "fix_rounds": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "spheroid-diameter-from-cells",
+      "gold": {
+        "id": "spheroid-diameter-from-cells",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 2,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "fix_rounds": 2,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "spheroid-200um-hypoxic",
+      "gold": {
+        "id": "spheroid-200um-hypoxic",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_per_spheroid": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_per_spheroid": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 5,
+        "prose_refusals": 1,
+        "fix_rounds": 2,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "spheroid-count-from-suspension",
+      "gold": {
+        "id": "spheroid-count-from-suspension",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 2,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "fix_rounds": 2,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "spheroid-96ula-medium",
+      "gold": {
+        "id": "spheroid-96ula-medium",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 2,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "fix_rounds": 2,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "spheroid-384ula-medium",
+      "gold": {
+        "id": "spheroid-384ula-medium",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.166667,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true,
+        "tool_calls": 3,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "fix_rounds": 2,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "spheroid-hanging-drop-total",
+      "gold": {
+        "id": "spheroid-hanging-drop-total",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 2,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 5,
+        "prose_refusals": 1,
+        "fix_rounds": 2,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "spheroid-um-mm-unit-ambiguity",
+      "gold": {
+        "id": "spheroid-um-mm-unit-ambiguity",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 2,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_volume_ul": 0.0,
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "fix_rounds": 2,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "spheroid-growth-72h",
+      "gold": {
+        "id": "spheroid-growth-72h",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "expected_cells_after_growth": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 2,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "expected_cells_after_growth": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "fix_rounds": 2,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "spheroid-96well-total",
+      "gold": {
+        "id": "spheroid-96well-total",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 7,
+        "prose_refusals": 0,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 6,
+        "prose_refusals": 0,
+        "fix_rounds": 1,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "spheroid-doxorubicin-dosing",
+      "gold": {
+        "id": "spheroid-doxorubicin-dosing",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "dmso_fraction_vv": 0.0,
+          "cells_total": 0.989583,
+          "total_medium_ml": 0.989583
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 6,
+        "prose_refusals": 0,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "dmso_fraction_vv": 0.0,
+          "cells_total": 0.78125,
+          "total_medium_ml": 0.78125
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 8,
+        "prose_refusals": 1,
+        "fix_rounds": 1,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "blind-spheroid-hepatocyte-formation",
+      "gold": {
+        "id": "blind-spheroid-hepatocyte-formation",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_per_spheroid": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 10,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_per_spheroid": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 11,
+        "prose_refusals": 1,
+        "fix_rounds": 2,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "blind-spheroid-96ula-medium",
+      "gold": {
+        "id": "blind-spheroid-96ula-medium",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 7,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 5,
+        "prose_refusals": 1,
+        "fix_rounds": 2,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "blind-spheroid-384ula-medium",
+      "gold": {
+        "id": "blind-spheroid-384ula-medium",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false,
+        "tool_calls": 1,
+        "prose_refusals": 11,
+        "fix_rounds": 0,
+        "no_plan": true
+      }
+    },
+    {
+      "id": "blind-spheroid-hanging-drop",
+      "gold": {
+        "id": "blind-spheroid-hanging-drop",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 2,
+        "prose_refusals": 1,
+        "no_plan": false
+      },
+      "labwright_iter": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 6,
+        "prose_refusals": 1,
+        "fix_rounds": 2,
+        "no_plan": false
+      }
+    }
+  ],
+  "labwright": {
+    "recovery": {
+      "spheroid_volume_ul": 0.0,
+      "expected_diameter_um": 0.0,
+      "cells_per_spheroid": 0.0,
+      "spheroid_count": 0.0,
+      "medium_volume_per_spheroid_ul": 0.0,
+      "total_medium_ml": 0.329861,
+      "expected_cells_after_growth": 0.0,
+      "cells_total": 0.4947915,
+      "dmso_fraction_vv": 0.0
+    },
+    "hallucination_rate": 0.011111133333333334,
+    "self_consistent_rate": 0.9333333333333333,
+    "usable_design_rate": 0.8
+  },
+  "labwright_iter": {
+    "recovery": {
+      "expected_diameter_um": 0.0,
+      "cells_per_spheroid": 0.0,
+      "spheroid_count": 0.0,
+      "medium_volume_per_spheroid_ul": 0.0,
+      "total_medium_ml": 0.2604166666666667,
+      "spheroid_volume_ul": 0.0,
+      "expected_cells_after_growth": 0.0,
+      "cells_total": 0.390625,
+      "dmso_fraction_vv": 0.0
+    },
+    "hallucination_rate": 0.06666666666666667,
+    "self_consistent_rate": 0.9333333333333333,
+    "usable_design_rate": 0.8
+  },
+  "model": "deepseek-v4-flash",
+  "generated_at": "2026-08-13T14:40:10+00:00"
+}

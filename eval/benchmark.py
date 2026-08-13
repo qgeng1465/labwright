@@ -1134,6 +1134,7 @@ def _run_system(
     agent_factory: Callable,
     extractor: Callable | None = None,
     agent_factory_nogate: Callable | None = None,
+    agent_factory_iter: Callable | None = None,
 ) -> dict[str, Any]:
     """Run one named system on one gold entry and return its scored record."""
     if name == "labwright":
@@ -1143,6 +1144,21 @@ def _run_system(
         rec["tool_calls"] = sum(1 for s in lw_result.steps if isinstance(s, dict) and s.get("tool"))
         rec["prose_refusals"] = sum(
             1 for s in lw_result.steps if isinstance(s, dict) and s.get("type") == "prose-refused"
+        )
+        rec["no_plan"] = lw is None
+        return rec
+    if name == "labwright_iter":
+        if agent_factory_iter is None:
+            raise ValueError("the 'labwright_iter' system requires an iterating agent factory")
+        lw, lw_error, lw_result = run_labwright(gold.goal, agent_factory_iter)
+        rec = _score_design(lw, lw_error, gold)
+        rec["tool_calls"] = sum(1 for s in lw_result.steps if isinstance(s, dict) and s.get("tool"))
+        rec["prose_refusals"] = sum(
+            1 for s in lw_result.steps if isinstance(s, dict) and s.get("type") == "prose-refused"
+        )
+        rec["fix_rounds"] = sum(
+            1 for s in lw_result.steps
+            if isinstance(s, dict) and s.get("type") == "review_required"
         )
         rec["no_plan"] = lw is None
         return rec
@@ -1175,13 +1191,14 @@ def evaluate(
     systems: tuple[str, ...] = ("bare", "labwright"),
     extractor: Callable | None = None,
     agent_factory_nogate: Callable | None = None,
+    agent_factory_iter: Callable | None = None,
 ) -> dict[str, Any]:
     """Run the requested systems on every gold experiment and aggregate metrics.
 
     ``systems`` names which systems to run (bare / soft_gate / self_verify /
-    labwright / tool_no_gate / finetuned, any subset). The default keeps the
-    historical bare-vs-Labwright comparison; the competitor baselines are extra
-    systems scored by the same rules.
+    labwright / tool_no_gate / labwright_iter / finetuned, any subset). The
+    default keeps the historical bare-vs-Labwright comparison; the competitor
+    baselines are extra systems scored by the same rules.
 
     ``extractor`` supplies :meth:`extract_plan` for the ``finetuned`` system —
     the fine-tuned raw-input extractor run as Labwright's deterministic fast
@@ -1191,6 +1208,11 @@ def evaluate(
     ``agent_factory_nogate`` supplies the ``tool_no_gate`` ablation system — a
     :class:`~labwright.agent.DesignAgent` built with ``verify_gate=False``. It
     is required only when ``tool_no_gate`` is named in ``systems``.
+
+    ``agent_factory_iter`` supplies the ``labwright_iter`` system — the same
+    agent with ``max_submission_attempts > 1``, so a ``review_required`` verdict
+    feeds back into the loop and the agent fixes and resubmits. Required only
+    when ``labwright_iter`` is named in ``systems``.
     """
     summary: dict[str, Any] = {"n_gold": len(gold), "per_entry": []}
     for name in systems:
@@ -1211,6 +1233,7 @@ def evaluate(
             rec = _run_system(
                 name, g, chat, agent_factory,
                 extractor=extractor, agent_factory_nogate=agent_factory_nogate,
+                agent_factory_iter=agent_factory_iter,
             )
             entry[name] = rec
             summary[name]["hallucination_rate"].append(rec["hallucination_rate"])

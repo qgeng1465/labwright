@@ -170,11 +170,13 @@ class DesignAgent:
         max_iterations: int = 12,
         max_tool_calls_per_turn: int = 8,
         verify_gate: bool = True,
+        max_submission_attempts: int = 1,
     ) -> None:
         self.llm = llm
         self.max_iterations = max_iterations
         self.max_tool_calls_per_turn = max_tool_calls_per_turn
         self.verify_gate = verify_gate
+        self.max_submission_attempts = max_submission_attempts
         self.system_prompt = SYSTEM_PROMPT if verify_gate else NO_VERIFY_SYSTEM_PROMPT
         self._tools = [t.schema for t in list_tools()] + [_submit_tool_schema(verify_gate)]
 
@@ -203,6 +205,7 @@ class DesignAgent:
         ]
         result = AgentResult()
         final_submission: dict[str, Any] | None = None
+        submission_attempts = 0
 
         for _ in range(self.max_iterations):
             assistant = self.llm.chat(messages, tools=self._tools)
@@ -230,8 +233,30 @@ class DesignAgent:
                 turn_steps.append({"tool": call.function.name, "output": output[:500]})
                 if call.function.name == "submit_design":
                     sub = json.loads(output)
-                    if sub.get("status") in ("ok", "review_required"):
+                    status = sub.get("status")
+                    if status == "ok":
                         final_submission = sub
+                    elif status == "review_required":
+                        submission_attempts += 1
+                        if submission_attempts < self.max_submission_attempts:
+                            # The verifier found real problems and the report is
+                            # already on the wire as this tool result; the agent
+                            # reads it and fixes the flagged fields (the prompt
+                            # promises this loop — honour it when configured).
+                            result.steps.append(
+                                {"type": "review_required", "attempt": submission_attempts}
+                            )
+                            messages.append({"role": "user", "content": (
+                                "The verifier returned `review_required` "
+                                f"(attempt {submission_attempts}/{self.max_submission_attempts}). "
+                                "Read the verification report above, fix ONLY the flagged "
+                                "fields, and call `submit_design` again with the corrected "
+                                "raw inputs."
+                            )})
+                        else:
+                            # Attempt budget spent: accept the honest verdict so
+                            # the final plan still records the real (dirty) state.
+                            final_submission = sub
                     else:
                         # Schema/validation failure: the model sees the error as a
                         # tool result and can correct the submission next turn.

@@ -55,12 +55,19 @@ def _make_chat(model: str, base_url: str | None, max_tokens: int = 8192):
     return chat
 
 
-def _make_agent_factory(model: str, base_url: str | None, max_iterations: int = 12, verify_gate: bool = True):
+def _make_agent_factory(
+    model: str,
+    base_url: str | None,
+    max_iterations: int = 12,
+    verify_gate: bool = True,
+    max_submission_attempts: int = 1,
+):
     def factory() -> DesignAgent:
         return DesignAgent(
             LLMClient(model=model, base_url=base_url),
             max_iterations=max_iterations,
             verify_gate=verify_gate,
+            max_submission_attempts=max_submission_attempts,
         )
 
     return factory
@@ -76,13 +83,19 @@ def main() -> int:
     ap.add_argument("--gold", default=None, help="Path to a gold JSON (default: eval/gold_experiments.json)")
     ap.add_argument(
         "--systems", default="bare,labwright",
-        help="Comma-separated systems to run (bare, soft_gate, self_verify, labwright, tool_no_gate)",
+        help="Comma-separated systems to run (bare, soft_gate, self_verify, labwright, "
+             "tool_no_gate, labwright_iter)",
+    )
+    ap.add_argument(
+        "--max-submission-attempts", type=int, default=3,
+        help="Fix-and-resubmit attempts for labwright_iter (verifier's review_required "
+             "feeds back into the loop). labwright itself stays first-submit.",
     )
     args = ap.parse_args()
 
     systems = tuple(s.strip() for s in args.systems.split(",") if s.strip())
     for name in systems:
-        if name not in ("bare", "soft_gate", "self_verify", "labwright", "tool_no_gate"):
+        if name not in ("bare", "soft_gate", "self_verify", "labwright", "tool_no_gate", "labwright_iter"):
             print(f"unknown system: {name}", file=sys.stderr)
             return 2
 
@@ -95,6 +108,12 @@ def main() -> int:
     agent_factory = _make_agent_factory(args.model, args.base_url, args.max_iterations)
     # The no-gate ablation reuses the same model/loop but with the verifier off.
     agent_factory_nogate = _make_agent_factory(args.model, args.base_url, args.max_iterations, verify_gate=False)
+    # The iterative agent honours the prompt's review_required fix loop: the
+    # verifier's report feeds back and the agent resubmits (default 3 attempts).
+    agent_factory_iter = _make_agent_factory(
+        args.model, args.base_url, args.max_iterations,
+        max_submission_attempts=args.max_submission_attempts,
+    )
 
     def progress(msg: str) -> None:
         print(f"  {msg}", flush=True)
@@ -112,6 +131,7 @@ def main() -> int:
     summary = evaluate(
         gold, agent_factory, chat, progress,
         checkpoint=checkpoint, systems=systems, agent_factory_nogate=agent_factory_nogate,
+        agent_factory_iter=agent_factory_iter,
     )
 
     summary["model"] = args.model

@@ -678,6 +678,33 @@ Read the numbers honestly — and the boundary of what they mean.
   saw, blind beyond it. (The extractor's bars are identical under flash and pro
   by construction.)
 
+**Robustness, and the honest boundary of the gate — three further results:**
+
+- **The Labwright gap is not a sampling artifact.** Every set is now re-run over
+  seeds (24-reading ×5; blind / spheroid / culture / PK ×3; Wilson 95 % CI). On
+  every set the Labwright interval and the memory-system interval never overlap:
+  usable 92.5 % [0.864, 0.960] / 95.8 % [0.906, 0.982] (reading, flash/pro),
+  44 % [0.309, 0.588] / 49 % [0.350, 0.630] (blind), 93 % / 96 % (spheroid),
+  90 % / 79 % (culture), 81 % / 76 % (PK). The blind-set interval is honestly
+  wide — n=45 trials — which is how much headroom remains. Tables in
+  [`eval/README.md`](eval/README.md#statistical-precision-single-runs-vs-seed-intervals).
+- **The verifier is not a usable-rate lever — it is a consistency guarantee.**
+  An ablation (`tool_no_gate`: same calculators + ReAct loop, verifier switched
+  off, post-hoc-scored with identical rules) is a statistical wash on usable
+  rate: 85/106 vs 87/106, all 14 divergent entries `wrong_target`, one
+  hallucinated plan that the gate-backed agent did not produce. The verifier's
+  measurable value is that it makes hallucination *measurable at all*, and that
+  it is **always correct when it fires**. Full honest reading in
+  [`eval/README.md`](eval/README.md#ablation-the-same-calculators-with-the-verifier-switched-off).
+- **An iterating agent repairs every verifiable error and is a wash on the
+  rest.** `labwright_iter` (fix-and-resubmit up to 3 attempts) recovers all 41
+  verifier-fired entries across four sets (0 exhausted its budget), yet usable
+  rate is exactly equal to first-submit (43/58 = 74 % both): the failures that
+  remain are `wrong_target` physiology the model never had, which no
+  self-consistency loop can supply. Iteration is a correctness loop, not a
+  domain-knowledge loop. Table and mechanics in
+  [`eval/README.md`](eval/README.md#agent-attempt-an-iterating-fix-and-resubmit-agent-labwright_iter).
+
 ## Cross-provider check: does the gate transfer to Kimi Code?
 
 The table above is one backend (DeepSeek). To check the architecture is
