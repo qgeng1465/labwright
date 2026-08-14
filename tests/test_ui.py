@@ -8,6 +8,13 @@ and the panel rendered the bare status string ``"ok"`` instead.
 
 from __future__ import annotations
 
+import pytest
+
+# ``labwright.ui`` imports gradio eagerly, and gradio lives in the ``[ui]``
+# optional extra — so skip the whole module (not just fail) on installs
+# without it. CI installs ``[dev,agent,ui]`` and runs these tests for real.
+pytest.importorskip("gradio")
+
 from labwright.agent.agent import AgentResult
 from labwright.design import submit_design
 from labwright.schema.design import DesignPlan
