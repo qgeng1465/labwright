@@ -51,13 +51,13 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
+        "plan": false,
+        "error": "schema_error: 1 validation error for CellPlan\nwells\n  Extra inputs are not permitted [type=extra_forbidden, input_value=16, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
         "recovery": {},
-        "hallucination_rate": 0.0,
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -113,13 +113,13 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "total_seed_count": 0.0
+          "total_seed_count": 9.0
         },
         "hallucination_rate": 0.0,
-        "valid": true,
+        "valid": false,
         "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -152,7 +152,9 @@
       "finetuned": {
         "plan": true,
         "error": null,
-        "recovery": {},
+        "recovery": {
+          "wells": 0.4
+        },
         "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
@@ -233,7 +235,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "seed_per_well": 0.333333
+          "seed_per_well": 0.933333
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -272,7 +274,9 @@
       "finetuned": {
         "plan": true,
         "error": null,
-        "recovery": {},
+        "recovery": {
+          "wells": 0.333333
+        },
         "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
@@ -283,16 +287,17 @@
   ],
   "finetuned": {
     "recovery": {
-      "seed_per_well": 0.21111099999999997,
+      "seed_per_well": 0.31111099999999997,
       "medium_volume_per_well_ml": 0.0,
       "total_medium_ml": 0.0,
       "expected_confluence_pct": 0.0,
-      "total_seed_count": 0.0
+      "total_seed_count": 9.0,
+      "wells": 0.3666665
     },
-    "hallucination_rate": 0.0,
-    "self_consistent_rate": 1.0,
-    "usable_design_rate": 0.6428571428571429
+    "hallucination_rate": 0.07142857142857142,
+    "self_consistent_rate": 0.9285714285714286,
+    "usable_design_rate": 0.5714285714285714
   },
   "system": "finetuned",
-  "generated_at": "2026-08-13T11:00:44+00:00"
+  "generated_at": "2026-08-14T08:26:50+00:00"
 }

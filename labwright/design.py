@@ -226,6 +226,11 @@ def derive_pk(raw: dict[str, Any]) -> dict[str, Any]:
         ``mass_cleared_ug_h``.
     """
     out = dict(raw)
+    # A model-reported molecular weight must agree with the named compound when
+    # the compound is one we have a pinned value for (see calc.pk.COMPOUND_MW).
+    # This closes the raw/derived gate hole where "warfarin, MW 464" could pass.
+    if raw.get("compound") is not None and raw.get("molecular_weight_g_mol") is not None:
+        calc_pk.check_compound_mw(raw["compound"], raw["molecular_weight_g_mol"])
     out["extraction_ratio"] = calc_pk.extraction_ratio(
         raw["inlet_concentration_uM"], raw["outlet_concentration_uM"]
     )

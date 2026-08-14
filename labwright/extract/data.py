@@ -16,12 +16,14 @@ import json
 #: the calculators own.
 SYSTEM_PROMPT = (
     "You extract raw wet-lab design inputs from an experimental goal. "
-    "Return a single JSON object with ONLY the raw input blocks: chip, flow "
-    "and cells for a microfluidic channel design, or culture for a "
-    "plate-culture design. Do NOT compute or report derived numbers such as "
-    "wall shear stress, Reynolds number, seed counts, medium volumes or "
-    "confluence — those are always calculated deterministically after you "
-    "return. Return ONLY the JSON object."
+    "Return a single JSON object with ONLY the raw input block: chip, flow "
+    "and cells for a microfluidic channel design, culture for a plate-culture "
+    "design, spheroid for a 3D-spheroid design, or pk for a perfused-system "
+    "pharmacokinetics design. Do NOT compute or report derived numbers such as "
+    "wall shear stress, Reynolds number, seed counts, medium volumes, "
+    "confluence, spheroid diameter, extraction ratio or clearance — those are "
+    "always calculated deterministically after you return. Return ONLY the "
+    "JSON object."
 )
 
 #: The same contract, with the exact key names spelled out. The fine-tuned
@@ -33,12 +35,20 @@ SCHEMA_PROMPT = SYSTEM_PROMPT + (
     "  flow (perfusion): flow_rate_uLmin (µL/min per channel), viscosity_pas (Pa·s), "
     "density_kgm3 (kg/m³)\n"
     "  cells: cell_type, seeding_density_cells_cm2 (cells/cm²), culture_area_cm2 (cm²)\n"
-    "  culture (plate design; omit chip/flow/cells): plate_format "
+    "  culture (plate design): plate_format "
     "('6-well'|'12-well'|'24-well'|'48-well'|'96-well'), wells (integer), cell_type, "
     "seeding_density_cells_cm2 (cells/cm²), and optionally viability_pct, "
     "confluent_density_cells_cm2, doubling_time_h, culture_duration_h\n"
-    "Emit chip+flow (+cells) for a microfluidic design, or culture for a "
-    "plate design — never both."
+    "  spheroid (3D-spheroid design): cell_type, spheroid_format "
+    "('96-ula'|'384-ula'|'hanging-drop'), spheroid_count (integer), "
+    "cells_per_spheroid (integer), cell_diameter_um (µm), and optionally "
+    "doubling_time_h, culture_duration_h\n"
+    "  pk (perfused-system pharmacokinetics): compound, molecular_weight_g_mol "
+    "(g/mol), inlet_concentration_uM (µM), outlet_concentration_uM (µM), "
+    "flow_rate_uLmin (µL/min), and optionally system_volume_uL (µL), "
+    "dose_interval_h (h)\n"
+    "Emit exactly one design block: chip+flow (+cells), culture, spheroid, or "
+    "pk — never two."
 )
 
 #: ChatML assistant-turn opener, as rendered by the Qwen2.5 template. The loss

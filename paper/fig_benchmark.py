@@ -168,8 +168,10 @@ def main(argv: list[str]) -> int:
         for row, (key, title) in enumerate(METRICS):
             ax = axes[row, col]
             data = sets[col]
-            # 4 bars per model group; width sized so groups don't collide.
-            width = 0.62 / N_SYSTEMS
+            # 5 bars per model group; width sized so adjacent in-bar value
+            # labels never graze (the old 0.62 pitch was narrower than the
+            # widest label, so e.g. "100%" touched its neighbour's label).
+            width = 0.80 / N_SYSTEMS
             offsets = [
                 (i - (N_SYSTEMS - 1) / 2) * width for i in range(N_SYSTEMS)
             ]
@@ -184,11 +186,10 @@ def main(argv: list[str]) -> int:
                     v = d[sys_key][key]
                     ax.bar(pos + off, v, width, color=color, edgecolor=edge,
                            hatch=hatch, zorder=3, linewidth=0.5)
-                    # One label format (percent) for every row; a tall bar puts
-                    # the label inside with a per-bar ink color, a short bar
-                    # floats it above in dark ink. v == 0.0 needs no label.
                     # One label format (percent) for every bar — including 0%
                     # bars, so "nothing happened" is countable, not a gap.
+                    # A tall bar sinks the label inside with a per-bar ink
+                    # color, a short bar floats it above in dark ink.
                     txt = f"{100 * v:.0f}%"
                     if v > 0.30:
                         # Inside the bar, sunk far enough that two tall adjacent

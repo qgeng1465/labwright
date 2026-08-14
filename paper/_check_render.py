@@ -1,8 +1,11 @@
-"""Post-render QA for fig_blind_goals + fig_scirecipe + fig_benchmark:
+"""Post-render QA for the paper figures:
 text-overlap census and rendered-pixel checks. Not a pytest module — run
 directly:
 
     .venv/bin/python paper/_check_render.py
+
+Covers fig_blind_goals, fig_scirecipe, fig_benchmark, fig_model_compare,
+fig_pipeline, fig_architecture and fig_abstract.
 """
 from __future__ import annotations
 
@@ -110,6 +113,18 @@ def main() -> int:
         "results/eval_pk_k3.json", "results/eval_pk_kimicode.json",
     ])
     bad += _overlaps(_captured["figs"][-1], "fig_model_compare")
+
+    fp = importlib.import_module("fig_pipeline")
+    fp.main()
+    bad += _overlaps(_captured["figs"][-1], "fig_pipeline")
+
+    farc = importlib.import_module("fig_architecture")
+    farc.main()
+    bad += _overlaps(_captured["figs"][-1], "fig_architecture")
+
+    fab = importlib.import_module("fig_abstract")
+    fab.main()
+    bad += _overlaps(_captured["figs"][-1], "fig_abstract")
 
     print(f"\nTOTAL overlaps: {bad}")
     return 1 if bad else 0

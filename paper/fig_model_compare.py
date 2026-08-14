@@ -117,7 +117,10 @@ def main(argv: list[str]) -> int:
     ]
     for ax, (sys_key, title) in zip(axes, metrics):
         n = len(BACKENDS)
-        step = 0.72 / n  # spread the cluster across most of the set width
+        # spread the cluster across most of the set width; the 0.88 pitch keeps
+        # adjacent above-bar value labels from grazing (0.72 was narrower than
+        # the widest label, so equal-height neighbours touched).
+        step = 0.88 / n
         width = step - 0.03  # visible gap between adjacent bars
         offsets = [(j - (n - 1) / 2) * step for j in range(n)]
         for si, (sname, _ssub) in enumerate(SETS):
@@ -128,10 +131,12 @@ def main(argv: list[str]) -> int:
                        zorder=3, linewidth=0.5)
                 # One placement rule (label above the bar) so equal-height
                 # neighbours and the 0.30 inside/above boundary can never
-                # collide; skip near-zero bars whose height leaves no room.
-                if v >= 0.04:
-                    ax.text(si + off, v + 0.014, f"{100 * v:.0f}%", ha="center",
-                            va="bottom", fontsize=7.0, color=INK)
+                # collide. Every bar gets a label, including 0 % bars — an
+                # unlabelled zero-height bar reads as a missing datum rather
+                # than the "0 % usable" claim it is (kimi-for-coding collapses
+                # to 0 % on four sets).
+                ax.text(si + off, v + 0.014, f"{100 * v:.0f}%", ha="center",
+                        va="bottom", fontsize=7.0, color=INK)
         ax.set_xticks(range(len(SETS)))
         ax.set_xticklabels([s for s, _ss in SETS], fontsize=8.5, color=INK)
         ax.set_ylim(0, 1.06)

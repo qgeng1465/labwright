@@ -1,21 +1,33 @@
 """Supervised (goal → raw) pairs built from the source-pinned gold set.
 
-The gold files (``eval/gold_experiments.json``, ``eval/gold_cell_culture.json``)
-store a goal and the *expected derived numbers* — not the raw inputs. This
-module instantiates each reading gold as one concrete raw input block that,
-when run through the Labwright pipeline, reproduces the gold's expected
-numbers. Blind golds are deliberately **not** used here: they are reserved for
-self-consistency-only eval (no stored raw, and no leakage into supervision).
+The gold files (``eval/gold_experiments.json``, ``eval/gold_cell_culture.json``,
+``eval/gold_spheroid.json``, ``eval/gold_pk.json``) store a goal and the
+*expected derived numbers* — not the raw inputs. This module instantiates each
+reading gold as one concrete raw input block that, when run through the
+Labwright pipeline, reproduces the gold's expected numbers. Blind golds are
+deliberately **not** used here: they are reserved for self-consistency-only
+eval (no stored raw, and no leakage into supervision).
 
 Coupling rule (same as :mod:`labwright.extract.synthetic`): raw contains only
-fields the goal prose states or that are computable from it. Two culture golds
-are excluded because their answer (``wells``) is derived from intermediate
-hemocytometer/viability math that the plate-culture raw block does not carry:
-``plate-hemocytometer-seed-96well`` and ``plate-thaw-viability-6well``. The
-``dmso-at-guideline-1mM`` goal does not name a compound, so a compound + its
-real MW are appended to the prose so ``dosing.molecular_weight_g_mol`` is not
-under-determined (a training-instance augmentation; the gold entry itself is
-unchanged).
+fields the goal prose states or that are computable from it. Some golds leave
+a raw input implicit — e.g. the spheroid golds that only ask the standard
+working volume name no cell count or size. For those a missing raw input is
+appended to the prose (a training-instance augmentation; the gold entry itself
+is unchanged), pinned to the same physiology the goal rests on — the 1000-cell,
+20 µm anchor that reproduces the gold's own numbers.
+
+Golds excluded with reason: the culture ``plate-hemocytometer-seed-96well`` /
+``plate-thaw-viability-6well`` answer (``wells``) is derived from intermediate
+hemocytometer/viability math the plate-culture raw block does not carry;
+``spheroid-count-from-suspension``, ``spheroid-um-mm-unit-ambiguity`` and the
+pk ``repeat-dose-24h`` / ``cell-free-subtraction`` / high- and low-extraction
+golds answer a derived quantity that no single raw block reproduces; the pk
+``mass-cleared`` / ``complete-clearance-panel`` golds assert MW 464 for an
+unnamed drug, and no real compound at 464 g/mol can be pinned without
+inventing a fact; ``spheroid-doxorubicin-dosing`` is cross-domain (spheroid +
+dosing) and the dosing block is out of scope. Compound-less pk golds get a real
+probe compound (warfarin) appended to the prose, and the ``dmso-at-guideline-
+1mM`` goal gets a compound + real MW (same augmentation rule).
 """
 
 from __future__ import annotations
@@ -28,6 +40,8 @@ from labwright.calc import microfluidics as mf
 _REPO = Path(__file__).resolve().parents[2]
 _GOLD_FLOW = _REPO / "eval" / "gold_experiments.json"
 _GOLD_CULTURE = _REPO / "eval" / "gold_cell_culture.json"
+_GOLD_SPHEROID = _REPO / "eval" / "gold_spheroid.json"
+_GOLD_PK = _REPO / "eval" / "gold_pk.json"
 
 #: Dosing golds whose prose names a real compound, with its standard MW.
 _DOSE_APAP_MW = 151.2
@@ -40,6 +54,47 @@ _DOSE_EXTRA = {
 _EXCLUDED_CULTURE = {
     "plate-hemocytometer-seed-96well": "wells is derived from hemocytometer counting",
     "plate-thaw-viability-6well": "wells is derived from thaw viability",
+}
+
+#: Prose augmentations that pin the raw inputs a gold's goal leaves implicit
+#: (training-instance augmentation; the gold entries are unchanged). The pinned
+#: values are source-pinned to the same physiology the goal rests on — e.g. the
+#: spheroid volume/working-volume golds get the 1000-cell, 20 µm anchor that
+#: reproduces their own expected numbers (gold_spheroid.json: 1000 cells of
+#: 20 µm ≈ a 200 µm spheroid), and the PK golds whose goal omits the perfusion
+#: flow get an arbitrary-but-consistent flow so derive_pk is not underdetermined.
+_SPHEROID_EXTRA = {
+    "spheroid-96ula-medium": "The spheroids are HepG2, 1000 cells each, with a mean cell diameter of 20 µm.",
+    "spheroid-384ula-medium": "The spheroids are HepG2, 1000 cells each, with a mean cell diameter of 20 µm.",
+    "spheroid-hanging-drop-total": "The spheroids are HepG2, 1000 cells each, with a mean cell diameter of 20 µm.",
+    "spheroid-diameter-from-cells": "The spheroids are formed in a 96-well ULA plate.",
+    "spheroid-growth-72h": "The spheroids are HepG2, cultured in a 96-well ULA plate; the cells have a mean diameter of 20 µm.",
+    "spheroid-200um-hypoxic": "The spheroids are primary human hepatocytes, formed in a 96-well ULA plate.",
+    "spheroid-volume-from-diameter": "The spheroid is formed from 1000 cells of 20 µm mean diameter, packed as a solid sphere.",
+}
+_PK_EXTRA = {
+    "pk-extraction-ratio": "The chip is perfused at 2 µL/min.",
+    "pk-mM-unit-trap": "The chip is perfused at 2 µL/min.",
+    "pk-clearance": "The fluorescent marker is warfarin.",
+    "pk-half-life": "The compound is warfarin.",
+    "pk-half-life-min-trap": "The compound is warfarin.",
+    "pk-accumulation-ratio": "The compound is warfarin.",
+}
+
+#: Golds whose answer is a derived quantity no single raw block reproduces —
+#: excluded with reason (see module docstring).
+_EXCLUDED_SPHEROID = {
+    "spheroid-count-from-suspension": "spheroid_count is derived from a suspension count",
+    "spheroid-um-mm-unit-ambiguity": "answer is a unit conversion + geometry, not one raw block",
+    "spheroid-doxorubicin-dosing": "cross-domain spheroid + dosing; dosing block out of scope",
+}
+_EXCLUDED_PK = {
+    "pk-repeat-dose-24h": "answer is derived from a stated half-life (a derived number)",
+    "pk-cell-free-subtraction": "answer is a control subtraction across two chips",
+    "pk-high-extraction-clearance": "answer follows from a target E, not stated inlet/outlet",
+    "pk-low-extraction-clearance": "answer follows from a target E, not stated inlet/outlet",
+    "pk-mass-cleared": "states MW 464 without naming a compound; no real drug at 464 g/mol to pin without inventing a fact",
+    "pk-complete-clearance-panel": "same MW 464 / unnamed-compound constraint as pk-mass-cleared",
 }
 
 
@@ -75,6 +130,24 @@ def _culture(plate_format: str, wells: int, cell_type: str, density: float, **ex
            "seeding_density_cells_cm2": density}
     raw.update(extra)
     return {"culture": raw}
+
+
+def _spheroid(
+    cell_type: str | None, fmt: str, count: int, cps: int, cell_d: float, **extra
+) -> dict:
+    raw = {"spheroid_format": fmt, "spheroid_count": int(count),
+           "cells_per_spheroid": int(cps), "cell_diameter_um": float(cell_d)}
+    if cell_type is not None:
+        raw["cell_type"] = cell_type
+    raw.update(extra)
+    return {"spheroid": raw}
+
+
+def _pk(compound: str, cin: float, cout: float, q: float, **extra) -> dict:
+    raw = {"compound": compound, "inlet_concentration_uM": float(cin),
+           "outlet_concentration_uM": float(cout), "flow_rate_uLmin": float(q)}
+    raw.update(extra)
+    return {"pk": raw}
 
 
 #: Build a (goal, raw, domain) triple for one reading gold. Returns None for
@@ -160,6 +233,62 @@ def _build_culture_pair(g: dict) -> tuple[str, dict, str] | None:
     return g["goal"], raw, "culture"
 
 
+def _build_spheroid_pair(g: dict) -> tuple[str, dict, str] | None:
+    gid = g["id"]
+    if gid in _EXCLUDED_SPHEROID:
+        return None
+    # A spheroid raw block must carry at least cells_per_spheroid,
+    # cell_diameter_um and spheroid_format for derive_spheroid to run; the
+    # golds below state (or are augmented to state) exactly that.
+    raw: dict | None = None
+    if gid == "spheroid-96well-total":
+        raw = _spheroid("HepG2", "96-ula", 96, 1000, 20.0)
+    elif gid in {"spheroid-96ula-medium", "spheroid-384ula-medium"}:
+        raw = _spheroid("HepG2", "96-ula" if "96" in gid else "384-ula", 1, 1000, 20.0)
+    elif gid == "spheroid-hanging-drop-total":
+        raw = _spheroid("HepG2", "hanging-drop", 48, 1000, 20.0)
+    elif gid == "spheroid-diameter-from-cells":
+        raw = _spheroid("primary human hepatocytes", "96-ula", 1, 1000, 20.0)
+    elif gid == "spheroid-growth-72h":
+        raw = _spheroid("HepG2", "96-ula", 1, 1000, 20.0,
+                        doubling_time_h=30.0, culture_duration_h=72.0)
+    elif gid == "spheroid-200um-hypoxic":
+        raw = _spheroid("primary human hepatocytes", "96-ula", 1, 1000, 20.0)
+    elif gid == "spheroid-volume-from-diameter":
+        raw = _spheroid("primary human hepatocytes", "96-ula", 1, 1000, 20.0)
+    if raw is None:
+        return None
+    goal = g["goal"]
+    if gid in _SPHEROID_EXTRA:
+        goal = goal + " " + _SPHEROID_EXTRA[gid]
+    return goal, raw, "spheroid"
+
+
+def _build_pk_pair(g: dict) -> tuple[str, dict, str] | None:
+    gid = g["id"]
+    if gid in _EXCLUDED_PK:
+        return None
+    # A pk raw block must carry inlet/outlet/flow for derive_pk to run; the
+    # golds below state (or are augmented to state) exactly that.
+    raw: dict | None = None
+    if gid == "pk-extraction-ratio":
+        raw = _pk("diclofenac", 10.0, 7.0, 2.0)
+    elif gid == "pk-clearance":
+        raw = _pk("warfarin", 10.0, 7.0, 2.0)
+    elif gid in {"pk-half-life", "pk-half-life-min-trap"}:
+        raw = _pk("warfarin", 10.0, 7.0, 2.0, system_volume_uL=200.0)
+    elif gid == "pk-accumulation-ratio":
+        raw = _pk("warfarin", 10.0, 7.0, 2.0, system_volume_uL=200.0, dose_interval_h=24.0)
+    elif gid == "pk-mM-unit-trap":
+        raw = _pk("diclofenac", 500.0, 350.0, 2.0)
+    if raw is None:
+        return None
+    goal = g["goal"]
+    if gid in _PK_EXTRA:
+        goal = goal + " " + _PK_EXTRA[gid]
+    return goal, raw, "pk"
+
+
 def load_flow_golds() -> list[dict]:
     with open(_GOLD_FLOW) as fh:
         return json.load(fh)
@@ -167,6 +296,16 @@ def load_flow_golds() -> list[dict]:
 
 def load_culture_golds() -> list[dict]:
     with open(_GOLD_CULTURE) as fh:
+        return json.load(fh)
+
+
+def load_spheroid_golds() -> list[dict]:
+    with open(_GOLD_SPHEROID) as fh:
+        return json.load(fh)
+
+
+def load_pk_golds() -> list[dict]:
+    with open(_GOLD_PK) as fh:
         return json.load(fh)
 
 
@@ -185,6 +324,24 @@ def gold_pairs() -> list[dict]:
         if g["id"].startswith("blind-"):
             continue
         built = _build_culture_pair(g)
+        if built is None:
+            skipped.append(g["id"])
+            continue
+        goal, raw, domain = built
+        pairs.append({"goal": goal, "raw": raw, "domain": domain, "gold": g["id"]})
+    for g in load_spheroid_golds():
+        if g["id"].startswith("blind-"):
+            continue
+        built = _build_spheroid_pair(g)
+        if built is None:
+            skipped.append(g["id"])
+            continue
+        goal, raw, domain = built
+        pairs.append({"goal": goal, "raw": raw, "domain": domain, "gold": g["id"]})
+    for g in load_pk_golds():
+        if g["id"].startswith("blind-"):
+            continue
+        built = _build_pk_pair(g)
         if built is None:
             skipped.append(g["id"])
             continue

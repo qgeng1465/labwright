@@ -36,4 +36,8 @@ models/
 *.swp
 
 # LoRA training artifacts (adapter checkpoints regenerate on train)
-results/extractor/lora/
+results/extractor/lora*/
+results/extractor/lora_flowculture/
+
+# Run logs (transient; kept out of the repo by convention)
+results/*.log

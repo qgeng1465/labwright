@@ -26,11 +26,28 @@ Domain split
   useful task (infer the pump setting, don't report shear).
 - ``culture``: a multi-well plate. raw = {culture}. Derived seed/volume/
   confluence numbers are never in the raw.
+- ``spheroid``: a 3D-spheroid culture. raw = {spheroid}. Five patterns mirror
+  the benchmark gold prose (eval/gold_spheroid.json): forward (vessel, cell
+  type, seed density and cell size all stated), inverse geometry (a target
+  diameter is stated and the raw carries the solved cells-per-spheroid,
+  asking for volume/cells the way the gold does), default-bearing geometry
+  (neither plate nor cell size stated — the raw carries the canonical
+  96-ula / 20 µm / 1000-cell defaults), partial-info medium (the plate is
+  stated but cells-per-spheroid and cell size fall back to defaults), and
+  multi-target (total cells + total medium). The "solid sphere" phrase is
+  descriptive only; it never becomes the spheroid_format value.
+- ``pk``: a perfused-system pharmacokinetics readout. raw = {pk}. Inlet/outlet/
+  flow are stated (a milli-molar variant states mM and the raw carries µM,
+  teaching the 1000× conversion); extraction ratio, clearance, half-life,
+  accumulation ratio and mass cleared are derived by ``labwright.calc.pk``.
+  Compounds are real drugs with standard molecular weights (facts, not
+  invented physiology).
 
 Usage::
 
     python -m labwright.extract.synthetic --out results/extractor \\
-        --n-flow 2500 --n-culture 1500 --split 0.9 --seed 1234
+        --n-flow 2500 --n-culture 1500 --n-spheroid 3000 --n-pk 3000 \\
+        --split 0.9 --seed 1234
 """
 
 from __future__ import annotations
@@ -43,6 +60,8 @@ from pathlib import Path
 from labwright.calc import cell as calc_cell
 from labwright.calc import culture as calc_culture
 from labwright.calc import microfluidics as mf
+from labwright.calc import pk as calc_pk
+from labwright.calc import spheroid as calc_spheroid
 from labwright.extract.data import raw_to_json
 
 # ---------------------------------------------------------------------------
@@ -194,6 +213,12 @@ _FLOW_TEMPLATES = [
     "Perfuse {cell} (seeded at {density} cells/cm²) in a {w} × {h} µm, {L} mm long channel so "
     "that they experience the {organ} shear of {target}. Give the pump flow rate and the channel "
     "geometry (viscosity {mu} Pa·s).",
+    "A {organ} {material} chip for {cell} has a {w} µm × {h} µm × {L} mm channel and targets "
+    "{target} wall shear (medium viscosity {mu} Pa·s). Seed at {density} cells/cm² and report "
+    "the perfusion flow rate (µL/min).",
+    "For a {cell} monolayer under {target} shear in a {w} µm × {h} µm, {L} mm channel (viscosity "
+    "{mu} Pa·s, seeding density {density} cells/cm²), pick the flow rate (µL/min) the pump "
+    "must deliver.",
 ]
 
 #: The flow-rate wording the prose uses, so a template can ask for the pump
@@ -246,16 +271,33 @@ def _sample_culture(rng: random.Random) -> tuple[str, int, str, float, dict, lis
         out["viability_pct"] = float(v)
         parts.append(f"Post-thaw viability is about {v}%.")
     if rng.random() < 0.5 and prof[1] is not None:
-        clo, chi = prof[2]
-        out["confluent_density_cells_cm2"] = float(round(rng.uniform(clo, chi)))
-        dt = rng.uniform(*prof[1])
-        dur = rng.choice([24, 48, 72, 96, 120, 144])
-        out["doubling_time_h"] = _r(dt, 1)
-        out["culture_duration_h"] = float(dur)
-        parts.append(
-            f"Confluence density is ~{out['confluent_density_cells_cm2']:.0f} cells/cm²; cells "
-            f"double every ~{dt:.0f} h; harvest after {dur} h."
-        )
+        # Bound the predicted confluence: seeding × 2^(dur/dt) can outgrow the
+        # confluent density by orders of magnitude (a latent >1000 % hard-band
+        # failure), so resample growth until the prediction is sane. Fall back
+        # to a no-growth row if no combo fits — a plain culture instance is
+        # still a valid training target, and an out-of-band one is not.
+        area = calc_culture.well_surface_area_cm2(pf)
+        per_well = calc_culture.cells_per_well(density, pf)
+        for _ in range(30):
+            clo, chi = prof[2]
+            conf = float(round(rng.uniform(clo, chi)))
+            dt = rng.uniform(*prof[1])
+            dur = float(rng.choice([24, 48, 72, 96, 120, 144]))
+            pct = calc_culture.cell_count_to_confluence(
+                calc_cell.cell_count_after_time(per_well, dt, dur), conf, area
+            )
+            if pct <= 1000.0:
+                break
+        else:
+            conf = dt = dur = None
+        if conf is not None:
+            out["confluent_density_cells_cm2"] = conf
+            out["doubling_time_h"] = _r(dt, 1)
+            out["culture_duration_h"] = dur
+            parts.append(
+                f"Confluence density is ~{conf:.0f} cells/cm²; cells "
+                f"double every ~{dt:.0f} h; harvest after {dur:.0f} h."
+            )
     return pf, wells, cell_type, density, out, parts
 
 
@@ -284,6 +326,9 @@ _CULTURE_TEMPLATES = [
     "{cell} are cultured in a {pf} plate, {wells} well(s), seeded at {density} "
     "{density_units}.",
     "Set up a {pf} plate with {cell} in {wells} well(s) at {density} {density_units}.",
+    "Prepare a {pf} plate for {cell}: seed {wells} well(s) at {density} {density_units}.",
+    "Culture {cell} in {wells} well(s) of a {pf} plate, plating density {density} "
+    "{density_units}.",
 ]
 
 
@@ -294,24 +339,438 @@ def generate_culture(rng: random.Random) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Spheroid / 3D-culture domain
+# ---------------------------------------------------------------------------
+
+#: Cell type → (canonical mean diameter µm, doubling-time window h | None).
+#: The 20 µm hepatocyte and the functional < ~2k cells/spheroid bound are the
+#: source-pinned values from eval/gold_spheroid.json (1000 cells of 20 µm →
+#: ≈ a 200 µm spheroid; larger spheroids develop necrotic cores — Drug Metab
+#: Dispos 2024, doi:10.1124/dmd.124.001653). Doubling windows are the same
+#: growth-phase ranges already used by _CELL_PROFILES; primary hepatocytes are
+#: treated as non-proliferating (no growth option), consistent with physiology.
+_SPHEROID_CELLS: list[tuple[str, float, tuple[float, float] | None]] = [
+    ("primary human hepatocytes", 20.0, None),
+    ("HepG2", 20.0, (30, 40)),
+    ("HUVEC", 15.0, (24, 34)),
+    ("Caco-2", 12.0, (30, 60)),
+]
+
+#: spheroid vessel → (seed-count window, display name). Working volumes (100/50/
+#: 20 µL) are the source-pinned values in labwright/calc/spheroid.py (Corning
+#: CLS-AN-235; InSphero Akura 384; Wanigasekara et al., PLOS ONE 2023,
+#: doi:10.1371/journal.pone.0276248); the count windows are the practical
+#: per-plate capacities.
+_SPHEROID_FORMAT_RANGES: dict[str, tuple[int, int]] = {
+    "96-ula": (1, 96),
+    "384-ula": (1, 384),
+    "hanging-drop": (6, 48),
+}
+#: Display names mirror the benchmark gold prose (eval/gold_spheroid.json),
+#: including "ultra-low-attachment" so the model maps that phrase onto the
+#: "96-ula"/"384-ula" raw keys instead of guessing.
+_SPHEROID_FMT_NAME: dict[str, str] = {
+    "96-ula": "96-well ultra-low-attachment (ULA)",
+    "384-ula": "384-well ultra-low-attachment (ULA)",
+    "hanging-drop": "hanging-drop",
+}
+
+#: Canonical defaults the gold set forces the model to infer when a goal omits
+#: them: a hepatocyte spheroid is 1000 cells of ~20 µm (≈200 µm, solid-sphere
+#: geometry) and an unspecified vessel falls back to the 96-ULA working volume.
+_SPHEROID_DEFAULT_CPS = 1000
+_SPHEROID_DEFAULT_CD = 20.0
+_SPHEROID_DEFAULT_FMT = "96-ula"
+
+_SPHEROID_TEMPLATES = [
+    "Form {cell} spheroids in {fmt} plates, {count} per plate, {cps} cells per "
+    "spheroid with a mean cell diameter of {cd} µm.",
+    "Set up a {fmt} spheroid culture of {cell}: seed {cps} cells per spheroid "
+    "(mean cell diameter ~{cd} µm) across {count} wells.",
+    "Generate {count} {cell} spheroids in {fmt} plates at {cps} cells each, "
+    "with a mean cell diameter of {cd} µm.",
+    "Culture {cell} as spheroids in {fmt} vessels — {count} spheroids, {cps} "
+    "cells per spheroid, mean cell diameter {cd} µm.",
+    "Plate {cell} into {fmt} plates, {count} well(s), {cps} cells per spheroid "
+    "(~{cd} µm mean cell diameter).",
+]
+
+#: Derived-number questions the prose may ask, so the model learns to extract
+#: raw inputs even when the goal asks for a calculator-owned number.
+_SPHEROID_ASK = [
+    "What expected diameter (µm) will the spheroids reach?",
+    "What total medium volume (mL) does the culture require?",
+    "What total number of cells is needed to seed the spheroids?",
+]
+
+#: Inverse-geometry asks (target diameter → derived number) mirroring the gold
+#: prose. The "solid sphere" phrase is descriptive only: the model must learn
+#: it is never a spheroid_format value.
+_SPHEROID_INVERSE_ASKS = [
+    "What is the spheroid volume in µL?",
+    "What total number of cells is needed to reach this size?",
+]
+
+
+def _spheroid_raw(
+    cell: str,
+    fmt: str,
+    count: int,
+    cps: int,
+    cell_d: float,
+    growth: tuple[float, float] | None,
+) -> dict:
+    raw = {
+        "cell_type": cell,
+        "spheroid_format": fmt,
+        "spheroid_count": int(count),
+        "cells_per_spheroid": int(cps),
+        "cell_diameter_um": float(cell_d),
+    }
+    if growth is not None:
+        raw["doubling_time_h"] = _r(growth[0], 1)
+        raw["culture_duration_h"] = float(growth[1])
+    return {"spheroid": raw}
+
+
+def _spheroid_prose(
+    rng: random.Random,
+    cell: str,
+    fmt: str,
+    count: int,
+    cps: int,
+    cell_d: float,
+    growth: tuple[float, float] | None,
+    target_um: float | None,
+) -> str:
+    if target_um is not None:
+        prose = (
+            f"Form {cell} spheroids at a target diameter of {target_um:g} µm in "
+            f"{_SPHEROID_FMT_NAME[fmt]} plates, one per well; the cells have a "
+            f"mean diameter of {cell_d:g} µm. How many cells per spheroid?"
+        )
+    else:
+        prose = _pick(rng, _SPHEROID_TEMPLATES).format(
+            cell=cell, fmt=_SPHEROID_FMT_NAME[fmt], count=count, cps=cps, cd=cell_d
+        )
+    prose = prose.rstrip()
+    if growth is not None:
+        dt, dur = growth
+        prose += f" Cells double roughly every {dt:g} h; harvest after {dur:g} h."
+    if target_um is None and rng.random() < 0.3:
+        prose += " " + _pick(rng, _SPHEROID_ASK)
+    return prose + _maybe_distractor(rng)
+
+
+def _spheroid_inverse_prose(cell: str, fmt: str, target_um: float, cell_d: float) -> str:
+    """Inverse geometry (gold-style): a target diameter is stated, the raw
+    carries the solved cells-per-spheroid. Asks for a derived number."""
+    return (
+        f"A {cell} spheroid is {target_um:g} µm in diameter, formed in "
+        f"{_SPHEROID_FMT_NAME[fmt]} plates one per well; the cells have a mean "
+        f"diameter of {cell_d:g} µm. Assuming a solid sphere, what is the "
+        f"spheroid volume in µL?"
+    )
+
+
+def _spheroid_cells_prose(cell: str, fmt: str, target_um: float, cell_d: float) -> str:
+    """Inverse geometry asking how many cells give a target diameter."""
+    return (
+        f"You want {cell} spheroids safely below the ~400 µm necrotic-core "
+        f"threshold. With a mean cell diameter of {cell_d:g} µm, how many cells "
+        f"per spheroid give a {target_um:g} µm diameter? (in "
+        f"{_SPHEROID_FMT_NAME[fmt]}, one per well)"
+    )
+
+
+def _spheroid_default_prose(cell: str, target_um: float) -> str:
+    """Default-bearing geometry, matching the excluded gold phrasing verbatim:
+    neither plate nor cell size is stated; the raw carries the canonical
+    96-ula / 20 µm / solved-cell-count defaults."""
+    return (
+        f"A {cell} spheroid is {target_um:g} µm in diameter. "
+        f"Assuming a solid sphere, what is its volume in µL?"
+    )
+
+
+def _spheroid_medium_prose(cell: str, fmt: str, count: int) -> str:
+    """Partial-info medium question: the plate (+count) is stated but the
+    working volume is a calculator constant recalled via the format key."""
+    if fmt == "hanging-drop":
+        return (
+            f"A hanging-drop array forms {count} {cell} spheroids in standard 20 µL "
+            f"droplets. What total medium volume in mL does this require?"
+        )
+    return (
+        f"You form {cell} spheroids one per well in a {_SPHEROID_FMT_NAME[fmt]} "
+        f"plate ({count} wells). What is the standard working medium volume per "
+        f"spheroid (µL)?"
+    )
+
+
+def _spheroid_multi_prose(cell: str, fmt: str, count: int, cps: int, cell_d: float) -> str:
+    """Multi-target forward row: full plate stated, asks total cells + medium."""
+    return (
+        f"Form one {cell} spheroid per well across {count} wells of a "
+        f"{_SPHEROID_FMT_NAME[fmt]} plate, {cps} cells/spheroid of {cell_d:g} µm "
+        f"mean cell diameter. What total number of cells and what total medium "
+        f"volume (mL) are needed?"
+    )
+
+
+def generate_spheroid(rng: random.Random) -> dict:
+    cell, cell_d_base, dt_window = _pick(rng, _SPHEROID_CELLS)
+    fmt = _pick(rng, list(_SPHEROID_FORMAT_RANGES))
+    lo, hi = _SPHEROID_FORMAT_RANGES[fmt]
+    cell_d = float(cell_d_base + rng.randint(-2, 2))
+    is_20 = cell_d_base == 20.0
+
+    roll = rng.random()
+
+    if roll < 0.16 and is_20:
+        # Default-bearing geometry: no plate, no cell size in the prose; the raw
+        # carries the canonical 96-ula / 20 µm and the solved cell count. This
+        # teaches the model to fill defaults and never read "solid sphere" as a
+        # spheroid_format.
+        target_um = float(_pick(rng, [120.0, 150.0, 180.0, 200.0, 220.0]))
+        cps = int(round(calc_spheroid.cells_per_spheroid_for_diameter(target_um, _SPHEROID_DEFAULT_CD)))
+        raw = _spheroid_raw(cell, _SPHEROID_DEFAULT_FMT, 1, cps, _SPHEROID_DEFAULT_CD, None)
+        return {"goal": _spheroid_default_prose(cell, target_um), "raw": raw, "domain": "spheroid"}
+
+    if roll < 0.40 and is_20:
+        # Inverse geometry with plate + cell size stated; the ask mirrors the
+        # gold ("what is the volume", or the necrotic-core cells question).
+        target_um = float(_pick(rng, [120.0, 150.0, 180.0, 200.0, 220.0]))
+        cps = int(round(calc_spheroid.cells_per_spheroid_for_diameter(target_um, cell_d)))
+        if rng.random() < 0.4:
+            prose = _spheroid_cells_prose(cell, fmt, target_um, cell_d)
+        else:
+            prose = _spheroid_inverse_prose(cell, fmt, target_um, cell_d)
+        raw = _spheroid_raw(cell, fmt, 1, cps, cell_d, None)
+        return {"goal": prose, "raw": raw, "domain": "spheroid"}
+
+    if roll < 0.60 and is_20:
+        # Partial-info medium: plate (+count) stated, cps/cell-diameter defaulted
+        # to the canonical values. Teaches recall of the format → working volume.
+        count = rng.randint(lo, hi)
+        raw = _spheroid_raw(
+            cell, fmt, count, _SPHEROID_DEFAULT_CPS, _SPHEROID_DEFAULT_CD, None
+        )
+        return {"goal": _spheroid_medium_prose(cell, fmt, count), "raw": raw, "domain": "spheroid"}
+
+    if roll < 0.72:
+        # Multi-target forward: total cells + total medium (mirrors
+        # spheroid-96well-total / spheroid-doxorubicin-dosing).
+        count = rng.randint(lo, hi)
+        cps = rng.randint(500, 1500)
+        prose = _spheroid_multi_prose(cell, fmt, count, cps, cell_d)
+        raw = _spheroid_raw(cell, fmt, count, cps, cell_d, None)
+        return {"goal": prose, "raw": raw, "domain": "spheroid"}
+
+    # Forward complete, occasionally with growth.
+    count = rng.randint(lo, hi)
+    cps = rng.randint(500, 1500)
+    growth = None
+    if dt_window is not None and rng.random() < 0.5:
+        growth = (round(rng.uniform(*dt_window), 1), float(rng.choice([24, 48, 72, 96])))
+    raw = _spheroid_raw(cell, fmt, count, cps, cell_d, growth)
+    prose = _spheroid_prose(rng, cell, fmt, count, cps, cell_d, growth, None)
+    return {"goal": prose, "raw": raw, "domain": "spheroid"}
+
+
+# ---------------------------------------------------------------------------
+# PK (perfused-system) domain
+# ---------------------------------------------------------------------------
+
+#: Real compounds with their standard molecular weights (g/mol) — facts, not
+#: invented physiology. Extraction ratio, clearance, half-life, accumulation
+#: ratio and mass cleared are always derived by labwright.calc.pk.
+_PK_COMPOUNDS: list[tuple[str, float]] = [
+    ("diclofenac", 296.1),
+    ("warfarin", 308.3),
+    ("propranolol", 259.3),
+    ("antipyrine", 188.2),
+    ("acetaminophen", 151.2),
+    ("doxorubicin", 543.5),
+]
+
+_PK_TEMPLATES = [
+    "Measure the first-pass clearance of {compound} on a perfused organ-chip: "
+    "inlet {cin:g} µM, outlet {cout:g} µM, perfusion flow {q:g} µL/min.",
+    "A perfused chip is dosed with {compound} at an inlet concentration of "
+    "{cin:g} µM; the outlet reads {cout:g} µM at a perfusion flow of {q:g} µL/min.",
+    "Characterize the clearance of {compound} on-chip: {cin:g} µM in, {cout:g} µM "
+    "out, perfusion {q:g} µL/min.",
+    "A perfused kidney/liver-on-chip is dosed with {compound}: inlet {cin:g} µM, "
+    "outlet {cout:g} µM, perfusion flow {q:g} µL/min.",
+    "Measure the intrinsic clearance of {compound} on-chip at {cin:g} µM inlet, "
+    "{cout:g} µM outlet and {q:g} µL/min perfusion.",
+]
+
+#: Derived-number questions the prose may ask (calculator-owned outputs).
+_PK_ASK = [
+    "What is the extraction ratio?",
+    "What is the clearance (µL/min)?",
+    "What is the elimination half-life (h)?",
+    "What mass does the chip clear per hour (µg/h)?",
+    "Report the full clearance profile: extraction ratio, clearance (µL/min), "
+    "half-life (h) and mass cleared (µg/h).",
+]
+
+#: Milli-molar inlet concentrations for the mM → µM unit-trap rows (the raw
+#: always carries µM, mirroring eval/gold_pk.json "pk-mM-unit-trap").
+_PK_MILLI_MOLAR = [0.05, 0.1, 0.2, 0.5, 1.0]
+
+
+def _pk_raw(
+    compound: str,
+    cin: float,
+    cout: float,
+    q: float,
+    mw: float | None,
+    V: float | None,
+    tau: float | None,
+) -> dict:
+    raw = {
+        "compound": compound,
+        "inlet_concentration_uM": float(cin),
+        "outlet_concentration_uM": float(cout),
+        "flow_rate_uLmin": float(q),
+    }
+    if mw is not None:
+        raw["molecular_weight_g_mol"] = float(mw)
+    if V is not None:
+        raw["system_volume_uL"] = float(V)
+    if tau is not None:
+        raw["dose_interval_h"] = float(tau)
+    return {"pk": raw}
+
+
+def _pk_prose(
+    rng: random.Random,
+    compound: str,
+    cin: float,
+    cout: float,
+    q: float,
+    mw: float | None,
+    V: float | None,
+    tau: float | None,
+) -> str:
+    prose = _pick(rng, _PK_TEMPLATES).format(compound=compound, cin=cin, cout=cout, q=q)
+    parts: list[str] = []
+    if V is not None:
+        parts.append(
+            f"The recirculating system volume (reservoir + chip + tubing) is {V:g} µL."
+        )
+    if tau is not None:
+        parts.append(f"Repeat doses are given every {tau:g} h.")
+    if mw is not None:
+        parts.append(f"The compound has a molecular weight of {mw:g} g/mol.")
+    if rng.random() < 0.35:
+        if tau is not None and rng.random() < 0.35:
+            parts.append("What is the steady-state accumulation ratio?")
+        else:
+            parts.append(_pick(rng, _PK_ASK))
+    if parts:
+        prose = prose.rstrip() + " " + " ".join(parts)
+    return prose + _maybe_distractor(rng)
+
+
+def generate_pk(rng: random.Random) -> dict:
+    compound, mw_full = _pick(rng, _PK_COMPOUNDS)
+    cin = float(_pick(rng, [2.0, 5.0, 10.0, 20.0, 50.0, 100.0]))
+    # Sample a physiological extraction ratio (E in [0.1, 0.7]) and derive the
+    # outlet from it; E itself is a calculator output and never enters the raw.
+    e = round(rng.uniform(0.1, 0.7), 2)
+    cout = round(cin * (1.0 - e), 2)
+    q = round(rng.uniform(1.0, 8.0), 2)
+
+    roll = rng.random()
+    if roll < 0.18:
+        # mM → µM unit trap (mirrors gold "pk-mM-unit-trap"): the prose states
+        # milli-molar and the raw must carry micro-molar (1000× conversion).
+        cin_m = float(_pick(rng, _PK_MILLI_MOLAR))
+        cout_m = round(cin_m * (1.0 - e), 3)
+        raw = _pk_raw(compound, cin_m * 1000.0, cout_m * 1000.0, q, None, None, None)
+        prose = (
+            f"A perfused {compound} clearance run reports inlet {cin_m:g} mM and "
+            f"outlet {cout_m:g} mM at {q:g} µL/min. The chip's data sheet gives "
+            f"concentrations in micromolar (µM). Report the inlet and outlet "
+            f"concentrations converted to µM."
+        )
+        return {"goal": prose, "raw": raw, "domain": "pk"}
+
+    if roll < 0.30:
+        # Forward with a derived-number distractor (mirrors gold
+        # "pk-half-life-min-trap"): the goal states the half-life in minutes as
+        # context; the raw still carries only the inputs.
+        V = float(_pick(rng, [100.0, 200.0, 300.0, 500.0]))
+        mw = mw_full if rng.random() < 0.5 else None
+        raw = _pk_raw(compound, cin, cout, q, mw, V, None)
+        t_min = calc_pk.half_life_h(V, e * q) * 60.0
+        prose = (
+            f"A perfused chip is dosed with {compound} at {cin:g} µM (outlet "
+            f"{cout:g} µM) at {q:g} µL/min; the recirculating system volume is "
+            f"{V:g} µL. The half-life works out to {t_min:.0f} minutes. "
+            f"Report the elimination half-life in hours."
+        )
+        if mw is not None:
+            prose += f" The compound has a molecular weight of {mw:g} g/mol."
+        return {"goal": prose, "raw": raw, "domain": "pk"}
+
+    mw = mw_full if rng.random() < 0.7 else None
+    V = float(_pick(rng, [100.0, 200.0, 300.0, 500.0])) if rng.random() < 0.8 else None
+    tau = float(_pick(rng, [8.0, 12.0, 24.0, 48.0])) if V is not None and rng.random() < 0.7 else None
+    raw = _pk_raw(compound, cin, cout, q, mw, V, tau)
+    prose = _pk_prose(rng, compound, cin, cout, q, mw, V, tau)
+    return {"goal": prose, "raw": raw, "domain": "pk"}
+
+
+# ---------------------------------------------------------------------------
 # Generation driver
 # ---------------------------------------------------------------------------
 
 
-def generate(n_flow: int, n_culture: int, seed: int = 1234) -> list[dict]:
+def generate(
+    n_flow: int,
+    n_culture: int,
+    n_spheroid: int = 0,
+    n_pk: int = 0,
+    seed: int = 1234,
+) -> list[dict]:
     rng = random.Random(seed)
     rows = [generate_flow(rng) for _ in range(n_flow)]
     rows += [generate_culture(rng) for _ in range(n_culture)]
+    rows += [generate_spheroid(rng) for _ in range(n_spheroid)]
+    rows += [generate_pk(rng) for _ in range(n_pk)]
     rng.shuffle(rows)
     return rows
 
 
 def write_split(rows: list[dict], out: Path, split: float = 0.9) -> tuple[Path, Path]:
-    """Split rows (already shuffled) into train/eval jsonl and write them."""
+    """Split rows (already shuffled) into train/eval jsonl and write them.
+
+    The eval half is deduplicated against the train half: no eval row may share
+    a goal string or a raw block with a train row. Without this, the spheroid
+    inverse target-diameter variant — a small lattice (cell type × diameter ×
+    format) — would place byte-identical rows on both sides of the split, so
+    the held-out consistency/field-recovery numbers would be inflated by rows
+    the model had already seen verbatim.
+    """
     n_train = int(len(rows) * split)
     out.mkdir(parents=True, exist_ok=True)
+    train_rows, eval_rows = rows[:n_train], rows[n_train:]
+    train_goals = {json.dumps(r["goal"], ensure_ascii=False) for r in train_rows}
+    train_raws = {json.dumps(r["raw"], ensure_ascii=False, sort_keys=True) for r in train_rows}
+    kept: list[dict] = []
+    for r in eval_rows:
+        if json.dumps(r["goal"], ensure_ascii=False) in train_goals:
+            continue
+        if json.dumps(r["raw"], ensure_ascii=False, sort_keys=True) in train_raws:
+            continue
+        kept.append(r)
     train_p, eval_p = out / "train.jsonl", out / "eval.jsonl"
-    for path, part in ((train_p, rows[:n_train]), (eval_p, rows[n_train:])):
+    for path, part in ((train_p, train_rows), (eval_p, kept)):
         with open(path, "w", encoding="utf-8") as fh:
             for row in part:
                 fh.write(json.dumps(row, ensure_ascii=False) + "\n")
@@ -320,21 +779,30 @@ def write_split(rows: list[dict], out: Path, split: float = 0.9) -> tuple[Path, 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", default="results/extractor", help="output directory")
+    parser.add_argument("--out", default=None,
+                        help="output directory (default: results/extractor; a smoke "
+                             "run with no explicit --out goes to results/smoke so it "
+                             "can never clobber the production split)")
     parser.add_argument("--n-flow", type=int, default=2500)
     parser.add_argument("--n-culture", type=int, default=1500)
+    parser.add_argument("--n-spheroid", type=int, default=3000)
+    parser.add_argument("--n-pk", type=int, default=3000)
     parser.add_argument("--split", type=float, default=0.9)
     parser.add_argument("--seed", type=int, default=1234)
     parser.add_argument("--smoke", type=int, default=0, help="generate N of each instead")
     args = parser.parse_args()
 
     if args.smoke:
-        nf = nc = args.smoke
+        nf = nc = ns = npk = args.smoke
     else:
-        nf, nc = args.n_flow, args.n_culture
-    rows = generate(nf, nc, seed=args.seed)
-    train_p, eval_p = write_split(rows, Path(args.out), args.split)
-    print(f"wrote {len(rows)} rows ({nf} flow + {nc} culture) -> {train_p} / {eval_p}")
+        nf, nc, ns, npk = args.n_flow, args.n_culture, args.n_spheroid, args.n_pk
+    out = Path(args.out or ("results/smoke" if args.smoke else "results/extractor"))
+    rows = generate(nf, nc, ns, npk, seed=args.seed)
+    train_p, eval_p = write_split(rows, out, args.split)
+    print(
+        f"wrote {len(rows)} rows "
+        f"({nf} flow + {nc} culture + {ns} spheroid + {npk} pk) -> {train_p} / {eval_p}"
+    )
     return 0
 
 

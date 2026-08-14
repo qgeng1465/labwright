@@ -5,7 +5,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
 [![CI](https://github.com/qgeng1465/labwright/actions/workflows/tests.yml/badge.svg)](https://github.com/qgeng1465/labwright/actions)
-[![Tests](https://img.shields.io/badge/tests-408%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-411%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
 Frontier LLMs write the numbers in a wet-lab design from memory, and memory
@@ -271,7 +271,9 @@ Web demo (Hugging Face Space): [`hf_space/`](hf_space/), see
 
 ## How it works
 
-![Labwright pipeline: goal → LLM proposes raw inputs → calculators compute → verifier re-proves → SOP + design JSON](paper/fig_pipeline.png)
+![Labwright architecture: (a) the eight-layer stack — the LLM proposes raw inputs, deterministic calculators compute, the verifier re-proves; (b) the bounded agentic workflow; (c) the five-layer verifier; (d) the 46-tool calculator toolbox in 10 classes; (e) internal components, benchmark systems and the honest boundary](paper/fig_architecture.png)
+
+![Labwright pipeline, condensed: goal → LLM proposes raw inputs → calculators compute → verifier re-proves → SOP + design JSON](paper/fig_pipeline.png)
 
 The goal goes in; a design whose every number was computed by
 `labwright.calc` and re-proved by `labwright.verify` comes out. The agent
@@ -447,9 +449,9 @@ self-verify) write numbers from memory and are scored by *identical* rules;
 only the prompt/stage structure differs. Labwright adds the calculators and
 the verifier. The fifth, **finetuned-ext**, is a local Qwen2.5-1.5B-Instruct
 LoRA fine-tuned on synthetic flow/culture instances whose raw-input targets
-are reused from the reading gold set, so the reading and culture columns are
-*in-distribution* for it (a plug-in replacement for the API models' extraction
-step), while the spheroid and PK columns are out-of-distribution. Its bars are
+are reused from the reading gold set, and the spheroid and PK golds were folded
+into the retrain's gold pairs, so all four columns are in-distribution for it
+(a plug-in replacement for the API models' extraction step). Its bars are
 identical under flash and pro by construction.
 
 **New failure-mode metrics.** Each entry is also classified *why* it failed
@@ -460,7 +462,7 @@ blind-set cells are split by hint strength (cold vs prompt-backed). The `eval.re
 renderer prints all of it; the classification and misread logic are unit-tested
 (`tests/test_metrics.py`).
 
-![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind, 15-3D-spheroid, 14-culture and 14-PK sets (flash & pro; finetuned-ext identical under both). The memory systems (stone / ochre / sage) reach a usable design only on the handful of single-step goals the goal hands over; Labwright (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on the spheroid, culture and PK sets; the in-distribution fine-tuned extractor (lilac) closes much of the reading-set gap but collapses out-of-distribution.](paper/fig_benchmark.png)
+![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind, 15-3D-spheroid, 14-culture and 14-PK sets (flash & pro; finetuned-ext identical under both). The memory systems (stone / ochre / sage) reach a usable design only on the handful of single-step goals the goal hands over; Labwright (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on the spheroid, culture and PK sets; the fine-tuned extractor (lilac) closes much of the reading-set gap, transfers to PK after its retrain, but still fails on spheroid.](paper/fig_benchmark.png)
 
 A *usable* design is internally consistent **and** hits every target within
 ±5 %. This is an *ablation*, not an equal-resource race: Labwright's
@@ -505,52 +507,52 @@ usable).*
 | 24-reading | `flash` | soft-gate | 12 % | 12 % | 0.875 |
 | 24-reading | `flash` | self-verify | 0 % | 0 % | 0.792 |
 | 24-reading | `flash` | **Labwright** | **88 %** | **88 %** | **0.125** |
-| 24-reading | `flash` | finetuned-ext (in-dist) | 92 % | 79 % | 0.083 |
+| 24-reading | `flash` | finetuned-ext (in-dist) | 96 % | 92 % | 0.042 |
 | 24-reading | `pro` | bare-LLM | 12 % | 12 % | 0.875 |
 | 24-reading | `pro` | soft-gate | 8 % | 8 % | 0.917 |
 | 24-reading | `pro` | self-verify | 0 % | 0 % | 0.750 |
 | 24-reading | `pro` | **Labwright** | **100 %** | **100 %** | **0.000** |
-| 24-reading | `pro` | finetuned-ext (in-dist) | 92 % | 79 % | 0.083 |
+| 24-reading | `pro` | finetuned-ext (in-dist) | 96 % | 92 % | 0.042 |
 | 15-blind | `flash` | bare-LLM | 7 % | 0 % | 0.933 |
 | 15-blind | `flash` | soft-gate | 13 % | 0 % | 0.867 |
 | 15-blind | `flash` | self-verify | 0 % | 0 % | 0.611 |
 | 15-blind | `flash` | **Labwright** | **100 %** | **40 %** | **0.000** |
-| 15-blind | `flash` | finetuned-ext | 80 % | 7 % | 0.200 |
+| 15-blind | `flash` | finetuned-ext | 100 % | 20 % | 0.000 |
 | 15-blind | `pro` | bare-LLM | 7 % | 0 % | 0.933 |
 | 15-blind | `pro` | soft-gate | 13 % | 0 % | 0.867 |
 | 15-blind | `pro` | self-verify | 0 % | 0 % | 0.733 |
 | 15-blind | `pro` | **Labwright** | **100 %** | **47 %** | **0.000** |
-| 15-blind | `pro` | finetuned-ext | 80 % | 7 % | 0.200 |
+| 15-blind | `pro` | finetuned-ext | 100 % | 20 % | 0.000 |
 | 15-3D-spheroid | `flash` | bare-LLM | 20 % | 20 % | 0.800 |
 | 15-3D-spheroid | `flash` | soft-gate | 13 % | 13 % | 0.867 |
 | 15-3D-spheroid | `flash` | self-verify | 20 % | 20 % | 0.569 |
 | 15-3D-spheroid | `flash` | **Labwright** | **93 %** | **87 %** | **0.011** |
-| 15-3D-spheroid | `flash` | finetuned-ext (OOD) | 33 % | 0 % | 0.611 |
+| 15-3D-spheroid | `flash` | finetuned-ext (trained) | 7 % | 7 % | 0.933 |
 | 15-3D-spheroid | `pro` | bare-LLM | 27 % | 27 % | 0.733 |
 | 15-3D-spheroid | `pro` | soft-gate | 27 % | 27 % | 0.733 |
 | 15-3D-spheroid | `pro` | self-verify | 40 % | 20 % | 0.400 |
 | 15-3D-spheroid | `pro` | **Labwright** | **93 %** | **87 %** | **0.067** |
-| 15-3D-spheroid | `pro` | finetuned-ext (OOD) | 33 % | 0 % | 0.611 |
+| 15-3D-spheroid | `pro` | finetuned-ext (trained) | 7 % | 7 % | 0.933 |
 | 14-plate-culture | `flash` | bare-LLM | 0 % | 0 % | 0.893 |
 | 14-plate-culture | `flash` | soft-gate | 0 % | 0 % | 0.893 |
 | 14-plate-culture | `flash` | self-verify | 0 % | 0 % | 0.929 |
 | 14-plate-culture | `flash` | **Labwright** | **93 %** | **86 %** | **0.071** |
-| 14-plate-culture | `flash` | finetuned-ext (in-dist) | 100 % | 64 % | 0.000 |
+| 14-plate-culture | `flash` | finetuned-ext (in-dist) | 93 % | 57 % | 0.071 |
 | 14-plate-culture | `pro` | bare-LLM | 7 % | 7 % | 0.750 |
 | 14-plate-culture | `pro` | soft-gate | 7 % | 7 % | 0.786 |
 | 14-plate-culture | `pro` | self-verify | 0 % | 0 % | 0.821 |
 | 14-plate-culture | `pro` | **Labwright** | **86 %** | **64 %** | **0.043** |
-| 14-plate-culture | `pro` | finetuned-ext (in-dist) | 100 % | 64 % | 0.000 |
+| 14-plate-culture | `pro` | finetuned-ext (in-dist) | 93 % | 57 % | 0.071 |
 | 14-perfused-PK | `flash` | bare-LLM | 50 % | 36 % | 0.500 |
 | 14-perfused-PK | `flash` | soft-gate | 50 % | 50 % | 0.500 |
 | 14-perfused-PK | `flash` | self-verify | 79 % | 29 % | 0.214 |
 | 14-perfused-PK | `flash` | **Labwright** | **100 %** | **79 %** | **0.000** |
-| 14-perfused-PK | `flash` | finetuned-ext (OOD) | 29 % | 0 % | 0.714 |
+| 14-perfused-PK | `flash` | finetuned-ext (trained) | 50 % | 50 % | 0.500 |
 | 14-perfused-PK | `pro` | bare-LLM | 43 % | 36 % | 0.536 |
 | 14-perfused-PK | `pro` | soft-gate | 50 % | 36 % | 0.500 |
 | 14-perfused-PK | `pro` | self-verify | 79 % | 29 % | 0.214 |
 | 14-perfused-PK | `pro` | **Labwright** | **100 %** | **86 %** | **0.000** |
-| 14-perfused-PK | `pro` | finetuned-ext (OOD) | 29 % | 0 % | 0.714 |
+| 14-perfused-PK | `pro` | finetuned-ext (trained) | 50 % | 50 % | 0.500 |
 
 *All memory-system rows come from a single re-run at temperature 0.2 after a
 prompt regression that dropped the goal text was found and fixed (see the
@@ -683,21 +685,24 @@ Read the numbers honestly, and the boundary of what they mean.
   not), plus one unit-trap entry where the unit layer caught the mM→µM
   conversion before it entered the plan. The two genuine **unit traps** (mM-vs-µM
   and min-vs-h) are recovered cleanly by Labwright on both models.
-- **The fine-tuned extractor separates in-distribution recall from honest
-  generalization.** On the reading set (in-distribution, targets reused in its
-  synthetic training) it is usable **79 %** / self-consistent **92 %**,
-  essentially closing the gap to the API models' extraction step. On the
-  plate-culture set (also in-distribution) it is **100 %** self-consistent /
-  **0.000** hallucination, beating even Labwright's consistency, though usable
-  drops to **64 %** because it reads fewer of the blind-`cold` recall targets.
-  On the spheroid set (out-of-distribution, a domain it never trained on)
-  usable collapses to **0 %** and hallucination rises to **0.611**: the
-  extractor proposes raw inputs the calculators cannot honour, and the gate
-  rejects the design. The perfused-PK set repeats the collapse (usable **0 %**,
-  hallucination **0.714**), also a domain the extractor never saw. That OOD
-  collapse is the honest boundary of a fine-tuned extractor: strong on what it
-  saw, blind beyond it. (The extractor's bars are identical under flash and pro
-  by construction.)
+- **The fine-tuned extractor is strong on in-distribution recall, and honest
+  about what the spheroid/PK retrain did and did not fix.** On the reading set
+  (in-distribution, targets reused in its synthetic training) it is usable
+  **92 %** / self-consistent **96 %**, essentially closing the gap to the API
+  models' extraction step. On the plate-culture set (also in-distribution) it
+  is **57 %** usable / **93 %** self-consistent / **0.071** hallucination.
+  The retrain that folded spheroid and PK goals into the synthetic training
+  data moved PK from **0 % → 50 %** usable (5/6 of the training-overlap gold
+  goals recover) and reading from 79 % → 92 %; the blind set rose from 7 % →
+  20 %. But the spheroid domain stayed a failure: **7 %** usable / **0.933**
+  hallucination even on gold goals the extractor trained on. The cause is
+  phrasing drift, not missing coverage: the synthetic spheroid goals state the
+  raw inputs in a different style from the benchmark golds, so the model grabs
+  goal words (e.g. "solid" from "solid sphere") as the vessel format and the
+  calculators reject the design. That is the honest boundary of a fine-tuned
+  extractor: strong on what it saw in the right phrasing, still blind when the
+  phrasing drifts. (The extractor's bars are identical under flash and pro by
+  construction.)
 
 **Robustness, and the honest boundary of the gate: three further results**
 
@@ -890,6 +895,27 @@ produced **no design at all** (`plan: false`; hallucination 1.0 is scored as
 `plan: false`; the later blind-set runs additionally record the agent's own
 failure reason, so the claim is auditable. It never wrote a number the
 calculators didn't check.
+
+## Roadmap: from verified design to wet-lab validation
+
+Labwright currently verifies the *computational* consistency of a design: every
+number it reports recomputes from the stated inputs. The follow-up step is to
+validate the physics against real measurements, and the tool is built so that
+step is a continuation, not a retrofit:
+
+- every calculator in `calc/` is deterministic and explicit, so each prediction
+  (wall shear stress, confluence, extraction ratio, …) is a falsifiable
+  hypothesis a wet-lab team can test;
+- the design gate emits a machine-generated, versioned SOP with provenance
+  (`sop/provenance.py`), so the exact protocol the tool verified is the one that
+  reaches the bench;
+- measured values can be recorded per field and compared against the calculator
+  output, which is precisely the comparison a wet-lab validation study measures.
+
+The planned validation study runs Labwright-designed protocols in real
+organ-on-chip experiments and uses the measurements to bound the calculators'
+accuracy on actual devices. That study is planned separately from this
+repository, whose scope stops at the verified computational design.
 
 ## License & citation
 

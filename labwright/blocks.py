@@ -378,8 +378,9 @@ def _pk() -> Block:
         input_field="pk",
         calc=calc_pk,
         raw_keys=(
-            "inlet_concentration_uM", "outlet_concentration_uM", "flow_rate_uLmin",
-            "system_volume_uL", "dose_interval_h", "molecular_weight_g_mol",
+            "compound", "inlet_concentration_uM", "outlet_concentration_uM",
+            "flow_rate_uLmin", "system_volume_uL", "dose_interval_h",
+            "molecular_weight_g_mol",
         ),
         derived_keys=(
             "extraction_ratio", "clearance_uLmin", "half_life_h",

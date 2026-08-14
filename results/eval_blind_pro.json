@@ -199,13 +199,15 @@
         "target_selected": false
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
-        "recovery": {},
-        "hallucination_rate": 1.0,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 49.0
+        },
+        "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "silence",
+        "failure": "wrong_target",
         "target_selected": false
       }
     },
@@ -491,7 +493,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.966667
+          "shear_pa": 2.333333
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -589,7 +591,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "seed_count": 2.2
+          "seed_count": 0.8
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -686,7 +688,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "seed_count": 0.893333
+          "seed_count": 0.933333
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -783,13 +785,13 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.99
+          "shear_pa": 0.0
         },
         "hallucination_rate": 0.0,
-        "valid": false,
+        "valid": true,
         "unit_misread": {},
-        "failure": "wrong_target",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -880,7 +882,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.9995
+          "shear_pa": 0.5
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -1273,14 +1275,16 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1455,61 +1459,107 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
-        "recovery": {},
-        "hallucination_rate": 1.0,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.9,
+          "residence_time_s": 9.0
+        },
+        "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "silence",
+        "failure": "wrong_target",
         "target_selected": false
       }
     }
   ],
   "bare": {
+    "self_consistent_rate": 0.06666666666666667,
+    "usable_rate": 0.0,
+    "hallucination_rate": 0.9333333333333333,
     "recovery": {
       "shear_pa": 1.3475308333333331,
       "seed_count": 3.3333335,
       "total_medium_ml": 0.264706,
       "residence_time_s": 0.0
     },
-    "hallucination_rate": 0.9333333333333333,
-    "self_consistent_rate": 0.06666666666666667,
-    "usable_design_rate": 0.0
+    "verifiable_rate": 0.8,
+    "failure_counts": {
+      "calculation_error": 14,
+      "wrong_target": 1
+    },
+    "unit_misread_rate": 0.06666666666666667,
+    "target_selection_accuracy": 0.3333333333333333
   },
   "soft_gate": {
+    "self_consistent_rate": 0.13333333333333333,
+    "usable_rate": 0.0,
+    "hallucination_rate": 0.8666666666666667,
     "recovery": {
       "shear_pa": 1.0947530833333334,
       "seed_count": 17.333333500000002,
       "total_medium_ml": 0.264706,
       "residence_time_s": 0.0
     },
-    "hallucination_rate": 0.8666666666666667,
-    "self_consistent_rate": 0.13333333333333333,
-    "usable_design_rate": 0.0
+    "verifiable_rate": 0.8666666666666667,
+    "failure_counts": {
+      "calculation_error": 13,
+      "wrong_target": 2
+    },
+    "unit_misread_rate": 0.06666666666666667,
+    "target_selection_accuracy": 0.3333333333333333
   },
   "self_verify": {
+    "self_consistent_rate": 0.0,
+    "usable_rate": 0.0,
+    "hallucination_rate": 0.7333333333333333,
     "recovery": {
       "shear_pa": 10.625009333333335,
       "seed_count": 12.3333335,
       "total_medium_ml": 0.264706,
       "residence_time_s": 0.6
     },
-    "hallucination_rate": 0.7333333333333333,
-    "self_consistent_rate": 0.0,
-    "usable_design_rate": 0.0
+    "verifiable_rate": 0.9333333333333333,
+    "failure_counts": {
+      "calculation_error": 15
+    },
+    "unit_misread_rate": 0.06666666666666667,
+    "target_selection_accuracy": 0.0
   },
   "labwright": {
+    "self_consistent_rate": 1.0,
+    "usable_rate": 0.4666666666666667,
+    "hallucination_rate": 0.0,
     "recovery": {
       "shear_pa": 0.8163580833333334,
       "seed_count": 0.1666665,
       "total_medium_ml": 0.0,
       "residence_time_s": 0.5
     },
-    "hallucination_rate": 0.0,
-    "self_consistent_rate": 1.0,
-    "usable_design_rate": 0.4666666666666667
+    "failure_counts": {
+      "wrong_target": 8,
+      "ok": 7
+    },
+    "unit_misread_rate": 0.0,
+    "target_selection_accuracy": 0.5333333333333333
   },
   "model": "deepseek-v4-pro",
-  "generated_at": "2026-08-13T04:04:38+00:00"
+  "generated_at": "2026-08-13T04:04:38+00:00",
+  "finetuned": {
+    "self_consistent_rate": 1.0,
+    "usable_rate": 0.2,
+    "hallucination_rate": 0.0,
+    "recovery": {
+      "shear_pa": 8.892901166666666,
+      "seed_count": 0.8666665,
+      "total_medium_ml": 0.0,
+      "residence_time_s": 9.0
+    },
+    "failure_counts": {
+      "wrong_target": 12,
+      "ok": 3
+    },
+    "unit_misread_rate": 0.0,
+    "target_selection_accuracy": 0.2
+  }
 }

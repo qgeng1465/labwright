@@ -273,13 +273,13 @@
         "target_selected": false
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
+        "plan": false,
+        "error": "schema_error: 1 validation error for CellPlan\nwells\n  Extra inputs are not permitted [type=extra_forbidden, input_value=16, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
         "recovery": {},
-        "hallucination_rate": 0.0,
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -542,13 +542,13 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "total_seed_count": 0.0
+          "total_seed_count": 9.0
         },
         "hallucination_rate": 0.0,
-        "valid": true,
+        "valid": false,
         "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true
+        "failure": "wrong_target",
+        "target_selected": false
       }
     },
     {
@@ -726,7 +726,9 @@
       "finetuned": {
         "plan": true,
         "error": null,
-        "recovery": {},
+        "recovery": {
+          "wells": 0.4
+        },
         "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
@@ -1082,7 +1084,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "seed_per_well": 0.333333
+          "seed_per_well": 0.933333
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -1266,7 +1268,9 @@
       "finetuned": {
         "plan": true,
         "error": null,
-        "recovery": {},
+        "recovery": {
+          "wells": 0.333333
+        },
         "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
@@ -1276,6 +1280,9 @@
     }
   ],
   "bare": {
+    "self_consistent_rate": 0.0,
+    "usable_rate": 0.0,
+    "hallucination_rate": 0.8928571428571429,
     "recovery": {
       "seed_per_well": 0.1768625,
       "medium_volume_per_well_ml": 0.35511980000000004,
@@ -1284,11 +1291,17 @@
       "expected_confluence_pct": 0.515717,
       "total_seed_count": 0.479167
     },
-    "hallucination_rate": 0.8928571428571429,
-    "self_consistent_rate": 0.0,
-    "usable_design_rate": 0.0
+    "verifiable_rate": 0.7857142857142857,
+    "failure_counts": {
+      "calculation_error": 14
+    },
+    "unit_misread_rate": 0.0,
+    "target_selection_accuracy": 0.14285714285714285
   },
   "soft_gate": {
+    "self_consistent_rate": 0.0,
+    "usable_rate": 0.0,
+    "hallucination_rate": 0.8928571428571429,
     "recovery": {
       "seed_per_well": 0.25871116666666666,
       "medium_volume_per_well_ml": 0.35511980000000004,
@@ -1297,11 +1310,17 @@
       "expected_confluence_pct": 5.062866,
       "total_seed_count": 0.739583
     },
-    "hallucination_rate": 0.8928571428571429,
-    "self_consistent_rate": 0.0,
-    "usable_design_rate": 0.0
+    "verifiable_rate": 0.7857142857142857,
+    "failure_counts": {
+      "calculation_error": 14
+    },
+    "unit_misread_rate": 0.0,
+    "target_selection_accuracy": 0.14285714285714285
   },
   "self_verify": {
+    "self_consistent_rate": 0.0,
+    "usable_rate": 0.0,
+    "hallucination_rate": 0.9285714285714286,
     "recovery": {
       "seed_per_well": 0.8793251666666665,
       "medium_volume_per_well_ml": 0.35511980000000004,
@@ -1310,11 +1329,17 @@
       "expected_confluence_pct": 8.473229,
       "total_seed_count": 0.895833
     },
-    "hallucination_rate": 0.9285714285714286,
-    "self_consistent_rate": 0.0,
-    "usable_design_rate": 0.0
+    "verifiable_rate": 0.9285714285714286,
+    "failure_counts": {
+      "calculation_error": 14
+    },
+    "unit_misread_rate": 0.0,
+    "target_selection_accuracy": 0.0
   },
   "labwright": {
+    "self_consistent_rate": 0.9285714285714286,
+    "usable_rate": 0.8571428571428571,
+    "hallucination_rate": 0.07142857142857142,
     "recovery": {
       "seed_per_well": 0.0,
       "medium_volume_per_well_ml": 0.0,
@@ -1323,10 +1348,34 @@
       "total_seed_count": 0.0,
       "wells": 0.1666665
     },
-    "hallucination_rate": 0.07142857142857142,
-    "self_consistent_rate": 0.9285714285714286,
-    "usable_design_rate": 0.8571428571428571
+    "failure_counts": {
+      "ok": 12,
+      "silence": 1,
+      "wrong_target": 1
+    },
+    "unit_misread_rate": 0.0,
+    "target_selection_accuracy": 0.8571428571428571
   },
   "model": "deepseek-v4-flash",
-  "generated_at": "2026-08-13T11:13:27+00:00"
+  "generated_at": "2026-08-13T11:13:27+00:00",
+  "finetuned": {
+    "self_consistent_rate": 0.9285714285714286,
+    "usable_rate": 0.5714285714285714,
+    "hallucination_rate": 0.07142857142857142,
+    "recovery": {
+      "seed_per_well": 0.31111099999999997,
+      "medium_volume_per_well_ml": 0.0,
+      "total_medium_ml": 0.0,
+      "expected_confluence_pct": 0.0,
+      "total_seed_count": 9.0,
+      "wells": 0.3666665
+    },
+    "failure_counts": {
+      "ok": 8,
+      "silence": 1,
+      "wrong_target": 5
+    },
+    "unit_misread_rate": 0.0,
+    "target_selection_accuracy": 0.5714285714285714
+  }
 }

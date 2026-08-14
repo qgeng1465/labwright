@@ -110,6 +110,70 @@ def test_synthetic_optional_fields_are_coupled_to_prose():
                 assert "viability" in goal
 
 
+def test_synthetic_spheroid_and_pk_coupled_and_calc_legal():
+    """Spheroid/pk raw fields are stated in the prose *or* are the canonical
+    defaults the gold set forces the model to infer, and every raw builds a
+    design that passes the verifier (no invented physiology)."""
+    rows = generate(30, 30, 200, 200, seed=9)
+    domains = {r["domain"] for r in rows}
+    assert {"spheroid", "pk"} <= domains
+    for row in rows:
+        goal = row["goal"].lower()
+        if row["domain"] == "spheroid":
+            s = row["raw"]["spheroid"]
+            # prose uses the display name ("96-well ultra-low-attachment (ULA)")
+            # not the raw key ("96-ula"), so check the canonical tokens.
+            fmt = s["spheroid_format"]
+            if fmt == "hanging-drop":
+                assert "hanging" in goal
+            elif "ula" in goal:
+                assert fmt.split("-")[0] in goal
+            else:
+                # default-bearing geometry row: no plate stated, raw falls back
+                # to the canonical 96-ula.
+                assert fmt == "96-ula"
+                assert "assuming a solid sphere" in goal and "in diameter" in goal
+            # cps/count coupling by pattern:
+            if "how many cells per spheroid" in goal:
+                assert s["spheroid_count"] == 1  # inverse: cps is the answer
+            elif "assuming a solid sphere" in goal and "in diameter" in goal:
+                assert s["spheroid_count"] == 1  # inverse geometry, volume ask
+            elif "medium volume per spheroid" in goal or "total medium volume in ml" in goal:
+                if "cells/spheroid" in goal:
+                    assert str(s["cells_per_spheroid"]) in goal  # multi-target D
+                else:
+                    assert s["cells_per_spheroid"] == 1000        # partial-info default
+            else:
+                assert str(s["cells_per_spheroid"]) in goal        # forward A / D
+            # cd coupling: stated when the prose names a cell size, else the
+            # canonical 20 µm default.
+            if "mean cell diameter" in goal or "mean diameter of" in goal:
+                assert str(int(s["cell_diameter_um"])) in goal
+            else:
+                assert s["cell_diameter_um"] == 20.0
+            if "doubling_time_h" in s:
+                assert "double" in goal
+        elif row["domain"] == "pk":
+            p = row["raw"]["pk"]
+            assert p["compound"] in row["goal"]
+            if "mM" in row["goal"]:
+                # mM → µM unit-trap row: the raw is in µM, the prose in mM.
+                assert f"{p['inlet_concentration_uM'] / 1000:g}" in goal
+                assert f"{p['outlet_concentration_uM'] / 1000:g}" in goal
+            else:
+                assert f"{p['inlet_concentration_uM']:g}" in goal
+                assert f"{p['outlet_concentration_uM']:g}" in goal
+            assert f"{p['flow_rate_uLmin']:g}" in goal
+            if "molecular_weight_g_mol" in p:
+                assert "molecular weight" in goal
+            if "system_volume_uL" in p:
+                assert "system volume" in goal
+            if "dose_interval_h" in p:
+                assert "every" in goal
+        inp = DesignInput(goal=row["goal"], rationale="test", **row["raw"])
+        assert not has_errors(verify_design(build_design(inp))), row["domain"]
+
+
 # ---------------------------------------------------------------------------
 # Gold pairs
 # ---------------------------------------------------------------------------
@@ -117,8 +181,20 @@ def test_synthetic_optional_fields_are_coupled_to_prose():
 
 def test_gold_pairs_all_consistent():
     pairs, skipped = gold_pairs()
-    assert len(pairs) == 32
-    assert sorted(skipped) == ["plate-hemocytometer-seed-96well", "plate-thaw-viability-6well"]
+    assert len(pairs) == 46  # 24 flow + 8 culture + 8 spheroid + 6 pk
+    assert sorted(skipped) == [
+        "pk-cell-free-subtraction",
+        "pk-complete-clearance-panel",
+        "pk-high-extraction-clearance",
+        "pk-low-extraction-clearance",
+        "pk-mass-cleared",
+        "pk-repeat-dose-24h",
+        "plate-hemocytometer-seed-96well",
+        "plate-thaw-viability-6well",
+        "spheroid-count-from-suspension",
+        "spheroid-doxorubicin-dosing",
+        "spheroid-um-mm-unit-ambiguity",
+    ]
     for p in pairs:
         inp = DesignInput(goal=p["goal"], rationale="gold", **p["raw"])
         assert not has_errors(verify_design(build_design(inp))), p["gold"]
@@ -135,6 +211,21 @@ def test_gold_pairs_reproduce_expected_numbers():
     # liver-sinusoid-shear canonical → 0.05 Pa
     inp = DesignInput(goal="x", rationale="x", **by_gold["liver-sinusoid-shear"]["raw"])
     assert build_design(inp).derived.shear_pa == pytest.approx(0.05, rel=1e-4)
+    # spheroid-96well-total → cells_total 96000, total medium 9.6 mL
+    inp = DesignInput(goal="x", rationale="x", **by_gold["spheroid-96well-total"]["raw"])
+    s = build_design(inp).spheroid
+    assert s.cells_total == pytest.approx(96000.0, rel=1e-6)
+    assert s.total_medium_ml == pytest.approx(9.6, rel=1e-6)
+    # spheroid-growth-72h → expected_cells_after_growth 5278
+    inp = DesignInput(goal="x", rationale="x", **by_gold["spheroid-growth-72h"]["raw"])
+    assert build_design(inp).spheroid.expected_cells_after_growth == pytest.approx(5278.03, rel=1e-4)
+    # pk-accumulation-ratio → E 0.3, Cl 0.6, t½ 3.851 h, R 1.0135
+    inp = DesignInput(goal="x", rationale="x", **by_gold["pk-accumulation-ratio"]["raw"])
+    p = build_design(inp).pk
+    assert p.extraction_ratio == pytest.approx(0.3, rel=1e-6)
+    assert p.clearance_uLmin == pytest.approx(0.6, rel=1e-6)
+    assert p.half_life_h == pytest.approx(3.8508176697774745, rel=1e-6)
+    assert p.accumulation_ratio == pytest.approx(1.0134791547306115, rel=1e-6)
 
 
 # ---------------------------------------------------------------------------

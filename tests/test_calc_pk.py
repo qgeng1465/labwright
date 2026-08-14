@@ -9,6 +9,7 @@ import math
 import pytest
 
 from labwright.calc import pk
+from labwright.design import derive_pk
 
 
 def test_extraction_ratio():
@@ -52,6 +53,49 @@ def test_mass_cleared_uses_6e5_factor():
     assert pk.mass_cleared_ug_h(0.6, 10, 464) == pytest.approx(0.16704)
     # Unit consistency: a mM inlet (1000× larger concentration) is 1000× mass.
     assert pk.mass_cleared_ug_h(0.6, 10e3, 464) == pytest.approx(167.04)
+
+
+def test_check_compound_mw_gate():
+    # The gate hole: "warfarin, MW 464" must fail loudly, not pass silently.
+    with pytest.raises(ValueError, match="inconsistent"):
+        pk.check_compound_mw("warfarin", 464.0)
+    with pytest.raises(ValueError, match="inconsistent"):
+        pk.check_compound_mw("DICLOFENAC", 500.0)
+    # Matches (case-insensitive, innocuous rounding) pass.
+    pk.check_compound_mw("Warfarin", 308.3)
+    pk.check_compound_mw("warfarin", 308.0)  # 0.1% off — within the 1% band
+    # Unknown compound (the user's own drug) is never checked.
+    pk.check_compound_mw("my-novel-drug", 464.0)
+    with pytest.raises(ValueError, match="not finite"):
+        pk.check_compound_mw("warfarin", float("nan"))
+
+
+def test_derive_pk_rejects_fabricated_molecular_weight():
+    # The gate hole end-to-end: a design that names warfarin but reports a
+    # made-up MW must fail derive_pk, which is what the benchmark counts as an
+    # unverifiable answer rather than letting it pass as a usable design.
+    with pytest.raises(ValueError, match="inconsistent"):
+        derive_pk(
+            {
+                "compound": "warfarin",
+                "molecular_weight_g_mol": 464.0,
+                "inlet_concentration_uM": 10.0,
+                "outlet_concentration_uM": 7.0,
+                "flow_rate_uLmin": 2.0,
+            }
+        )
+    # A consistent pair still derives every number normally.
+    out = derive_pk(
+        {
+            "compound": "warfarin",
+            "molecular_weight_g_mol": 308.3,
+            "inlet_concentration_uM": 10.0,
+            "outlet_concentration_uM": 7.0,
+            "flow_rate_uLmin": 2.0,
+        }
+    )
+    assert out["extraction_ratio"] == pytest.approx(0.3)
+    assert out["mass_cleared_ug_h"] is not None
 
 
 def test_all_functions_reject_non_finite():

@@ -10,7 +10,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "error": "schema_error: 'cells_per_spheroid'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -28,7 +28,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got 'solid'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -46,7 +46,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got 'square'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -63,13 +63,13 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
+        "plan": false,
+        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got '1000'",
         "recovery": {},
-        "hallucination_rate": 0.0,
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -81,13 +81,13 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
+        "plan": false,
+        "error": "schema_error: 'cells_per_spheroid'",
         "recovery": {},
-        "hallucination_rate": 0.0,
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -100,7 +100,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-well'",
+        "error": "schema_error: 'cells_per_spheroid'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -119,12 +119,14 @@
       "finetuned": {
         "plan": true,
         "error": null,
-        "recovery": {},
-        "hallucination_rate": 0.166667,
-        "valid": false,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "calculation_error",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -136,7 +138,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: 1 validation error for DesignInput\nchip.width_um\n  Field required [type=missing, input_value={'channel_count': 1, 'hei...0.0, 'material': 'PDMS'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing",
+        "error": "schema_error: 'cells_per_spheroid'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -153,13 +155,13 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
+        "plan": false,
+        "error": "schema_error: 'cell_diameter_um'",
         "recovery": {},
-        "hallucination_rate": 0.0,
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -171,13 +173,13 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
+        "plan": false,
+        "error": "schema_error: 'cells_per_spheroid'",
         "recovery": {},
-        "hallucination_rate": 0.0,
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -190,7 +192,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: 1 validation error for CulturePlan\nspheroid_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "error": "unparseable_json",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -208,7 +210,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got 'ULA'",
+        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got 'ula'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -225,13 +227,13 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
+        "plan": false,
+        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got '3d'",
         "recovery": {},
-        "hallucination_rate": 0.0,
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -244,7 +246,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-well'",
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-ula'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -262,7 +264,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '2-well'",
+        "error": "schema_error: 'cells_per_spheroid'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -273,11 +275,13 @@
     }
   ],
   "finetuned": {
-    "recovery": {},
-    "hallucination_rate": 0.6111111333333333,
-    "self_consistent_rate": 0.3333333333333333,
-    "usable_design_rate": 0.0
+    "recovery": {
+      "total_medium_ml": 0.0
+    },
+    "hallucination_rate": 0.9333333333333333,
+    "self_consistent_rate": 0.06666666666666667,
+    "usable_design_rate": 0.06666666666666667
   },
   "system": "finetuned",
-  "generated_at": "2026-08-13T11:09:35+00:00"
+  "generated_at": "2026-08-14T08:27:53+00:00"
 }

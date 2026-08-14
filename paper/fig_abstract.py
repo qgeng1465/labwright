@@ -2,9 +2,14 @@
 
 A single wide panel that tells the architecture story at a glance:
 
-     goal (natural language) -> LLM proposes RAW inputs -> deterministic
+     goal (natural language) -> LLM agent proposes RAW inputs -> deterministic
      calculators compute every derived number -> verifier RE-PROVES each one
-     -> SOP + design JSON.
+     -> hard gate (submit_design) -> SOP + design JSON.
+
+Each stage carries a compact component tag naming the real machinery behind
+it (the ReAct loop and its budget, the calc/ modules, the four verifier
+layers, the provenance/ELN export), so the one-glance story stays readable
+while the components a reviewer would ask about are named.
 
 A numbers band across the top anchors the claim (usable designs 88-100 %,
 hallucination 0.000 vs bare LLM 0-12 % / ~1.0); a bottom lane shows the naive
@@ -32,6 +37,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _font import setup_font  # noqa: E402
+
+setup_font()
+
 INK = "#262522"
 MUT = "#8a8782"
 GRID = "#d9d7d3"
@@ -46,7 +57,7 @@ GRAY_DARK = "#74706a"
 RED = "#b3261e"  # status: hard reject — reserved for its meaning
 WH = "round,pad=0.25,rounding_size=0.10"
 
-X0, X1, Y0, Y1 = 0.0, 12.0, 0.0, 5.0
+X0, X1, Y0, Y1 = 0.0, 12.0, 0.0, 5.4
 
 
 def _box(ax, x, y, w, h, text, fc, ec, tc=INK, fs=9.5, weight="normal",
@@ -64,9 +75,9 @@ def _arrow(ax, x1, y1, x2, y2, color=MUT, style="-|>", lw=1.4, zorder=2, ls="-")
 
 
 def _label(ax, x, y, text, fs=7.5, color=MUT, ha="left", va="bottom",
-           weight="normal", zorder=2):
+           weight="normal", zorder=2, line_h=1.3):
     ax.text(x, y, text, fontsize=fs, color=color, ha=ha, va=va, zorder=zorder,
-            fontweight=weight, linespacing=1.3)
+            fontweight=weight, linespacing=line_h)
 
 
 def check_overlaps(fig, ax) -> list[str]:
@@ -98,7 +109,7 @@ def check_overlaps(fig, ax) -> list[str]:
 
 
 def main() -> int:
-    fig, ax = plt.subplots(figsize=(12.0, 5.0))
+    fig, ax = plt.subplots(figsize=(12.0, 5.4))
     ax.set_xlim(X0, X1)
     ax.set_ylim(Y0, Y1)
     ax.axis("off")
@@ -107,52 +118,70 @@ def main() -> int:
     # ------------------------------------------------------------------
     # Top band: title + benchmark numbers
     # ------------------------------------------------------------------
-    ax.add_patch(FancyBboxPatch((0.15, 4.30), 11.7, 0.58,
+    ax.add_patch(FancyBboxPatch((0.15, 4.62), 11.7, 0.56,
                                 boxstyle="round,pad=0.15,rounding_size=0.08",
                                 fc="#f6f4f0", ec=GRID, linewidth=1.0, zorder=1))
-    _label(ax, 0.45, 4.59, "one yardstick, every row:", fs=8.0, color=MUT,
+    _label(ax, 0.45, 4.90, "same scoring, every system:", fs=8.0, color=MUT,
            va="center")
-    _label(ax, 2.55, 4.59, "bare LLM  0–12 % usable  ·  hallucination ~1.0",
+    _label(ax, 2.55, 4.90, "bare LLM  0–12% usable  ·  hallucination ~1.0",
            fs=9.0, color=INK, va="center")
-    _label(ax, 11.60, 4.59,
-           "Labwright  88–100 % usable  ·  hallucination 0.000", fs=10.0,
+    _label(ax, 11.60, 4.90,
+           "Labwright  88–100% usable  ·  hallucination 0.000", fs=10.0,
            color=BLUE_EDGE, va="center", weight="bold", ha="right")
 
     # ------------------------------------------------------------------
     # Main pipeline row
     # ------------------------------------------------------------------
-    row_y = 2.35
-    row_h = 1.05
+    row_y = 2.55
+    row_h = 1.30
+    mid = row_y + row_h / 2
 
-    _box(ax, 0.30, row_y, 1.35, row_h, "goal\n(natural\nlanguage)", GRAY_LIGHT,
+    _box(ax, 0.30, row_y, 1.35, row_h, "goal\n(natural language)", GRAY_LIGHT,
          GRAY, fs=8.5)
-    _box(ax, 2.05, row_y, 1.75, row_h, "LLM agent\nproposes\nraw inputs",
+    _box(ax, 2.05, row_y, 1.75, row_h, "LLM agent\nproposes raw inputs",
          BLUE, BLUE_EDGE, tc="white", weight="bold", fs=9.5)
-    _box(ax, 4.20, row_y, 1.75, row_h, "deterministic\ncalculators\n(physics)",
+    _box(ax, 4.20, row_y, 1.75, row_h, "deterministic\ncalculators (physics)",
          BLUE, BLUE_EDGE, tc="white", weight="bold", fs=9.5)
     _box(ax, 6.35, row_y, 2.00, row_h, "verifier\nre-proves\nevery number",
          BLUE, BLUE_EDGE, tc="white", weight="bold", fs=9.5)
     _box(ax, 9.00, row_y, 2.55, row_h, "SOP + design JSON\nverified",
          GRAY_DARK, GRAY_DARK, tc="white", weight="bold", fs=8.5)
 
+    # component tags — the real machinery behind each stage
+    tags = [
+        (0.975, "(the only input)"),
+        (2.925, "ReAct agent · 12 iter · thinking off"),
+        (5.075, "calc/ 10 modules"),
+        (7.35, "4 layers: arithmetic · units · safety · prose"),
+        (10.275, "provenance · export_eln(json|csv)"),
+    ]
+    for x, text in tags:
+        _label(ax, x, row_y + 0.14, text, fs=6.5, color=MUT, ha="center",
+               va="center")
+
+    # hard-gate annotation on the verifier -> SOP arrow
+    _label(ax, 8.68, 2.28, "hard gate:\nsubmit_design", fs=6.8, color=MUT,
+           ha="center", va="top")
+
     # flow arrows
     box_rights = [1.65, 3.80, 5.95, 8.35, 11.55]
     box_lefts = [0.30, 2.05, 4.20, 6.35, 9.00]
     for i in range(4):
-        _arrow(ax, box_rights[i] + 0.06, row_y + row_h / 2,
-               box_lefts[i + 1] - 0.06, row_y + row_h / 2, color=BLUE_EDGE)
+        _arrow(ax, box_rights[i] + 0.06, mid, box_lefts[i + 1] - 0.06, mid,
+               color=BLUE_EDGE)
 
-    # raw / derived lane labels under the row
-    _label(ax, 2.925, row_y - 0.30, "the model never writes a derived number",
+    # raw / derived lane labels under the row. These sit BELOW the retry-loop
+    # lane so the loop's vertical arrows pass above them.
+    _label(ax, 2.925, 1.40, "the model never writes a derived number",
            fs=7.5, color=MUT, ha="center", va="top")
-    _label(ax, 8.20, row_y - 0.30,
+    _label(ax, 8.20, 1.40,
            "every derived number is recomputed from the model's own raw inputs",
            fs=7.5, color=MUT, ha="center", va="top")
 
     # ------------------------------------------------------------------
     # Retry loop: rejected design returns to the agent
     # ------------------------------------------------------------------
-    loop_y = 1.34
+    loop_y = 1.65
     _arrow(ax, 7.35, row_y - 0.05, 7.35, loop_y + 0.05, color=MUT, lw=1.1)
     _arrow(ax, 7.35, loop_y, 2.925, loop_y, color=MUT, lw=1.1, style="-|>")
     _arrow(ax, 2.925, loop_y, 2.925, row_y - 0.05, color=MUT, lw=1.1)
@@ -162,7 +191,7 @@ def main() -> int:
     # ------------------------------------------------------------------
     # Naive alternatives lane + reject (bottom left/middle)
     # ------------------------------------------------------------------
-    _label(ax, 0.30, 0.92, "the alternatives an LLM reaches for — rejected:",
+    _label(ax, 0.30, 1.05, "the alternatives an LLM reaches for — rejected:",
            fs=7.5, color=MUT, va="top")
     _box(ax, 0.30, 0.30, 1.35, 0.42, "type the\nnumbers", GRAY_LIGHT, GRAY, fs=7.5)
     _box(ax, 2.05, 0.30, 1.75, 0.42, "soft self-check\n(LLM judges its own work)",
@@ -184,8 +213,8 @@ def main() -> int:
     # Honest boundary callout (bottom right, its own region)
     # ------------------------------------------------------------------
     ax.text(11.70, 0.52,
-            "honest boundary: on blind goals the gate can't\nsupply physiology "
-            "the model doesn't know — usable\ndrops, hallucination stays 0.000",
+            "honest boundary: the gate verifies\narithmetic, not physiology — "
+            "on blind goals\nusable drops, hallucination stays 0.000",
             fontsize=6.8, color=MUT, ha="right", va="center", linespacing=1.3,
             zorder=2)
 

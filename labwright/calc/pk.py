@@ -38,6 +38,43 @@ import math
 
 _LN2 = math.log(2.0)
 
+#: Molecular weights of the probe compounds the extractor was trained on and
+#: the benchmark golds use (g/mol). The verifier cross-checks a model-reported
+#: molecular weight against this table when the compound is known, so a design
+#: cannot claim "warfarin has MW 464" and still pass the gate. A compound not
+#: listed here (the user's own drug) is never checked — only probes with pinned
+#: values are.
+COMPOUND_MW: dict[str, float] = {
+    "diclofenac": 296.1,
+    "warfarin": 308.3,
+    "propranolol": 259.3,
+    "antipyrine": 188.2,
+    "acetaminophen": 151.2,
+    "doxorubicin": 543.5,
+}
+
+
+def check_compound_mw(compound: str, molecular_weight_g_mol: float) -> None:
+    """Raise ValueError when a *known* compound's reported MW disagrees.
+
+    ``compound`` is matched case-insensitively; the tolerance is 1 % relative,
+    which forgives innocuous rounding (308 vs 308.3) while catching gross
+    fabrication (464 for warfarin is a 50 % mismatch). Unknown compounds pass
+    through unchecked — we have no pinned value to verify them against.
+    """
+    known = COMPOUND_MW.get(compound.lower())
+    if known is None:
+        return
+    if not math.isfinite(float(molecular_weight_g_mol)):
+        raise ValueError(
+            f"molecular weight {molecular_weight_g_mol!r} is not finite for {compound!r}"
+        )
+    if abs(float(molecular_weight_g_mol) - known) / known > 0.01:
+        raise ValueError(
+            f"molecular weight {molecular_weight_g_mol} g/mol is inconsistent with "
+            f"compound {compound!r} ({known} g/mol)"
+        )
+
 
 def extraction_ratio(inlet_concentration_uM: float, outlet_concentration_uM: float) -> float:
     """Fraction of drug removed from the perfusate in a single pass.
@@ -209,6 +246,8 @@ def _validate_positive(**values: float) -> None:
 
 
 __all__ = [
+    "COMPOUND_MW",
+    "check_compound_mw",
     "extraction_ratio",
     "clearance_uLmin",
     "half_life_h",
