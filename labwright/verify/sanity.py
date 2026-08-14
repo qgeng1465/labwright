@@ -115,6 +115,101 @@ def check_sanity(plan: DesignPlan, issues: list[Issue]) -> None:
             values["pk.system_volume_uL"] = p.system_volume_uL
         if p.dose_interval_h is not None:
             values["pk.dose_interval_h"] = p.dose_interval_h
+    if plan.barrier is not None:
+        b = plan.barrier
+        values.update({
+            "barrier.teer_ohm_cm2": b.teer_ohm_cm2,
+            "barrier.insert_area_cm2": b.insert_area_cm2,
+            "barrier.resistance_total_ohm": b.resistance_total_ohm,
+            "barrier.resistance_blank_ohm": b.resistance_blank_ohm,
+            "barrier.donor_conc_um": b.donor_conc_um,
+        })
+        if b.papp_cm_s is not None:
+            values["barrier.papp_cm_s"] = b.papp_cm_s
+        if b.clearance_mL_min is not None:
+            values["barrier.clearance_mL_min"] = b.clearance_mL_min
+    if plan.oxygen is not None:
+        o = plan.oxygen
+        values.update({
+            "oxygen.target_po2_mmhg": o.target_po2_mmhg,
+            "oxygen.dissolved_o2_mM": o.dissolved_o2_mM,
+        })
+        if o.penetration_depth_um is not None:
+            values["oxygen.penetration_depth_um"] = o.penetration_depth_um
+        if o.necrotic_fraction is not None:
+            values["oxygen.necrotic_fraction"] = o.necrotic_fraction
+        if o.demand_umol_min is not None:
+            values["oxygen.demand_umol_min"] = o.demand_umol_min
+    if plan.pumpless is not None:
+        p = plan.pumpless
+        values.update({
+            "pumpless.tilt_angle_deg": p.tilt_angle_deg,
+            "pumpless.channel_length_mm": p.channel_length_mm,
+            "pumpless.rocking_half_period_s": p.rocking_half_period_s,
+            "pumpless.hydrostatic_head_pa": p.hydrostatic_head_pa,
+            "pumpless.driven_flow_rate_uLmin": p.driven_flow_rate_uLmin,
+            "pumpless.peak_wall_shear_pa": p.peak_wall_shear_pa,
+            "pumpless.volume_per_half_cycle_ul": p.volume_per_half_cycle_ul,
+            "pumpless.oscillatory_shear_index": p.oscillatory_shear_index,
+            "pumpless.cycles_per_hour": p.cycles_per_hour,
+        })
+        if p.shear_ratio_to_target is not None:
+            values["pumpless.shear_ratio_to_target"] = p.shear_ratio_to_target
+    if plan.breathing is not None:
+        b = plan.breathing
+        values.update({
+            "breathing.frequency_hz": b.frequency_hz,
+            "breathing.strain_pct": b.strain_pct,
+            "breathing.membrane_span_um": b.membrane_span_um,
+            "breathing.breaths_per_minute": b.breaths_per_minute,
+            "breathing.cyclic_displacement_um": b.cyclic_displacement_um,
+            "breathing.strain_rate_per_s": b.strain_rate_per_s,
+        })
+        if b.total_cycles is not None:
+            values["breathing.total_cycles"] = b.total_cycles
+        if b.stretch_duty_fraction is not None:
+            values["breathing.stretch_duty_fraction"] = b.stretch_duty_fraction
+        if b.ali_liquid_film_um is not None:
+            values["breathing.ali_liquid_film_um"] = b.ali_liquid_film_um
+    if plan.pulsatile is not None:
+        p = plan.pulsatile
+        values.update({
+            "pulsatile.frequency_hz": p.frequency_hz,
+            "pulsatile.channel_height_um": p.channel_height_um,
+            "pulsatile.womersley_number": p.womersley_number,
+            "pulsatile.oscillatory_shear_index": p.oscillatory_shear_index,
+            "pulsatile.peak_shear_pa": p.peak_shear_pa,
+            "pulsatile.shear_mean_pa": p.shear_mean_pa,
+            "pulsatile.shear_amplitude_pa": p.shear_amplitude_pa,
+        })
+        if p.pulsatility_index is not None:
+            values["pulsatile.pulsatility_index"] = p.pulsatility_index
+    if plan.scaling is not None:
+        s = plan.scaling
+        values.update({
+            "scaling.organ_flow_fraction": s.organ_flow_fraction,
+            "scaling.organ_flow_rate_mlmin": s.organ_flow_rate_mlmin,
+            "scaling.cells_in_organ": s.cells_in_organ,
+            "scaling.allometric_scale": s.allometric_scale,
+            "scaling.total_cells_chip": s.total_cells_chip,
+            "scaling.cardiac_output_mlmin": s.cardiac_output_mlmin,
+        })
+        if s.transit_time_s is not None:
+            values["scaling.transit_time_s"] = s.transit_time_s
+        if s.residence_time_match_error_s is not None:
+            values["scaling.residence_time_match_error_s"] = s.residence_time_match_error_s
+    if plan.gradient is not None:
+        g = plan.gradient
+        values.update({
+            "gradient.source_conc_um": g.source_conc_um,
+            "gradient.sink_conc_um": g.sink_conc_um,
+            "gradient.distance_um": g.distance_um,
+            "gradient.steepness_um_per_mm": g.steepness_um_per_mm,
+            "gradient.midpoint_conc_um": g.midpoint_conc_um,
+            "gradient.relaxation_time_s": g.relaxation_time_s,
+            "gradient.flux_mol_m2s": g.flux_mol_m2s,
+            "gradient.experiment_hours": g.experiment_hours,
+        })
 
     for field, value in values.items():
         if value is None:

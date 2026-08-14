@@ -23,6 +23,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from labwright.calc import barrier as calc_barrier
 from labwright.calc import cell as calc_cell
 from labwright.calc import culture as calc_culture
 from labwright.calc import dosing as calc_dosing
@@ -588,6 +589,515 @@ def check_pk(plan: DesignPlan, issues: list[Issue]) -> None:
         )
 
 
+def check_barrier(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the epithelial/endothelial barrier plan when present.
+
+    Re-runs :mod:`labwright.calc.barrier` on the raw resistance readings and
+    verifies the derived TEER; when a probe flux and donor concentration are
+    given, verifies Papp and clearance too. Warns when a probe is declared but
+    the flux/donor inputs needed to derive a permeability are missing (the QC
+    gate cannot then be scored), and when the blank resistance is suspiciously
+    large relative to the total (a monolayer so thin its TEER barely registers).
+    """
+    b = plan.barrier
+    if b is None:
+        return
+
+    try:
+        expected_teer = calc_barrier.teer_ohm_cm2(
+            b.resistance_total_ohm, b.resistance_blank_ohm, b.insert_area_cm2
+        )
+    except ValueError as exc:
+        issues.append(
+            Issue(
+                level="error",
+                field="barrier.teer_ohm_cm2",
+                message=f"cannot derive TEER from the raw resistances: {exc}",
+            )
+        )
+        return
+    if not _close(expected_teer, b.teer_ohm_cm2):
+        issues.append(
+            Issue(
+                level="error",
+                field="barrier.teer_ohm_cm2",
+                message="teer_ohm_cm2 does not equal (R_total − R_blank) × area",
+                expected=expected_teer,
+                found=b.teer_ohm_cm2,
+            )
+        )
+
+    can_derive_papp = b.donor_conc_um is not None and b.flux_nmol_min is not None
+    if b.papp_cm_s is not None:
+        if not can_derive_papp:
+            issues.append(
+                Issue(
+                    level="warning",
+                    field="barrier.papp_cm_s",
+                    message="papp_cm_s present but donor_conc_um / flux_nmol_min are missing "
+                    "— it cannot be re-derived",
+                )
+            )
+        else:
+            expected_papp = calc_barrier.papp_cm_s(
+                b.flux_nmol_min, b.insert_area_cm2, b.donor_conc_um
+            )
+            if not _close(expected_papp, b.papp_cm_s):
+                issues.append(
+                    Issue(
+                        level="error",
+                        field="barrier.papp_cm_s",
+                        message="papp_cm_s does not equal flux/(60·A·C₀)",
+                        expected=expected_papp,
+                        found=b.papp_cm_s,
+                    )
+                )
+    elif can_derive_papp:
+        issues.append(
+            Issue(
+                level="warning",
+                field="barrier.papp_cm_s",
+                message="donor_conc_um / flux_nmol_min are present but papp_cm_s is not computed",
+            )
+        )
+
+    if b.clearance_mL_min is not None:
+        if b.papp_cm_s is None:
+            issues.append(
+                Issue(
+                    level="warning",
+                    field="barrier.clearance_mL_min",
+                    message="clearance_mL_min present but papp_cm_s is missing — it cannot be re-derived",
+                )
+            )
+        else:
+            expected_cl = calc_barrier.clearance_mL_min(b.papp_cm_s, b.insert_area_cm2)
+            if not _close(expected_cl, b.clearance_mL_min):
+                issues.append(
+                    Issue(
+                        level="error",
+                        field="barrier.clearance_mL_min",
+                        message="clearance_mL_min does not equal Papp·A·60",
+                        expected=expected_cl,
+                        found=b.clearance_mL_min,
+                    )
+                )
+
+    if b.probe is not None and not can_derive_papp:
+        issues.append(
+            Issue(
+                level="warning",
+                field="barrier.probe",
+                message=f"probe {b.probe!r} declared but flux_nmol_min / donor_conc_um are "
+                "missing — the permeability QC gate cannot be scored",
+            )
+        )
+    if b.resistance_total_ohm - b.resistance_blank_ohm <= 0.05 * b.resistance_total_ohm:
+        issues.append(
+            Issue(
+                level="warning",
+                field="barrier.resistance_total_ohm",
+                message=f"blank resistance {b.resistance_blank_ohm:g} Ω is >95% of the total "
+                f"{b.resistance_total_ohm:g} Ω — the monolayer contributes almost no resistance "
+                "and the TEER will be dominated by electrode/medium drift",
+            )
+        )
+
+
+def check_pumpless(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the gravity-driven pumpless plan when present.
+
+    Re-runs :mod:`labwright.calc.pumpless` on the platform/channel inputs and
+    verifies every derived field; warns when the peak wall shear is far from the
+    physiological target (outside the 0.5–2× window) so a "rocker" that actually
+    under- or over-stimulates the cells is flagged before the lab builds it.
+    """
+    from labwright.calc import pumpless as cp
+    from labwright.physiology import lookup_cell
+
+    p = plan.pumpless
+    if p is None:
+        return
+
+    head = cp.hydrostatic_pressure_pa(p.density_kgm3, p.tilt_angle_deg, p.channel_length_mm)
+    if not _close(head, p.hydrostatic_head_pa):
+        issues.append(Issue(
+            level="error", field="pumpless.hydrostatic_head_pa",
+            message="hydrostatic_head_pa does not equal ρ·g·L·sinθ",
+            expected=head, found=p.hydrostatic_head_pa,
+        ))
+    q = cp.flow_rate_from_pressure_head(
+        head, p.width_um, p.height_um, p.channel_length_mm, p.viscosity_pas
+    )
+    if not _close(q, p.driven_flow_rate_uLmin):
+        issues.append(Issue(
+            level="error", field="pumpless.driven_flow_rate_uLmin",
+            message="driven_flow_rate_uLmin does not match Hagen–Poiseuille from the head",
+            expected=q, found=p.driven_flow_rate_uLmin,
+        ))
+    tau = cp.peak_wall_shear_from_head(head, p.width_um, p.height_um, p.channel_length_mm)
+    if not _close(tau, p.peak_wall_shear_pa):
+        issues.append(Issue(
+            level="error", field="pumpless.peak_wall_shear_pa",
+            message="peak_wall_shear_pa does not equal ΔP·h/(2·L)",
+            expected=tau, found=p.peak_wall_shear_pa,
+        ))
+    vol = cp.rocking_volume_per_half_cycle_ul(q, p.rocking_half_period_s)
+    if not _close(vol, p.volume_per_half_cycle_ul):
+        issues.append(Issue(
+            level="error", field="pumpless.volume_per_half_cycle_ul",
+            message="volume_per_half_cycle_ul does not equal Q·t/60",
+            expected=vol, found=p.volume_per_half_cycle_ul,
+        ))
+    osi = cp.oscillatory_shear_index(tau, tau * p.backward_shear_fraction)
+    if not _close(osi, p.oscillatory_shear_index):
+        issues.append(Issue(
+            level="error", field="pumpless.oscillatory_shear_index",
+            message="oscillatory_shear_index does not match the forward/backward shear profile",
+            expected=osi, found=p.oscillatory_shear_index,
+        ))
+    cph = cp.cycles_per_hour(p.rocking_half_period_s)
+    if not _close(cph, p.cycles_per_hour):
+        issues.append(Issue(
+            level="error", field="pumpless.cycles_per_hour",
+            message="cycles_per_hour does not equal 3600/(2·t)",
+            expected=cph, found=p.cycles_per_hour,
+        ))
+    if p.shear_ratio_to_target is not None:
+        prof = lookup_cell(p.cell_type)
+        if prof is not None and prof.shear_range_pa is not None:
+            lo, hi = prof.shear_range_pa
+        else:
+            lo, hi = cp.LIVER_SINUSOID_WSS_MIN_PA, cp.LIVER_SINUSOID_WSS_MAX_PA
+        target = (lo + hi) / 2.0
+        ratio = tau / target
+        if not _close(ratio, p.shear_ratio_to_target, tol=1e-3):
+            issues.append(Issue(
+                level="error", field="pumpless.shear_ratio_to_target",
+                message="shear_ratio_to_target does not equal chip WSS / physiological target",
+                expected=ratio, found=p.shear_ratio_to_target,
+            ))
+
+
+def check_breathing(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the lung ALI + stretch plan when present.
+
+    Re-runs :mod:`labwright.calc.breathing` on the frequency/strain/geometry
+    inputs and verifies every derived field; warns when the chosen strain leaves
+    the physiological 5–12 % window (or crosses the pathological >20 % line).
+    """
+    from labwright.calc import breathing as cb
+
+    b = plan.breathing
+    if b is None:
+        return
+
+    bpm = cb.breaths_per_minute(b.frequency_hz)
+    if not _close(bpm, b.breaths_per_minute):
+        issues.append(Issue(
+            level="error", field="breathing.breaths_per_minute",
+            message="breaths_per_minute does not equal f×60",
+            expected=bpm, found=b.breaths_per_minute,
+        ))
+    disp = cb.cyclic_displacement_um(b.strain_pct, b.membrane_span_um)
+    if not _close(disp, b.cyclic_displacement_um):
+        issues.append(Issue(
+            level="error", field="breathing.cyclic_displacement_um",
+            message="cyclic_displacement_um does not equal ε·L",
+            expected=disp, found=b.cyclic_displacement_um,
+        ))
+    rate = cb.strain_rate_per_s(b.strain_pct, b.frequency_hz)
+    if not _close(rate, b.strain_rate_per_s):
+        issues.append(Issue(
+            level="error", field="breathing.strain_rate_per_s",
+            message="strain_rate_per_s does not equal (ε/100)·f",
+            expected=rate, found=b.strain_rate_per_s,
+        ))
+
+    if b.total_cycles is not None:
+        if b.culture_duration_h is None:
+            issues.append(Issue(
+                level="warning", field="breathing.total_cycles",
+                message="total_cycles present but culture_duration_h is missing — it cannot be re-derived",
+            ))
+        else:
+            tc = cb.total_cycles(b.culture_duration_h, b.frequency_hz)
+            if not _close(tc, b.total_cycles):
+                issues.append(Issue(
+                    level="error", field="breathing.total_cycles",
+                    message="total_cycles does not equal hours×3600×f",
+                    expected=tc, found=b.total_cycles,
+                ))
+    elif b.culture_duration_h is not None:
+        issues.append(Issue(
+            level="warning", field="breathing.total_cycles",
+            message="culture_duration_h present but total_cycles is not computed",
+        ))
+
+    if b.stretch_duty_fraction is not None:
+        if b.stretch_seconds is None or b.cycle_seconds is None:
+            issues.append(Issue(
+                level="warning", field="breathing.stretch_duty_fraction",
+                message="stretch_duty_fraction present but stretch/cycle seconds are missing — it cannot be re-derived",
+            ))
+        else:
+            duty = cb.stretch_duty_fraction(b.stretch_seconds, b.cycle_seconds)
+            if not _close(duty, b.stretch_duty_fraction):
+                issues.append(Issue(
+                    level="error", field="breathing.stretch_duty_fraction",
+                    message="stretch_duty_fraction does not equal stretch/cycle",
+                    expected=duty, found=b.stretch_duty_fraction,
+                ))
+    elif b.stretch_seconds is not None and b.cycle_seconds is not None:
+        issues.append(Issue(
+            level="warning", field="breathing.stretch_duty_fraction",
+            message="stretch/cycle seconds are present but stretch_duty_fraction is not computed",
+        ))
+
+    if b.ali_liquid_film_um is not None:
+        if b.apical_volume_ul is None or b.surface_area_cm2 is None:
+            issues.append(Issue(
+                level="warning", field="breathing.ali_liquid_film_um",
+                message="ali_liquid_film_um present but apical_volume_ul / surface_area_cm2 are missing — it cannot be re-derived",
+            ))
+        else:
+            film = cb.ali_liquid_film_um(b.apical_volume_ul, b.surface_area_cm2)
+            if not _close(film, b.ali_liquid_film_um):
+                issues.append(Issue(
+                    level="error", field="breathing.ali_liquid_film_um",
+                    message="ali_liquid_film_um does not equal V/A",
+                    expected=film, found=b.ali_liquid_film_um,
+                ))
+    elif b.apical_volume_ul is not None and b.surface_area_cm2 is not None:
+        issues.append(Issue(
+            level="warning", field="breathing.ali_liquid_film_um",
+            message="apical_volume_ul / surface_area_cm2 are present but ali_liquid_film_um is not computed",
+        ))
+
+    cls = cb.linear_strain_pct_is_physiological(b.strain_pct)
+    if cls["pathological"]:
+        issues.append(Issue(
+            level="warning", field="breathing.strain_pct",
+            message=f"strain {b.strain_pct:.1f}% exceeds the ~20% pathological threshold — "
+            "this mechanically injures the epithelium, not a healthy alveolar regime",
+        ))
+    elif not cls["physiological"]:
+        issues.append(Issue(
+            level="warning", field="breathing.strain_pct",
+            message=f"strain {b.strain_pct:.1f}% lies outside the physiological 5–12% "
+            "alveolar window — confirm it is intentional",
+        ))
+
+
+def check_pulsatile(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the pulsatile cardiac-waveform plan when present.
+
+    Re-runs :mod:`labwright.calc.pulsatile` on the frequency/geometry/shear
+    inputs and verifies every derived field; warns when the waveform is strongly
+    reversing (high OSI, e.g. atheroprone) so the design intent is explicit.
+    """
+    from labwright.calc import pulsatile as cp
+
+    p = plan.pulsatile
+    if p is None:
+        return
+
+    alpha = cp.womersley_number(p.frequency_hz, p.channel_height_um, p.viscosity_pas, p.density_kgm3)
+    if not _close(alpha, p.womersley_number):
+        issues.append(Issue(
+            level="error", field="pulsatile.womersley_number",
+            message="womersley_number does not equal (h/2)·√(ωρ/μ)",
+            expected=alpha, found=p.womersley_number,
+        ))
+    osi = cp.oscillatory_shear_index_from_sinusoid(p.shear_mean_pa, p.shear_amplitude_pa)
+    if not _close(osi, p.oscillatory_shear_index):
+        issues.append(Issue(
+            level="error", field="pulsatile.oscillatory_shear_index",
+            message="oscillatory_shear_index does not match the sinusoidal mean/amplitude",
+            expected=osi, found=p.oscillatory_shear_index,
+        ))
+    peak = cp.peak_shear_of_sinusoid(p.shear_mean_pa, p.shear_amplitude_pa)
+    if not _close(peak, p.peak_shear_pa):
+        issues.append(Issue(
+            level="error", field="pulsatile.peak_shear_pa",
+            message="peak_shear_pa does not equal mean + amplitude",
+            expected=peak, found=p.peak_shear_pa,
+        ))
+
+    if p.pulsatility_index is not None:
+        if p.peak_flow_uLmin is None or p.minimum_flow_uLmin is None or p.mean_flow_uLmin is None:
+            issues.append(Issue(
+                level="warning", field="pulsatile.pulsatility_index",
+                message="pulsatility_index present but peak/min/mean flow are missing — it cannot be re-derived",
+            ))
+        else:
+            pi = cp.pulsatility_index(p.peak_flow_uLmin, p.minimum_flow_uLmin, p.mean_flow_uLmin)
+            if not _close(pi, p.pulsatility_index):
+                issues.append(Issue(
+                    level="error", field="pulsatile.pulsatility_index",
+                    message="pulsatility_index does not equal (Q_peak − Q_min)/Q_mean",
+                    expected=pi, found=p.pulsatility_index,
+                ))
+    elif p.peak_flow_uLmin is not None and p.minimum_flow_uLmin is not None and p.mean_flow_uLmin is not None:
+        issues.append(Issue(
+            level="warning", field="pulsatile.pulsatility_index",
+            message="peak/min/mean flow are present but pulsatility_index is not computed",
+        ))
+
+    if p.oscillatory_shear_index > 0.3:
+        issues.append(Issue(
+            level="warning", field="pulsatile.oscillatory_shear_index",
+            message=f"OSI {p.oscillatory_shear_index:.2f} marks a strongly reversing waveform — "
+            "flow reversals are the hallmark of atheroprone hemodynamics; confirm the cells "
+            "and the hypothesis want reversal",
+        ))
+
+
+def check_scaling(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the multi-organ scaling plan when present.
+
+    Re-runs :mod:`labwright.calc.scaling` on the organ/chip inputs and verifies
+    every derived field against the physiology tables; warns when a requested
+    transit match misses by more than an hour, so a body-on-chip that cannot
+    hit the in-vivo residence time is flagged before the flow is set.
+    """
+    from labwright.calc import scaling as cs
+
+    s = plan.scaling
+    if s is None:
+        return
+
+    frac = cs.organ_flow_fraction(s.organ)
+    if not _close(frac, s.organ_flow_fraction):
+        issues.append(Issue(
+            level="error", field="scaling.organ_flow_fraction",
+            message="organ_flow_fraction does not match the physiology table",
+            expected=frac, found=s.organ_flow_fraction,
+        ))
+    q = cs.organ_flow_rate_mlmin(s.organ, s.cardiac_output_mlmin)
+    if not _close(q, s.organ_flow_rate_mlmin):
+        issues.append(Issue(
+            level="error", field="scaling.organ_flow_rate_mlmin",
+            message="organ_flow_rate_mlmin does not equal fraction × cardiac output",
+            expected=q, found=s.organ_flow_rate_mlmin,
+        ))
+    organ_mass = cs.ORGAN_MASS_G[s.organ]
+    cells = cs.scale_cell_number(organ_mass, s.body_mass_g, s.total_cells_chip)
+    if not _close(cells, s.cells_in_organ):
+        issues.append(Issue(
+            level="error", field="scaling.cells_in_organ",
+            message="cells_in_organ does not equal (m_organ/m_body) × chip budget",
+            expected=cells, found=s.cells_in_organ,
+        ))
+    asc = cs.allometric_metabolic_scale(organ_mass, s.body_mass_g)
+    if not _close(asc, s.allometric_scale):
+        issues.append(Issue(
+            level="error", field="scaling.allometric_scale",
+            message="allometric_scale does not equal (m_organ/m_body)^0.75",
+            expected=asc, found=s.allometric_scale,
+        ))
+
+    if s.transit_time_s is not None:
+        if s.chip_volume_ul is None or s.flow_rate_uLmin is None:
+            issues.append(Issue(
+                level="warning", field="scaling.transit_time_s",
+                message="transit_time_s present but chip_volume_ul / flow_rate_uLmin are missing — it cannot be re-derived",
+            ))
+        else:
+            transit = cs.transit_time_s(s.chip_volume_ul, s.flow_rate_uLmin)
+            if not _close(transit, s.transit_time_s):
+                issues.append(Issue(
+                    level="error", field="scaling.transit_time_s",
+                    message="transit_time_s does not equal V/Q·60",
+                    expected=transit, found=s.transit_time_s,
+                ))
+    elif s.chip_volume_ul is not None and s.flow_rate_uLmin is not None:
+        issues.append(Issue(
+            level="warning", field="scaling.transit_time_s",
+            message="chip_volume_ul / flow_rate_uLmin are present but transit_time_s is not computed",
+        ))
+
+    if s.residence_time_match_error_s is not None:
+        if s.target_transit_s is None:
+            issues.append(Issue(
+                level="warning", field="scaling.residence_time_match_error_s",
+                message="residence_time_match_error_s present but target_transit_s is missing — it cannot be re-derived",
+            ))
+        else:
+            err = cs.residence_time_match_error_s(s.chip_volume_ul, s.flow_rate_uLmin, s.target_transit_s)
+            if not _close(err, s.residence_time_match_error_s):
+                issues.append(Issue(
+                    level="error", field="scaling.residence_time_match_error_s",
+                    message="residence_time_match_error_s does not equal |transit − target|",
+                    expected=err, found=s.residence_time_match_error_s,
+                ))
+    elif s.target_transit_s is not None:
+        issues.append(Issue(
+            level="warning", field="scaling.residence_time_match_error_s",
+            message="target_transit_s present but residence_time_match_error_s is not computed",
+        ))
+
+
+def check_gradient(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the concentration-gradient plan when present.
+
+    Re-runs :mod:`labwright.calc.gradient` on the source/sink inputs and verifies
+    every derived field; warns when the experiment is shorter than ~10 diffusive
+    relaxation times (the gradient is still forming) or when source ≤ sink (no
+    gradient direction at all).
+    """
+    from labwright.calc import gradient as cg
+
+    g = plan.gradient
+    if g is None:
+        return
+
+    steep = cg.linear_gradient_steepness_um_per_mm(g.source_conc_um, g.sink_conc_um, g.distance_um)
+    if not _close(steep, g.steepness_um_per_mm):
+        issues.append(Issue(
+            level="error", field="gradient.steepness_um_per_mm",
+            message="steepness_um_per_mm does not equal (C_src − C_sink)/L × 1000",
+            expected=steep, found=g.steepness_um_per_mm,
+        ))
+    mid = cg.steady_state_profile_conc_um(g.source_conc_um, g.sink_conc_um, g.distance_um, g.distance_um / 2.0)
+    if not _close(mid, g.midpoint_conc_um):
+        issues.append(Issue(
+            level="error", field="gradient.midpoint_conc_um",
+            message="midpoint_conc_um does not match the linear steady-state profile",
+            expected=mid, found=g.midpoint_conc_um,
+        ))
+    tau = cg.diffusive_relaxation_time_s(g.distance_um, g.diffusivity_m2s)
+    if not _close(tau, g.relaxation_time_s):
+        issues.append(Issue(
+            level="error", field="gradient.relaxation_time_s",
+            message="relaxation_time_s does not equal L²/D",
+            expected=tau, found=g.relaxation_time_s,
+        ))
+    flux = cg.diffusive_flux_mol_m2s(g.source_conc_um, g.sink_conc_um, g.distance_um, g.diffusivity_m2s)
+    if not _close(flux, g.flux_mol_m2s):
+        issues.append(Issue(
+            level="error", field="gradient.flux_mol_m2s",
+            message="flux_mol_m2s does not match Fick's first law",
+            expected=flux, found=g.flux_mol_m2s,
+        ))
+
+    if g.source_conc_um <= g.sink_conc_um:
+        issues.append(Issue(
+            level="warning", field="gradient.source_conc_um",
+            message=f"source {g.source_conc_um:g} µM does not exceed sink {g.sink_conc_um:g} µM — "
+            "there is no concentration gradient to measure",
+        ))
+    stability = cg.gradient_stability_check(g.relaxation_time_s, g.experiment_hours)
+    if not stability["stable"]:
+        issues.append(Issue(
+            level="warning", field="gradient.experiment_hours",
+            message=f"experiment {g.experiment_hours:g} h runs ~{g.relaxation_time_s / 3600:.2f} h "
+            f"of relaxation time (τ); the 10τ rule needs ≥ {10 * g.relaxation_time_s / 3600:.2f} h for "
+            "the gradient to reach steady state and be held — the readout may sample the "
+            "establishment transient, not a stable gradient",
+        ))
+
+
 def verify_design(plan: DesignPlan) -> list[Issue]:
     """Run every cross-check on a design plan. Errors must be resolved before use.
 
@@ -604,6 +1114,12 @@ def verify_design(plan: DesignPlan) -> list[Issue]:
     check_dosing(plan, issues)
     check_stats(plan, issues)
     check_pk(plan, issues)
+    check_barrier(plan, issues)
+    check_pumpless(plan, issues)
+    check_breathing(plan, issues)
+    check_pulsatile(plan, issues)
+    check_scaling(plan, issues)
+    check_gradient(plan, issues)
     from labwright.verify.sanity import check_sanity
     from labwright.verify.safety import check_safety
     from labwright.verify.prose import check_prose_numbers

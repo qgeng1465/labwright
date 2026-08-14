@@ -41,3 +41,11 @@ results/extractor/lora_flowculture/
 
 # Run logs (transient; kept out of the repo by convention)
 results/*.log
+
+# Transient generator smoke outputs + stale eval backups (reproducible; not provenance)
+results/smoke_11dom/
+results/smoke_11dom2/
+results/evals_v1_backup/
+
+# 50h autonomous-marathon working notes (kept local)
+MARATHON_50H.md

@@ -17,12 +17,16 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from labwright.blocks import ALL_DERIVED_KEYS
+from labwright.calc import barrier as calc_barrier
 from labwright.calc import cell as calc_cell
 from labwright.calc import culture as calc_culture
 from labwright.calc import microfluidics as mf
+from labwright.calc import o2 as calc_o2
 from labwright.calc import pk as calc_pk
 from labwright.calc import spheroid as calc_spheroid
 from labwright.schema.design import (
+    BarrierPlan,
+    BreathingPlan,
     CellPlan,
     ChipGeometry,
     CulturePlan,
@@ -30,7 +34,12 @@ from labwright.schema.design import (
     DesignPlan,
     DosePlan,
     FlowParams,
+    GradientPlan,
+    OxygenPlan,
     PkPlan,
+    PulsatilePlan,
+    PumplessPlan,
+    ScalingPlan,
     SpheroidPlan,
     StatsPlan,
 )
@@ -103,6 +112,56 @@ class DesignInput(BaseModel):
         "outlet_concentration_uM, flow_rate_uLmin, system_volume_uL, "
         "dose_interval_h (no extraction_ratio / clearance_uLmin / half_life_h / "
         "accumulation_ratio / mass_cleared_ug_h; they are computed)",
+    )
+    barrier: dict[str, Any] | None = Field(
+        default=None,
+        description="cell_type, insert_area_cm2, resistance_total_ohm, "
+        "resistance_blank_ohm, probe, donor_conc_um, flux_nmol_min (no "
+        "teer_ohm_cm2 / papp_cm_s / clearance_mL_min; they are computed)",
+    )
+    oxygen: dict[str, Any] | None = Field(
+        default=None,
+        description="cell_type, target_po2_mmhg, cell_density_cells_ml, "
+        "spheroid_diameter_um (no dissolved_o2_mM / penetration_depth_um / "
+        "necrotic_fraction / demand_umol_min; they are computed)",
+    )
+    pumpless: dict[str, Any] | None = Field(
+        default=None,
+        description="cell_type, tilt_angle_deg, channel_length_mm, width_um, "
+        "height_um, rocking_half_period_s, viscosity_pas, density_kgm3, "
+        "backward_shear_fraction (no hydrostatic_head_pa / driven_flow_rate_uLmin / "
+        "peak_wall_shear_pa / volume_per_half_cycle_ul / oscillatory_shear_index / "
+        "cycles_per_hour / shear_ratio_to_target; they are computed)",
+    )
+    breathing: dict[str, Any] | None = Field(
+        default=None,
+        description="cell_type, frequency_hz, strain_pct, membrane_span_um, "
+        "apical_volume_ul, surface_area_cm2, culture_duration_h, "
+        "stretch_seconds, cycle_seconds (no breaths_per_minute / "
+        "cyclic_displacement_um / strain_rate_per_s / total_cycles / "
+        "stretch_duty_fraction / ali_liquid_film_um; they are computed)",
+    )
+    pulsatile: dict[str, Any] | None = Field(
+        default=None,
+        description="cell_type, frequency_hz, channel_height_um, viscosity_pas, "
+        "density_kgm3, shear_mean_pa, shear_amplitude_pa, peak_flow_uLmin, "
+        "minimum_flow_uLmin, mean_flow_uLmin (no womersley_number / "
+        "oscillatory_shear_index / peak_shear_pa / pulsatility_index; they are "
+        "computed)",
+    )
+    scaling: dict[str, Any] | None = Field(
+        default=None,
+        description="organ, total_cells_chip, cardiac_output_mlmin, body_mass_g, "
+        "chip_volume_ul, flow_rate_uLmin, target_transit_s (no "
+        "organ_flow_fraction / organ_flow_rate_mlmin / cells_in_organ / "
+        "allometric_scale / transit_time_s / residence_time_match_error_s; they "
+        "are computed)",
+    )
+    gradient: dict[str, Any] | None = Field(
+        default=None,
+        description="chemoattractant, source_conc_um, sink_conc_um, distance_um, "
+        "experiment_hours, diffusivity_m2s (no steepness_um_per_mm / "
+        "midpoint_conc_um / relaxation_time_s / flux_mol_m2s; they are computed)",
     )
     caveats: list[str] = Field(default_factory=list, description="What must be checked in the lab")
 
@@ -253,6 +312,236 @@ def derive_pk(raw: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def derive_barrier(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived BarrierPlan field from the measured resistances/flux.
+
+    The LLM never writes a derived barrier number: TEER always comes from
+    :mod:`labwright.calc.barrier`; Papp and the permeability-surface-area
+    product (clearance) are added when the probe flux and donor concentration
+    are present.
+    """
+    out = dict(raw)
+    out["teer_ohm_cm2"] = calc_barrier.teer_ohm_cm2(
+        raw["resistance_total_ohm"], raw["resistance_blank_ohm"], raw["insert_area_cm2"]
+    )
+    out["papp_cm_s"] = None
+    out["clearance_mL_min"] = None
+    if raw.get("flux_nmol_min") is not None and raw.get("donor_conc_um") is not None:
+        out["papp_cm_s"] = calc_barrier.papp_cm_s(
+            raw["flux_nmol_min"], raw["insert_area_cm2"], raw["donor_conc_um"]
+        )
+        out["clearance_mL_min"] = calc_barrier.clearance_mL_min(
+            out["papp_cm_s"], raw["insert_area_cm2"]
+        )
+    return out
+
+
+def derive_oxygen(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived OxygenPlan field from the target pO2 and consumption.
+
+    The LLM never writes a derived oxygen number: dissolved concentration comes
+    from Henry's law, and — when the cell density is given — the Krogh
+    penetration depth and (for spheroids) necrotic-core fraction come from
+    :mod:`labwright.calc.o2` using the cell-type OCR from
+    :mod:`labwright.physiology` (never proposed by the LLM).
+    """
+    from labwright.physiology import lookup_cell
+
+    out = dict(raw)
+    out["dissolved_o2_mM"] = calc_o2.o2_conc_mm_from_po2(raw["target_po2_mmhg"])
+
+    prof = lookup_cell(raw.get("cell_type"))
+    ocr = prof.o2_consumption_nmol_min_1e6 if prof else None
+
+    pen = None
+    if raw.get("cell_density_cells_ml") is not None and ocr is not None:
+        ocr_mid = (ocr[0] + ocr[1]) / 2.0
+        fmol_s = calc_o2.nmol_min_per_1e6_to_fmol_s(ocr_mid)
+        q = calc_o2.volumetric_o2_consumption(fmol_s, raw["cell_density_cells_ml"])
+        pen = calc_o2.o2_penetration_depth_um(q)
+    out["penetration_depth_um"] = pen
+
+    out["necrotic_fraction"] = None
+    if pen is not None and raw.get("spheroid_diameter_um") is not None:
+        out["necrotic_fraction"] = calc_o2.spheroid_necrotic_fraction(
+            raw["spheroid_diameter_um"], pen
+        )
+
+    out["demand_umol_min"] = None
+    if ocr is not None:
+        out["demand_umol_min"] = calc_o2.o2_demand_umol_min(
+            1e6, calc_o2.nmol_min_per_1e6_to_fmol_s((ocr[0] + ocr[1]) / 2.0)
+        )
+    return out
+
+
+def derive_pumpless(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived PumplessPlan field from the rocking-platform inputs.
+
+    The LLM never writes a derived pumpless number: hydrostatic head, driven
+    flow rate, peak wall shear, half-cycle volume, OSI and cycles-per-hour all
+    come from :mod:`labwright.calc.pumpless`. The physiological shear target is
+    the cell-type registry's ``shear_range_pa`` (falling back to the liver
+    sinusoidal range cited for gravity-driven chips), never invented here.
+    """
+    from labwright.calc import pumpless as cp
+    from labwright.physiology import lookup_cell
+
+    out = dict(raw)
+    rho = raw.get("density_kgm3", cp.CULTURE_MEDIUM_DENSITY_KGM3)
+    mu = raw.get("viscosity_pas", cp.CULTURE_MEDIUM_VISCOSITY_PAS)
+    head = cp.hydrostatic_pressure_pa(
+        rho, raw["tilt_angle_deg"], raw["channel_length_mm"]
+    )
+    out["hydrostatic_head_pa"] = head
+    q = cp.flow_rate_from_pressure_head(
+        head, raw["width_um"], raw["height_um"], raw["channel_length_mm"], mu
+    )
+    out["driven_flow_rate_uLmin"] = q
+    tau = cp.peak_wall_shear_from_head(
+        head, raw["width_um"], raw["height_um"], raw["channel_length_mm"]
+    )
+    out["peak_wall_shear_pa"] = tau
+    out["volume_per_half_cycle_ul"] = cp.rocking_volume_per_half_cycle_ul(
+        q, raw["rocking_half_period_s"]
+    )
+    bwd_frac = raw.get("backward_shear_fraction", 1.0)
+    out["oscillatory_shear_index"] = cp.oscillatory_shear_index(
+        tau, tau * bwd_frac
+    )
+    out["cycles_per_hour"] = cp.cycles_per_hour(raw["rocking_half_period_s"])
+
+    prof = lookup_cell(raw.get("cell_type"))
+    if prof is not None and prof.shear_range_pa is not None:
+        lo, hi = prof.shear_range_pa
+    else:
+        lo, hi = cp.LIVER_SINUSOID_WSS_MIN_PA, cp.LIVER_SINUSOID_WSS_MAX_PA
+    target = (lo + hi) / 2.0
+    out["shear_ratio_to_target"] = round(tau / target, 4)
+    return out
+
+
+def derive_breathing(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived BreathingPlan field from the lung-chip inputs.
+
+    The LLM never writes a derived breathing number: breaths/min, membrane
+    stroke, strain rate and the conditional total cycles / duty fraction / ALI
+    film all come from :mod:`labwright.calc.breathing`.
+    """
+    from labwright.calc import breathing as cb
+
+    out = dict(raw)
+    out["breaths_per_minute"] = cb.breaths_per_minute(raw["frequency_hz"])
+    out["cyclic_displacement_um"] = cb.cyclic_displacement_um(
+        raw["strain_pct"], raw.get("membrane_span_um") or cb.DEFAULT_MEMBRANE_SPAN_UM
+    )
+    out["strain_rate_per_s"] = cb.strain_rate_per_s(raw["strain_pct"], raw["frequency_hz"])
+    out["total_cycles"] = None
+    if raw.get("culture_duration_h") is not None:
+        out["total_cycles"] = cb.total_cycles(raw["culture_duration_h"], raw["frequency_hz"])
+    out["stretch_duty_fraction"] = None
+    if raw.get("stretch_seconds") is not None and raw.get("cycle_seconds") is not None:
+        out["stretch_duty_fraction"] = cb.stretch_duty_fraction(
+            raw["stretch_seconds"], raw["cycle_seconds"]
+        )
+    out["ali_liquid_film_um"] = None
+    if raw.get("apical_volume_ul") is not None and raw.get("surface_area_cm2") is not None:
+        out["ali_liquid_film_um"] = cb.ali_liquid_film_um(
+            raw["apical_volume_ul"], raw["surface_area_cm2"]
+        )
+    return out
+
+
+def derive_pulsatile(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived PulsatilePlan field from the cardiac-waveform inputs.
+
+    The LLM never writes a derived pulsatile number: Womersley number, OSI and
+    peak shear always come from :mod:`labwright.calc.pulsatile`; the Gosling
+    pulsatility index is added when the flow-waveform inputs are present.
+    """
+    from labwright.calc import pulsatile as cp
+
+    out = dict(raw)
+    out["womersley_number"] = cp.womersley_number(
+        raw["frequency_hz"], raw["channel_height_um"],
+        raw.get("viscosity_pas", cp.MEDIUM_VISCOSITY_PAS),
+        raw.get("density_kgm3", cp.MEDIUM_DENSITY_KGM3),
+    )
+    out["oscillatory_shear_index"] = cp.oscillatory_shear_index_from_sinusoid(
+        raw["shear_mean_pa"], raw["shear_amplitude_pa"]
+    )
+    out["peak_shear_pa"] = cp.peak_shear_of_sinusoid(raw["shear_mean_pa"], raw["shear_amplitude_pa"])
+    out["pulsatility_index"] = None
+    if (
+        raw.get("peak_flow_uLmin") is not None
+        and raw.get("minimum_flow_uLmin") is not None
+        and raw.get("mean_flow_uLmin") is not None
+    ):
+        out["pulsatility_index"] = cp.pulsatility_index(
+            raw["peak_flow_uLmin"], raw["minimum_flow_uLmin"], raw["mean_flow_uLmin"]
+        )
+    return out
+
+
+def derive_scaling(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived ScalingPlan field from the body-on-chip inputs.
+
+    The LLM never writes a derived scaling number: organ flow fraction, organ
+    perfusion flow, mass-proportional cell number and the Kleiber allometric
+    factor all come from :mod:`labwright.calc.scaling` using the physiology
+    tables (organ mass / flow fractions are pinned, never proposed). Transit
+    and residence-match numbers are added when the compartment volume/flow and
+    target transit are present.
+    """
+    from labwright.calc import scaling as cs
+
+    out = dict(raw)
+    organ = raw["organ"]
+    out["organ_flow_fraction"] = cs.organ_flow_fraction(organ)
+    out["organ_flow_rate_mlmin"] = cs.organ_flow_rate_mlmin(
+        organ, raw.get("cardiac_output_mlmin", cs.CARDIAC_OUTPUT_MLMIN)
+    )
+    organ_mass = cs.ORGAN_MASS_G[organ]
+    body_mass = raw.get("body_mass_g", cs.BODY_MASS_G)
+    out["cells_in_organ"] = cs.scale_cell_number(
+        organ_mass, body_mass, raw["total_cells_chip"]
+    )
+    out["allometric_scale"] = cs.allometric_metabolic_scale(organ_mass, body_mass)
+    out["transit_time_s"] = None
+    out["residence_time_match_error_s"] = None
+    if raw.get("chip_volume_ul") is not None and raw.get("flow_rate_uLmin") is not None:
+        out["transit_time_s"] = cs.transit_time_s(raw["chip_volume_ul"], raw["flow_rate_uLmin"])
+        if raw.get("target_transit_s") is not None:
+            out["residence_time_match_error_s"] = cs.residence_time_match_error_s(
+                raw["chip_volume_ul"], raw["flow_rate_uLmin"], raw["target_transit_s"]
+            )
+    return out
+
+
+def derive_gradient(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived GradientPlan field from the source-sink inputs.
+
+    The LLM never writes a derived gradient number: steepness, mid-gap
+    concentration, relaxation time and steady-state flux all come from
+    :mod:`labwright.calc.gradient`.
+    """
+    from labwright.calc import gradient as cg
+
+    out = dict(raw)
+    out["steepness_um_per_mm"] = cg.linear_gradient_steepness_um_per_mm(
+        raw["source_conc_um"], raw["sink_conc_um"], raw["distance_um"]
+    )
+    out["midpoint_conc_um"] = cg.steady_state_profile_conc_um(
+        raw["source_conc_um"], raw["sink_conc_um"], raw["distance_um"], raw["distance_um"] / 2.0
+    )
+    diff = raw.get("diffusivity_m2s") or cg.SMALL_MOLECULE_DIFFUSIVITY_M2S
+    out["relaxation_time_s"] = cg.diffusive_relaxation_time_s(raw["distance_um"], diff)
+    out["flux_mol_m2s"] = cg.diffusive_flux_mol_m2s(
+        raw["source_conc_um"], raw["sink_conc_um"], raw["distance_um"], diff
+    )
+    return out
+
+
 def build_design(inp: DesignInput) -> DesignPlan:
     """Derive every computed field from the agent's raw inputs.
 
@@ -329,6 +618,34 @@ def build_design(inp: DesignInput) -> DesignPlan:
     if inp.pk is not None:
         pk = PkPlan(**derive_pk(inp.pk))
 
+    barrier = None
+    if inp.barrier is not None:
+        barrier = BarrierPlan(**derive_barrier(inp.barrier))
+
+    oxygen = None
+    if inp.oxygen is not None:
+        oxygen = OxygenPlan(**derive_oxygen(inp.oxygen))
+
+    pumpless = None
+    if inp.pumpless is not None:
+        pumpless = PumplessPlan(**derive_pumpless(inp.pumpless))
+
+    breathing = None
+    if inp.breathing is not None:
+        breathing = BreathingPlan(**derive_breathing(inp.breathing))
+
+    pulsatile = None
+    if inp.pulsatile is not None:
+        pulsatile = PulsatilePlan(**derive_pulsatile(inp.pulsatile))
+
+    scaling = None
+    if inp.scaling is not None:
+        scaling = ScalingPlan(**derive_scaling(inp.scaling))
+
+    gradient = None
+    if inp.gradient is not None:
+        gradient = GradientPlan(**derive_gradient(inp.gradient))
+
     plan = DesignPlan(
         goal=inp.goal,
         rationale=inp.rationale,
@@ -341,6 +658,13 @@ def build_design(inp: DesignInput) -> DesignPlan:
         dosing=dosing,
         stats=stats,
         pk=pk,
+        barrier=barrier,
+        oxygen=oxygen,
+        pumpless=pumpless,
+        breathing=breathing,
+        pulsatile=pulsatile,
+        scaling=scaling,
+        gradient=gradient,
         caveats=inp.caveats,
     )
     return plan

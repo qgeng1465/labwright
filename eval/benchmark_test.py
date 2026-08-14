@@ -11,7 +11,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from labwright.calc import microfluidics as mf  # noqa: E402
 from labwright.design import derive_culture  # noqa: E402
 from labwright.schema.design import CulturePlan, DesignPlan  # noqa: E402
-from eval.benchmark import GoldExperiment, hallucination_rate, parameter_recovery  # noqa: E402
+from eval.benchmark import (  # noqa: E402
+    GoldExperiment,
+    _design_claimed,
+    hallucination_rate,
+    parameter_recovery,
+    relative_error,
+)
 
 
 def _verified_plan(shear: float | None = None) -> DesignPlan:
@@ -52,6 +58,56 @@ def test_parameter_recovery_relative_error():
     gold = GoldExperiment(id="x", goal="g", expected={"shear_pa": 0.25}, source="s")
     errs = parameter_recovery(gold, _verified_plan(shear=0.5))  # 2x high
     assert errs["shear_pa"] == pytest.approx(1.0)
+
+
+# --- zero-valued targets (post-v1 domains: OSI 0, no anoxic core) ---
+
+
+def test_relative_error_zero_target():
+    # A target of exactly 0 (unidirectional flow, necrotic_fraction 0) has no
+    # relative denominator; the absolute deviation is the error.
+    assert relative_error(0.0, 0.0) == 0.0
+    assert relative_error(0.001, 0.0) == pytest.approx(0.001)
+    assert relative_error(None, 0.0) == float("inf")
+
+
+def _new_domain_plan() -> DesignPlan:
+    from labwright.design import submit_design
+
+    payload = {"goal": "rocking chip", "rationale": "ok", "caveats": [],
+               "pumpless": {
+                   "cell_type": "HepG2", "tilt_angle_deg": 15.0,
+                   "channel_length_mm": 30.0, "width_um": 700.0, "height_um": 150.0,
+                   "rocking_half_period_s": 20.0, "backward_shear_fraction": 1.0}}
+    return DesignPlan(**submit_design(payload)["design"])
+
+
+def test_new_domain_recovery_and_claimed():
+    plan = _new_domain_plan()
+    gold = GoldExperiment(
+        id="pumpless", goal="rocking chip", source="s",
+        expected={
+            "peak_wall_shear_pa": plan.pumpless.peak_wall_shear_pa,
+            "oscillatory_shear_index": plan.pumpless.oscillatory_shear_index,
+            "cycles_per_hour": plan.pumpless.cycles_per_hour,
+        },
+    )
+    errs = parameter_recovery(gold, plan)
+    assert all(v == pytest.approx(0.0) for v in errs.values())
+    claimed = _design_claimed(plan, gold)
+    assert set(claimed) == set(gold.expected)
+    assert claimed["peak_wall_shear_pa"] == pytest.approx(plan.pumpless.peak_wall_shear_pa)
+
+
+def test_new_domain_zero_target_scored():
+    plan = _new_domain_plan()
+    gold = GoldExperiment(
+        id="pumpless", goal="rocking chip", source="s",
+        expected={"oscillatory_shear_index": 0.0},  # a target that is exactly 0
+    )
+    # plan's OSI is 0.5 (symmetric rocking) -> error = 0.5 > 0.05 -> not usable
+    errs = parameter_recovery(gold, plan)
+    assert errs["oscillatory_shear_index"] == pytest.approx(0.5)
 
 
 # --- competitor baselines (no LLM — prompt structure and scoring are pure) ---

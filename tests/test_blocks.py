@@ -28,6 +28,13 @@ EXPECTED_BLOCKS = {
     "dosing": "dosing",
     "stats": "stats",
     "pk": "pk",
+    "barrier": "barrier",
+    "oxygen": "oxygen",
+    "pumpless": "pumpless",
+    "breathing": "breathing",
+    "pulsatile": "pulsatile",
+    "scaling": "scaling",
+    "gradient": "gradient",
 }
 
 

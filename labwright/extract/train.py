@@ -81,7 +81,7 @@ def main() -> int:
     parser.add_argument("--batch", type=int, default=8)
     parser.add_argument("--grad-accum", type=int, default=4)
     parser.add_argument("--lr", type=float, default=2e-4)
-    parser.add_argument("--max-len", type=int, default=1024)
+    parser.add_argument("--max-len", type=int, default=2048)
     parser.add_argument("--r", type=int, default=16)
     parser.add_argument("--alpha", type=int, default=32)
     parser.add_argument("--seed", type=int, default=1234)

@@ -61,6 +61,7 @@ _FIELD_DIMENSIONS: dict[str, str] = {
     "culture.medium_volume_per_well_ml": "volume_ml",
     "culture.total_medium_ml": "volume_ml",
     "culture.seeding_density_cells_cm2": "density_cm2",
+    "culture.confluent_density_cells_cm2": "density_cm2",
     "culture.expected_confluence_pct": "pct",
     "culture.viability_pct": "pct",
     "culture.doubling_time_h": "time_h",
@@ -124,6 +125,10 @@ _UNIT_TO_DIM: list[tuple[str, str]] = [
     (r"g/mol", "gmol"),
     (r"kg/m", "density"),
     (r"%", "pct"),
+    # "cells per cm²" is a seeding *density*, not a cell count — without this
+    # pattern the bare `cells` alternative below claims it and a legitimate
+    # density restated in the goal false-flags as an unproduced count.
+    (r"cells\s+per\s*[cm]m[²2]", "density_cm2"),
     (r"cells", "count"),
     (r"mm", "length_mm"),
     (r"hours?|hrs?|h\b", "time_h"),
@@ -144,6 +149,12 @@ _THRESHOLD_RE = re.compile(
     r"more\s+than|up\s+to|at\s+least|at\s+most|max|min|<|>|≤|≥)"
 )
 
+#: Gas fractions in a goal ("5 % CO2", "20 % O2 humidified incubator") are
+#: *environmental conditions*, like 37 °C — standard incubator context, not an
+#: asserted design number the plan must reproduce. Skipping them keeps the gate
+#: honest (it flags design assertions, not protocol boilerplate).
+_GAS_FRACTION_RE = re.compile(r"CO2?\b|O2\b|oxygen\b", re.IGNORECASE)
+
 
 def _dimension_for_token(token: str) -> str | None:
     """Map a captured unit token back to its dimension (regex-first-match)."""
@@ -157,6 +168,11 @@ def _is_threshold_bound(text: str, start: int) -> bool:
     """True when the prose right before the number marks it as a bound."""
     window = text[max(0, start - 12):start]
     return bool(_THRESHOLD_RE.search(window))
+
+
+def _is_gas_fraction(text: str, end: int) -> bool:
+    """True when the unit right after a number is an incubator gas fraction."""
+    return bool(_GAS_FRACTION_RE.search(text[end:end + 12]))
 
 
 def _pint_unit(token: str) -> str | None:
@@ -244,7 +260,8 @@ def _numeric_fields(plan: DesignPlan) -> list[tuple[str, str, float]]:
         c = plan.culture
         for f in (
             "seed_per_well", "total_seed_count", "medium_volume_per_well_ml",
-            "total_medium_ml", "seeding_density_cells_cm2", "expected_confluence_pct",
+            "total_medium_ml", "seeding_density_cells_cm2",
+            "confluent_density_cells_cm2", "expected_confluence_pct",
             "viability_pct", "doubling_time_h", "culture_duration_h",
         ):
             add(f"culture.{f}", getattr(c, f))
@@ -291,6 +308,8 @@ def check_prose_numbers(plan: DesignPlan, issues: list[Issue]) -> None:
         for match in _NUM_UNIT_RE.finditer(text):
             if _is_threshold_bound(text, match.start()):
                 continue  # "above 400 µm" is a bound, not a claimed value
+            if match.group(2).startswith("%") and _is_gas_fraction(text, match.end()):
+                continue  # "5 % CO2" is incubator context, not an asserted value
             number = float(match.group(1))
             token = match.group(2)
             dim = _dimension_for_token(token)

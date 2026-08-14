@@ -42,12 +42,40 @@ Domain split
   accumulation ratio and mass cleared are derived by ``labwright.calc.pk``.
   Compounds are real drugs with standard molecular weights (facts, not
   invented physiology).
+- ``barrier``: monolayer QC. raw = {barrier}. TEER, Papp and clearance are
+  derived by ``labwright.calc.barrier``; TEER windows come from the physiology
+  registry (Caco-2 250–1000, hCMEC/D3 100–240 Ω·cm², sourced there).
+- ``oxygen``: dissolved-pO2 culture. raw = {oxygen}. Henry concentration,
+  Krogh penetration depth and necrotic-core fraction come from
+  ``labwright.calc.o2`` using the registry OCR; cell density is sampled dense
+  (1e8–1e9 cells/mL) so penetration lands in the physiological 10–400 µm band.
+- ``pumpless``: a gravity-flow rocking platform. raw = {pumpless}. The
+  hydrostatic head, driven flow, peak wall shear, OSI and cycles/hour are
+  derived by ``labwright.calc.pumpless``; the platform geometry is resampled so
+  the peak shear sits in [0.5, 2]× the registry physiological WSS target.
+- ``breathing``: lung ALI + cyclic stretch. raw = {breathing}. Breaths/min,
+  membrane stroke, strain rate, cycle budget, duty and the ALI film thickness
+  come from ``labwright.calc.breathing``.
+- ``pulsatile``: cardiac waveform. raw = {pulsatile}. Womersley number, OSI,
+  peak shear and pulsatility index are derived by ``labwright.calc.pulsatile``;
+  ~85% of rows sample a non-reversing waveform (OSI 0), the rest a reversing
+  variant the verifier flags.
+- ``scaling``: body-on-chip allometry. raw = {scaling}. Organ flow fraction,
+  perfusion flow, mass-proportional cells and the Kleiber factor come from
+  ``labwright.calc.scaling`` physiology tables (muscle excluded so every row
+  verifies clean).
+- ``gradient``: chemotaxis source-sink. raw = {gradient}. Steepness, mid-gap
+  concentration, relaxation time and Fick flux come from
+  ``labwright.calc.gradient``; ~half the under-10τ rows are resampled to stable
+  durations so most rows verify clean while the transient case stays in the mix.
 
 Usage::
 
     python -m labwright.extract.synthetic --out results/extractor \\
-        --n-flow 2500 --n-culture 1500 --n-spheroid 3000 --n-pk 3000 \\
-        --split 0.9 --seed 1234
+        --n-flow 6000 --n-culture 4000 --n-spheroid 8000 --n-pk 7000 \\
+        --n-barrier 4000 --n-oxygen 4000 --n-pumpless 4500 \\
+        --n-breathing 4500 --n-pulsatile 4500 --n-scaling 4000 \\
+        --n-gradient 4500 --split 0.9 --seed 1234
 """
 
 from __future__ import annotations
@@ -57,12 +85,20 @@ import json
 import random
 from pathlib import Path
 
+from labwright.calc import barrier as calc_barrier
+from labwright.calc import breathing as cb
 from labwright.calc import cell as calc_cell
 from labwright.calc import culture as calc_culture
+from labwright.calc import gradient as cg
 from labwright.calc import microfluidics as mf
+from labwright.calc import o2 as calc_o2
 from labwright.calc import pk as calc_pk
+from labwright.calc import pulsatile as calc_pulsatile
+from labwright.calc import pumpless as calc_pumpless
+from labwright.calc import scaling as cs
 from labwright.calc import spheroid as calc_spheroid
 from labwright.extract.data import raw_to_json
+from labwright.physiology import lookup_cell
 
 # ---------------------------------------------------------------------------
 # Organ → target-shear table. Display values are the already-pinned targets
@@ -158,7 +194,10 @@ def _flow_cells(rng: random.Random, organ: dict, w: int, L: int) -> dict:
     out = {
         "cell_type": organ["cell"],
         "seeding_density_cells_cm2": float(density),
-        "culture_area_cm2": _r(area, 4),
+        # Full precision: the verifier cross-checks this against width × length
+        # with a 1e-6 relative tolerance, so rounding here would raise spurious
+        # "disagrees with width × length" warnings.
+        "culture_area_cm2": area,
     }
     if rng.random() < 0.5 and prof[1] is not None:
         dt = rng.uniform(*prof[1])
@@ -273,7 +312,9 @@ def _sample_culture(rng: random.Random) -> tuple[str, int, str, float, dict, lis
     if rng.random() < 0.5 and prof[1] is not None:
         # Bound the predicted confluence: seeding × 2^(dur/dt) can outgrow the
         # confluent density by orders of magnitude (a latent >1000 % hard-band
-        # failure), so resample growth until the prediction is sane. Fall back
+        # failure), so resample growth until the prediction is sane. A planned
+        # harvest should not be over-confluent, so target the *soft* band
+        # (≤100 %), matching the verifier's over-confluence warning. Fall back
         # to a no-growth row if no combo fits — a plain culture instance is
         # still a valid training target, and an out-of-band one is not.
         area = calc_culture.well_surface_area_cm2(pf)
@@ -286,7 +327,7 @@ def _sample_culture(rng: random.Random) -> tuple[str, int, str, float, dict, lis
             pct = calc_culture.cell_count_to_confluence(
                 calc_cell.cell_count_after_time(per_well, dt, dur), conf, area
             )
-            if pct <= 1000.0:
+            if pct <= 100.0:
                 break
         else:
             conf = dt = dur = None
@@ -727,6 +768,360 @@ def generate_pk(rng: random.Random) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Barrier domain (TEER / Papp QC)
+# ---------------------------------------------------------------------------
+
+#: Cell type → (TEER window Ω·cm², barrier label). The windows are the registry
+#: ranges in labwright/physiology.py (Caco-2 250–1000, hCMEC/D3 100–240), which
+#: carry their own sources; nothing here is invented.
+_BARRIER_CELLS: list[tuple[str, tuple[float, float], str]] = [
+    ("Caco-2", (250.0, 1000.0), "intestinal"),
+    ("hCMEC/D3", (100.0, 240.0), "blood-brain"),
+]
+
+#: Standard insert areas, cm² (24-well ≈ 0.33, 12-well ≈ 1.12).
+_BARRIER_AREAS_CM2 = [0.33, 1.12]
+
+#: Typical cell-free insert resistance (electrode + medium), Ω.
+_BARRIER_BLANK_R_OHM = (80.0, 200.0)
+
+_BARRIER_PROBES = ["Lucifer yellow", "FITC-dextran 4 kDa", "mannitol", "rhodamine-123"]
+
+_BARRIER_TEMPLATES = [
+    "Measure the barrier function of {cell} on a {area} cm² insert: total resistance "
+    "{rtot} Ω against a {rblank} Ω blank. What is the TEER in Ω·cm²?",
+    "A {cell} monolayer is grown on a {area} cm² Transwell; the resistance reads "
+    "{rtot} Ω with a {rblank} Ω cell-free blank. Report the TEER (Ω·cm²).",
+    "QC the {cell} monolayer on a {area} cm² insert — {rtot} Ω total, {rblank} Ω blank. "
+    "What is the area-normalised TEER?",
+]
+
+
+def generate_barrier(rng: random.Random) -> dict:
+    cell, teer_range, _barrier_label = _pick(rng, _BARRIER_CELLS)
+    area = _pick(rng, _BARRIER_AREAS_CM2)
+    teer = round(rng.uniform(*teer_range), 1)
+    rblank = round(rng.uniform(*_BARRIER_BLANK_R_OHM), 1)
+    rtot = round(teer / area + rblank, 1)
+    raw = {
+        "cell_type": cell,
+        "insert_area_cm2": area,
+        "resistance_total_ohm": rtot,
+        "resistance_blank_ohm": rblank,
+    }
+
+    if rng.random() < 0.55:
+        # Add a permeability readout: sample Papp in the tight-barrier band and
+        # derive the flux backwards so the raw stays consistent (flux in band).
+        probe = _pick(rng, _BARRIER_PROBES)
+        conc = round(rng.uniform(10.0, 500.0), 1)
+        for _ in range(30):
+            papp = rng.uniform(3e-7, 1e-5)
+            flux = calc_barrier.flux_nmol_min(papp, conc, area)
+            if 1e-3 <= flux <= 100.0:
+                break
+        raw["probe"] = probe
+        raw["donor_conc_um"] = conc
+        raw["flux_nmol_min"] = _r(flux, 6)
+        prose = (
+            f"{cell} on a {area:g} cm² insert shows a {probe} flux of {flux:.4g} "
+            f"nmol/min from a {conc:g} µM donor. What is the apparent permeability "
+            f"(cm/s)? (TEER {teer:g} Ω·cm².)"
+        )
+    else:
+        prose = _pick(rng, _BARRIER_TEMPLATES).format(
+            cell=cell, area=area, rtot=rtot, rblank=rblank
+        )
+    return {"goal": prose + _maybe_distractor(rng), "raw": {"barrier": raw}, "domain": "barrier"}
+
+
+# ---------------------------------------------------------------------------
+# Oxygen domain (dissolved pO2, Krogh penetration)
+# ---------------------------------------------------------------------------
+
+#: Cell types with a registry OCR (never proposed by the model).
+_O2_CELLS = ["HepG2", "primary human hepatocytes"]
+
+
+def generate_oxygen(rng: random.Random) -> dict:
+    cell = _pick(rng, _O2_CELLS)
+    po2 = float(rng.choice([20, 40, 60, 80, 100, 120, 140, 160]))
+    # Dense tissue to push Krogh penetration into the physiological 10–400 µm band.
+    density = round(rng.uniform(1e8, 9e8))
+    while True:
+        prof = lookup_cell(cell)
+        ocr = prof.o2_consumption_nmol_min_1e6
+        ocr_mid = (ocr[0] + ocr[1]) / 2.0
+        pen = calc_o2.o2_penetration_depth_um(
+            calc_o2.volumetric_o2_consumption(
+                calc_o2.nmol_min_per_1e6_to_fmol_s(ocr_mid), density
+            )
+        )
+        if 10.0 <= pen <= 400.0:
+            break
+        density = round(rng.uniform(1e8, 9e8))
+
+    raw = {
+        "cell_type": cell,
+        "target_po2_mmhg": po2,
+        "cell_density_cells_ml": float(density),
+    }
+    if rng.random() < 0.6:
+        raw["spheroid_diameter_um"] = float(rng.choice([200, 300, 400, 500, 600, 800, 1000]))
+
+    parts = [
+        f"Culture {cell} at a target pO2 of {po2:g} mmHg with a cell density of "
+        f"{density:.2e} cells/mL."
+    ]
+    if "spheroid_diameter_um" in raw:
+        parts.append(
+            f"The culture forms {raw['spheroid_diameter_um']:g} µm spheroids — "
+            "what fraction of the spheroid is hypoxic?"
+        )
+    parts.append("How deep does oxygen penetrate (µm)?")
+    prose = " ".join(parts)
+    return {"goal": prose + _maybe_distractor(rng), "raw": {"oxygen": raw}, "domain": "oxygen"}
+
+
+# ---------------------------------------------------------------------------
+# Pumpless domain (gravity-flow rocking platform)
+# ---------------------------------------------------------------------------
+
+#: Cell types with a registry physiological WSS (the target for the rocker).
+_PUMPLESS_CELLS = ["hepg2", "huvec", "a549"]
+
+
+def generate_pumpless(rng: random.Random) -> dict:
+    cell = _pick(rng, _PUMPLESS_CELLS)
+    prof = lookup_cell(cell)
+    lo, hi = prof.shear_range_pa
+    target = (lo + hi) / 2.0
+    # Sample the platform geometry so the peak shear lands in [0.5, 2]×target
+    # (shear = ρ·g·sin(θ)·h/2 — independent of L).
+    while True:
+        tilt = rng.randint(3, 25)
+        h = rng.choice([75, 100, 125, 150, 200, 250])
+        w = rng.randint(400, 1000)
+        L = rng.choice([10, 20, 30, 40])
+        period = rng.choice([5, 10, 20, 30, 60])
+        shear = calc_pumpless.peak_wall_shear_from_head(
+            calc_pumpless.hydrostatic_pressure_pa(
+                calc_pumpless.CULTURE_MEDIUM_DENSITY_KGM3, tilt, L
+            ),
+            w, h, L,
+        )
+        ratio = shear / target
+        if 0.5 <= ratio <= 2.0:
+            break
+
+    bwd = _pick(rng, [0.0, 0.0, 0.5, 1.0, 1.0])
+    raw = {
+        "cell_type": cell,
+        "tilt_angle_deg": float(tilt),
+        "channel_length_mm": float(L),
+        "width_um": float(w),
+        "height_um": float(h),
+        "rocking_half_period_s": float(period),
+        "backward_shear_fraction": float(bwd),
+    }
+    prose = (
+        f"A rocking-platform chip cultures {cell} (physiological wall shear "
+        f"{lo:g}–{hi:g} Pa) on a {w} µm × {h} µm × {L} mm channel tilted {tilt}° "
+        f"with a {period} s rocking half-period. What peak wall shear (Pa) do the "
+        f"cells experience and how does it compare with the physiological range?"
+    )
+    return {"goal": prose + _maybe_distractor(rng), "raw": {"pumpless": raw}, "domain": "pumpless"}
+
+
+# ---------------------------------------------------------------------------
+# Breathing domain (lung ALI + cyclic stretch)
+# ---------------------------------------------------------------------------
+
+_BREATHING_CELLS = ["alveolar epithelial type II cells", "primary human bronchial epithelial cells"]
+
+
+def generate_breathing(rng: random.Random) -> dict:
+    cell = _pick(rng, _BREATHING_CELLS)
+    freq = rng.choice([0.2, 0.2, 0.25])
+    strain = round(rng.uniform(5.0, 12.0), 1)
+    span = rng.choice([150, 200, 250, 300, 350])
+    dur = rng.choice([24, 48, 72, 120, 168])
+    # Keep the residual ALI film within the physiological soft band (1–1000 µm):
+    # a 50 µL dose on the smallest insert would give a 1515 µm film, which the
+    # sanity check correctly flags — so resample the dose/area pair instead of
+    # generating a soft-band violation as a routine training row.
+    apical = rng.choice([5, 10, 20, 30, 50])
+    area = rng.choice([0.33, 0.66, 1.12])
+    while cb.ali_liquid_film_um(apical, area) > 1000:
+        apical = rng.choice([5, 10, 20, 30, 50])
+        area = rng.choice([0.33, 0.66, 1.12])
+    cycle = rng.choice([1.0, 2.0])
+    stretch = round(rng.uniform(0.1, 0.5) * cycle, 2)
+    raw = {
+        "cell_type": cell,
+        "frequency_hz": float(freq),
+        "strain_pct": float(strain),
+        "membrane_span_um": float(span),
+        "culture_duration_h": float(dur),
+        "apical_volume_ul": float(apical),
+        "surface_area_cm2": float(area),
+        "stretch_seconds": float(stretch),
+        "cycle_seconds": float(cycle),
+    }
+    bpm = cb.breaths_per_minute(freq)
+    film = cb.ali_liquid_film_um(apical, area)
+    prose = (
+        f"A lung-on-chip for {cell} cycles at {freq:g} Hz with {strain:g}% linear "
+        f"strain over a {span} µm membrane for {dur} h. At ALI the apical surface "
+        f"carries {apical} µL over {area:g} cm². What are the breathing rate "
+        f"({bpm:g} breaths/min is the expected rate), the total stretch cycles, and "
+        f"the residual apical film thickness (≈{film:.0f} µm)?"
+    )
+    return {"goal": prose + _maybe_distractor(rng), "raw": {"breathing": raw}, "domain": "breathing"}
+
+
+# ---------------------------------------------------------------------------
+# Pulsatile domain (cardiac waveform)
+# ---------------------------------------------------------------------------
+
+_PULSATILE_CELLS = ["HUVEC", "human aortic endothelial cells", "hiPSC-derived cardiomyocytes"]
+
+
+def generate_pulsatile(rng: random.Random) -> dict:
+    cell = _pick(rng, _PULSATILE_CELLS)
+    freq = rng.choice([0.8, 1.0, 1.2, 1.5, 2.0])
+    height = rng.choice([100, 150, 200, 300])
+    mean_shear = round(rng.uniform(0.5, 3.0), 2)
+    if rng.random() < 0.85:
+        amp = round(rng.uniform(0.2, 0.8) * mean_shear, 2)  # no reversal → OSI 0
+    else:
+        amp = round(rng.uniform(1.0, 1.5) * mean_shear, 2)  # reversing variant
+    mflow = round(rng.uniform(1.0, 20.0), 1)
+    pi = round(rng.uniform(0.3, 1.5), 2)
+    peak = round(mflow * (1.0 + pi), 1)
+    mn = round(mflow * (1.0 - pi), 1)
+    if mn < 0:
+        mn = 0.0
+    raw = {
+        "cell_type": cell,
+        "frequency_hz": float(freq),
+        "channel_height_um": float(height),
+        "shear_mean_pa": float(mean_shear),
+        "shear_amplitude_pa": float(amp),
+        "peak_flow_uLmin": float(peak),
+        "minimum_flow_uLmin": float(mn),
+        "mean_flow_uLmin": float(mflow),
+    }
+    prose = (
+        f"A heart-on-chip perfuses {cell} with a pulsatile waveform at {freq:g} Hz "
+        f"in a {height} µm channel: mean shear {mean_shear:g} Pa with amplitude "
+        f"{amp:g} Pa (peak flow {peak:g} µL/min, minimum {mn:g} µL/min, mean "
+        f"{mflow:g} µL/min). Compute the Womersley number, the oscillatory shear "
+        f"index and the Gosling pulsatility index."
+    )
+    return {"goal": prose + _maybe_distractor(rng), "raw": {"pulsatile": raw}, "domain": "pulsatile"}
+
+
+# ---------------------------------------------------------------------------
+# Scaling domain (body-on-chip allometry)
+# ---------------------------------------------------------------------------
+
+#: Organs whose allometric factor stays inside the 0.01–0.5 sanity band
+#: (muscle at 0.503 is excluded so every generated row verifies clean).
+_SCALING_ORGANS = ["liver", "kidneys", "brain", "heart", "gut", "skin", "lungs"]
+
+_SCALING_ORGAN_NAME = {
+    "liver": "liver", "kidneys": "kidneys", "brain": "brain", "heart": "heart",
+    "gut": "gut", "skin": "skin", "lungs": "lungs",
+}
+
+
+def generate_scaling(rng: random.Random) -> dict:
+    organ = _pick(rng, _SCALING_ORGANS)
+    co = float(rng.randint(200, 5000))  # keeps every organ flow ≥ 10 mL/min
+    total_cells = round(rng.uniform(1e5, 1e7))
+    volume = float(rng.choice([10, 50, 100, 250, 500, 1000]))
+    flow = round(rng.uniform(1.0, 1000.0), 1)
+    transit = cs.transit_time_s(volume, flow)
+    if not (1.0 <= transit <= 1e4):
+        # Resample into the transit band.
+        for _ in range(30):
+            flow = round(rng.uniform(1.0, 1000.0), 1)
+            transit = cs.transit_time_s(volume, flow)
+            if 1.0 <= transit <= 1e4:
+                break
+    target = round(transit + rng.uniform(-300, 300), 1)
+    if target < 0:
+        target = round(transit, 1)
+    raw = {
+        "organ": organ,
+        "total_cells_chip": float(total_cells),
+        "cardiac_output_mlmin": float(co),
+        "chip_volume_ul": float(volume),
+        "flow_rate_uLmin": float(flow),
+        "target_transit_s": float(target),
+    }
+    frac = cs.organ_flow_fraction(organ)
+    organ_flow = frac * co
+    cells = cs.scale_cell_number(cs.ORGAN_MASS_G[organ], cs.BODY_MASS_G, total_cells)
+    prose = (
+        f"Scale a body-on-chip for a {_SCALING_ORGAN_NAME[organ]} compartment: the chip "
+        f"supports {total_cells:.3g} total cells perfused at a cardiac output of "
+        f"{co:g} mL/min. How many cells go to the {organ} compartment, what perfusion "
+        f"flow ({organ_flow:.0f} mL/min) does it receive, and does a {volume:g} µL "
+        f"compartment at {flow:g} µL/min match the ~{target:g} s in-vivo transit? "
+        f"(≈{cells:.0f} cells at the {frac * 100:.0f}% flow fraction.)"
+    )
+    return {"goal": prose + _maybe_distractor(rng), "raw": {"scaling": raw}, "domain": "scaling"}
+
+
+# ---------------------------------------------------------------------------
+# Gradient domain (chemotaxis source-sink)
+# ---------------------------------------------------------------------------
+
+#: Chemoattractant → chemotactic cell pair (facts from the assay literature;
+#: the numbers themselves are always calculator-derived).
+_GRADIENT_PAIRS: list[tuple[str, str]] = [
+    ("CXCL12", "primary human neutrophils"),
+    ("fMLP", "primary human neutrophils"),
+    ("EGF", "cancer cells"),
+    ("SDF-1α", "neural progenitor cells"),
+    ("CCL2", "monocyte-derived dendritic cells"),
+]
+
+
+def generate_gradient(rng: random.Random) -> dict:
+    chemo, cell = _pick(rng, _GRADIENT_PAIRS)
+    src = float(rng.choice([10, 50, 100, 200, 500, 1000]))
+    sink = float(round(rng.uniform(0.0, 0.3 * src), 1))
+    distance = float(rng.choice([300, 500, 800, 1000, 1500, 2000]))
+    hours = float(rng.choice([6, 12, 24, 48]))
+
+    raw = {
+        "chemoattractant": chemo,
+        "source_conc_um": float(src),
+        "sink_conc_um": float(sink),
+        "distance_um": float(distance),
+        "experiment_hours": hours,
+    }
+    tau = cg.diffusive_relaxation_time_s(distance)
+    steep = cg.linear_gradient_steepness_um_per_mm(src, sink, distance)
+    stable = cg.gradient_stability_check(tau, hours)["stable"]
+    if not stable:
+        # Unstable rows still teach extraction; keep ~half of them by resampling.
+        if rng.random() < 0.5:
+            hours = 48.0
+            raw["experiment_hours"] = hours
+    prose = (
+        f"A chemotaxis chip exposes {cell} to {src:g} µM {chemo} in the source "
+        f"channel vs {sink:g} µM buffer across a {distance:g} µm agarose bridge, run "
+        f"for {hours:g} h. What is the gradient steepness (≈{steep:.0f} µM/mm) and "
+        f"how long until it reaches steady state?"
+    )
+    return {"goal": prose + _maybe_distractor(rng), "raw": {"gradient": raw}, "domain": "gradient"}
+
+
+# ---------------------------------------------------------------------------
 # Generation driver
 # ---------------------------------------------------------------------------
 
@@ -736,6 +1131,13 @@ def generate(
     n_culture: int,
     n_spheroid: int = 0,
     n_pk: int = 0,
+    n_barrier: int = 0,
+    n_oxygen: int = 0,
+    n_pumpless: int = 0,
+    n_breathing: int = 0,
+    n_pulsatile: int = 0,
+    n_scaling: int = 0,
+    n_gradient: int = 0,
     seed: int = 1234,
 ) -> list[dict]:
     rng = random.Random(seed)
@@ -743,6 +1145,13 @@ def generate(
     rows += [generate_culture(rng) for _ in range(n_culture)]
     rows += [generate_spheroid(rng) for _ in range(n_spheroid)]
     rows += [generate_pk(rng) for _ in range(n_pk)]
+    rows += [generate_barrier(rng) for _ in range(n_barrier)]
+    rows += [generate_oxygen(rng) for _ in range(n_oxygen)]
+    rows += [generate_pumpless(rng) for _ in range(n_pumpless)]
+    rows += [generate_breathing(rng) for _ in range(n_breathing)]
+    rows += [generate_pulsatile(rng) for _ in range(n_pulsatile)]
+    rows += [generate_scaling(rng) for _ in range(n_scaling)]
+    rows += [generate_gradient(rng) for _ in range(n_gradient)]
     rng.shuffle(rows)
     return rows
 
@@ -787,6 +1196,13 @@ def main() -> int:
     parser.add_argument("--n-culture", type=int, default=1500)
     parser.add_argument("--n-spheroid", type=int, default=3000)
     parser.add_argument("--n-pk", type=int, default=3000)
+    parser.add_argument("--n-barrier", type=int, default=0)
+    parser.add_argument("--n-oxygen", type=int, default=0)
+    parser.add_argument("--n-pumpless", type=int, default=0)
+    parser.add_argument("--n-breathing", type=int, default=0)
+    parser.add_argument("--n-pulsatile", type=int, default=0)
+    parser.add_argument("--n-scaling", type=int, default=0)
+    parser.add_argument("--n-gradient", type=int, default=0)
     parser.add_argument("--split", type=float, default=0.9)
     parser.add_argument("--seed", type=int, default=1234)
     parser.add_argument("--smoke", type=int, default=0, help="generate N of each instead")
@@ -794,14 +1210,27 @@ def main() -> int:
 
     if args.smoke:
         nf = nc = ns = npk = args.smoke
+        nb = no = npu = nbr = nps = nsc = ng = args.smoke
     else:
-        nf, nc, ns, npk = args.n_flow, args.n_culture, args.n_spheroid, args.n_pk
+        nf = args.n_flow
+        nc = args.n_culture
+        ns = args.n_spheroid
+        npk = args.n_pk
+        nb = args.n_barrier
+        no = args.n_oxygen
+        npu = args.n_pumpless
+        nbr = args.n_breathing
+        nps = args.n_pulsatile
+        nsc = args.n_scaling
+        ng = args.n_gradient
     out = Path(args.out or ("results/smoke" if args.smoke else "results/extractor"))
-    rows = generate(nf, nc, ns, npk, seed=args.seed)
+    rows = generate(nf, nc, ns, npk, nb, no, npu, nbr, nps, nsc, ng, seed=args.seed)
     train_p, eval_p = write_split(rows, out, args.split)
     print(
         f"wrote {len(rows)} rows "
-        f"({nf} flow + {nc} culture + {ns} spheroid + {npk} pk) -> {train_p} / {eval_p}"
+        f"({nf} flow + {nc} culture + {ns} spheroid + {npk} pk + {nb} barrier + "
+        f"{no} oxygen + {npu} pumpless + {nbr} breathing + {nps} pulsatile + "
+        f"{nsc} scaling + {ng} gradient) -> {train_p} / {eval_p}"
     )
     return 0
 

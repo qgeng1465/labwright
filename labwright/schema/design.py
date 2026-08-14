@@ -164,6 +164,189 @@ class PkPlan(BaseModel):
     mass_cleared_ug_h: float | None = Field(default=None, ge=0, description="DERIVED: Cl·C_in·MW·6e-5, mass the chip clears per hour (µg/h)")
 
 
+class BarrierPlan(BaseModel):
+    """Epithelial/endothelial barrier QC plan (TEER + permeability).
+
+    Derived fields (``teer_ohm_cm2`` and — when the probe flux and donor
+    concentration are present — ``papp_cm_s``, ``clearance_mL_min``) are
+    *always* computed by :mod:`labwright.calc.barrier` — never proposed by the
+    LLM — and re-checked by the verifier.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    cell_type: str = Field(description="Cell type, e.g. Caco-2 (gut), hCMEC/D3 (BBB), Calu-3 (airway)")
+    insert_area_cm2: float = Field(gt=0, description="Membrane growth area (cm²); 24-well Transwell ≈ 0.33, 12-well ≈ 1.12")
+    resistance_total_ohm: float = Field(gt=0, description="Measured total resistance across the insert (Ω)")
+    resistance_blank_ohm: float = Field(gt=0, description="Cell-free insert (electrode + medium) resistance (Ω)")
+    teer_ohm_cm2: float = Field(gt=0, description="DERIVED: (R_total − R_blank) × A")
+    probe: str | None = Field(default=None, description="Permeability probe, e.g. FITC-dextran 4 kDa")
+    donor_conc_um: float | None = Field(default=None, gt=0, description="Donor-chamber probe concentration (µM)")
+    flux_nmol_min: float | None = Field(default=None, ge=0, description="Steady-state probe flux across the monolayer (nmol/min)")
+    papp_cm_s: float | None = Field(default=None, ge=0, description="DERIVED: flux/(60·A·C₀), apparent permeability (cm/s)")
+    clearance_mL_min: float | None = Field(default=None, ge=0, description="DERIVED: Papp·A·60, permeability-surface-area product (mL/min)")
+
+
+class OxygenPlan(BaseModel):
+    """Dissolved-oxygen control for a physioxic / hypoxic chip culture.
+
+    Derived fields (``dissolved_o2_mM`` always, plus ``penetration_depth_um``
+    and ``necrotic_fraction`` when a cell density / spheroid diameter is given)
+    are *always* computed by :mod:`labwright.calc.o2` — never proposed by the
+    LLM — and re-checked by the verifier.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    cell_type: str = Field(description="Cell type; its O2 consumption rate (OCR) comes from the physiology registry")
+    target_po2_mmhg: float = Field(gt=0, description="Target O2 partial pressure in the chip (mmHg); tissue in vivo ≈ 8–104, air-equilibrated medium ≈ 150")
+    cell_density_cells_ml: float | None = Field(default=None, gt=0, description="Cell density (cells/mL) for consumption / penetration estimates")
+    spheroid_diameter_um: float | None = Field(default=None, gt=0, description="Spheroid diameter (µm) when checking necrotic-core risk")
+    dissolved_o2_mM: float = Field(ge=0, description="DERIVED: Henry's law from target pO2")
+    penetration_depth_um: float | None = Field(default=None, ge=0, description="DERIVED: Krogh O2 penetration depth (µm)")
+    necrotic_fraction: float | None = Field(default=None, ge=0, le=1, description="DERIVED: spheroid anoxic-core volume fraction")
+    demand_umol_min: float | None = Field(default=None, ge=0, description="DERIVED: O2 demand per 10⁶ cells at the registry OCR (µmol/min)")
+
+
+class PumplessPlan(BaseModel):
+    """Gravity-driven (rocking/tilting) pumpless perfusion plan.
+
+    Derived fields (``hydrostatic_head_pa``, ``flow_rate_uLmin``,
+    ``peak_wall_shear_pa``, ``volume_per_half_cycle_ul``,
+    ``oscillatory_shear_index``, ``cycles_per_hour``,
+    ``shear_ratio_to_target``) are *always* computed by
+    :mod:`labwright.calc.pumpless` — never proposed by the LLM — and re-checked
+    by the verifier.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    cell_type: str = Field(description="Cell type; its physiological shear range sets the WSS target")
+    tilt_angle_deg: float = Field(gt=0, le=25, description="Platform tilt from horizontal (deg); practical rocker limit 25")
+    channel_length_mm: float = Field(gt=0, description="Channel length along the tilt axis (mm)")
+    width_um: float = Field(gt=0, description="Channel width (µm)")
+    height_um: float = Field(gt=0, description="Channel height (µm)")
+    rocking_half_period_s: float = Field(gt=0, description="Duration of one half of a rocking cycle (s); organ chips 5-60")
+    viscosity_pas: float = Field(default=1e-3, gt=0, description="Dynamic viscosity (Pa·s)")
+    density_kgm3: float = Field(default=1000, gt=0, description="Fluid density (kg/m³)")
+    backward_shear_fraction: float = Field(default=1.0, ge=0, le=1, description="Reverse-direction shear as a fraction of forward (1 = symmetric rocking, 0 = unidirectional Tesla-valve)")
+    hydrostatic_head_pa: float = Field(gt=0, description="DERIVED: ρ·g·L·sinθ, the sole driving pressure")
+    driven_flow_rate_uLmin: float = Field(gt=0, description="DERIVED: Hagen-Poiseuille flow driven by the head (µL/min)")
+    peak_wall_shear_pa: float = Field(gt=0, description="DERIVED: peak wall shear during a rocking half-cycle (Pa)")
+    volume_per_half_cycle_ul: float = Field(gt=0, description="DERIVED: volume displaced in one half-cycle (µL)")
+    oscillatory_shear_index: float = Field(ge=0, le=0.5, description="DERIVED: 0.5 symmetric rocking, 0 unidirectional")
+    cycles_per_hour: float = Field(gt=0, description="DERIVED: full rocking cycles per hour")
+    shear_ratio_to_target: float | None = Field(default=None, description="DERIVED: chip WSS / physiological target (0.5-2× in range)")
+
+
+class BreathingPlan(BaseModel):
+    """Lung-on-chip ALI + cyclic mechanical stretch plan.
+
+    Derived fields (``breaths_per_minute``, ``cyclic_displacement_um``,
+    ``strain_rate_per_s``, ``total_cycles``, ``stretch_duty_fraction``,
+    ``ali_liquid_film_um``) are *always* computed by
+    :mod:`labwright.calc.breathing` — never proposed by the LLM — and re-checked
+    by the verifier.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    cell_type: str = Field(description="Cell type, e.g. alveolar epithelial (A549, primary)")
+    frequency_hz: float = Field(gt=0, description="Breathing/actuation frequency (Hz); physiological 0.2-0.25")
+    strain_pct: float = Field(gt=0, description="Applied linear strain (%); 5-12 physiological, >20 pathological")
+    membrane_span_um: float = Field(default=250, gt=0, description="Membrane span across the stretch axis (µm)")
+    apical_volume_ul: float | None = Field(default=None, ge=0, description="Residual apical liquid volume at ALI (µL)")
+    surface_area_cm2: float | None = Field(default=None, gt=0, description="Apical epithelial surface area (cm²)")
+    culture_duration_h: float | None = Field(default=None, ge=0, description="Stretch application duration (h); needed for total_cycles")
+    stretch_seconds: float | None = Field(default=None, ge=0, description="Time at peak stretch per cycle (s); needed for duty fraction")
+    cycle_seconds: float | None = Field(default=None, gt=0, description="Full stretch-cycle period (s); needed for duty fraction")
+    breaths_per_minute: float = Field(gt=0, description="DERIVED: f × 60")
+    cyclic_displacement_um: float = Field(gt=0, description="DERIVED: ε·L, the membrane edge stroke (µm)")
+    strain_rate_per_s: float = Field(gt=0, description="DERIVED: (ε/100)·f, linearised strain rate (1/s)")
+    total_cycles: float | None = Field(default=None, ge=0, description="DERIVED: hours × 3600 × f, total stretch cycles")
+    stretch_duty_fraction: float | None = Field(default=None, ge=0, le=1, description="DERIVED: stretch/cycle time held deformed")
+    ali_liquid_film_um: float | None = Field(default=None, ge=0, description="DERIVED: apical residual film thickness (µm)")
+
+
+class PulsatilePlan(BaseModel):
+    """Pulsatile / cardiac-cycle waveform plan for heart-on-chip.
+
+    Derived fields (``womersley_number``, ``oscillatory_shear_index``,
+    ``peak_shear_pa``, and — when the flow-waveform inputs are present —
+    ``pulsatility_index``) are *always* computed by
+    :mod:`labwright.calc.pulsatile` — never proposed by the LLM — and re-checked
+    by the verifier.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    cell_type: str = Field(description="Cell type, e.g. endothelial or valvular")
+    frequency_hz: float = Field(gt=0, description="Cardiac-cycle frequency (Hz); 0.8-2 ≈ 48-120 bpm")
+    channel_height_um: float = Field(gt=0, description="Channel height (µm); half-height is the effective Womersley radius")
+    viscosity_pas: float = Field(default=1e-3, gt=0, description="Dynamic viscosity (Pa·s)")
+    density_kgm3: float = Field(default=1000, gt=0, description="Fluid density (kg/m³)")
+    shear_mean_pa: float = Field(ge=0, description="Time-averaged wall shear of the waveform (Pa)")
+    shear_amplitude_pa: float = Field(ge=0, description="Sinusoidal shear amplitude (Pa); reversal when amp > mean")
+    peak_flow_uLmin: float | None = Field(default=None, ge=0, description="Peak flow over the cycle (µL/min); needed for pulsatility_index")
+    minimum_flow_uLmin: float | None = Field(default=None, ge=0, description="Minimum flow over the cycle (µL/min); needed for pulsatility_index")
+    mean_flow_uLmin: float | None = Field(default=None, gt=0, description="Time-averaged flow (µL/min); needed for pulsatility_index")
+    womersley_number: float = Field(gt=0, description="DERIVED: flow unsteadiness α = (h/2)·√(ωρ/μ)")
+    oscillatory_shear_index: float = Field(ge=0, le=0.5, description="DERIVED: flow-reversal fraction (0 none, 0.5 fully reversing)")
+    peak_shear_pa: float = Field(ge=0, description="DERIVED: mean + amplitude, the waveform peak (Pa)")
+    pulsatility_index: float | None = Field(default=None, ge=0, description="DERIVED: Gosling (Q_peak − Q_min)/Q_mean")
+
+
+class ScalingPlan(BaseModel):
+    """Multi-organ body-on-chip allometric scaling plan (one organ compartment).
+
+    Derived fields (``organ_flow_fraction``, ``organ_flow_rate_mlmin``,
+    ``cells_in_organ``, ``allometric_scale``, and — when the compartment volume
+    and perfusion flow are given — ``transit_time_s``,
+    ``residence_time_match_error_s``) are *always* computed by
+    :mod:`labwright.calc.scaling` from the physiology tables — never proposed by
+    the LLM — and re-checked by the verifier.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    organ: str = Field(description="Organ name: liver, kidneys, brain, heart, gut, skin, muscle, lungs")
+    total_cells_chip: float = Field(gt=0, description="Chip-wide cell budget being scaled (cells)")
+    cardiac_output_mlmin: float = Field(default=5000, gt=0, description="Cardiac output the chip is scaled to (mL/min); adult ≈ 5000")
+    body_mass_g: float = Field(default=70000, gt=0, description="Reference body mass (g); adult ≈ 70000")
+    chip_volume_ul: float | None = Field(default=None, ge=0, description="Compartment (channel + chamber) volume (µL); needed for transit time")
+    flow_rate_uLmin: float | None = Field(default=None, gt=0, description="Perfusion flow through the compartment (µL/min); needed for transit time")
+    target_transit_s: float | None = Field(default=None, ge=0, description="In-vivo organ transit time (s); needed for the match error")
+    organ_flow_fraction: float = Field(gt=0, lt=1, description="DERIVED: organ's share of cardiac output (liver 0.27)")
+    organ_flow_rate_mlmin: float = Field(gt=0, description="DERIVED: fraction × cardiac output (mL/min)")
+    cells_in_organ: float = Field(gt=0, description="DERIVED: (m_organ/m_body) × chip budget (cells)")
+    allometric_scale: float = Field(gt=0, description="DERIVED: (m_organ/m_body)^0.75, Kleiber metabolic factor")
+    transit_time_s: float | None = Field(default=None, ge=0, description="DERIVED: V/Q·60, perfusate transit (s)")
+    residence_time_match_error_s: float | None = Field(default=None, ge=0, description="DERIVED: |transit − target|, flow-side objective residual (s)")
+
+
+class GradientPlan(BaseModel):
+    """Steady concentration-gradient (chemotaxis) plan.
+
+    Derived fields (``steepness_um_per_mm``, ``midpoint_conc_um``,
+    ``relaxation_time_s``, ``flux_mol_m2s``) are *always* computed by
+    :mod:`labwright.calc.gradient` — never proposed by the LLM — and re-checked
+    by the verifier.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    chemoattractant: str = Field(description="Solute, e.g. CXCL12, fMLP, EGF")
+    source_conc_um: float = Field(gt=0, description="Chemoattractant concentration in the source channel (µM)")
+    sink_conc_um: float = Field(ge=0, description="Buffer concentration in the sink channel (µM)")
+    distance_um: float = Field(gt=0, description="Source-to-sink gap, the diffusive bridge (µm); classic ~1000")
+    experiment_hours: float = Field(gt=0, description="Planned experiment duration (h); stability needs ≥ 10τ")
+    diffusivity_m2s: float = Field(default=5e-10, gt=0, description="Solute diffusivity in the bridge (m²/s); small-molecule estimate")
+    steepness_um_per_mm: float = Field(gt=0, description="DERIVED: (C_src − C_sink)/L × 1000 (µM/mm)")
+    midpoint_conc_um: float = Field(ge=0, description="DERIVED: mid-gap steady-state concentration (µM)")
+    relaxation_time_s: float = Field(gt=0, description="DERIVED: L²/D, gradient formation time (s)")
+    flux_mol_m2s: float = Field(ge=0, description="DERIVED: D·(C_src − C_sink)/L, steady-state flux (mol/m²/s)")
+
+
 class DesignPlan(BaseModel):
     """Top-level output of the Labwright agent."""
 
@@ -178,4 +361,11 @@ class DesignPlan(BaseModel):
     dosing: DosePlan | None = None
     stats: StatsPlan | None = None
     pk: PkPlan | None = Field(default=None, description="Perfused-system pharmacokinetics plan (only when studying drug clearance)")
+    barrier: BarrierPlan | None = Field(default=None, description="Epithelial/endothelial barrier QC plan (only when measuring a monolayer)")
+    oxygen: OxygenPlan | None = Field(default=None, description="Dissolved-oxygen control plan (only when O2 is a design lever)")
+    pumpless: PumplessPlan | None = Field(default=None, description="Gravity-driven pumpless perfusion plan (only on a rocking platform)")
+    breathing: BreathingPlan | None = Field(default=None, description="Lung ALI + cyclic stretch plan (only for a breathing lung chip)")
+    pulsatile: PulsatilePlan | None = Field(default=None, description="Pulsatile cardiac-waveform plan (only for a heart-on-chip)")
+    scaling: ScalingPlan | None = Field(default=None, description="Multi-organ allometric scaling plan (only in a body-on-chip)")
+    gradient: GradientPlan | None = Field(default=None, description="Concentration-gradient chemotaxis plan (only for a gradient generator)")
     caveats: list[str] = Field(default_factory=list, description="Things to verify in the lab")

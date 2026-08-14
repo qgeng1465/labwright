@@ -103,9 +103,17 @@ def load_gold(path: str = GOLD_PATH) -> list[GoldExperiment]:
 
 
 def relative_error(got: float | None, expected: float) -> float:
-    """|got - expected| / expected; inf if got is None."""
+    """|got - expected| / expected; inf if got is None.
+
+    A zero-valued target (a spheroid with no anoxic core, unidirectional flow
+    with OSI 0) cannot be expressed as a *relative* error — the denominator
+    would vanish. For ``expected == 0`` the error is the absolute deviation
+    ``|got|``, which the ``<= 0.05`` usable-tolerance then judges directly.
+    """
     if got is None:
         return float("inf")
+    if expected == 0:
+        return abs(got)
     return abs(got - expected) / abs(expected)
 
 
@@ -246,7 +254,54 @@ def parameter_recovery(gold: GoldExperiment, plan: DesignPlan) -> dict[str, floa
         for key, value in pk_map.items():
             if key in gold.expected and value is not None:
                 errs[key] = relative_error(value, gold.expected[key])
+    # Seven post-v1 domains (barrier / oxygen / pumpless / breathing /
+    # pulsatile / scaling / gradient): score whichever gold keys the plan
+    # actually carries, mirroring the culture/spheroid/pk blocks above.
+    for key, value in _new_domain_claims(plan).items():
+        if key in gold.expected and value is not None:
+            errs[key] = relative_error(value, gold.expected[key])
     return errs
+
+
+def _new_domain_claims(plan: DesignPlan) -> dict[str, float]:
+    """Bare gold keys -> values for the seven post-v1 design domains.
+
+    Mirrors the culture/spheroid/pk blocks above: each new block's derived
+    fields are read off its plan, ``None`` optional values skipped so a gold
+    key that the design does not carry is simply not reported.
+    """
+    out: dict[str, float] = {}
+
+    def add(fields: tuple[str, ...], obj) -> None:
+        for k in fields:
+            v = getattr(obj, k)
+            if v is not None and not isinstance(v, bool):
+                out[k] = float(v)
+
+    if plan.barrier is not None:
+        add(("teer_ohm_cm2", "papp_cm_s", "clearance_mL_min"), plan.barrier)
+    if plan.oxygen is not None:
+        add(("dissolved_o2_mM", "penetration_depth_um", "necrotic_fraction",
+             "demand_umol_min"), plan.oxygen)
+    if plan.pumpless is not None:
+        add(("hydrostatic_head_pa", "driven_flow_rate_uLmin", "peak_wall_shear_pa",
+             "volume_per_half_cycle_ul", "oscillatory_shear_index", "cycles_per_hour",
+             "shear_ratio_to_target"), plan.pumpless)
+    if plan.breathing is not None:
+        add(("breaths_per_minute", "cyclic_displacement_um", "strain_rate_per_s",
+             "total_cycles", "stretch_duty_fraction", "ali_liquid_film_um"),
+            plan.breathing)
+    if plan.pulsatile is not None:
+        add(("womersley_number", "oscillatory_shear_index", "peak_shear_pa",
+             "pulsatility_index"), plan.pulsatile)
+    if plan.scaling is not None:
+        add(("organ_flow_fraction", "organ_flow_rate_mlmin", "cells_in_organ",
+             "allometric_scale", "transit_time_s", "residence_time_match_error_s"),
+            plan.scaling)
+    if plan.gradient is not None:
+        add(("steepness_um_per_mm", "midpoint_conc_um", "relaxation_time_s",
+             "flux_mol_m2s"), plan.gradient)
+    return out
 
 
 def _design_claimed(plan: DesignPlan, gold: GoldExperiment) -> dict[str, float | str | None]:
@@ -313,6 +368,9 @@ def _design_claimed(plan: DesignPlan, gold: GoldExperiment) -> dict[str, float |
         for key in gold.expected:
             if key in pk_map and pk_map[key] is not None:
                 out[key] = pk_map[key]
+    for key, value in _new_domain_claims(plan).items():
+        if key in gold.expected and value is not None:
+            out[key] = value
     return out
 
 
@@ -332,6 +390,24 @@ _DERIVED_FIELDS = [
     "spheroid.total_medium_ml", "spheroid.expected_cells_after_growth",
     "pk.extraction_ratio", "pk.clearance_uLmin", "pk.half_life_h",
     "pk.accumulation_ratio", "pk.mass_cleared_ug_h",
+    # post-v1 domains
+    "barrier.teer_ohm_cm2", "barrier.papp_cm_s", "barrier.clearance_mL_min",
+    "oxygen.dissolved_o2_mM", "oxygen.penetration_depth_um",
+    "oxygen.necrotic_fraction", "oxygen.demand_umol_min",
+    "pumpless.hydrostatic_head_pa", "pumpless.driven_flow_rate_uLmin",
+    "pumpless.peak_wall_shear_pa", "pumpless.volume_per_half_cycle_ul",
+    "pumpless.oscillatory_shear_index", "pumpless.cycles_per_hour",
+    "pumpless.shear_ratio_to_target",
+    "breathing.breaths_per_minute", "breathing.cyclic_displacement_um",
+    "breathing.strain_rate_per_s", "breathing.total_cycles",
+    "breathing.stretch_duty_fraction", "breathing.ali_liquid_film_um",
+    "pulsatile.womersley_number", "pulsatile.oscillatory_shear_index",
+    "pulsatile.peak_shear_pa", "pulsatile.pulsatility_index",
+    "scaling.organ_flow_fraction", "scaling.organ_flow_rate_mlmin",
+    "scaling.cells_in_organ", "scaling.allometric_scale",
+    "scaling.transit_time_s", "scaling.residence_time_match_error_s",
+    "gradient.steepness_um_per_mm", "gradient.midpoint_conc_um",
+    "gradient.relaxation_time_s", "gradient.flux_mol_m2s",
 ]
 
 
@@ -373,6 +449,29 @@ def hallucination_rate(plan: DesignPlan) -> float:
         for f in ("pk.extraction_ratio", "pk.clearance_uLmin", "pk.half_life_h",
                   "pk.accumulation_ratio", "pk.mass_cleared_ug_h"):
             present.discard(f)
+    # post-v1 blocks (discard a block's whole field set when the plan lacks it)
+    _BLOCK_FIELDS = {
+        "barrier": ("barrier.teer_ohm_cm2", "barrier.papp_cm_s", "barrier.clearance_mL_min"),
+        "oxygen": ("oxygen.dissolved_o2_mM", "oxygen.penetration_depth_um",
+                   "oxygen.necrotic_fraction", "oxygen.demand_umol_min"),
+        "pumpless": ("pumpless.hydrostatic_head_pa", "pumpless.driven_flow_rate_uLmin",
+                     "pumpless.peak_wall_shear_pa", "pumpless.volume_per_half_cycle_ul",
+                     "pumpless.oscillatory_shear_index", "pumpless.cycles_per_hour",
+                     "pumpless.shear_ratio_to_target"),
+        "breathing": ("breathing.breaths_per_minute", "breathing.cyclic_displacement_um",
+                      "breathing.strain_rate_per_s", "breathing.total_cycles",
+                      "breathing.stretch_duty_fraction", "breathing.ali_liquid_film_um"),
+        "pulsatile": ("pulsatile.womersley_number", "pulsatile.oscillatory_shear_index",
+                      "pulsatile.peak_shear_pa", "pulsatile.pulsatility_index"),
+        "scaling": ("scaling.organ_flow_fraction", "scaling.organ_flow_rate_mlmin",
+                    "scaling.cells_in_organ", "scaling.allometric_scale",
+                    "scaling.transit_time_s", "scaling.residence_time_match_error_s"),
+        "gradient": ("gradient.steepness_um_per_mm", "gradient.midpoint_conc_um",
+                     "gradient.relaxation_time_s", "gradient.flux_mol_m2s"),
+    }
+    for attr, fields in _BLOCK_FIELDS.items():
+        if getattr(plan, attr, None) is None:
+            present.difference_update(fields)
     return len(errored & present) / max(len(present), 1)
 
 

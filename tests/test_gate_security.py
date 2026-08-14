@@ -209,6 +209,33 @@ def test_prose_restating_derived_value_is_fine():
     assert not _prose_warnings(result)
 
 
+def test_prose_density_restatement_is_fine():
+    """'100000 cells per cm²' is the seeding density (a raw value), not an
+    asserted cell count — a goal restating it must not false-flag. Regression
+    for the parser grabbing just ``cells`` and judging it as a count."""
+    ok = dict(_RAW)
+    ok["goal"] = "Seed HepG2 at 100000 cells per cm² in a perfused liver-chip."
+    result = submit_design(ok)
+    assert not _prose_warnings(result)
+    assert result["status"] == "ok"
+
+
+def test_prose_incubator_gas_fraction_is_skipped():
+    """'5 % CO2' is incubator context (like 37 °C), not an asserted design value.
+    Regression: with a viability field present, the pct dimension exists, so the
+    parser must skip the gas fraction rather than flag it."""
+    raw = {"goal": "Culture HepG2 at 95% viability",
+           "rationale": "Incubate at 37 °C in a 5 % CO2 humidified incubator.",
+           "caveats": [],
+           "culture": {"plate_format": "96-well", "wells": 12,
+                       "cell_type": "HepG2", "seeding_density_cells_cm2": 50000.0,
+                       "viability_pct": 95.0, "doubling_time_h": 35.0,
+                       "culture_duration_h": 72.0}}
+    result = submit_design(raw)
+    assert not _prose_warnings(result)
+    assert result["status"] == "ok"
+
+
 def test_prose_unit_alias_is_normalised():
     # 0.5 dyn/cm² == 0.05 Pa — a unit alias, not a contradiction.
     ok = dict(_RAW)
