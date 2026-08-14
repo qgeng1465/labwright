@@ -49,7 +49,6 @@ References
 
 from __future__ import annotations
 
-import math
 
 #: Assumed alveolar-sac membrane span, µm. Physiological scale 200–300 µm;
 #: 250 µm is a representative default — pass the real chip span to

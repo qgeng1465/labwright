@@ -66,15 +66,6 @@ def main() -> int:
         ("14-plate-culture", "eval_culture.json", "eval_seed_culture.json"),
         ("14-perfused-PK", "eval_pk.json", "eval_seed_pk.json"),
     ]
-    # Guess the single-run file per set from whatever actually exists.
-    single_files = {
-        "24-reading": ("eval_v1.json", "eval_benchmark.json", "eval_flash.json"),
-        "15-blind": ("eval_blind.json", "eval_blind_flash.json"),
-        "15-3D-spheroid": ("eval_spheroid.json", "eval_spheroid_flash.json"),
-        "14-plate-culture": ("eval_culture.json", "eval_culture_flash.json"),
-        "14-perfused-PK": ("eval_pk.json", "eval_pk_flash.json"),
-    }
-
     lines = []
     lines.append("### Seed-CI (pooled 3-seed, Wilson 95%) — usable rate")
     lines.append("| set | model | bare | soft_gate | self_verify | labwright |")

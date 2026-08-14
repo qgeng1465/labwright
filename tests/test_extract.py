@@ -6,6 +6,7 @@ import json
 import random
 
 import pytest
+import torch
 from pydantic import ValidationError
 
 from labwright.design import DesignInput, _reject_derived_fields, build_design
@@ -466,6 +467,134 @@ def test_negative_sample_perturbs_embedded_approx_only():
     # a goal with no embedded ≈ is returned untouched
     plain = "Culture cells at 1e5 cells/cm² in a 96-well plate."
     assert _maybe_perturb_approx(rng, plain, p=1.0) == plain
+
+
+def test_negative_sample_changes_only_the_approx_value():
+    """A perturbed goal is byte-identical to the original outside the ≈-value
+    span: prose, units, and every non-≈ number are untouched, so the raw block
+    (the training target) stays correct. Normalising ≈-values to a sentinel must
+    make the two goals equal — any collateral edit breaks the invariant."""
+    import re as _re
+
+    from labwright.extract.synthetic import _maybe_perturb_approx, generate_gradient
+
+    rng = random.Random(9)
+    norm = lambda s: _re.sub(r"≈\s*[0-9]+(?:\.[0-9]+)?", "≈V", s)
+    checked = 0
+    for seed in range(80):
+        row = generate_gradient(random.Random(seed))
+        if "≈" not in row["goal"]:
+            continue
+        new_goal = _maybe_perturb_approx(rng, row["goal"], p=1.0)
+        if new_goal == row["goal"]:
+            continue
+        checked += 1
+        assert norm(new_goal) == norm(row["goal"])
+        # the ≈-value actually changed (the sentinel-normalised form differs
+        # from the plain goal only when a number was flipped, not a no-op)
+        assert "≈V" in norm(new_goal)
+    assert checked > 0
+
+
+def test_negative_sample_generate_never_corrupts_raw():
+    """With neg_frac active, every produced row still carries a parseable raw
+    block: the negative-sample pass rewrites only the goal prose and leaves the
+    training target intact for every domain that embeds ≈ claims."""
+    from labwright.extract.synthetic import generate
+
+    rows = generate(
+        n_flow=40, n_culture=40, n_gradient=120, n_breathing=120,
+        n_pulsatile=120, n_scaling=120, n_composite=40, neg_frac=1.0, seed=3,
+    )
+    assert rows
+    # the hook actually fired: with p=1.0 every ≈-bearing candidate got flipped
+    assert any("≈" in r["goal"] for r in rows)
+    for r in rows:
+        assert isinstance(r["raw"], dict) and r["raw"], r["goal"][:60]
+
+
+# ---------------------------------------------------------------------------
+# extract_batch: empty-goal fast path + parse-back ordering
+# ---------------------------------------------------------------------------
+
+
+class _BatchStubTokenizer:
+    """Minimal left-padded tokenizer for the batch decode path (one token per
+    character, ``padding_side='left'`` as :func:`configure_tokenizer` enforces
+    for decoder-only generation)."""
+
+    padding_side = "left"
+    pad_token_id = 0
+    eos_token = "<|endoftext|>"
+
+    def apply_chat_template(self, messages, tokenize=False, add_generation_prompt=True):
+        rendered = "".join(
+            f"<|im_start|>{m['role']}\n{m['content']}<|im_end|>\n" for m in messages
+        )
+        if add_generation_prompt:
+            rendered += "<|im_start|>assistant\n"
+        assert tokenize is False
+        return rendered
+
+    def __call__(self, prompts, return_tensors="pt", padding=True, truncation=True,
+                 max_length=1024, return_token_type_ids=False):
+        rows = [[ord(c) for c in p] for p in prompts]
+        width = max(len(r) for r in rows)
+        padded = [[self.pad_token_id] * (width - len(r)) + r for r in rows]  # left pad
+        return {"input_ids": torch.tensor(padded, dtype=torch.long)}
+
+    def batch_decode(self, token_ids, skip_special_tokens=True):
+        return ["".join(chr(int(t)) for t in row) for row in token_ids.tolist()]
+
+
+class _BatchStubModel:
+    """Fake causal model: emits one fixed JSON per row after the prompt width,
+    matching the real batch-generate shape (out[:, prompt_width:] is output)."""
+
+    def __init__(self, outputs: list[str]):
+        self._outputs = outputs
+
+    def generate(self, input_ids, max_new_tokens=384, do_sample=False,
+                 pad_token_id=None, **kwargs):
+        rows = []
+        gen_len = max(len(o) for o in self._outputs)
+        for i, row in enumerate(input_ids):
+            gen = [ord(c) for c in self._outputs[i]]
+            gen = gen + [pad_token_id or 0] * (gen_len - len(gen))  # fixed width, like HF
+            rows.append(torch.cat([row, torch.tensor(gen, dtype=row.dtype)]))
+        return torch.stack(rows)
+
+
+def _stub_extractor():
+    """An Extractor with stubbed tokenizer/model/device (no weights on disk)."""
+    ex = Extractor.__new__(Extractor)
+    ex.system_prompt = "system"
+    ex.device = "cpu"
+    ex.tokenizer = _BatchStubTokenizer()
+    ex.model = _BatchStubModel([
+        '{"culture": {"plate_format": "96-well", "wells": 12}}',
+        '{"flow": {"width_um": 400, "height_um": 100}}',
+        '{"flow": {"width_um": 800, "height_um": 200}}',
+    ])
+    return ex
+
+
+def test_extract_batch_empty_goals_returns_empty_list():
+    """extract_batch([]) short-circuits to [] without touching the model."""
+    ex = _stub_extractor()
+    assert ex.extract_batch([]) == []
+
+
+def test_extract_batch_preserves_row_order_and_parses_json():
+    """Left-padded batch decode returns parsed JSON in input order — the
+    un-padding must not scramble rows when goals differ in length."""
+    ex = _stub_extractor()
+    goals = ["a short goal", "a considerably longer second goal with more words", "third"]
+    out = ex.extract_batch(goals)
+    assert out[0] == {"culture": {"plate_format": "96-well", "wells": 12}}
+    assert out[1] == {"flow": {"width_um": 400, "height_um": 100}}
+    assert out[2] == {"flow": {"width_um": 800, "height_um": 200}}
+    assert len(out) == len(goals)
 
 
 def test_generate_with_composites_and_negatives():

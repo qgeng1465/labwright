@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 from pathlib import Path
 from typing import Any, Callable
 
@@ -88,11 +87,11 @@ def build_from_raw(goal: str, raw: dict) -> tuple[object | None, list | None, st
         return None, None, "derived_field_rejected"
     try:
         inp = DesignInput(goal=goal, rationale="eval", **raw)
-    except Exception as exc:  # pydantic ValidationError / duplicate keyword
+    except Exception:  # pydantic ValidationError / duplicate keyword
         return None, None, f"schema_error"
     try:
         plan = build_design(inp)
-    except (ValueError, KeyError, TypeError) as exc:  # partial/typed raw block
+    except (ValueError, KeyError, TypeError):  # partial/typed raw block
         return None, None, f"schema_error"
     issues = verify_design(plan)
     return plan, issues, None
@@ -114,11 +113,6 @@ def score_one(goal: str, raw: dict | None, gold_raw: dict | None) -> dict:
     return rec
 
 
-def _derive_shear(plan) -> float | None:
-    if plan is not None and plan.derived is not None:
-        return plan.derived.shear_pa
-    return None
-
 
 def score_batch(
     extract_fn: Callable[[str], dict | None],
@@ -138,7 +132,6 @@ def score_batch(
     errs_all: list[float] = []
     n_target = n_target_ok = 0
     n_rows = len(eval_rows)
-    goals = [r["goal"] for r in eval_rows]
     if extract_batch_fn is not None and batch_size > 1:
         for start in range(0, len(eval_rows), batch_size):
             chunk = eval_rows[start:start + batch_size]

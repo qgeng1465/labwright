@@ -24,7 +24,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from labwright.design import submit_design
 from labwright.schema.design import DesignPlan
-from labwright.verify.checker import has_errors
 
 #: Source-pinned physiological anchors — no invented numbers. Every gold above
 #: sits on one of these.

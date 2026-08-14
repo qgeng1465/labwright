@@ -291,6 +291,26 @@ def test_run_finetuned_fast_path_contract():
     assert plan is None and error == "unparseable_json"
 
 
+class _RaisingExtractor:
+    """An extractor whose backend blows up mid-extraction (model error, OOM)."""
+
+    def extract_plan(self, goal):  # noqa: ARG002 - the goal is not read
+        raise RuntimeError("extractor backend died")
+
+
+def test_run_finetuned_exception_path_is_scored_as_an_error():
+    """A raising extractor is scored as an auditable ``extractor_error``, not a
+    crash: the fast path must never leak a raw exception into the benchmark —
+    the same contract as a silent refusal, so a dead backend shows up in the
+    hallucination rate instead of killing the run."""
+    from eval.benchmark import run_finetuned
+
+    plan, error = run_finetuned(_GOLD, _RaisingExtractor())
+    assert plan is None
+    assert error is not None and error.startswith("extractor_error:")
+    assert "extractor backend died" in error
+
+
 def test_evaluate_supports_finetuned_system():
     """evaluate() scores the fine-tuned extractor with the design-path rules —
     the same usable/hallucination convention as Labwright. A valid extraction is
