@@ -447,6 +447,17 @@ gold sets:
    target number is not). PK equations are pinned to Rowland & Tozer and
    Gibaldi & Perrier; one literature citation is to Baudoin et al.
    (doi:10.1002/jps.23796).
+6. **14 post-v1 organ-on-chip goals** (`eval/gold_new_domains.json`): six more
+   domains beyond microfluidics/culture/spheroid/PK — barrier integrity
+   (TEER / Papp / clearance), dissolved-pO2 (Krogh penetration depth, necrotic
+   core), gravity-driven pumpless perfusion (rocking WSS, OSI), lung
+   ALI + breathing stretch (breaths/min, strain rate, ALI film), pulsatile /
+   cardiac waveform (Womersley number, OSI, PI), multi-organ allometric scaling
+   (organ flow fraction, mass-proportional cells) and chemotaxis gradients
+   (steepness, relaxation time). All 14 are complete-info (every raw stated) so
+   this set isolates whether the new calculators and Blocks integrate end to
+   end; every expected value is re-derived by the real calculators in
+   `eval/make_gold_new_domains.py`, and each entry pins a citable source.
 
 Five systems are compared, on two frontier models (plus a model-independent
 fixed local extractor). The three LLM-memory systems (bare-LLM, soft-gate,
@@ -578,6 +589,33 @@ memory systems is sampling noise; the qualitative ordering (Labwright ≫ memory
 systems) is not. Why the published systems in related work are not benchmarked
 here is on the ground in
 [`eval/README.md`](eval/README.md#benchmarking-scope-why-these-systems-and-not-the-named-ones).*
+
+Read the numbers honestly, and the boundary of what they mean.
+
+### New-domain integration: seven post-v1 organ-on-chip domains
+
+The seven post-v1 domains (barrier, oxygen, pumpless, breathing, pulsatile,
+scaling, gradient) were benchmarked end-to-end with the **Labwright** system on
+the 14 new-domain goals — the full agent loop, calculators and gate, on a
+live model:
+
+| set | model | system | usable | hallucination |
+|---|---|---|---|---|
+| 14-new-domains | `flash` | **Labwright** | **13/14 (93 %)** | **0.071** |
+| 14-new-domains | `pro` | **Labwright** | **11/14 (79 %)** | **0.214** |
+
+Every submitted design recovers every gold target to machine precision, and
+**among submitted designs hallucination is 0.000 on both models**. The
+non-zero hallucination entries are exactly the *silence* rows — a goal on
+which the agent iterates the full 12-tool budget and never submits. The scorer
+counts a missing plan as hallucination 1.0 (nothing can be trusted), so flash's
+0.071 = its one silence row and pro's 0.214 = its three. The honest boundary:
+the two **chemotaxis-gradient goals** (cxcl12 and fgf8 source–sink) end in
+*silence* on both models — the gate holds and nothing fabricated passes.
+`pro` also times out on `pumpless-hepg2-rocking` (which `flash` solves) —
+model flakiness, not a domain gap. The memory-system rows were not re-run on
+these goals; this set measures whether the new Blocks integrate, not the
+ablation ordering.
 
 Read the numbers honestly, and the boundary of what they mean.
 
