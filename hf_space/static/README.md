@@ -21,5 +21,8 @@ repository's `hf_space/` package and can be deployed as a Gradio Space
 reverse-verify tab runs offline on pure calculators).
 
 - **Repo:** https://github.com/qgeng1465/labwright
+- **Open audit dataset** (the same verifier over 21,094 real SciRecipe
+  protocols, with Crossref DOI provenance):
+  https://huggingface.co/datasets/qgeng1465/scirecipe-audit
 - **Key idea:** the calculator, not the model, is the knowledge base — every
   submitted number is re-derived from its own raw inputs.

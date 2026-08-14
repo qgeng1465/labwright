@@ -27,11 +27,17 @@ OpenAI-compatible API works; default model `deepseek-v4-flash`). The
 reverse-verification tab works without any key.
 
 - Repo: https://github.com/qgeng1465/labwright
-- Benchmark (bare LLM vs Labwright, 24-reading set): a bare frontier LLM
-  hallucinates ~0.9–1.0 of its derived numbers and produces 0–12 % usable
-  designs; Labwright hallucination rate **0.000** with **88–100 %** usable
-  designs. (On the harder 15-blind set — target not stated — Labwright stays at
-  0.000 hallucination but usable drops well below the reading set: the gate
-  cannot supply physiology the model doesn't know.)
+- Open audit dataset (the same verifier over 21,094 real SciRecipe protocols,
+  with Crossref DOI provenance):
+  https://huggingface.co/datasets/qgeng1465/scirecipe-audit
+- Benchmark (bare LLM vs Labwright, five gold sets — reading, blind,
+  spheroid, plate-culture, perfused-PK): a bare frontier LLM hallucinates
+  ~0.9–1.0 of its derived numbers and rarely produces a usable design;
+  Labwright's hallucination rate is **0.000** by construction with **64–100 %**
+  usable designs on every set except the blind set, where usable drops to
+  40–47 % because the gate cannot supply physiology the model doesn't know. The
+  gap is stable across seeds (95 % Wilson intervals never overlap the memory
+  systems), and an iterating fix-and-resubmit agent repairs all verifier-fired
+  errors (41/41) while being a wash on usable rate.
 
 Labwright is an experimental-design aid, not medical-device software.

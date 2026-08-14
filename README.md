@@ -333,7 +333,15 @@ Two capabilities the above don't have:
    inflated the figure to 0.898 by counting no-derived-number rows as "ok";
    those are now `unverifiable` (a regression test pins the fix). The funnel is
    the reproducibility-gap measurement behind the audit figure in
-   `paper/fig_scirecipe.py`.
+   `paper/fig_scirecipe.py`. **The audit is anchored in real literature and
+   released standalone**: each quoted protocol title is resolved to a verified
+   Crossref DOI (2,185 of 2,825 titled rows = 77.3 %, string match ≥ 0.90; every
+   record carries its own match quality, and the checkable subpopulation is
+   unchanged when restricted to verified-DOI rows — 9/41 = 22.0 % consistent).
+   The full audit — verdicts, claimed vs computed numbers, quoted titles, DOI
+   provenance — is published as
+   [`qgeng1465/scirecipe-audit`](https://huggingface.co/datasets/qgeng1465/scirecipe-audit)
+   (CC-BY-4.0).
 2. **A benchmark with a reproducibility yardstick** — `eval/` measures both
    parameter recovery *and* the fraction of derived numbers that fail the
    verifier (see below).

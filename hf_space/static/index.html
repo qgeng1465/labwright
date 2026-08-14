@@ -127,8 +127,8 @@
   <section id="benchmark">
     <div class="kicker">Benchmark</div>
     <h2>Bare LLM vs Labwright</h2>
-    <p class="lead">Two frontier models (deepseek-v4-flash / deepseek-v4-pro), four systems,
-      three gold sets. A design is <b>usable</b> only if it is internally consistent
+    <p class="lead">Two frontier models (deepseek-v4-flash / deepseek-v4-pro), five systems,
+      five gold sets. A design is <b>usable</b> only if it is internally consistent
       <i>and</i> recovers every target within ±5 %.</p>
 
     <table>
@@ -137,18 +137,26 @@
       <tr><td class="hl">Labwright</td><td class="hl">88 %</td><td class="hl">100 %</td></tr>
       <tr><td rowspan="2">15-blind<br><span class="note" style="margin:0">targets not stated</span></td><td>bare-LLM</td><td>0 %</td><td>0 %</td></tr>
       <tr><td class="hl">Labwright</td><td class="hl">40 %</td><td class="hl">47 %</td></tr>
-      <tr><td rowspan="2">15-3D-spheroid<br><span class="note" style="margin:0">3D-culture conventions</span></td><td>bare-LLM</td><td>0 %</td><td>0 %</td></tr>
+      <tr><td rowspan="2">15-3D-spheroid<br><span class="note" style="margin:0">3D-culture conventions</span></td><td>bare-LLM</td><td>20 %</td><td>27 %</td></tr>
       <tr><td class="hl">Labwright</td><td class="hl">87 %</td><td class="hl">87 %</td></tr>
+      <tr><td rowspan="2">14-plate-culture<br><span class="note" style="margin:0">2D plating &amp; seeding</span></td><td>bare-LLM</td><td>0 %</td><td>7 %</td></tr>
+      <tr><td class="hl">Labwright</td><td class="hl">86 %</td><td class="hl">64 %</td></tr>
+      <tr><td rowspan="2">14-perfused-PK<br><span class="note" style="margin:0">on-chip pharmacokinetics</span></td><td>bare-LLM</td><td>36 %</td><td>36 %</td></tr>
+      <tr><td class="hl">Labwright</td><td class="hl">79 %</td><td class="hl">86 %</td></tr>
     </table>
-    <p class="note">Memory-only systems (bare, soft-gate, self-verify) never produce a usable
+    <p class="note">Memory-only systems (bare, soft-gate, self-verify) rarely produce a usable
       design. Labwright's derived numbers are <i>architecturally</i> consistent — the honest
       headline is the blind-set drop: the gate stops fabricated numbers, but it cannot supply
-      domain knowledge the model does not have. That boundary is the point.</p>
+      domain knowledge the model does not have. That boundary is the point. The gap is
+      stable across seeds (95 % Wilson intervals never overlap the memory systems), and an
+      iterating fix-and-resubmit agent (<code>labwright_iter</code>) repairs all 41
+      verifier-fired entries yet is a wash on usable rate — iteration is a correctness loop,
+      not a domain-knowledge loop.</p>
 
     <div class="fig">
-      <img src="assets/fig_benchmark.png" alt="Benchmark: self-consistent rate, usable rate and hallucination rate across three sets and two models">
+      <img src="assets/fig_benchmark.png" alt="Benchmark: self-consistent rate, usable rate and hallucination rate across five sets and two models">
       <figcaption>Self-consistent rate, usable rate and hallucination rate across the
-        24-reading, 15-blind and 15-3D-spheroid sets.</figcaption>
+        24-reading, 15-blind, 15-3D-spheroid, 14-plate-culture and 14-perfused-PK sets.</figcaption>
     </div>
 
     <div class="fig">
@@ -156,6 +164,11 @@
       <figcaption>Reverse-verification verdict matrix on published protocols — each field
         flagged as consistent, inconsistent, or unverifiable.</figcaption>
     </div>
+
+    <p class="note">The same verifier ran over the literature: an audit of 21,094 real
+      SciRecipe protocol summaries, with each quoted title resolved to a verified Crossref
+      DOI. The full audit (verdicts, numbers, DOI provenance) is released as an open dataset:
+      <a href="https://huggingface.co/datasets/qgeng1465/scirecipe-audit">qgeng1465/scirecipe-audit</a>.</p>
   </section>
 
   <section id="try">
