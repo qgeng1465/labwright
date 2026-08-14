@@ -21,7 +21,7 @@ from pydantic import ValidationError
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from labwright.design import DesignInput, _reject_derived_fields, build_design
-from labwright.extract.data import SYSTEM_PROMPT
+from labwright.extract.data import SYSTEM_PROMPT, SYSTEM_PROMPT_MULTI
 from labwright.verify.checker import Issue, format_issues, verify_design
 
 _DEFAULT_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
@@ -72,7 +72,10 @@ class Extractor:
         model_path: str = _DEFAULT_MODEL,
         adapter_path: str | None = _DEFAULT_ADAPTER,
         device: str | None = None,
+        multi_block: bool = False,
     ):
+        self.multi_block = multi_block
+        self.system_prompt = SYSTEM_PROMPT_MULTI if multi_block else SYSTEM_PROMPT
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         configure_tokenizer(self.tokenizer)
@@ -86,7 +89,7 @@ class Extractor:
     def extract(self, goal: str, max_new_tokens: int = 384) -> dict[str, Any] | None:
         """Return the parsed raw input block for ``goal``, or ``None``."""
         msgs = [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": goal},
         ]
         prompt = self.tokenizer.apply_chat_template(
@@ -141,7 +144,7 @@ class Extractor:
         if not goals:
             return []
         msgs = [[
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": g},
         ] for g in goals]
         prompts = [self.tokenizer.apply_chat_template(

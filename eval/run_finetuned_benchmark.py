@@ -43,12 +43,15 @@ def main() -> int:
     ap.add_argument("--model", default="Qwen/Qwen2.5-1.5B-Instruct")
     ap.add_argument("--adapter", default="results/extractor/lora")
     ap.add_argument("--device", default=None, help="cuda / cpu (default: auto)")
+    ap.add_argument("--multi-block", action="store_true",
+                    help="use SYSTEM_PROMPT_MULTI (lora_v4 composite extraction)")
     args = ap.parse_args()
 
     gold = load_gold(args.gold)
     print(f"gold entries: {len(gold)}   adapter: {args.adapter}", flush=True)
 
-    ext = Extractor(model_path=args.model, adapter_path=args.adapter, device=args.device)
+    ext = Extractor(model_path=args.model, adapter_path=args.adapter, device=args.device,
+                    multi_block=args.multi_block)
     print(f"extractor on {ext.device}", flush=True)
 
     def progress(msg: str) -> None:

@@ -38,7 +38,12 @@ from transformers import (
     set_seed,
 )
 
-from labwright.extract.data import encode_example, raw_to_json, SYSTEM_PROMPT
+from labwright.extract.data import (
+    SYSTEM_PROMPT,
+    SYSTEM_PROMPT_MULTI,
+    encode_example,
+    raw_to_json,
+)
 
 #: Qwen2.5-style dense LoRA targets — all linear projections.
 _TARGET_MODULES = [
@@ -59,10 +64,12 @@ def load_rows(data_dir: Path) -> list[dict]:
     return rows
 
 
-def tokenize_rows(tokenizer, rows: list[dict], max_len: int) -> list[dict]:
+def tokenize_rows(tokenizer, rows: list[dict], max_len: int, multi_block: bool = False) -> list[dict]:
     examples: list[dict] = []
+    system_prompt = SYSTEM_PROMPT_MULTI if multi_block else SYSTEM_PROMPT
     for row in rows:
-        enc = encode_example(tokenizer, row["goal"], raw_to_json(row["raw"]), max_len=max_len)
+        enc = encode_example(tokenizer, row["goal"], raw_to_json(row["raw"]), max_len=max_len,
+                             system_prompt=system_prompt)
         if enc is not None:
             examples.append(enc)
     return examples
@@ -89,6 +96,8 @@ def main() -> int:
     parser.add_argument("--log", default="results/extractor/train.log")
     parser.add_argument("--fp16", action="store_true", default=None,
                         help="mixed precision (default: auto-on when CUDA is available)")
+    parser.add_argument("--multi-block", action="store_true",
+                        help="use SYSTEM_PROMPT_MULTI (11-domain v2 composite training)")
     args = parser.parse_args()
 
     set_seed(args.seed)
@@ -107,8 +116,8 @@ def main() -> int:
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    train_ex = tokenize_rows(tokenizer, train_rows, args.max_len)
-    eval_ex = tokenize_rows(tokenizer, eval_rows, args.max_len)
+    train_ex = tokenize_rows(tokenizer, train_rows, args.max_len, multi_block=args.multi_block)
+    eval_ex = tokenize_rows(tokenizer, eval_rows, args.max_len, multi_block=args.multi_block)
     train_ds = Dataset.from_list(train_ex)
     eval_ds = Dataset.from_list(eval_ex) if eval_ex else None
     print(f"train {len(train_ex)} / eval {len(eval_ex)} (of {len(rows)} rows)")

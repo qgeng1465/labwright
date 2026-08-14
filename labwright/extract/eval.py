@@ -232,6 +232,8 @@ def main() -> int:
     parser.add_argument("--model", default="Qwen/Qwen2.5-1.5B-Instruct")
     parser.add_argument("--api", nargs="*", default=[], help="API model names to compare, e.g. --api flash pro")
     parser.add_argument("--limit", type=int, default=0, help="cap eval rows (smoke)")
+    parser.add_argument("--multi-block", action="store_true",
+                        help="use SYSTEM_PROMPT_MULTI (lora_v4 composite extraction)")
     parser.add_argument("--batch-size", type=int, default=1,
                         help="left-padded GPU batch decode (e.g. 6); 1 = sequential")
     args = parser.parse_args()
@@ -247,7 +249,8 @@ def main() -> int:
 
     # Fine-tuned extractor
     if Path(args.adapter or _DEFAULT_ADAPTER).exists():
-        ext = Extractor(model_path=args.model, adapter_path=args.adapter)
+        ext = Extractor(model_path=args.model, adapter_path=args.adapter,
+                        multi_block=args.multi_block)
         report["systems"]["fine-tuned-1.5B"] = score_batch(
             ext.extract, eval_rows, blind,
             extract_batch_fn=ext.extract_batch, batch_size=args.batch_size,

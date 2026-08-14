@@ -429,6 +429,24 @@ def test_composite_rows_carry_two_blocks_and_verify_clean():
     assert seen <= pairs
 
 
+def test_multi_block_prompt_is_versioned():
+    """The multi-block prompt is a separate constant: lora_v3 (single-block)
+    is never evaluated under a prompt it did not train on, and the multi-block
+    variant renders a composite row's two-block target without error."""
+    from labwright.extract.data import SYSTEM_PROMPT, SYSTEM_PROMPT_MULTI, SCHEMA_PROMPT, SCHEMA_PROMPT_MULTI
+    from labwright.extract.synthetic import generate_composite
+
+    assert "never two" in SCHEMA_PROMPT
+    assert "two blocks when the goal describes two subsystems" in SCHEMA_PROMPT_MULTI
+    assert "raw input block:" in SYSTEM_PROMPT and "raw input block(s):" in SYSTEM_PROMPT_MULTI
+    # composite row encodes under the multi-block prompt (masked loss survives)
+    row = generate_composite(random.Random(21))
+    stub = _StubTokenizer()
+    enc = encode_example(stub, row["goal"], raw_to_json(row["raw"]), max_len=2048,
+                         system_prompt=SYSTEM_PROMPT_MULTI)
+    assert enc is not None and len(enc["input_ids"]) > 0
+
+
 def test_negative_sample_perturbs_embedded_approx_only():
     """A negative sample flips one '≈value unit' derived claim; the raw block is
     untouched (the target stays correct), and only ≈-bearing goals change."""
