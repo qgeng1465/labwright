@@ -1271,7 +1271,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "residence_time_s": 0.98
+          "residence_time_s": 0.95
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -1901,14 +1901,16 @@
         "valid": true
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 1 validation error for DosePlan\ntolerance_pct\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0.5, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "dmso_fraction_vv": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     }
   ],

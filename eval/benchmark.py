@@ -523,6 +523,9 @@ def _prompt_keys_for(gold: GoldExperiment) -> list[str]:
         return sorted(set(gold.expected) | set(_SPHEROID_CONSISTENCY_KEYS))
     if _is_pk_gold(gold):
         return sorted(set(gold.expected) | set(_PK_CONSISTENCY_KEYS))
+    block = _new_domain_block(gold)
+    if block is not None:
+        return sorted(set(gold.expected) | set(BLOCKS[block].consistency_keys))
     return sorted(set(gold.expected) | set(_CONSISTENCY_KEYS))
 
 
@@ -625,6 +628,13 @@ def _self_verify_domain(gold: GoldExperiment) -> tuple[list[str], list[str], str
             "first-pass clearance (E = 1 − C_out/C_in, Cl = E·Q) plus t½ = ln2·V/Cl, "
             "R = 1/(1 − e^(−ln2·τ/t½)) and M = Cl·C_in·MW·6e-5 when the extra "
             "inputs are present",
+        )
+    block = _new_domain_block(gold)
+    if block is not None:
+        return (
+            list(BLOCKS[block].consistency_keys),
+            list(BLOCKS[block].derived_keys),
+            _NEW_DOMAIN_FORMULAS[block],
         )
     return (
         _CONSISTENCY_KEYS, _DERIVED_KEYS,
@@ -835,6 +845,9 @@ def bare_checkable(extracted: dict[str, float | str | None]) -> bool:
         # clearance is cross-checkable from inlet/outlet × flow alone; the
         # volume / interval / MW inputs are only needed for the extra fields.
         return any(extracted.get(k) is not None for k in _PK_DERIVED_KEYS)
+    block = _new_domain_block_of_extracted(extracted)
+    if block is not None:
+        return any(extracted.get(k) is not None for k in BLOCKS[block].derived_keys)
     return False
 
 
@@ -1058,6 +1071,208 @@ def _pk_hallucination(extracted: dict[str, float | str | None]) -> float | None:
     return wrong / len(present)
 
 
+#: Post-v1 design domains, mirroring the seven Blocks registered in
+#: ``labwright.blocks``. These did not exist when the bare/soft-gate paths were
+#: first written; without explicit branches a bare run on ``gold_new_domains``
+#: would be prompted for *flow* keys and score 1.0 unconditionally.
+_NEW_DOMAIN_BLOCKS = ("barrier", "oxygen", "pumpless", "breathing",
+                     "pulsatile", "scaling", "gradient")
+
+_NEW_DOMAIN_FORMULAS: dict[str, str] = {
+    "barrier": "Transwell QC: TEER = (R_total − R_blank) × A and Papp = "
+               "flux/(60·A·C0), clearance = Papp·A·60",
+    "oxygen": "Henry's law for dissolved O2 from target pO2, the Krogh "
+               "penetration depth from the cell-type OCR, and the necrotic-core "
+               "fraction from penetration vs spheroid diameter",
+    "pumpless": "gravity rocking: hydrostatic head = ρg·L·sinθ, Hagen-Poiseuille "
+                 "flow from the head, peak wall shear and OSI from the rocking "
+                 "waveform",
+    "breathing": "lung stretch: breaths/min = f·60, strain rate = (ε/100)·f, "
+                  "cyclic displacement = ε·L, duty fraction and ALI film as defined",
+    "pulsatile": "cardiac waveform: Womersley α from h/2·√(ωρ/μ), OSI from the "
+                  "sinusoid, peak shear = mean + amplitude",
+    "scaling": "body-on-chip allometry: organ flow fraction from the physiology "
+                "table, organ flow = fraction × cardiac output, cells scaled by "
+                "organ mass fraction",
+    "gradient": "chemotaxis: steepness = (C_src − C_sink)/d, midpoint from the "
+                 "steady-state profile, relaxation time = d²/(2D)",
+}
+
+
+def _new_domain_block(gold: GoldExperiment) -> str | None:
+    """Block name for a post-v1-domain gold, else ``None``.
+
+    ``oscillatory_shear_index`` is shared by pumpless and pulsatile, so a
+    pulsatile gold would match pumpless by any-overlap; pick the block with the
+    *largest* overlap with the gold's expected keys instead (tie-break by
+    ``_NEW_DOMAIN_BLOCKS`` order).
+    """
+    exp = set(gold.expected)
+    best: tuple[int, int, str] | None = None
+    for i, name in enumerate(_NEW_DOMAIN_BLOCKS):
+        overlap = len(exp & set(BLOCKS[name].derived_keys))
+        if overlap and (best is None or (overlap, -i) > (best[0], -best[1])):
+            best = (overlap, i, name)
+    return best[2] if best is not None else None
+
+
+def _new_domain_block_of_extracted(extracted: dict[str, float | str | None]) -> str | None:
+    """Which post-v1 block the answer reports raws for, else ``None``."""
+    for name in _NEW_DOMAIN_BLOCKS:
+        ckeys = BLOCKS[name].consistency_keys
+        if all(extracted.get(k) is not None for k in ckeys):
+            return name
+    return None
+
+
+def _new_domain_computed(extracted: dict[str, float | str | None], block: str) -> dict[str, float]:
+    """Recompute the block's derived values from the reported raws.
+
+    Mirrors the ``derive_*`` chains in :mod:`labwright.design` but only for keys
+    computable from the raws actually reported, so an answer that states just the
+    essential inputs is still cross-checked on the numbers those inputs
+    determine. Keys needing a field the model did not report are skipped —
+    neither counted right nor wrong, exactly like the optional-PK-inputs rule in
+    :func:`_pk_hallucination`.
+    """
+    from labwright.calc import barrier as cb_
+    from labwright.calc import o2 as co2_
+    from labwright.calc import pumpless as cp_
+    from labwright.calc import breathing as cbr_
+    from labwright.calc import pulsatile as cps_
+    from labwright.calc import scaling as csc_
+    from labwright.calc import gradient as cg_
+    out: dict[str, float] = {}
+    try:
+        if block == "barrier":
+            A = extracted.get("insert_area_cm2")
+            Rt = extracted.get("resistance_total_ohm")
+            Rb = extracted.get("resistance_blank_ohm")
+            if None not in (A, Rt, Rb):
+                out["teer_ohm_cm2"] = cb_.teer_ohm_cm2(Rt, Rb, A)
+                if extracted.get("flux_nmol_min") is not None and extracted.get("donor_conc_um") is not None:
+                    papp = cb_.papp_cm_s(extracted["flux_nmol_min"], A, extracted["donor_conc_um"])
+                    out["papp_cm_s"] = papp
+                    out["clearance_mL_min"] = cb_.clearance_mL_min(papp, A)
+        elif block == "oxygen":
+            po2 = extracted.get("target_po2_mmhg")
+            if po2 is not None:
+                out["dissolved_o2_mM"] = co2_.o2_conc_mm_from_po2(po2)
+                prof = None
+                if extracted.get("cell_type"):
+                    try:
+                        from labwright.physiology import lookup_cell
+                        prof = lookup_cell(extracted["cell_type"])
+                    except Exception:
+                        prof = None
+                if extracted.get("cell_density_cells_ml") is not None and prof is not None:
+                    ocr = getattr(prof, "o2_consumption_nmol_min_1e6", None)
+                    if ocr:
+                        fmol = co2_.nmol_min_per_1e6_to_fmol_s((ocr[0] + ocr[1]) / 2.0)
+                        q = co2_.volumetric_o2_consumption(fmol, extracted["cell_density_cells_ml"])
+                        pen = co2_.o2_penetration_depth_um(q)
+                        out["penetration_depth_um"] = pen
+                        if extracted.get("spheroid_diameter_um") is not None:
+                            out["necrotic_fraction"] = co2_.spheroid_necrotic_fraction(
+                                extracted["spheroid_diameter_um"], pen)
+        elif block == "pumpless":
+            t = extracted.get("tilt_angle_deg"); L = extracted.get("channel_length_mm")
+            w = extracted.get("width_um"); h = extracted.get("height_um")
+            rp = extracted.get("rocking_half_period_s")
+            if None not in (t, L, w, h, rp):
+                rho = extracted.get("density_kgm3") or 1000.0
+                visc = extracted.get("viscosity_pas") or 1e-3
+                head = cp_.hydrostatic_pressure_pa(rho, t, L)
+                out["hydrostatic_head_pa"] = head
+                flow = cp_.flow_rate_from_pressure_head(head, w, h, L, visc)
+                out["driven_flow_rate_uLmin"] = flow
+                peak = cp_.peak_wall_shear_from_head(head, w, h, L)
+                out["peak_wall_shear_pa"] = peak
+                out["volume_per_half_cycle_ul"] = cp_.rocking_volume_per_half_cycle_ul(flow, rp)
+                bsf = extracted.get("backward_shear_fraction")
+                out["oscillatory_shear_index"] = cp_.oscillatory_shear_index(
+                    peak, peak * (bsf if bsf is not None else 1.0))
+                out["cycles_per_hour"] = cp_.cycles_per_hour(rp)
+        elif block == "breathing":
+            f = extracted.get("frequency_hz"); st = extracted.get("strain_pct")
+            if None not in (f, st):
+                out["breaths_per_minute"] = cbr_.breaths_per_minute(f)
+                out["strain_rate_per_s"] = cbr_.strain_rate_per_s(st, f)
+                span = extracted.get("membrane_span_um") or 250.0
+                out["cyclic_displacement_um"] = cbr_.cyclic_displacement_um(st, span)
+                if extracted.get("culture_duration_h") is not None:
+                    out["total_cycles"] = cbr_.total_cycles(extracted["culture_duration_h"], f)
+                if extracted.get("stretch_seconds") is not None and extracted.get("cycle_seconds") is not None:
+                    out["stretch_duty_fraction"] = cbr_.stretch_duty_fraction(
+                        extracted["stretch_seconds"], extracted["cycle_seconds"])
+                if extracted.get("apical_volume_ul") is not None and extracted.get("surface_area_cm2") is not None:
+                    out["ali_liquid_film_um"] = cbr_.ali_liquid_film_um(
+                        extracted["apical_volume_ul"], extracted["surface_area_cm2"])
+        elif block == "pulsatile":
+            f = extracted.get("frequency_hz"); h = extracted.get("channel_height_um")
+            sm = extracted.get("shear_mean_pa"); sa = extracted.get("shear_amplitude_pa")
+            if None not in (f, h, sm, sa):
+                visc = extracted.get("viscosity_pas") or 1e-3
+                rho = extracted.get("density_kgm3") or 1000.0
+                out["womersley_number"] = cps_.womersley_number(f, h, visc, rho)
+                out["oscillatory_shear_index"] = cps_.oscillatory_shear_index_from_sinusoid(sm, sa)
+                out["peak_shear_pa"] = cps_.peak_shear_of_sinusoid(sm, sa)
+                if (extracted.get("peak_flow_uLmin") is not None
+                        and extracted.get("minimum_flow_uLmin") is not None
+                        and extracted.get("mean_flow_uLmin") is not None):
+                    out["pulsatility_index"] = cps_.pulsatility_index(
+                        extracted["peak_flow_uLmin"], extracted["minimum_flow_uLmin"],
+                        extracted["mean_flow_uLmin"])
+        elif block == "scaling":
+            organ = extracted.get("organ")
+            if organ is not None and extracted.get("total_cells_chip") is not None:
+                out["organ_flow_fraction"] = csc_.organ_flow_fraction(organ)
+                out["organ_flow_rate_mlmin"] = csc_.organ_flow_rate_mlmin(
+                    organ, extracted.get("cardiac_output_mlmin") or csc_.CARDIAC_OUTPUT_MLMIN)
+                om = csc_.ORGAN_MASS_G.get(organ)
+                if om is not None:
+                    bm = extracted.get("body_mass_g") or csc_.BODY_MASS_G
+                    out["cells_in_organ"] = csc_.scale_cell_number(om, bm, extracted["total_cells_chip"])
+                    out["allometric_scale"] = csc_.allometric_metabolic_scale(om, bm)
+                if extracted.get("chip_volume_ul") is not None and extracted.get("flow_rate_uLmin") is not None:
+                    out["transit_time_s"] = csc_.transit_time_s(
+                        extracted["chip_volume_ul"], extracted["flow_rate_uLmin"])
+        elif block == "gradient":
+            src = extracted.get("source_conc_um")
+            snk = extracted.get("sink_conc_um")
+            dist = extracted.get("distance_um")
+            if None not in (src, snk, dist):
+                out["steepness_um_per_mm"] = cg_.linear_gradient_steepness_um_per_mm(src, snk, dist)
+                out["midpoint_conc_um"] = cg_.steady_state_profile_conc_um(src, snk, dist, dist / 2.0)
+                diff = extracted.get("diffusivity_m2s") or cg_.SMALL_MOLECULE_DIFFUSIVITY_M2S
+                out["relaxation_time_s"] = cg_.diffusive_relaxation_time_s(dist, diff)
+                out["flux_mol_m2s"] = cg_.diffusive_flux_mol_m2s(src, snk, dist, diff)
+    except (ValueError, TypeError, ArithmeticError, KeyError):
+        return {}
+    return out
+
+
+def _new_domain_hallucination(extracted: dict[str, float | str | None], block: str) -> float | None:
+    """Cross-check reported post-v1 numbers against the model's own raws.
+
+    Returns the error fraction, or ``None`` when nothing is re-derivable (the
+    "unverifiable" convention maps to 1.0 upstream, matching
+    :func:`bare_hallucination`'s other domains).
+    """
+    computed = _new_domain_computed(extracted, block)
+    if not computed or not all(math.isfinite(v) for v in computed.values()):
+        return None
+    claimed = {k: extracted.get(k) for k in computed}
+    present = [k for k in computed if claimed[k] is not None]
+    if not present:
+        return None
+    wrong = sum(
+        1 for k in present
+        if abs(claimed[k] - computed[k]) > BARE_CONSISTENCY_TOL * max(abs(computed[k]), 1e-12)
+    )
+    return wrong / len(present)
+
+
 def bare_hallucination(extracted: dict[str, float | str | None]) -> float:
     """Fraction of reported derived numbers inconsistent with the model's own raw inputs.
 
@@ -1084,6 +1299,11 @@ def bare_hallucination(extracted: dict[str, float | str | None]) -> float:
     rate = _pk_hallucination(extracted)
     if rate is not None:
         return rate
+    block = _new_domain_block_of_extracted(extracted)
+    if block is not None:
+        rate = _new_domain_hallucination(extracted, block)
+        if rate is not None:
+            return rate
     return 1.0
 
 

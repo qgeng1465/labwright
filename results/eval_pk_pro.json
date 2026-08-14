@@ -331,16 +331,14 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "accumulation_ratio": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
+        "plan": false,
+        "error": "schema_error: 1 validation error for PkPlan\nplate_format\n  Extra inputs are not permitted [type=extra_forbidden, input_value='96-ula', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
         "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -608,14 +606,17 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": false,
-        "error": "unparseable_json",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "inlet_concentration_uM": 0.0,
+          "outlet_concentration_uM": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -858,7 +859,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: 'outlet_concentration_uM'",
+        "error": "derived_field_rejected: derived field(s) are computed by Labwright, not accepted from the model: pk.half_life_h. Remove them and submit raw inputs only.",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -940,7 +941,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: 'inlet_concentration_uM'",
+        "error": "derived_field_rejected: derived field(s) are computed by Labwright, not accepted from the model: pk.extraction_ratio. Remove them and submit raw inputs only.",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -1022,7 +1023,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: 1 validation error for PkPlan\nratio\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0.1, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "error": "schema_error: 'inlet_concentration_uM'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,

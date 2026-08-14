@@ -31,7 +31,7 @@ The three LLM-memory systems (bare, soft-gate, self-verify) are scored by
 verifiability, unverifiable=1.0. Only the prompt/stage structure differs, so any
 measured difference between them is caused by the *approach*, not by scoring.
 
-Five gold sets:
+Six gold sets:
 
 1. **`gold_experiments.json` — 24 "reading" goals.** Every goal states the
    answer (the geometry/flow/density/effect-size, or the physiological target
@@ -99,6 +99,19 @@ Five gold sets:
    Equations are pinned to Rowland & Tozer and Gibaldi & Perrier; the propranolol
    intrinsic-clearance design target cites Baudoin et al. (doi:10.1002/jps.23796).
    `tests/test_gold_pk.py` re-derives every entry through `calc/pk.py`.
+
+6. **`gold_new_domains.json` — 14 post-v1 organ-on-chip goals.** Seven more
+   domains beyond microfluidics/culture/spheroid/PK — barrier integrity
+   (TEER / Papp / clearance), dissolved-pO2 (Krogh penetration depth,
+   necrotic core), gravity-driven pumpless perfusion (rocking WSS, OSI),
+   lung ALI + breathing stretch (breaths/min, strain rate, ALI film),
+   pulsatile / cardiac waveform (Womersley number, OSI, PI), multi-organ
+   allometric scaling (organ flow fraction, mass-proportional cells) and
+   chemotaxis gradients (steepness, relaxation time). All 14 are
+   complete-info (every raw stated) so this set isolates whether the new
+   calculators and Blocks integrate end to end; every expected value is
+   re-derived by the real calculators in
+   `eval/make_gold_new_domains.py`, and each entry pins a citable source.
 
 ### Prompts & models (verbatim)
 

@@ -1,0 +1,290 @@
+{
+  "n_gold": 14,
+  "per_entry": [
+    {
+      "id": "barrier-caco2-teer-papp",
+      "gold": {
+        "id": "barrier-caco2-teer-papp",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'resistance_total_ohm'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "barrier-hcmec-teer",
+      "gold": {
+        "id": "barrier-hcmec-teer",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "oxygen-phh-sinusoid",
+      "gold": {
+        "id": "oxygen-phh-sinusoid",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "oxygen-hepg2-hypoxic-core",
+      "gold": {
+        "id": "oxygen-hepg2-hypoxic-core",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'cells_per_spheroid'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pumpless-hepg2-rocking",
+      "gold": {
+        "id": "pumpless-hepg2-rocking",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "hydrostatic_head_pa": 0.0,
+          "peak_wall_shear_pa": 0.0,
+          "oscillatory_shear_index": 1.0,
+          "cycles_per_hour": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "pumpless-hcmec-tesla",
+      "gold": {
+        "id": "pumpless-hcmec-tesla",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'tilt_angle_deg'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "breathing-ali-h1299",
+      "gold": {
+        "id": "breathing-ali-h1299",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'frequency_hz'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "breathing-alveoli-5pct",
+      "gold": {
+        "id": "breathing-alveoli-5pct",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 3 validation errors for BreathingPlan\nspan_um\n  Extra inputs are not permitted [type=extra_forbidden, input_value=400.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nseeding_density_cells_cm2\n  Extra inputs are not permitted [type=extra_forbidden, input_value=100.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntotal_volume_ul\n  Extra inputs are not permitted [type=extra_forbidden, input_value=15.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pulsatile-aortic-heartchip",
+      "gold": {
+        "id": "pulsatile-aortic-heartchip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "womersley_number": 0.817109,
+          "oscillatory_shear_index": 0.0,
+          "peak_shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pulsatile-venous-heartchip",
+      "gold": {
+        "id": "pulsatile-venous-heartchip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'shear_mean_pa'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "scaling-liver-chip",
+      "gold": {
+        "id": "scaling-liver-chip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 8 validation errors for DesignInput\nchip.height_um\n  Field required [type=missing, input_value={'flow_rate_uLmin': 80.0,...00.0, 'width_um': 400.0}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nchip.length_mm\n  Field required [type=missing, input_value={'flow_rate_uLmin': 80.0,...00.0, 'width_um': 400.0}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nchip.flow_rate_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=80.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nchip.cell_type\n  Extra inputs are not permitted [type=extra_forbidden, input_value='primary human hepatocytes', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nchip.cells_per_chip_e6\n  Extra inputs are not permitted [type=extra_forbidden, input_value=19968.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nchip.chips_per_module\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nchip.module_height_um\n  Extra inputs are not permitted [type=extra_forbidden, input_value=100.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nchip.seeding_density_cells_cm2\n  Extra inputs are not permitted [type=extra_forbidden, input_value=100.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "scaling-kidney-chip",
+      "gold": {
+        "id": "scaling-kidney-chip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "gradient-cxcl12-chemotaxis",
+      "gold": {
+        "id": "gradient-cxcl12-chemotaxis",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'source_conc_um'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "gradient-fgf8-pattern",
+      "gold": {
+        "id": "gradient-fgf8-pattern",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "steepness_um_per_mm": 999.0,
+          "midpoint_conc_um": 0.0,
+          "relaxation_time_s": 0.999999,
+          "flux_mol_m2s": 999.0
+        },
+        "hallucination_rate": 0.25,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      }
+    }
+  ],
+  "finetuned": {
+    "recovery": {
+      "hydrostatic_head_pa": 0.0,
+      "peak_wall_shear_pa": 0.0,
+      "oscillatory_shear_index": 0.5,
+      "cycles_per_hour": 0.0,
+      "womersley_number": 0.817109,
+      "peak_shear_pa": 0.0,
+      "steepness_um_per_mm": 999.0,
+      "midpoint_conc_um": 0.0,
+      "relaxation_time_s": 0.999999,
+      "flux_mol_m2s": 999.0
+    },
+    "hallucination_rate": 0.6607142857142857,
+    "self_consistent_rate": 0.2857142857142857,
+    "usable_design_rate": 0.0
+  },
+  "system": "finetuned",
+  "generated_at": "2026-08-14T16:05:00+00:00"
+}

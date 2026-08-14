@@ -618,3 +618,68 @@ def test_run_self_verify_spheroid_stage2_replaces_invented_number():
     assert out["expected_diameter_um"] != pytest.approx(999.0)
     assert out["spheroid_format"] == "96-ula"
     assert bare_hallucination(out) == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Post-v1 new-domain golds: bare-prompt routing + pipeline re-derivation
+# ---------------------------------------------------------------------------
+
+def _load_new_domains():
+    golds = json.load(open(os.path.join(os.path.dirname(__file__), "gold_new_domains.json")))
+    return golds if isinstance(golds, list) else golds.get("entries", golds.get("gold", []))
+
+
+def test_new_domain_bare_prompt_keys_routed_to_domain():
+    """The bare prompt must ask for the post-v1 domain's own raws, never flow keys."""
+    from eval.benchmark import GoldExperiment as GE
+    from eval.benchmark import _new_domain_block, _prompt_keys_for
+
+    golds = _load_new_domains()
+    assert len(golds) == 14
+    for g in golds:
+        block = _new_domain_block(GE(**g))
+        # max-overlap disambiguates the shared oscillatory_shear_index (pumpless/pulsatile)
+        assert block == g["id"].split("-")[0], g["id"]
+        keys = set(_prompt_keys_for(GE(**g)))
+        # the domain's own raw inputs are demanded; the flow geometry is not
+        assert "width_um" not in keys or block in ("pumpless",)
+        assert "flow_rate_uLmin" not in keys or block in ("pumpless", "scaling")
+
+
+def test_new_domain_bare_cross_check():
+    """bare_checkable / bare_hallucination verify post-v1 answers from their raws."""
+    from eval.benchmark import bare_checkable, bare_hallucination
+
+    raws = {"insert_area_cm2": 1.12, "resistance_total_ohm": 900.0, "resistance_blank_ohm": 150.0}
+    correct = dict(raws, teer_ohm_cm2=840.0)
+    wrong = dict(raws, teer_ohm_cm2=999.0)
+    assert bare_checkable(correct) and bare_checkable(wrong)
+    assert bare_hallucination(correct) == pytest.approx(0.0)
+    assert bare_hallucination(wrong) == pytest.approx(1.0)
+    # a typed-number-only answer with no raws stays unverifiable (1.0), never crash
+    assert not bare_checkable({"teer_ohm_cm2": 840.0})
+    assert bare_hallucination({"teer_ohm_cm2": 840.0}) == pytest.approx(1.0)
+
+
+def test_gold_new_domains_rederive_and_match_committed():
+    """The 14 post-v1 golds re-derive through the real pipeline, matching the committed file."""
+    from eval.benchmark import relative_error
+    from eval import make_gold_new_domains as mg
+    from labwright.design import submit_design
+    from labwright.schema.design import DesignPlan
+
+    committed = {e["id"]: e for e in _load_new_domains()}
+    assert len(committed) == 14
+    for spec in mg._SPECS:
+        domain = next(k for k in spec["raw"])
+        payload = {"goal": spec["goal"], "rationale": "gold self-check", "caveats": [], **spec["raw"]}
+        result = submit_design(payload)
+        plan = DesignPlan(**result["design"])
+        errors = [i for i in result["verification"] if i["level"] == "error"]
+        assert not errors, f"{spec['id']}: verifier errors {errors}"
+        claimed = mg._read(plan, domain)
+        for key in spec["expected"]:
+            assert key in claimed, f"{spec['id']}: derived {key} missing"
+            committed_val = committed[spec["id"]]["expected"][key]
+            assert relative_error(claimed[key], committed_val) < 1e-9, (
+                f"{spec['id']}: {key} drifted {claimed[key]} vs committed {committed_val}")

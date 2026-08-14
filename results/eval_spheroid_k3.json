@@ -91,14 +91,16 @@
         "target_selected": false
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_volume_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -180,14 +182,16 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -267,14 +271,16 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_per_spheroid": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -347,7 +353,9 @@
       "finetuned": {
         "plan": true,
         "error": null,
-        "recovery": {},
+        "recovery": {
+          "spheroid_count": 0.9
+        },
         "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
@@ -436,12 +444,14 @@
       "finetuned": {
         "plan": true,
         "error": null,
-        "recovery": {},
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
         "hallucination_rate": 0.0,
-        "valid": false,
+        "valid": true,
         "unit_misread": {},
-        "failure": "wrong_target",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -523,14 +533,16 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-well'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -610,12 +622,14 @@
       "finetuned": {
         "plan": true,
         "error": null,
-        "recovery": {},
-        "hallucination_rate": 0.166667,
-        "valid": false,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "calculation_error",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -699,14 +713,17 @@
         "target_selected": false
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 1 validation error for DesignInput\nchip.width_um\n  Field required [type=missing, input_value={'channel_count': 1, 'hei...0.0, 'material': 'PDMS'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_volume_ul": 0.0,
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -788,13 +805,13 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
+        "plan": false,
+        "error": "schema_error: 'cell_diameter_um'",
         "recovery": {},
-        "hallucination_rate": 0.0,
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -882,12 +899,15 @@
       "finetuned": {
         "plan": true,
         "error": null,
-        "recovery": {},
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 0.0
+        },
         "hallucination_rate": 0.0,
-        "valid": false,
+        "valid": true,
         "unit_misread": {},
-        "failure": "wrong_target",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -979,14 +999,17 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 1 validation error for CulturePlan\nspheroid_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1067,7 +1090,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got 'ULA'",
+        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got 'ULA'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -1157,12 +1180,14 @@
       "finetuned": {
         "plan": true,
         "error": null,
-        "recovery": {},
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
         "hallucination_rate": 0.0,
-        "valid": false,
+        "valid": true,
         "unit_misread": {},
-        "failure": "wrong_target",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1243,7 +1268,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-well'",
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-ula'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -1331,14 +1356,16 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '2-well'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     }
   ],

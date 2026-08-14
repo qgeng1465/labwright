@@ -1023,7 +1023,14 @@ def generate_breathing(rng: random.Random) -> dict:
     while cb.ali_liquid_film_um(apical, area) > 1000:
         apical = rng.choice([5, 10, 20, 30, 50])
         area = rng.choice([0.33, 0.66, 1.12])
-    cycle = rng.choice([1.0, 2.0])
+    # The cycle period is fixed by the breathing frequency: 0.2 Hz -> 5 s,
+    # 0.25 Hz -> 4 s. Earlier versions picked an arbitrary 1-2 s cycle that
+    # contradicted the stated frequency and made cycle_seconds unrecoverable
+    # from the goal (data-audit P1). Mirror the source-pinned golds in
+    # eval/make_gold_new_domains.py (0.2 Hz -> 5.0 s cycle / 1.5 s stretch;
+    # 0.25 Hz -> 4.0 s cycle / 1.2 s stretch) so the raw is self-consistent
+    # and the goal states the dwell so the model can recover it.
+    cycle = round(1.0 / freq, 2)
     stretch = round(rng.uniform(0.1, 0.5) * cycle, 2)
     raw = {
         "cell_type": cell,
@@ -1040,8 +1047,9 @@ def generate_breathing(rng: random.Random) -> dict:
     film = cb.ali_liquid_film_um(apical, area)
     prose = (
         f"A lung-on-chip for {cell} cycles at {freq:g} Hz with {strain:g}% linear "
-        f"strain over a {span} µm membrane for {dur} h. At ALI the apical surface "
-        f"carries {apical} µL over {area:g} cm². What are the breathing rate "
+        f"strain over a {span} µm membrane for {dur} h, holding {stretch:g} s at "
+        f"peak strain in each {cycle:g} s cycle. At ALI the apical surface carries "
+        f"{apical} µL over {area:g} cm². What are the breathing rate "
         f"({bpm:g} breaths/min is the expected rate), the total stretch cycles, and "
         f"the residual apical film thickness (≈{film:.0f} µm)?"
     )
