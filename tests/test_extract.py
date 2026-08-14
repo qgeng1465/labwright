@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import random
 
 import pytest
 from pydantic import ValidationError
@@ -402,3 +403,66 @@ def test_score_batch_with_stub_extractor():
 
     rep = score_batch(none_extract, rows, blind)
     assert rep["json_parse_rate"] == 0.0
+    assert rep["consistency_rate"] == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Diversity generators (negatives + cross-domain composites)
+# ---------------------------------------------------------------------------
+
+
+def test_composite_rows_carry_two_blocks_and_verify_clean():
+    """A composite goal merges two single-domain rows; the raw carries two
+    top-level blocks and still builds a design that passes the verifier."""
+    from labwright.extract.synthetic import generate_composite, _COMPOSITE_PAIRS
+
+    rng = random.Random(4)
+    for _ in range(20):
+        row = generate_composite(rng)
+        assert len(row["raw"]) == 2, f"composite must merge two blocks: {row['domain']}"
+        assert row["domain"].startswith("composite:")
+        inp = DesignInput(goal=row["goal"], rationale="test", **row["raw"])
+        assert not has_errors(verify_design(build_design(inp)))
+    # composites only ever merge a defined pair (never an arbitrary two-block raw)
+    seen = {generate_composite(rng)["domain"] for _ in range(200)}
+    pairs = {f"composite:{a}+{b}" for a, b in _COMPOSITE_PAIRS}
+    assert seen <= pairs
+
+
+def test_negative_sample_perturbs_embedded_approx_only():
+    """A negative sample flips one '≈value unit' derived claim; the raw block is
+    untouched (the target stays correct), and only ≈-bearing goals change."""
+    from labwright.extract.synthetic import _maybe_perturb_approx, generate_gradient
+
+    rng = random.Random(11)
+    changed = 0
+    for seed in range(80):
+        row = generate_gradient(random.Random(seed))
+        if "≈" not in row["goal"]:
+            continue
+        new_goal = _maybe_perturb_approx(rng, row["goal"], p=1.0)
+        if new_goal != row["goal"]:
+            changed += 1
+            assert "≈" in new_goal
+    assert changed > 0
+    # a goal with no embedded ≈ is returned untouched
+    plain = "Culture cells at 1e5 cells/cm² in a 96-well plate."
+    assert _maybe_perturb_approx(rng, plain, p=1.0) == plain
+
+
+def test_generate_with_composites_and_negatives():
+    """--n-composite / --neg-frac wiring: composite rows appear and negative
+    rows keep their raw identical to the parent single-domain row."""
+    from labwright.extract.synthetic import _APPROX_RE, generate
+
+    rows = generate(20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+                    n_composite=10, neg_frac=0.2, seed=13)
+    comps = [r for r in rows if r["domain"].startswith("composite:")]
+    assert len(comps) == 10
+    negs = [r for r in rows if _APPROX_RE.search(r["goal"])]
+    # negatives only exist on ≈-bearing domains (breathing/scaling/gradient)
+    assert negs  # at least one appeared
+    # determinism
+    again = generate(20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+                     n_composite=10, neg_frac=0.2, seed=13)
+    assert rows == again

@@ -16,19 +16,21 @@ import json
 #: the calculators own.
 SYSTEM_PROMPT = (
     "You extract raw wet-lab design inputs from an experimental goal. "
-    "Return a single JSON object with ONLY the raw input block: chip, flow "
+    "Return a single JSON object with ONLY the raw input block(s): chip, flow "
     "and cells for a microfluidic channel design, culture for a plate-culture "
     "design, spheroid for a 3D-spheroid design, pk for a perfused-system "
     "pharmacokinetics design, barrier for a monolayer QC design, oxygen for a "
     "dissolved-pO2 design, pumpless for a gravity-flow rocking platform, "
     "breathing for a lung ALI/stretch design, pulsatile for a cardiac-waveform "
     "design, scaling for a body-on-chip allometry design, or gradient for a "
-    "chemotaxis source-sink design. Do NOT compute or report derived numbers "
-    "such as wall shear stress, Reynolds number, seed counts, medium volumes, "
-    "confluence, spheroid diameter, extraction ratio, clearance, TEER, "
-    "penetration depth, Womersley number, organ flow fraction or gradient "
-    "steepness — those are always calculated deterministically after you "
-    "return. Return ONLY the JSON object."
+    "chemotaxis source-sink design. A single-system goal yields exactly one "
+    "block; a goal that describes two subsystems in one platform yields two "
+    "blocks. Do NOT compute or report derived numbers such as wall shear "
+    "stress, Reynolds number, seed counts, medium volumes, confluence, "
+    "spheroid diameter, extraction ratio, clearance, TEER, penetration depth, "
+    "Womersley number, organ flow fraction or gradient steepness — those are "
+    "always calculated deterministically after you return. Return ONLY the "
+    "JSON object."
 )
 
 #: The same contract, with the exact key names spelled out. The fine-tuned
@@ -74,7 +76,9 @@ SCHEMA_PROMPT = SYSTEM_PROMPT + (
     "  gradient (chemotaxis): chemoattractant, source_conc_um (µM), "
     "sink_conc_um (µM), distance_um (µm), and optionally experiment_hours (h), "
     "diffusivity_m2s (m²/s)\n"
-    "Emit exactly one design block — never two."
+    "Emit exactly the block(s) the goal describes — one block for a "
+    "single-system goal, two blocks when the goal describes two subsystems "
+    "in one platform. Never invent a block the goal does not mention."
 )
 
 #: ChatML assistant-turn opener, as rendered by the Qwen2.5 template. The loss

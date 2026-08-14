@@ -279,17 +279,22 @@ The goal goes in; a design whose every number was computed by
 `labwright.calc` and re-proved by `labwright.verify` comes out. The agent
 writes the narrative; the arithmetic is exiled to unit-tested code.
 
-- **`calc/`:** pure, unit-tested engineering math (microfluidics, cell, plate
-  cell culture, dosing, stats). The moat: an LLM cannot compute these reliably,
-  but a calculator can. A second domain (well-format geometry, seeding density,
-  hemocytometer counts, viability, passaging) ships as `calc/culture.py` with
-  its own gold set (`eval/gold_cell_culture.json`). A third domain (3D culture:
-  spheroid/organoid geometry, cells-per-size, ULA and hanging-drop working
-  volumes, necrotic-core limits) ships as `calc/spheroid.py` with its own gold
-  set (`eval/gold_spheroid.json`). A fourth domain, single-compartment
-  pharmacokinetics on-chip (extraction ratio, clearance, half-life,
-  steady-state accumulation), ships as `calc/pk.py` with its own gold set
-  (`eval/gold_pk.json`).
+- **`calc/`:** pure, unit-tested engineering math — eleven design domains, each
+  a `calc/` module with its own schema model, derive function and `Block`
+  (raw/derived keys, sanity bands, canonical units):
+  microfluidics (`calc/microfluidics.py`), plate cell culture
+  (`calc/culture.py`, gold `eval/gold_cell_culture.json`), 3D culture
+  (`calc/spheroid.py`, gold `eval/gold_spheroid.json`), on-chip
+  pharmacokinetics (`calc/pk.py`, gold `eval/gold_pk.json`), and seven
+  post-v1 organ-on-chip domains — barrier integrity (TEER / Papp / clearance,
+  `calc/barrier.py`), oxygen (Krogh penetration, necrotic core,
+  `calc/o2.py`), gravity-driven pumpless perfusion (rocking WSS / OSI,
+  `calc/pumpless.py`), lung ALI + breathing stretch (`calc/breathing.py`),
+  pulsatile / cardiac waveform (Womersley / OSI / PI, `calc/pulsatile.py`),
+  multi-organ allometric scaling (`calc/scaling.py`) and source–sink
+  chemotaxis gradients (`calc/gradient.py`). The seven post-v1 domains share
+  one gold set (`eval/gold_new_domains.json`). The moat: an LLM cannot compute
+  these reliably, but a calculator can.
 - **`agent/`:** a ReAct loop over the tool registry. It may call any
   calculator and must finish by calling `submit_design`. Prose answers are
   refused: *"numbers you type are not trusted."*

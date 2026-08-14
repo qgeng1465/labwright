@@ -1,0 +1,400 @@
+{
+  "n_gold": 14,
+  "per_entry": [
+    {
+      "id": "barrier-caco2-teer-papp",
+      "gold": {
+        "id": "barrier-caco2-teer-papp",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "teer_ohm_cm2": 0.0,
+          "papp_cm_s": 0.0,
+          "clearance_mL_min": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "barrier-hcmec-teer",
+      "gold": {
+        "id": "barrier-hcmec-teer",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "teer_ohm_cm2": 0.0,
+          "papp_cm_s": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 3,
+        "prose_refusals": 1,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "oxygen-phh-sinusoid",
+      "gold": {
+        "id": "oxygen-phh-sinusoid",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "dissolved_o2_mM": 0.0,
+          "penetration_depth_um": 0.0,
+          "necrotic_fraction": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 7,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "oxygen-hepg2-hypoxic-core",
+      "gold": {
+        "id": "oxygen-hepg2-hypoxic-core",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "dissolved_o2_mM": 0.0,
+          "penetration_depth_um": 0.0,
+          "necrotic_fraction": 0.0,
+          "demand_umol_min": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 7,
+        "prose_refusals": 1,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "pumpless-hepg2-rocking",
+      "gold": {
+        "id": "pumpless-hepg2-rocking",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "hydrostatic_head_pa": 0.0,
+          "peak_wall_shear_pa": 0.0,
+          "oscillatory_shear_index": 0.0,
+          "cycles_per_hour": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 2,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "pumpless-hcmec-tesla",
+      "gold": {
+        "id": "pumpless-hcmec-tesla",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "hydrostatic_head_pa": 0.0,
+          "peak_wall_shear_pa": 0.0,
+          "volume_per_half_cycle_ul": 0.0,
+          "oscillatory_shear_index": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 2,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "breathing-ali-h1299",
+      "gold": {
+        "id": "breathing-ali-h1299",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "breaths_per_minute": 0.0,
+          "cyclic_displacement_um": 0.0,
+          "strain_rate_per_s": 0.0,
+          "total_cycles": 0.0,
+          "stretch_duty_fraction": 0.0,
+          "ali_liquid_film_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 1,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "breathing-alveoli-5pct",
+      "gold": {
+        "id": "breathing-alveoli-5pct",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "breaths_per_minute": 0.0,
+          "cyclic_displacement_um": 0.0,
+          "ali_liquid_film_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 3,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "pulsatile-aortic-heartchip",
+      "gold": {
+        "id": "pulsatile-aortic-heartchip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "womersley_number": 0.0,
+          "oscillatory_shear_index": 0.0,
+          "peak_shear_pa": 0.0,
+          "pulsatility_index": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 2,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "pulsatile-venous-heartchip",
+      "gold": {
+        "id": "pulsatile-venous-heartchip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "womersley_number": 0.0,
+          "oscillatory_shear_index": 0.0,
+          "peak_shear_pa": 0.0,
+          "pulsatility_index": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 2,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "scaling-liver-chip",
+      "gold": {
+        "id": "scaling-liver-chip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0,
+          "cells_in_organ": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 1,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "scaling-kidney-chip",
+      "gold": {
+        "id": "scaling-kidney-chip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0,
+          "cells_in_organ": 0.0,
+          "transit_time_s": 0.0,
+          "residence_time_match_error_s": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 3,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "gradient-cxcl12-chemotaxis",
+      "gold": {
+        "id": "gradient-cxcl12-chemotaxis",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "steepness_um_per_mm": 0.0,
+          "midpoint_conc_um": 0.0,
+          "relaxation_time_s": 0.0,
+          "flux_mol_m2s": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 1,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "gradient-fgf8-pattern",
+      "gold": {
+        "id": "gradient-fgf8-pattern",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": false,
+        "error": "agent did not call submit_design within 12 iterations",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false,
+        "tool_calls": 4,
+        "prose_refusals": 8,
+        "no_plan": true
+      }
+    }
+  ],
+  "labwright": {
+    "recovery": {
+      "teer_ohm_cm2": 0.0,
+      "papp_cm_s": 0.0,
+      "clearance_mL_min": 0.0,
+      "dissolved_o2_mM": 0.0,
+      "penetration_depth_um": 0.0,
+      "necrotic_fraction": 0.0,
+      "demand_umol_min": 0.0,
+      "hydrostatic_head_pa": 0.0,
+      "peak_wall_shear_pa": 0.0,
+      "oscillatory_shear_index": 0.0,
+      "cycles_per_hour": 0.0,
+      "volume_per_half_cycle_ul": 0.0,
+      "breaths_per_minute": 0.0,
+      "cyclic_displacement_um": 0.0,
+      "strain_rate_per_s": 0.0,
+      "total_cycles": 0.0,
+      "stretch_duty_fraction": 0.0,
+      "ali_liquid_film_um": 0.0,
+      "womersley_number": 0.0,
+      "peak_shear_pa": 0.0,
+      "pulsatility_index": 0.0,
+      "organ_flow_fraction": 0.0,
+      "organ_flow_rate_mlmin": 0.0,
+      "cells_in_organ": 0.0,
+      "transit_time_s": 0.0,
+      "residence_time_match_error_s": 0.0,
+      "steepness_um_per_mm": 0.0,
+      "midpoint_conc_um": 0.0,
+      "relaxation_time_s": 0.0,
+      "flux_mol_m2s": 0.0
+    },
+    "hallucination_rate": 0.07142857142857142,
+    "self_consistent_rate": 0.9285714285714286,
+    "usable_design_rate": 0.9285714285714286
+  },
+  "model": "deepseek-v4-flash",
+  "generated_at": "2026-08-14T11:25:49+00:00"
+}

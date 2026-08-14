@@ -76,6 +76,14 @@ Usage::
         --n-barrier 4000 --n-oxygen 4000 --n-pumpless 4500 \\
         --n-breathing 4500 --n-pulsatile 4500 --n-scaling 4000 \\
         --n-gradient 4500 --split 0.9 --seed 1234
+
+    # 11-domain v2 (identical base rows + diversity):
+    python -m labwright.extract.synthetic --out results/extractor_11dom_v2 \\
+        --n-flow 6000 --n-culture 4000 --n-spheroid 8000 --n-pk 7000 \\
+        --n-barrier 4000 --n-oxygen 4000 --n-pumpless 4500 \\
+        --n-breathing 4500 --n-pulsatile 4500 --n-scaling 4000 \\
+        --n-gradient 4500 --n-composite 2000 --neg-frac 0.10 \\
+        --split 0.9 --seed 1234
 """
 
 from __future__ import annotations
@@ -83,6 +91,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import re
 from pathlib import Path
 
 from labwright.calc import barrier as calc_barrier
@@ -164,6 +173,65 @@ def _maybe_distractor(rng: random.Random, p: float = 0.3, out: list[str] | None 
             out.append(d)
         return " " + d
     return ""
+
+
+#: ``≈123 µm`` embedded derived claims that some generators put in the prose as
+#: a readability hint (breathing displacement, scaling cell counts, gradient
+#: steepness). Matching one lets us build a *negative sample*: the goal then
+#: asserts a derived number that the calculators will NOT reproduce from the
+#: stated raws, so the extractor must ignore it and the verifier flags the
+#: mismatch as a review_required warning.
+_APPROX_RE = re.compile(r"≈\s*([0-9]+(?:\.[0-9]+)?)(\s*[A-Za-zµ°/·²³⁻¹]+)?")
+
+
+def _maybe_perturb_approx(rng: random.Random, goal: str, p: float = 0.12) -> str:
+    """Negative-sample hook: flip one ``≈value unit`` claim in the prose to a
+    wrong value.
+
+    The raw block is untouched — the extractor's target stays correct. The
+    *training signal* is that the goal may assert a derived number that
+    disagrees with what the calculators will compute; the model must return the
+    raw inputs and never echo the claimed derived value back. Verifier hits the
+    mismatch as a review_required warning (tolerated by the data gate), which is
+    exactly how a real contradictory lab-note goal behaves.
+    """
+    hits = list(_APPROX_RE.finditer(goal))
+    if not hits or rng.random() >= p:
+        return goal
+    m = rng.choice(hits)
+    num = float(m.group(1))
+    wrong = num * rng.choice([0.45, 0.65, 1.4, 1.7, 2.1])
+    rendered = f"{wrong:.0f}" if wrong >= 10 else f"{wrong:.2f}".rstrip("0").rstrip(".")
+    return goal[: m.start()] + "≈" + rendered + (m.group(2) or "") + goal[m.end():]
+
+
+#: Physically coherent cross-domain pairs for composite goals. Each pair merges
+#: two single-domain generators: the goal describes two subsystems in one
+#: platform and the raw carries two top-level blocks. These teach the extractor
+#: to emit more than one block when the goal warrants it (body-on-chip style
+#: prompts) while the single-block rows keep it conservative elsewhere.
+_COMPOSITE_PAIRS: list[tuple[str, str]] = [
+    ("pumpless", "oxygen"),    # rocking liver-chip with dissolved-pO2 control
+    ("breathing", "barrier"),  # lung ALI + stretch platform with monolayer QC
+    ("barrier", "oxygen"),     # BBB insert with dissolved-pO2 culture
+    ("pulsatile", "oxygen"),   # cardiac waveform chip with pO2 control
+    ("gradient", "scaling"),   # chemotaxis module on a body-on-chip scale
+    ("culture", "barrier"),    # plate culture whose wells double as QC inserts
+]
+
+
+def generate_composite(rng: random.Random) -> dict:
+    """Cross-domain composite row: two single-domain generators, one goal."""
+    a, b = _pick(rng, _COMPOSITE_PAIRS)
+    row_a = _SYNTHETIC_GENERATORS[a](rng)
+    row_b = _SYNTHETIC_GENERATORS[b](rng)
+    goal = row_a["goal"].rstrip()
+    if not goal.endswith((".", "?", "!")):
+        goal += "."
+    goal += " In the same platform, " + row_b["goal"].strip()
+    raw = dict(row_a["raw"])
+    raw.update(row_b["raw"])
+    return {"goal": goal, "raw": raw, "domain": f"composite:{a}+{b}", "_composite": (a, b)}
 
 
 # ---------------------------------------------------------------------------
@@ -1126,6 +1194,11 @@ def generate_gradient(rng: random.Random) -> dict:
 # ---------------------------------------------------------------------------
 
 
+#: Registry used by ``generate_composite`` — filled in at the end of the module
+#: (all generators are defined above). Indirection keeps the pair list readable.
+_SYNTHETIC_GENERATORS: dict[str, object] = {}
+
+
 def generate(
     n_flow: int,
     n_culture: int,
@@ -1138,6 +1211,8 @@ def generate(
     n_pulsatile: int = 0,
     n_scaling: int = 0,
     n_gradient: int = 0,
+    n_composite: int = 0,
+    neg_frac: float = 0.0,
     seed: int = 1234,
 ) -> list[dict]:
     rng = random.Random(seed)
@@ -1152,6 +1227,16 @@ def generate(
     rows += [generate_pulsatile(rng) for _ in range(n_pulsatile)]
     rows += [generate_scaling(rng) for _ in range(n_scaling)]
     rows += [generate_gradient(rng) for _ in range(n_gradient)]
+    rows += [generate_composite(rng) for _ in range(n_composite)]
+    if neg_frac > 0:
+        # Negative samples: flip one embedded "≈value unit" derived claim to a
+        # wrong value. The raw block stays correct — the point is that the goal
+        # can assert a derived number the calculators will contradict.
+        n_neg = max(1, round(len(rows) * neg_frac))
+        candidates = [i for i, r in enumerate(rows) if _APPROX_RE.search(r["goal"])]
+        if candidates:
+            for i in rng.sample(candidates, min(n_neg, len(candidates))):
+                rows[i]["goal"] = _maybe_perturb_approx(rng, rows[i]["goal"], p=1.0)
     rng.shuffle(rows)
     return rows
 
@@ -1203,6 +1288,11 @@ def main() -> int:
     parser.add_argument("--n-pulsatile", type=int, default=0)
     parser.add_argument("--n-scaling", type=int, default=0)
     parser.add_argument("--n-gradient", type=int, default=0)
+    parser.add_argument("--n-composite", type=int, default=0,
+                        help="cross-domain composite rows (two blocks in one goal)")
+    parser.add_argument("--neg-frac", type=float, default=0.0,
+                        help="fraction of ≈-bearing rows to turn into negative "
+                             "samples (contradictory derived claim in the goal)")
     parser.add_argument("--split", type=float, default=0.9)
     parser.add_argument("--seed", type=int, default=1234)
     parser.add_argument("--smoke", type=int, default=0, help="generate N of each instead")
@@ -1224,15 +1314,36 @@ def main() -> int:
         nsc = args.n_scaling
         ng = args.n_gradient
     out = Path(args.out or ("results/smoke" if args.smoke else "results/extractor"))
-    rows = generate(nf, nc, ns, npk, nb, no, npu, nbr, nps, nsc, ng, seed=args.seed)
+    rows = generate(
+        nf, nc, ns, npk, nb, no, npu, nbr, nps, nsc, ng,
+        n_composite=args.n_composite, neg_frac=args.neg_frac, seed=args.seed,
+    )
     train_p, eval_p = write_split(rows, out, args.split)
     print(
         f"wrote {len(rows)} rows "
         f"({nf} flow + {nc} culture + {ns} spheroid + {npk} pk + {nb} barrier + "
         f"{no} oxygen + {npu} pumpless + {nbr} breathing + {nps} pulsatile + "
-        f"{nsc} scaling + {ng} gradient) -> {train_p} / {eval_p}"
+        f"{nsc} scaling + {ng} gradient + {args.n_composite} composite, "
+        f"{args.neg_frac:.0%} negatives) -> {train_p} / {eval_p}"
     )
     return 0
+
+
+_SYNTHETIC_GENERATORS.update(
+    {
+        "flow": generate_flow,
+        "culture": generate_culture,
+        "spheroid": generate_spheroid,
+        "pk": generate_pk,
+        "barrier": generate_barrier,
+        "oxygen": generate_oxygen,
+        "pumpless": generate_pumpless,
+        "breathing": generate_breathing,
+        "pulsatile": generate_pulsatile,
+        "scaling": generate_scaling,
+        "gradient": generate_gradient,
+    }
+)
 
 
 if __name__ == "__main__":
