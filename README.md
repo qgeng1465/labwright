@@ -480,13 +480,13 @@ fixed local extractor). The three LLM-memory systems (bare-LLM, soft-gate,
 self-verify) write numbers from memory and are scored by *identical* rules;
 only the prompt/stage structure differs. Labwright adds the calculators and
 the verifier. The fifth, **finetuned-ext**, is a local Qwen2.5-1.5B-Instruct
-LoRA fine-tuned on 49,500 synthetic goals spanning all 11 domains (plus 46
+LoRA fine-tuned on 56,725 synthetic goals spanning all 11 domains (plus 46
 source-pinned gold pairs). Its bars are identical under flash and pro by
 construction. Honest caveat: the reading and plate-culture columns overstate
 generalization -- 23/24 reading and 8/14 plate-culture gold goals appear
 *verbatim* in the gold-pair supervision, so those rows measure memorization
-more than transfer; on never-seen goals only the rates are spheroid 10/14,
-PK 7/14, blind 3/15 and new-domains 0/14.
+more than transfer; on never-seen goals only the rates are spheroid 9/14,
+PK 8/14, blind 4/15 and new-domains 0/14.
 
 **New failure-mode metrics.** Each entry is also classified *why* it failed
 (`ok` / `silence` / `calculation_error` / `wrong_target`), whether a
@@ -496,7 +496,7 @@ blind-set cells are split by hint strength (cold vs prompt-backed). The `eval.re
 renderer prints all of it; the classification and misread logic are unit-tested
 (`tests/test_metrics.py`).
 
-![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind, 15-3D-spheroid, 14-culture and 14-PK sets (flash & pro; finetuned-ext identical under both). The memory systems (stone / ochre / sage) reach a usable design only on the handful of single-step goals the goal hands over; Labwright (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on the spheroid, culture and PK sets; the fine-tuned extractor (lilac) reaches the reading-set ceiling (23/24 of those goals are verbatim training pairs) and transfers to spheroid (73 %) and PK (50 %) on novel goals, but fails on the new domains (0/14, see below).](paper/fig_benchmark.png)
+![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind, 15-3D-spheroid, 14-culture and 14-PK sets (flash & pro; finetuned-ext identical under both). The memory systems (stone / ochre / sage) reach a usable design only on the handful of single-step goals the goal hands over; Labwright (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on the spheroid, culture and PK sets; the fine-tuned extractor (lilac) reaches the reading-set ceiling (23/24 of those goals are verbatim training pairs) and transfers to spheroid (67 %) and PK (57 %) on novel goals, but fails on the new domains (0/14, see below).](paper/fig_benchmark.png)
 
 A *usable* design is internally consistent **and** hits every target within
 ±5 %. This is an *ablation*, not an equal-resource race: Labwright's
@@ -551,42 +551,42 @@ usable).*
 | 15-blind | `flash` | soft-gate | 13 % | 0 % | 0.867 |
 | 15-blind | `flash` | self-verify | 0 % | 0 % | 0.611 |
 | 15-blind | `flash` | **Labwright** | **100 %** | **40 %** | **0.000** |
-| 15-blind | `flash` | finetuned-ext (novel) | 93 % | 20 % | 0.067 |
+| 15-blind | `flash` | finetuned-ext (novel) | 93 % | 27 % | 0.067 |
 | 15-blind | `pro` | bare-LLM | 7 % | 0 % | 0.933 |
 | 15-blind | `pro` | soft-gate | 13 % | 0 % | 0.867 |
 | 15-blind | `pro` | self-verify | 0 % | 0 % | 0.733 |
 | 15-blind | `pro` | **Labwright** | **100 %** | **47 %** | **0.000** |
-| 15-blind | `pro` | finetuned-ext (novel) | 93 % | 20 % | 0.067 |
+| 15-blind | `pro` | finetuned-ext (novel) | 93 % | 27 % | 0.067 |
 | 15-3D-spheroid | `flash` | bare-LLM | 20 % | 20 % | 0.800 |
 | 15-3D-spheroid | `flash` | soft-gate | 13 % | 13 % | 0.867 |
 | 15-3D-spheroid | `flash` | self-verify | 20 % | 20 % | 0.569 |
 | 15-3D-spheroid | `flash` | **Labwright** | **93 %** | **87 %** | **0.011** |
-| 15-3D-spheroid | `flash` | finetuned-ext (1/15 seen) | 80 % | 73 % | 0.200 |
+| 15-3D-spheroid | `flash` | finetuned-ext (1/15 seen) | 87 % | 67 % | 0.133 |
 | 15-3D-spheroid | `pro` | bare-LLM | 27 % | 27 % | 0.733 |
 | 15-3D-spheroid | `pro` | soft-gate | 27 % | 27 % | 0.733 |
 | 15-3D-spheroid | `pro` | self-verify | 40 % | 20 % | 0.400 |
 | 15-3D-spheroid | `pro` | **Labwright** | **93 %** | **87 %** | **0.067** |
-| 15-3D-spheroid | `pro` | finetuned-ext (1/15 seen) | 80 % | 73 % | 0.200 |
+| 15-3D-spheroid | `pro` | finetuned-ext (1/15 seen) | 87 % | 67 % | 0.133 |
 | 14-plate-culture | `flash` | bare-LLM | 0 % | 0 % | 0.893 |
 | 14-plate-culture | `flash` | soft-gate | 0 % | 0 % | 0.893 |
 | 14-plate-culture | `flash` | self-verify | 0 % | 0 % | 0.929 |
 | 14-plate-culture | `flash` | **Labwright** | **93 %** | **86 %** | **0.071** |
-| 14-plate-culture | `flash` | finetuned-ext (8/14 seen) | 79 % | 50 % | 0.214 |
+| 14-plate-culture | `flash` | finetuned-ext (8/14 seen) | 86 % | 57 % | 0.143 |
 | 14-plate-culture | `pro` | bare-LLM | 7 % | 7 % | 0.750 |
 | 14-plate-culture | `pro` | soft-gate | 7 % | 7 % | 0.786 |
 | 14-plate-culture | `pro` | self-verify | 0 % | 0 % | 0.821 |
 | 14-plate-culture | `pro` | **Labwright** | **86 %** | **64 %** | **0.043** |
-| 14-plate-culture | `pro` | finetuned-ext (8/14 seen) | 79 % | 50 % | 0.214 |
+| 14-plate-culture | `pro` | finetuned-ext (8/14 seen) | 86 % | 57 % | 0.143 |
 | 14-perfused-PK | `flash` | bare-LLM | 50 % | 36 % | 0.500 |
 | 14-perfused-PK | `flash` | soft-gate | 50 % | 50 % | 0.500 |
 | 14-perfused-PK | `flash` | self-verify | 79 % | 29 % | 0.214 |
 | 14-perfused-PK | `flash` | **Labwright** | **100 %** | **79 %** | **0.000** |
-| 14-perfused-PK | `flash` | finetuned-ext (novel) | 50 % | 50 % | 0.500 |
+| 14-perfused-PK | `flash` | finetuned-ext (novel) | 57 % | 57 % | 0.429 |
 | 14-perfused-PK | `pro` | bare-LLM | 43 % | 36 % | 0.536 |
 | 14-perfused-PK | `pro` | soft-gate | 50 % | 36 % | 0.500 |
 | 14-perfused-PK | `pro` | self-verify | 79 % | 29 % | 0.214 |
 | 14-perfused-PK | `pro` | **Labwright** | **100 %** | **86 %** | **0.000** |
-| 14-perfused-PK | `pro` | finetuned-ext (novel) | 50 % | 50 % | 0.500 |
+| 14-perfused-PK | `pro` | finetuned-ext (novel) | 57 % | 57 % | 0.429 |
 
 *All memory-system rows come from a single re-run at temperature 0.2 after a
 prompt regression that dropped the goal text was found and fixed (see the
@@ -621,8 +621,8 @@ live model:
 |---|---|---|---|---|
 | 14-new-domains | `flash` | **Labwright** | **13/14 (93 %)** | **0.071** |
 | 14-new-domains | `pro` | **Labwright** | **11/14 (79 %)** | **0.214** |
-| 14-new-domains | `flash` | finetuned-ext | 0/14 (0 %) | 0.661 |
-| 14-new-domains | `pro` | finetuned-ext | 0/14 (0 %) | 0.661 |
+| 14-new-domains | `flash` | finetuned-ext | 0/14 (0 %) | 0.857 |
+| 14-new-domains | `pro` | finetuned-ext | 0/14 (0 %) | 0.857 |
 
 Every submitted design recovers every gold target to machine precision, and
 **among submitted designs hallucination is 0.000 on both models**. The
@@ -750,23 +750,27 @@ Read the numbers honestly, and the boundary of what they mean.
   not), plus one unit-trap entry where the unit layer caught the mM→µM
   conversion before it entered the plan. The two genuine **unit traps** (mM-vs-µM
   and min-vs-h) are recovered cleanly by Labwright on both models.
-- **The fine-tuned extractor (lora_v3, 49.5k synthetic goals across all 11
-  domains) is strong where it has seen the phrasing, and honest about what
-  that means.** Reading: usable **96 %** / self-consistent **100 %** / **0.000**
-  — but **23/24 of those goals appear verbatim in the gold-pair supervision**,
-  so that column measures memorization more than transfer. Plate-culture:
-  **50 %** usable / **79 %** self-consistent, with 8/14 goals seen (only 1/6
-  novel goals recover). The genuinely held-out splits are the honest numbers:
-  spheroid **73 %** usable (10/14 novel goals; only 1/15 of the golds are
-  verbatim training pairs), PK **50 %** usable (all 14 novel, 7 recover),
-  blind **20 %** usable / **93 %** self-consistent (3/15 novel). The boundary:
-  on the seven post-v1 domains, which *are* in its synthetic training, it
-  answers **0/14** goals — the hand-written benchmark wording still does not
-  transfer from the synthetic phrasing, and the goals end in silence rather
-  than fabrication (hallucination 0.661 = nine silence rows, one partial, four
-  self-consistent-but-wrong goals). Strong on what it
-  saw in the right phrasing, still blind when the phrasing drifts. (The
-  extractor's bars are identical under flash and pro by construction.)
+- **The fine-tuned extractor (lora_v4, multi-block, 56.7k synthetic goals across
+  all 11 domains) is strong where it has seen the phrasing, and honest about
+  what that means.** Reading: usable **96 %** / self-consistent **100 %** /
+  **0.000** — but **23/24 of those goals appear verbatim in the gold-pair
+  supervision**, so that column measures memorization more than transfer.
+  Plate-culture: **57 %** usable / **86 %** self-consistent, with 8/14 goals
+  seen (only 1/6 novel goals recover). The genuinely held-out splits are the
+  honest numbers: spheroid **67 %** usable (9/14 novel goals; only 1/15 of the
+  golds are verbatim training pairs), PK **57 %** usable (all 14 novel, 8
+  recover), blind **27 %** usable / **93 %** self-consistent (4/15 novel).
+  Against the single-block lora_v3 baseline (49.5k rows), v4 trades one
+  spheroid novel recovery (10/14 → 9/14) for one novel recovery each on pk
+  (7/14 → 8/14) and blind (3/15 → 4/15) — a marginal aggregate win. The
+  boundary: on the seven post-v1 domains, which *are* in its synthetic
+  training, it answers **0/14** goals — the hand-written benchmark wording
+  still does not transfer from the synthetic phrasing, and multi-block v4 is
+  *worse* there than v3 (hallucination 0.857 = twelve schema-error silence
+  rows, two self-consistent-but-wrong, vs v3's 0.661 = nine silence, one
+  partial, four self-consistent-but-wrong). Strong on what it saw in the right
+  phrasing, still blind when the phrasing drifts. (The extractor's bars are
+  identical under flash and pro by construction.)
 
 **Robustness, and the honest boundary of the gate: three further results**
 

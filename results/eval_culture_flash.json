@@ -274,7 +274,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: 2 validation errors for CellPlan\ndilution_factor\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nsuspension_volume_ul\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0.45, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "error": "schema_error: 2 validation errors for CellPlan\nsquare_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntray_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -360,7 +360,9 @@
       "finetuned": {
         "plan": true,
         "error": null,
-        "recovery": {},
+        "recovery": {
+          "expected_confluence_pct": 9.0
+        },
         "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
@@ -537,14 +539,16 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 1 validation error for CulturePlan\nconfluent_harvest_wells\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_seed_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -1263,7 +1267,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: 1 validation error for CellPlan\ndilution_factor\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "error": "schema_error: 1 validation error for CellPlan\nwells\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,

@@ -1269,7 +1269,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "residence_time_s": 0.95
+          "residence_time_s": 0.995
         },
         "hallucination_rate": 0.0,
         "valid": false,

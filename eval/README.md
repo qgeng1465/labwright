@@ -325,42 +325,42 @@ differs.
 | `flash` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
 | `flash` | 15-blind | self-verify | 0 % | 0 % | 0.611 |
 | `flash` | 15-blind | **Labwright** | **100 %** | **40 %** | **0.000** |
-| `flash` | 15-blind | finetuned-ext | 93 % | 20 % | 0.067 |
+| `flash` | 15-blind | finetuned-ext | 93 % | 27 % | 0.067 |
 | `pro` | 15-blind | bare-LLM | 7 % | 0 % | 0.933 |
 | `pro` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
 | `pro` | 15-blind | self-verify | 0 % | 0 % | 0.733 |
 | `pro` | 15-blind | **Labwright** | **100 %** | **47 %** | **0.000** |
-| `pro` | 15-blind | finetuned-ext | 93 % | 20 % | 0.067 |
+| `pro` | 15-blind | finetuned-ext | 93 % | 27 % | 0.067 |
 | `flash` | 15-3D-spheroid | bare-LLM | 20 % | 20 % | 0.800 |
 | `flash` | 15-3D-spheroid | soft-gate | 13 % | 13 % | 0.867 |
 | `flash` | 15-3D-spheroid | self-verify | 20 % | 20 % | 0.569 |
 | `flash` | 15-3D-spheroid | **Labwright** | **93 %** | **87 %** | **0.011** |
-| `flash` | 15-3D-spheroid | finetuned-ext (in-dist) | 80 % | 73 % | 0.200 |
+| `flash` | 15-3D-spheroid | finetuned-ext (in-dist) | 87 % | 67 % | 0.133 |
 | `pro` | 15-3D-spheroid | bare-LLM | 27 % | 27 % | 0.733 |
 | `pro` | 15-3D-spheroid | soft-gate | 27 % | 27 % | 0.733 |
 | `pro` | 15-3D-spheroid | self-verify | 40 % | 20 % | 0.400 |
 | `pro` | 15-3D-spheroid | **Labwright** | **93 %** | **87 %** | **0.067** |
-| `pro` | 15-3D-spheroid | finetuned-ext (in-dist) | 80 % | 73 % | 0.200 |
+| `pro` | 15-3D-spheroid | finetuned-ext (in-dist) | 87 % | 67 % | 0.133 |
 | `flash` | 14-plate-culture | bare-LLM | 0 % | 0 % | 0.893 |
 | `flash` | 14-plate-culture | soft-gate | 0 % | 0 % | 0.893 |
 | `flash` | 14-plate-culture | self-verify | 0 % | 0 % | 0.929 |
 | `flash` | 14-plate-culture | **Labwright** | **93 %** | **86 %** | **0.071** |
-| `flash` | 14-plate-culture | finetuned-ext (in-dist) | 79 % | 50 % | 0.214 |
+| `flash` | 14-plate-culture | finetuned-ext (in-dist) | 86 % | 57 % | 0.143 |
 | `pro` | 14-plate-culture | bare-LLM | 7 % | 7 % | 0.750 |
 | `pro` | 14-plate-culture | soft-gate | 7 % | 7 % | 0.786 |
 | `pro` | 14-plate-culture | self-verify | 0 % | 0 % | 0.821 |
 | `pro` | 14-plate-culture | **Labwright** | **86 %** | **64 %** | **0.043** |
-| `pro` | 14-plate-culture | finetuned-ext (in-dist) | 79 % | 50 % | 0.214 |
+| `pro` | 14-plate-culture | finetuned-ext (in-dist) | 86 % | 57 % | 0.143 |
 | `flash` | 14-perfused-PK | bare-LLM | 50 % | 36 % | 0.500 |
 | `flash` | 14-perfused-PK | soft-gate | 50 % | 50 % | 0.500 |
 | `flash` | 14-perfused-PK | self-verify | 79 % | 29 % | 0.214 |
 | `flash` | 14-perfused-PK | **Labwright** | **100 %** | **79 %** | **0.000** |
-| `flash` | 14-perfused-PK | finetuned-ext (in-dist) | 50 % | 50 % | 0.500 |
+| `flash` | 14-perfused-PK | finetuned-ext (in-dist) | 57 % | 57 % | 0.429 |
 | `pro` | 14-perfused-PK | bare-LLM | 43 % | 36 % | 0.536 |
 | `pro` | 14-perfused-PK | soft-gate | 50 % | 36 % | 0.500 |
 | `pro` | 14-perfused-PK | self-verify | 79 % | 29 % | 0.214 |
 | `pro` | 14-perfused-PK | **Labwright** | **100 %** | **86 %** | **0.000** |
-| `pro` | 14-perfused-PK | finetuned-ext (in-dist) | 50 % | 50 % | 0.500 |
+| `pro` | 14-perfused-PK | finetuned-ext (in-dist) | 57 % | 57 % | 0.429 |
 
 The memory systems never produce a usable *design* on the flow sets (24-reading,
 15-blind), and the two naive "fixes" do not help there. On the 24-reading set the
@@ -404,21 +404,26 @@ self-consistent **100 %** / usable **79 %** (`flash`) / **86 %** (`pro`) with
 hallucination **0.000**, its residue being the two blind propranolol/antipyrine
 targets and one mM→µM unit-trap that the unit layer caught.
 
-The **finetuned-ext** rows are the 11-domain single-block extractor (lora_v3,
-fine-tuned on 49,500 synthetic rows covering flow, culture, spheroid, pk and
-the seven post-v1 domains). Reading is the in-distribution ceiling: **100 %
-self-consistent**, **96 % usable**, **0.000** hallucination. The domains that
-used to be the OOD collapse are now trained: spheroid at **73 % usable**
-(hallucination **0.200**) and pk at **50 % usable** (hallucination **0.500**).
-Culture stays in-dist at **50 % usable** (hallucination **0.214**). The blind
-set still drops to **20 % usable** — the goal does not state the target, so a
-clean design can miss the physiology — with hallucination held at **0.067**.
-The remaining honest boundary is the 14 new-domain goals: the seven post-v1
-domains are in the training data, yet the single-block extractor scores **0 %
-usable** there (hallucination **0.661**; 9 of 14 goals end in silence — e.g.
-schema errors on barrier keys — 4 miss the target, 1 is a calculation error),
-so it generalizes to the bulk geometries, not to the new-domain goals. The
-multi-block v4 training run is the fix under test for that boundary.
+The **finetuned-ext** rows are the 11-domain multi-block extractor (lora_v4,
+fine-tuned on 56,725 synthetic rows covering flow, culture, spheroid, pk and
+the seven post-v1 domains; single-block lora_v3 on 49,500 rows is the rejected
+comparison). Reading is the in-distribution ceiling: **100 % self-consistent**,
+**96 % usable**, **0.000** hallucination (23/24 of those goals are verbatim
+gold pairs — memorization, not transfer). Spheroid — previously
+out-of-distribution and at **0 % usable** — is now a trained domain: **87 %
+self-consistent**, **67 % usable** (hallucination **0.133**), with **9/14** of
+the *novel* goals recovering. pk is all-novel (none of its goals is a verbatim
+pair): **57 % usable**, hallucination **0.429**, 8/14 novel goals recover
+(lora_v3 reached 7/14). Culture stays in-dist at **57 % usable**
+(hallucination **0.143**). The blind set drops to **27 % usable** — the goal
+does not state the target, so a clean design can miss the physiology — with
+hallucination held at **0.067** (14/15 self-consistent). The remaining honest
+boundary is the 14 new-domain goals: the seven post-v1 domains are in the
+training data, yet the extractor still scores **0 % usable** there, and
+multi-block v4 is *worse* than v3 — hallucination **0.857** vs **0.661** (12 of
+14 goals end in schema-error silence, v3's 9; self-consistent 2/14 vs 4/14).
+The hand-written benchmark wording does not transfer from the synthetic
+phrasing, and that boundary is unsolved.
 
 The blind-set drop is the honest headline: when the goal does not hand over the
 target, Labwright's verified designs hit the wrong physiology. On the expanded
