@@ -98,6 +98,14 @@ def main() -> int:
                         help="mixed precision (default: auto-on when CUDA is available)")
     parser.add_argument("--multi-block", action="store_true",
                         help="use SYSTEM_PROMPT_MULTI (11-domain v2 composite training)")
+    parser.add_argument("--resume", default=None,
+                        help="HF checkpoint dir to resume from (e.g. .../lora_v5/checkpoint-1402)")
+    parser.add_argument("--save-steps", type=int, default=0,
+                        help="checkpoint every N steps (0 = end of each epoch; "
+                             "steps mode is what the watchdog resumes from)")
+    parser.add_argument("--save-total-limit", type=int, default=1,
+                        help="max checkpoints kept (steps mode; raise from 1 so a "
+                             "kill can never leave zero resumable checkpoints)")
     args = parser.parse_args()
 
     set_seed(args.seed)
@@ -153,8 +161,12 @@ def main() -> int:
         fp16=use_fp16,
         gradient_checkpointing=True,
         logging_steps=10,
-        save_strategy="epoch",
-        save_total_limit=1,
+        # steps-based checkpoints are the watchdog's resume granularity; on a
+        # machine where a silent kill has been observed, epoch-only saves can
+        # mean a kill before the first checkpoint loses the whole run.
+        save_strategy="steps" if args.save_steps > 0 else "epoch",
+        save_steps=args.save_steps,
+        save_total_limit=args.save_total_limit,
         eval_strategy="epoch" if eval_ds is not None else "no",
         seed=args.seed,
     )
@@ -165,7 +177,7 @@ def main() -> int:
         train_dataset=train_ds,
         eval_dataset=eval_ds,
     )
-    trainer.train()
+    trainer.train(resume_from_checkpoint=args.resume)
 
     model.save_pretrained(str(out_dir))
     tokenizer.save_pretrained(str(out_dir))
