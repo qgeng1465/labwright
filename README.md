@@ -353,12 +353,15 @@ Two capabilities the above don't have:
    ([`eval/published_protocols/`](eval/published_protocols/)). Scaled to the
    literature, `eval/run_scirecipe_audit.py` ran the same check over **21,094**
    real SciRecipe protocol summaries (14,589 numeric → 5,700 audited). **Read the
-   denominators exactly**: of the **5,700 audited protocols, only 104** carried a
-   derived number that could be re-derived from the protocol's own inputs, a
-   checkable rate of **104/5,700 = 1.8 %**. Among those 104, **30** were
+   denominators exactly**: of the **5,700 audited protocols, 457** stated a
+   derived number in the paper, and only **104** of those could be re-derived
+   from the protocol's own inputs — a checkable rate of **104/457 = 22.8 %**
+   among stated numbers (**1.8 % of audited**). Among those 104, **30** were
    internally consistent and **74** were contradicted by the papers' own numbers, a
-   checkable consistency of **30/104 = 28.8 %**. The other 5,596 rows stated
-   no derived number that could be re-derived; they are `unverifiable`, never
+   checkable consistency of **30/104 = 28.8 %**. The remaining 5,596 rows
+   carried no number that could be re-derived (353 of them stated one but the
+   derivation could not be reproduced; the other 5,243 stated none); they are
+   `unverifiable`, never
    counted as "ok". **This
    28.8 % is the consistency rate among the checkable rows only, not "28.8 % of
    the literature is inconsistent"**. It says: of the 1.8 % of protocols that

@@ -8,23 +8,6 @@
         "blind_strength": null,
         "scenario": "complete-info"
       },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "teer_ohm_cm2": 0.0,
-          "papp_cm_s": 0.0,
-          "clearance_mL_min": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 4,
-        "prose_refusals": 1,
-        "no_plan": false
-      },
       "finetuned": {
         "plan": false,
         "error": "schema_error: 'resistance_total_ohm'",
@@ -42,22 +25,6 @@
         "id": "barrier-hcmec-teer",
         "blind_strength": null,
         "scenario": "complete-info"
-      },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "teer_ohm_cm2": 0.0,
-          "papp_cm_s": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 3,
-        "prose_refusals": 1,
-        "no_plan": false
       },
       "finetuned": {
         "plan": false,
@@ -77,23 +44,6 @@
         "blind_strength": null,
         "scenario": "complete-info"
       },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "dissolved_o2_mM": 0.0,
-          "penetration_depth_um": 0.0,
-          "necrotic_fraction": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 7,
-        "prose_refusals": 0,
-        "no_plan": false
-      },
       "finetuned": {
         "plan": true,
         "error": null,
@@ -112,24 +62,6 @@
         "blind_strength": null,
         "scenario": "complete-info"
       },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "dissolved_o2_mM": 0.0,
-          "penetration_depth_um": 0.0,
-          "necrotic_fraction": 0.0,
-          "demand_umol_min": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 7,
-        "prose_refusals": 1,
-        "no_plan": false
-      },
       "finetuned": {
         "plan": false,
         "error": "schema_error: 'cells_per_spheroid'",
@@ -147,24 +79,6 @@
         "id": "pumpless-hepg2-rocking",
         "blind_strength": null,
         "scenario": "complete-info"
-      },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "hydrostatic_head_pa": 0.0,
-          "peak_wall_shear_pa": 0.0,
-          "oscillatory_shear_index": 0.0,
-          "cycles_per_hour": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 2,
-        "prose_refusals": 0,
-        "no_plan": false
       },
       "finetuned": {
         "plan": true,
@@ -189,24 +103,6 @@
         "blind_strength": null,
         "scenario": "complete-info"
       },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "hydrostatic_head_pa": 0.0,
-          "peak_wall_shear_pa": 0.0,
-          "volume_per_half_cycle_ul": 0.0,
-          "oscillatory_shear_index": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 2,
-        "prose_refusals": 0,
-        "no_plan": false
-      },
       "finetuned": {
         "plan": false,
         "error": "schema_error: 'tilt_angle_deg'",
@@ -224,26 +120,6 @@
         "id": "breathing-ali-h1299",
         "blind_strength": null,
         "scenario": "complete-info"
-      },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "breaths_per_minute": 0.0,
-          "cyclic_displacement_um": 0.0,
-          "strain_rate_per_s": 0.0,
-          "total_cycles": 0.0,
-          "stretch_duty_fraction": 0.0,
-          "ali_liquid_film_um": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 1,
-        "prose_refusals": 0,
-        "no_plan": false
       },
       "finetuned": {
         "plan": false,
@@ -263,23 +139,6 @@
         "blind_strength": null,
         "scenario": "complete-info"
       },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "breaths_per_minute": 0.0,
-          "cyclic_displacement_um": 0.0,
-          "ali_liquid_film_um": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 3,
-        "prose_refusals": 0,
-        "no_plan": false
-      },
       "finetuned": {
         "plan": false,
         "error": "schema_error: 3 validation errors for BreathingPlan\nspan_um\n  Extra inputs are not permitted [type=extra_forbidden, input_value=400.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nseeding_density_cells_cm2\n  Extra inputs are not permitted [type=extra_forbidden, input_value=100.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntotal_volume_ul\n  Extra inputs are not permitted [type=extra_forbidden, input_value=15.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
@@ -297,24 +156,6 @@
         "id": "pulsatile-aortic-heartchip",
         "blind_strength": null,
         "scenario": "complete-info"
-      },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "womersley_number": 0.0,
-          "oscillatory_shear_index": 0.0,
-          "peak_shear_pa": 0.0,
-          "pulsatility_index": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 2,
-        "prose_refusals": 0,
-        "no_plan": false
       },
       "finetuned": {
         "plan": true,
@@ -338,24 +179,6 @@
         "blind_strength": null,
         "scenario": "complete-info"
       },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "womersley_number": 0.0,
-          "oscillatory_shear_index": 0.0,
-          "peak_shear_pa": 0.0,
-          "pulsatility_index": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 2,
-        "prose_refusals": 0,
-        "no_plan": false
-      },
       "finetuned": {
         "plan": false,
         "error": "schema_error: 'shear_mean_pa'",
@@ -373,23 +196,6 @@
         "id": "scaling-liver-chip",
         "blind_strength": null,
         "scenario": "complete-info"
-      },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "organ_flow_fraction": 0.0,
-          "organ_flow_rate_mlmin": 0.0,
-          "cells_in_organ": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 1,
-        "prose_refusals": 0,
-        "no_plan": false
       },
       "finetuned": {
         "plan": false,
@@ -409,25 +215,6 @@
         "blind_strength": null,
         "scenario": "complete-info"
       },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "organ_flow_fraction": 0.0,
-          "organ_flow_rate_mlmin": 0.0,
-          "cells_in_organ": 0.0,
-          "transit_time_s": 0.0,
-          "residence_time_match_error_s": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 3,
-        "prose_refusals": 0,
-        "no_plan": false
-      },
       "finetuned": {
         "plan": true,
         "error": null,
@@ -445,24 +232,6 @@
         "id": "gradient-cxcl12-chemotaxis",
         "blind_strength": null,
         "scenario": "complete-info"
-      },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "steepness_um_per_mm": 0.0,
-          "midpoint_conc_um": 0.0,
-          "relaxation_time_s": 0.0,
-          "flux_mol_m2s": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
-        "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 1,
-        "prose_refusals": 0,
-        "no_plan": false
       },
       "finetuned": {
         "plan": false,
@@ -482,19 +251,6 @@
         "blind_strength": null,
         "scenario": "complete-info"
       },
-      "labwright": {
-        "plan": false,
-        "error": "agent did not call submit_design within 12 iterations",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
-        "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false,
-        "tool_calls": 4,
-        "prose_refusals": 8,
-        "no_plan": true
-      },
       "finetuned": {
         "plan": true,
         "error": null,
@@ -512,43 +268,23 @@
       }
     }
   ],
-  "labwright": {
+  "finetuned": {
     "recovery": {
-      "teer_ohm_cm2": 0.0,
-      "papp_cm_s": 0.0,
-      "clearance_mL_min": 0.0,
-      "dissolved_o2_mM": 0.0,
-      "penetration_depth_um": 0.0,
-      "necrotic_fraction": 0.0,
-      "demand_umol_min": 0.0,
       "hydrostatic_head_pa": 0.0,
       "peak_wall_shear_pa": 0.0,
-      "oscillatory_shear_index": 0.0,
+      "oscillatory_shear_index": 0.5,
       "cycles_per_hour": 0.0,
-      "volume_per_half_cycle_ul": 0.0,
-      "breaths_per_minute": 0.0,
-      "cyclic_displacement_um": 0.0,
-      "strain_rate_per_s": 0.0,
-      "total_cycles": 0.0,
-      "stretch_duty_fraction": 0.0,
-      "ali_liquid_film_um": 0.0,
-      "womersley_number": 0.0,
+      "womersley_number": 0.817109,
       "peak_shear_pa": 0.0,
-      "pulsatility_index": 0.0,
-      "organ_flow_fraction": 0.0,
-      "organ_flow_rate_mlmin": 0.0,
-      "cells_in_organ": 0.0,
-      "transit_time_s": 0.0,
-      "residence_time_match_error_s": 0.0,
-      "steepness_um_per_mm": 0.0,
+      "steepness_um_per_mm": 999.0,
       "midpoint_conc_um": 0.0,
-      "relaxation_time_s": 0.0,
-      "flux_mol_m2s": 0.0
+      "relaxation_time_s": 0.999999,
+      "flux_mol_m2s": 999.0
     },
-    "hallucination_rate": 0.07142857142857142,
-    "self_consistent_rate": 0.9285714285714286,
-    "usable_design_rate": 0.9285714285714286
+    "hallucination_rate": 0.6607142857142857,
+    "self_consistent_rate": 0.2857142857142857,
+    "usable_design_rate": 0.0
   },
-  "model": "deepseek-v4-flash",
-  "generated_at": "2026-08-14T11:25:49+00:00"
+  "system": "finetuned",
+  "generated_at": "2026-08-14T16:05:00+00:00"
 }

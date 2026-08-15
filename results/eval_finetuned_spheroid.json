@@ -9,14 +9,16 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 'cells_per_spheroid'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_volume_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -27,14 +29,16 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got 'solid'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -45,14 +49,16 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got 'square'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_per_spheroid": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -63,13 +69,15 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got '1000'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_count": 0.9
+        },
+        "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "silence",
+        "failure": "wrong_target",
         "target_selected": false
       }
     },
@@ -81,14 +89,16 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 'cells_per_spheroid'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -99,14 +109,16 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 'cells_per_spheroid'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -137,14 +149,17 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 'cells_per_spheroid'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_volume_ul": 0.0,
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -173,14 +188,17 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 'cells_per_spheroid'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -191,14 +209,17 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "unparseable_json",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -210,7 +231,7 @@
       },
       "finetuned": {
         "plan": false,
-        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got 'ula'",
+        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got 'ULA'",
         "recovery": {},
         "hallucination_rate": 1.0,
         "valid": false,
@@ -227,14 +248,16 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got '3d'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -263,25 +286,33 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 'cells_per_spheroid'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     }
   ],
   "finetuned": {
     "recovery": {
-      "total_medium_ml": 0.0
+      "spheroid_volume_ul": 0.0,
+      "expected_diameter_um": 0.0,
+      "cells_per_spheroid": 0.0,
+      "spheroid_count": 0.9,
+      "medium_volume_per_spheroid_ul": 0.0,
+      "total_medium_ml": 0.0,
+      "cells_total": 0.0
     },
-    "hallucination_rate": 0.9333333333333333,
-    "self_consistent_rate": 0.06666666666666667,
-    "usable_design_rate": 0.06666666666666667
+    "hallucination_rate": 0.2,
+    "self_consistent_rate": 0.8,
+    "usable_design_rate": 0.7333333333333333
   },
   "system": "finetuned",
-  "generated_at": "2026-08-14T08:27:53+00:00"
+  "generated_at": "2026-08-14T16:01:28+00:00"
 }
