@@ -1,0 +1,228 @@
+{
+  "newdomains": {
+    "set": "newdomains",
+    "baseline": {
+      "n": 14,
+      "usable_rate": 0.0,
+      "hallucination_rate": 0.8571,
+      "self_consistent_rate": 0.1429
+    },
+    "repair": {
+      "n": 14,
+      "usable_rate": 0.0,
+      "hallucination_rate": 0.7857,
+      "self_consistent_rate": 0.2143
+    },
+    "schemaprompt": {
+      "n": 14,
+      "usable_rate": 0.0,
+      "hallucination_rate": 1.0,
+      "self_consistent_rate": 0.0
+    },
+    "schemaprompt_repair": {
+      "n": 14,
+      "usable_rate": 0.0,
+      "hallucination_rate": 0.9286,
+      "self_consistent_rate": 0.0714
+    },
+    "detail": [
+      {
+        "id": "barrier-caco2-teer-papp",
+        "repair": "schema_error->fail",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "barrier-hcmec-teer",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "oxygen-phh-sinusoid",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "oxygen-hepg2-hypoxic-core",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "pumpless-hepg2-rocking",
+        "repair": "fail->fail",
+        "schemaprompt": "fail->unparseable_json",
+        "schemaprompt_repair": "fail->unparseable_json"
+      },
+      {
+        "id": "pumpless-hcmec-tesla",
+        "repair": "schema_error->derived_field_rejected",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "breathing-ali-h1299",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "breathing-alveoli-5pct",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "pulsatile-aortic-heartchip",
+        "repair": "fail->fail",
+        "schemaprompt": "fail->unparseable_json",
+        "schemaprompt_repair": "fail->unparseable_json"
+      },
+      {
+        "id": "pulsatile-venous-heartchip",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "scaling-liver-chip",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->fail"
+      },
+      {
+        "id": "scaling-kidney-chip",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "gradient-cxcl12-chemotaxis",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "gradient-fgf8-pattern",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      }
+    ]
+  },
+  "pk": {
+    "set": "pk",
+    "baseline": {
+      "n": 14,
+      "usable_rate": 0.5714,
+      "hallucination_rate": 0.4286,
+      "self_consistent_rate": 0.5714
+    },
+    "repair": {
+      "n": 14,
+      "usable_rate": 0.5714,
+      "hallucination_rate": 0.4286,
+      "self_consistent_rate": 0.5714
+    },
+    "schemaprompt": {
+      "n": 14,
+      "usable_rate": 0.0,
+      "hallucination_rate": 1.0,
+      "self_consistent_rate": 0.0
+    },
+    "schemaprompt_repair": {
+      "n": 14,
+      "usable_rate": 0.0,
+      "hallucination_rate": 1.0,
+      "self_consistent_rate": 0.0
+    },
+    "detail": [
+      {
+        "id": "pk-extraction-ratio",
+        "repair": "unchanged_ok",
+        "schemaprompt": "regressed",
+        "schemaprompt_repair": "regressed"
+      },
+      {
+        "id": "pk-clearance",
+        "repair": "unchanged_ok",
+        "schemaprompt": "regressed",
+        "schemaprompt_repair": "regressed"
+      },
+      {
+        "id": "pk-half-life",
+        "repair": "unchanged_ok",
+        "schemaprompt": "regressed",
+        "schemaprompt_repair": "regressed"
+      },
+      {
+        "id": "pk-accumulation-ratio",
+        "repair": "unchanged_ok",
+        "schemaprompt": "regressed",
+        "schemaprompt_repair": "regressed"
+      },
+      {
+        "id": "pk-mass-cleared",
+        "repair": "unchanged_ok",
+        "schemaprompt": "regressed",
+        "schemaprompt_repair": "regressed"
+      },
+      {
+        "id": "pk-complete-clearance-panel",
+        "repair": "unchanged_ok",
+        "schemaprompt": "regressed",
+        "schemaprompt_repair": "regressed"
+      },
+      {
+        "id": "pk-mM-unit-trap",
+        "repair": "unchanged_ok",
+        "schemaprompt": "regressed",
+        "schemaprompt_repair": "regressed"
+      },
+      {
+        "id": "pk-half-life-min-trap",
+        "repair": "unchanged_ok",
+        "schemaprompt": "regressed",
+        "schemaprompt_repair": "regressed"
+      },
+      {
+        "id": "pk-cell-free-subtraction",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "pk-repeat-dose-24h",
+        "repair": "derived_field_rejected->schema_error",
+        "schemaprompt": "derived_field_rejected->schema_error",
+        "schemaprompt_repair": "derived_field_rejected->schema_error"
+      },
+      {
+        "id": "pk-high-extraction-clearance",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "pk-low-extraction-clearance",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "blind-pk-high-extraction-propranolol",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      },
+      {
+        "id": "blind-pk-low-extraction-antipyrine",
+        "repair": "still_schema_error",
+        "schemaprompt": "schema_error->unparseable_json",
+        "schemaprompt_repair": "schema_error->unparseable_json"
+      }
+    ]
+  }
+}

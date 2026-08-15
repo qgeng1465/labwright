@@ -1,0 +1,265 @@
+{
+  "n_gold": 14,
+  "per_entry": [
+    {
+      "id": "pk-extraction-ratio",
+      "gold": {
+        "id": "pk-extraction-ratio",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-clearance",
+      "gold": {
+        "id": "pk-clearance",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 5 validation errors for DesignInput\ncompound\n  Extra inputs are not permitted [type=extra_forbidden, input_value='carbazochrome', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ninlet_concentration_uM\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0.5, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\noutlet_concentration_uM\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0.1, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow_rate_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nsystem_volume_uL\n  Extra inputs are not permitted [type=extra_forbidden, input_value=10.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-half-life",
+      "gold": {
+        "id": "pk-half-life",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-accumulation-ratio",
+      "gold": {
+        "id": "pk-accumulation-ratio",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-mass-cleared",
+      "gold": {
+        "id": "pk-mass-cleared",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 4 validation errors for DesignInput\nflow.compound\n  Extra inputs are not permitted [type=extra_forbidden, input_value='acetaminophen', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow.inlet_concentration_uM\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0.5, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow.outlet_concentration_uM\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nflow.system_volume_uL\n  Extra inputs are not permitted [type=extra_forbidden, input_value=100.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-complete-clearance-panel",
+      "gold": {
+        "id": "pk-complete-clearance-panel",
+        "blind_strength": null,
+        "scenario": "multi-target"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-mM-unit-trap",
+      "gold": {
+        "id": "pk-mM-unit-trap",
+        "blind_strength": null,
+        "scenario": "unit-ambiguity"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-half-life-min-trap",
+      "gold": {
+        "id": "pk-half-life-min-trap",
+        "blind_strength": null,
+        "scenario": "unit-ambiguity"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-cell-free-subtraction",
+      "gold": {
+        "id": "pk-cell-free-subtraction",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-repeat-dose-24h",
+      "gold": {
+        "id": "pk-repeat-dose-24h",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 7 validation errors for DesignInput\ncompound\n  Extra inputs are not permitted [type=extra_forbidden, input_value='compound', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nculture_duration_h\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nfrequency_hz\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nchannel_height_um\n  Extra inputs are not permitted [type=extra_forbidden, input_value=100.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nshear_mean_pa\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0.5, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nshear_amplitude_pa\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncell_type\n  Extra inputs are not permitted [type=extra_forbidden, input_value='HUVEC', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-high-extraction-clearance",
+      "gold": {
+        "id": "pk-high-extraction-clearance",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pk-low-extraction-clearance",
+      "gold": {
+        "id": "pk-low-extraction-clearance",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-pk-high-extraction-propranolol",
+      "gold": {
+        "id": "blind-pk-high-extraction-propranolol",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-pk-low-extraction-antipyrine",
+      "gold": {
+        "id": "blind-pk-low-extraction-antipyrine",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    }
+  ],
+  "finetuned": {
+    "recovery": {},
+    "hallucination_rate": 1.0,
+    "self_consistent_rate": 0.0,
+    "usable_design_rate": 0.0
+  },
+  "system": "finetuned",
+  "generated_at": "2026-08-15T05:47:36+00:00"
+}
