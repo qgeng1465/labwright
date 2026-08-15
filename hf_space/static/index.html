@@ -151,10 +151,10 @@
       new-domain goals (no bare-memory baseline was run on this set). Flash submits 13/14,
       pro 11/14; among submitted designs hallucination is 0.000 on both. The honest boundary:
       the <code>gradient-fgf8-pattern</code> goal ends in silence on both models, and the
-      fine-tuned extractor — trained across all eleven domains on 56.7k synthetic goals —
-      scores 0/14 here: the hand-written benchmark wording does not transfer from its
-      synthetic training phrasing, and the goals end in silence rather than fabrication
-      (hallucination 0.857).</p>
+      fine-tuned extractor — trained across all eleven domains on ~49.8k synthetic goals —
+      answers 4/14 here (v4 scored 0/14): the v5 retrain adds hand-written-register
+      variants for these domains, closing part of the phrasing gap; the remaining 10/14
+      still end in silence rather than fabrication (hallucination 0.446).</p>
     <p class="note">Memory-only systems (bare, soft-gate, self-verify) rarely produce a usable
       design. Labwright's derived numbers are <i>architecturally</i> consistent — the honest
       headline is the blind-set drop: the gate stops fabricated numbers, but it cannot supply
