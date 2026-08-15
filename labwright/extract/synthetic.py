@@ -326,6 +326,26 @@ _FLOW_TEMPLATES = [
     "For a {cell} monolayer under {target} shear in a {w} µm × {h} µm, {L} mm channel (viscosity "
     "{mu} Pa·s, seeding density {density} cells/cm²), pick the flow rate (µL/min) the pump "
     "must deliver.",
+    # Natural / hand-written register (v6): mirrors how the gold goals phrase a
+    # design -- imperative, concrete numbers, one flowing sentence. The raw
+    # fields are identical to the calculator-register rows above.
+    "Perfuse a {organ} chip seeded with {cell} at {density} cells/cm² to reproduce "
+    "the reported wall shear of {target}. The channel is {w} µm wide, {h} µm high "
+    "and {L} mm long (medium viscosity {mu} Pa·s). What flow rate (µL/min) does "
+    "the pump need?",
+    "Design a {material} organ-on-chip for {cell} that sees {target} wall shear. "
+    "The {w} µm × {h} µm channel is {L} mm long, seeded at {density} cells/cm² "
+    "with a medium viscosity of {mu} Pa·s. Report the perfusion flow rate in "
+    "µL/min.",
+    "Culture {cell} in a {w} µm × {h} µm × {L} mm channel and reach the {organ} "
+    "shear of {target}. Seed at {density} cells/cm² (medium {mu} Pa·s); what is "
+    "the pump flow rate in µL/min?",
+    "A {cell} monolayer on a {organ} chip should experience {target} wall shear. "
+    "The channel is {w} µm wide, {h} µm high and {L} mm long, seeded at {density} "
+    "cells/cm² with {mu} Pa·s medium. Pick the flow rate (µL/min) to perfuse.",
+    "Set up a {organ}-on-chip for {cell} at {target}. The microfluidic channel "
+    "measures {w} µm × {h} µm, {L} mm long; seed {density} cells/cm² and use "
+    "medium viscosity {mu} Pa·s. Compute the flow rate in µL/min.",
 ]
 
 #: The flow-rate wording the prose uses, so a template can ask for the pump
@@ -438,6 +458,17 @@ _CULTURE_TEMPLATES = [
     "Prepare a {pf} plate for {cell}: seed {wells} well(s) at {density} {density_units}.",
     "Culture {cell} in {wells} well(s) of a {pf} plate, plating density {density} "
     "{density_units}.",
+    # Natural / hand-written register (v6).
+    "Seed {cell} into {wells} well(s) of a {pf} plate at {density} {density_units}, "
+    "a moderate growth-phase seeding density.",
+    "Plate {cell} on a {pf} plate ({wells} well(s)) at {density} {density_units}. "
+    "How many cells go into each well?",
+    "Primary {cell} in a {pf} plate are seeded across {wells} well(s) at {density} "
+    "{density_units}.",
+    "A suspension of {cell} is plated into {wells} well(s) of a {pf} plate at "
+    "{density} {density_units}.",
+    "Culture {cell} in a {pf} plate: {wells} well(s), seeding density {density} "
+    "{density_units}.",
 ]
 
 
@@ -502,6 +533,13 @@ _SPHEROID_TEMPLATES = [
     "cells per spheroid, mean cell diameter {cd} µm.",
     "Plate {cell} into {fmt} plates, {count} well(s), {cps} cells per spheroid "
     "(~{cd} µm mean cell diameter).",
+    # Natural / hand-written register (v6).
+    "Form {cell} spheroids in {fmt} plates, {count} per plate, seeded at {cps} "
+    "cells per spheroid; the cells have a mean diameter of {cd} µm.",
+    "A spheroid culture of {cell} in {fmt} plates starts from {cps} cells per "
+    "spheroid (mean cell diameter {cd} µm), {count} spheroids per plate.",
+    "{cell} are grown as spheroids in {fmt} vessels -- {count} spheroids, {cps} "
+    "cells each, mean cell diameter {cd} µm.",
 ]
 
 #: Derived-number questions the prose may ask, so the model learns to extract
@@ -714,6 +752,16 @@ _PK_TEMPLATES = [
     "outlet {cout:g} µM, perfusion flow {q:g} µL/min.",
     "Measure the intrinsic clearance of {compound} on-chip at {cin:g} µM inlet, "
     "{cout:g} µM outlet and {q:g} µL/min perfusion.",
+    # Natural / hand-written register (v6).
+    "Measure the first-pass clearance of {compound} on a perfused chip: the inlet "
+    "reads {cin:g} µM and the outlet {cout:g} µM at a flow of {q:g} µL/min.",
+    "A perfused organ-chip is dosed with {compound}; the inlet concentration is "
+    "{cin:g} µM, the outlet measures {cout:g} µM, and the perfusion flow is "
+    "{q:g} µL/min.",
+    "Characterize the extraction of {compound} on-chip: inlet {cin:g} µM, outlet "
+    "{cout:g} µM, perfusion {q:g} µL/min.",
+    "A perfused chip clears {compound}: {cin:g} µM in, {cout:g} µM out, at "
+    "{q:g} µL/min.",
 ]
 
 #: Derived-number questions the prose may ask (calculator-owned outputs).
