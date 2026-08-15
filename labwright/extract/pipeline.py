@@ -21,11 +21,25 @@ from pydantic import ValidationError
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from labwright.design import DesignInput, _reject_derived_fields, build_design
-from labwright.extract.data import SYSTEM_PROMPT, SYSTEM_PROMPT_MULTI
+from labwright.extract.data import SYSTEM_PROMPT, SYSTEM_PROMPT_MULTI, SCHEMA_PROMPT_MULTI
 from labwright.verify.checker import Issue, format_issues, verify_design
 
 _DEFAULT_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
 _DEFAULT_ADAPTER = "results/extractor/lora"
+
+
+def select_system_prompt(multi_block: bool, use_schema_prompt: bool) -> str:
+    """Pick the system prompt for extraction.
+
+    ``multi_block`` switches to the v2 composite variant the LoRA fine-tune saw
+    in training. ``use_schema_prompt`` (orthogonal) adds the explicit key-name /
+    unit listing — normally reserved for untrained API baselines — which an
+    A/B uses to ask whether the fine-tuned model's field-completeness gap on
+    out-of-register domains is a key-name problem or a deeper one.
+    """
+    if multi_block:
+        return SCHEMA_PROMPT_MULTI if use_schema_prompt else SYSTEM_PROMPT_MULTI
+    return SYSTEM_PROMPT
 
 
 def configure_tokenizer(tokenizer) -> None:
@@ -74,9 +88,10 @@ class Extractor:
         device: str | None = None,
         multi_block: bool = False,
         repair_retries: int = 0,
+        use_schema_prompt: bool = False,
     ):
         self.multi_block = multi_block
-        self.system_prompt = SYSTEM_PROMPT_MULTI if multi_block else SYSTEM_PROMPT
+        self.system_prompt = select_system_prompt(multi_block, use_schema_prompt)
         #: schema-repair retries per goal (see :meth:`extract_plan`). 0 = the
         #: baseline behaviour: a schema error is final and the entry fails.
         self.repair_retries = repair_retries

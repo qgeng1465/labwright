@@ -48,13 +48,19 @@ def main() -> int:
     ap.add_argument("--repair-retries", type=int, default=0,
                     help="on schema/build failure, re-prompt the model with the validator "
                          "error up to N extra attempts (0 = baseline, schema error is final)")
+    ap.add_argument("--schema-prompt", action="store_true",
+                    help="use the explicit key-name/unit SCHEMA_PROMPT_MULTI at inference "
+                         "(A/B: does the field-completeness gap on new domains come from "
+                         "key names or from the model itself?)")
     args = ap.parse_args()
 
     gold = load_gold(args.gold)
-    print(f"gold entries: {len(gold)}   adapter: {args.adapter}   repair-retries: {args.repair_retries}", flush=True)
+    print(f"gold entries: {len(gold)}   adapter: {args.adapter}   repair-retries: {args.repair_retries}   "
+          f"schema-prompt: {args.schema_prompt}", flush=True)
 
     ext = Extractor(model_path=args.model, adapter_path=args.adapter, device=args.device,
-                    multi_block=args.multi_block, repair_retries=args.repair_retries)
+                    multi_block=args.multi_block, repair_retries=args.repair_retries,
+                    use_schema_prompt=args.schema_prompt)
     print(f"extractor on {ext.device}", flush=True)
 
     def progress(msg: str) -> None:

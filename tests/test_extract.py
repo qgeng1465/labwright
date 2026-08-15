@@ -493,6 +493,22 @@ def test_multi_block_prompt_is_versioned():
     assert enc is not None and len(enc["input_ids"]) > 0
 
 
+def test_select_system_prompt_three_way():
+    """multi_block / use_schema_prompt select exactly one of the three prompts:
+    the schema variant is orthogonal to multi-block (an A/B knob at inference),
+    and a schema error must never leak the key names into the single-block path."""
+    from labwright.extract.data import SYSTEM_PROMPT, SYSTEM_PROMPT_MULTI, SCHEMA_PROMPT_MULTI
+    from labwright.extract.pipeline import select_system_prompt
+
+    assert select_system_prompt(False, False) is SYSTEM_PROMPT
+    assert select_system_prompt(True, False) is SYSTEM_PROMPT_MULTI
+    assert select_system_prompt(True, True) is SCHEMA_PROMPT_MULTI
+    # single-block + schema flag stays on the training prompt (no key-name shift
+    # for single-block adapters that never saw SCHEMA_PROMPT)
+    assert select_system_prompt(False, True) is SYSTEM_PROMPT
+    assert "resistance_total_ohm" in SCHEMA_PROMPT_MULTI
+
+
 def test_negative_sample_perturbs_embedded_approx_only():
     """A negative sample flips one '≈value unit' derived claim; the raw block is
     untouched (the target stays correct), and only ≈-bearing goals change."""
