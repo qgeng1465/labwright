@@ -186,7 +186,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 4.0
+          "shear_pa": 49.0
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -380,7 +380,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.666667
+          "shear_pa": 2.333333
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -572,13 +572,15 @@
         "target_selected": false
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 1 validation error for CellPlan\ngrowth_phase\n  Extra inputs are not permitted [type=extra_forbidden, input_value='logarithmic', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
-        "recovery": {},
-        "hallucination_rate": 1.0,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 1.0
+        },
+        "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "silence",
+        "failure": "wrong_target",
         "target_selected": false
       }
     },
@@ -668,15 +670,13 @@
         "target_selected": true
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "seed_count": 0.933333
-        },
-        "hallucination_rate": 0.0,
+        "plan": false,
+        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
+        "recovery": {},
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -865,7 +865,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.95
+          "shear_pa": 0.5
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -1164,7 +1164,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.5
+          "shear_pa": 4.0
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -1507,5 +1507,23 @@
     "usable_design_rate": 0.4666666666666667
   },
   "model": "k3",
-  "generated_at": "2026-08-13T12:28:32+00:00"
+  "generated_at": "2026-08-13T12:28:32+00:00",
+  "finetuned": {
+    "self_consistent_rate": 0.9333333333333333,
+    "usable_rate": 0.26666666666666666,
+    "hallucination_rate": 0.06666666666666667,
+    "recovery": {
+      "shear_pa": 9.109567833333333,
+      "seed_count": 1.0,
+      "total_medium_ml": 0.0,
+      "residence_time_s": 0.0
+    },
+    "failure_counts": {
+      "wrong_target": 10,
+      "silence": 1,
+      "ok": 4
+    },
+    "unit_misread_rate": 0.0,
+    "target_selection_accuracy": 0.26666666666666666
+  }
 }

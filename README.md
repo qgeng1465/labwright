@@ -317,7 +317,10 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
   composite goals** (two subsystems in one platform, one block each) and
   **negative samples** (a goal-embedded `≈value` derived claim flipped to a
   wrong value, so the model learns the goal text may assert a number the
-  calculators will contradict). A data audit also fixed the breathing
+  calculators will contradict). A third dataset (`results/extractor_11dom_v3`,
+  ~49.8k rows incl. the 46 gold pairs) regenerates the seven post-v1 domains
+  with hand-written-register prose variants — the fix behind the new-domain
+  gain (0/14 → 4/14) in the Benchmark. A data audit also fixed the breathing
   generator: the stretch-cycle period now equals `1/frequency` (0.2 Hz -> 5 s,
   0.25 Hz -> 4 s), so `stretch_seconds`/`cycle_seconds` are physically
   consistent and recoverable from the goal; v2 was regenerated deterministically
@@ -480,13 +483,13 @@ fixed local extractor). The three LLM-memory systems (bare-LLM, soft-gate,
 self-verify) write numbers from memory and are scored by *identical* rules;
 only the prompt/stage structure differs. Labwright adds the calculators and
 the verifier. The fifth, **finetuned-ext**, is a local Qwen2.5-1.5B-Instruct
-LoRA fine-tuned on 56,725 synthetic goals spanning all 11 domains (plus 46
+LoRA fine-tuned on ~49.8k synthetic goals spanning all 11 domains (plus 46
 source-pinned gold pairs). Its bars are identical under flash and pro by
 construction. Honest caveat: the reading and plate-culture columns overstate
 generalization -- 23/24 reading and 8/14 plate-culture gold goals appear
 *verbatim* in the gold-pair supervision, so those rows measure memorization
 more than transfer; on never-seen goals only the rates are spheroid 9/14,
-PK 8/14, blind 4/15 and new-domains 0/14.
+PK 7/14, blind 4/15 and new-domains 4/14.
 
 **New failure-mode metrics.** Each entry is also classified *why* it failed
 (`ok` / `silence` / `calculation_error` / `wrong_target`), whether a
@@ -496,7 +499,7 @@ blind-set cells are split by hint strength (cold vs prompt-backed). The `eval.re
 renderer prints all of it; the classification and misread logic are unit-tested
 (`tests/test_metrics.py`).
 
-![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind, 15-3D-spheroid, 14-culture and 14-PK sets (flash & pro; finetuned-ext identical under both). The memory systems (stone / ochre / sage) reach a usable design only on the handful of single-step goals the goal hands over; Labwright (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on the spheroid, culture and PK sets; the fine-tuned extractor (lilac) reaches the reading-set ceiling (23/24 of those goals are verbatim training pairs) and transfers to spheroid (67 %) and PK (57 %) on novel goals, but fails on the new domains (0/14, see below).](paper/fig_benchmark.png)
+![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind, 15-3D-spheroid, 14-culture and 14-PK sets (flash & pro; finetuned-ext identical under both). The memory systems (stone / ochre / sage) reach a usable design only on the handful of single-step goals the goal hands over; Labwright (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on the spheroid, culture and PK sets; the fine-tuned extractor (lilac) reaches 22/24 on the reading set (23/24 of those goals are verbatim training pairs; the one regression is the 400×100-shear goal) and transfers to spheroid (67 %), culture (64 %) and PK (50 %) on novel goals, blind (27 %), and answers 4/14 of the hand-written post-v1 domains (up from v4's 0/14, see below).](paper/fig_benchmark.png)
 
 A *usable* design is internally consistent **and** hits every target within
 ±5 %. This is an *ablation*, not an equal-resource race: Labwright's
@@ -621,8 +624,8 @@ live model:
 |---|---|---|---|---|
 | 14-new-domains | `flash` | **Labwright** | **13/14 (93 %)** | **0.071** |
 | 14-new-domains | `pro` | **Labwright** | **11/14 (79 %)** | **0.214** |
-| 14-new-domains | `flash` | finetuned-ext | 0/14 (0 %) | 0.857 |
-| 14-new-domains | `pro` | finetuned-ext | 0/14 (0 %) | 0.857 |
+| 14-new-domains | `flash` | finetuned-ext | 4/14 (29 %) | 0.446 |
+| 14-new-domains | `pro` | finetuned-ext | 4/14 (29 %) | 0.446 |
 
 Every submitted design recovers every gold target to machine precision, and
 **among submitted designs hallucination is 0.000 on both models**. The
@@ -750,26 +753,27 @@ Read the numbers honestly, and the boundary of what they mean.
   not), plus one unit-trap entry where the unit layer caught the mM→µM
   conversion before it entered the plan. The two genuine **unit traps** (mM-vs-µM
   and min-vs-h) are recovered cleanly by Labwright on both models.
-- **The fine-tuned extractor (lora_v4, multi-block, 56.7k synthetic goals across
+- **The fine-tuned extractor (lora_v5, multi-block, ~49.8k synthetic goals across
   all 11 domains) is strong where it has seen the phrasing, and honest about
-  what that means.** Reading: usable **96 %** / self-consistent **100 %** /
+  what that means.** Reading: usable **92 %** / self-consistent **100 %** /
   **0.000** — but **23/24 of those goals appear verbatim in the gold-pair
-  supervision**, so that column measures memorization more than transfer.
-  Plate-culture: **57 %** usable / **86 %** self-consistent, with 8/14 goals
-  seen (only 1/6 novel goals recover). The genuinely held-out splits are the
-  honest numbers: spheroid **67 %** usable (9/14 novel goals; only 1/15 of the
-  golds are verbatim training pairs), PK **57 %** usable (all 14 novel, 8
-  recover), blind **27 %** usable / **93 %** self-consistent (4/15 novel).
-  Against the single-block lora_v3 baseline (49.5k rows), v4 trades one
-  spheroid novel recovery (10/14 → 9/14) for one novel recovery each on pk
-  (7/14 → 8/14) and blind (3/15 → 4/15) — a marginal aggregate win. The
-  boundary: on the seven post-v1 domains, which *are* in its synthetic
-  training, it answers **0/14** goals — the hand-written benchmark wording
-  still does not transfer from the synthetic phrasing, and multi-block v4 is
-  *worse* there than v3 (hallucination 0.857 = twelve schema-error silence
-  rows, two self-consistent-but-wrong, vs v3's 0.661 = nine silence, one
-  partial, four self-consistent-but-wrong). Strong on what it saw in the right
-  phrasing, still blind when the phrasing drifts. (The extractor's bars are
+  supervision**, so that column measures memorization more than transfer; the
+  single regression is the 400×100-shear goal (recovery residual 0 → 3.0).
+  Plate-culture: **64 %** usable, with 8/14 goals seen (only 1/6 novel goals
+  recover). The genuinely held-out splits are the honest numbers: spheroid
+  **67 %** usable (9/14 novel goals; only 1/15 of the golds are verbatim
+  training pairs), PK **50 %** usable (all 14 novel, 7 recover), blind **27 %**
+  usable / **93 %** self-consistent (4/15 novel). Against lora_v4, v5 adds
+  hand-written-register variants for the seven post-v1 domains: it lifts the
+  new-domain set from **0/14 to 4/14 (29 %)** — the register fix works — at the
+  cost of one reading goal (the shear above) and one PK goal
+  (pk-accumulation-ratio, a distributional shift onto an unseen schema-extra
+  pair). A benchmark-time repair variant (up to 2 schema-retry attempts)
+  additionally lifts spheroid to **73 %** (11/15). The honest boundary: 10/14 of
+  the hand-written new-domain goals still do not transfer, and the residual
+  hallucination there (0.446 mean = six silence rows and one partial row) is
+  still concentrated in the never-seen phrasing. Strong on what it saw in the
+  right phrasing, weaker when the phrasing drifts. (The extractor's bars are
   identical under flash and pro by construction.)
 
 **Robustness, and the honest boundary of the gate: three further results**

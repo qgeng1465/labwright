@@ -35,6 +35,8 @@ import argparse
 import json
 from pathlib import Path
 
+from eval.report import derive
+
 _HERE = Path(__file__).resolve().parent
 RESULTS = _HERE.parent / "results"
 
@@ -56,7 +58,7 @@ SETS = {
                    "eval_new_domains_labwright_pro.json"),
 }
 
-DEFAULT_ADAPTER = "lora_v3"
+DEFAULT_ADAPTER = "lora_v5"
 
 
 def _finetuned_paths(set_name: str, adapter: str) -> tuple[Path, Path]:
@@ -109,6 +111,15 @@ def main(argv: list[str] | None = None) -> int:
                     continue
                 e["finetuned"] = row  # id-keyed, idempotent overwrite
                 n_added += 1
+            # Recompute the finetuned *aggregate* from the merged per-entry rows.
+            # fig_benchmark reads d["finetuned"]["usable_rate"] etc., so a merge
+            # that only copied rows silently left the aggregate stale (a prior
+            # lora_v4 merge rendered the figure with, e.g., spheroid 7% when the
+            # rows said 67%). derive() applies the project's documented rule:
+            # usable = self-consistent (hallucination 0) AND every gold target
+            # recovered within ±5 %.
+            if n_added:
+                main["finetuned"] = derive(main)["finetuned"]
             with open(main_path, "w", encoding="utf-8") as fh:
                 json.dump(main, fh, indent=2, ensure_ascii=False)
             print(f"{main_name}: merged finetuned rows for {n_added}/{len(main['per_entry'])} entries")

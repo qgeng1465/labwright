@@ -51,13 +51,15 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 2 validation errors for CellPlan\nsquare_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntray_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
-        "recovery": {},
-        "hallucination_rate": 1.0,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "wells": 0.988889
+        },
+        "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "silence",
+        "failure": "wrong_target",
         "target_selected": false
       }
     },
@@ -72,13 +74,13 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "expected_confluence_pct": 9.0
+          "expected_confluence_pct": 0.0
         },
         "hallucination_rate": 0.0,
-        "valid": false,
+        "valid": true,
         "unit_misread": {},
-        "failure": "wrong_target",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -150,15 +152,13 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "wells": 0.9
-        },
-        "hallucination_rate": 0.0,
+        "plan": false,
+        "error": "schema_error: 6 validation errors for DesignInput\nchip.width_um\n  Field required [type=missing, input_value={'row_count': 6, 'seeding...000.0, 'wells_count': 1}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nchip.height_um\n  Field required [type=missing, input_value={'row_count': 6, 'seeding...000.0, 'wells_count': 1}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nchip.length_mm\n  Field required [type=missing, input_value={'row_count': 6, 'seeding...000.0, 'wells_count': 1}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nchip.row_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=6, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nchip.seeding_density_cells_cm2\n  Extra inputs are not permitted [type=extra_forbidden, input_value=10000.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nchip.wells_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -272,13 +272,15 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 1 validation error for CellPlan\nwells\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
-        "recovery": {},
-        "hallucination_rate": 1.0,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "wells": 0.833333
+        },
+        "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "silence",
+        "failure": "wrong_target",
         "target_selected": false
       }
     }
@@ -288,14 +290,14 @@
       "seed_per_well": 0.31111099999999997,
       "medium_volume_per_well_ml": 0.0,
       "total_medium_ml": 0.0,
-      "expected_confluence_pct": 9.0,
-      "total_seed_count": 0.0,
-      "wells": 0.9
+      "wells": 0.911111,
+      "expected_confluence_pct": 0.0,
+      "total_seed_count": 0.0
     },
-    "hallucination_rate": 0.14285714285714285,
-    "self_consistent_rate": 0.8571428571428571,
-    "usable_design_rate": 0.5714285714285714
+    "hallucination_rate": 0.07142857142857142,
+    "self_consistent_rate": 0.9285714285714286,
+    "usable_design_rate": 0.6428571428571429
   },
   "system": "finetuned",
-  "generated_at": "2026-08-15T04:13:04+00:00"
+  "generated_at": "2026-08-15T14:57:10+00:00"
 }

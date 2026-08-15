@@ -343,15 +343,13 @@
         "target_selected": false
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "spheroid_count": 0.95
-        },
-        "hallucination_rate": 0.0,
+        "plan": false,
+        "error": "schema_error: 'cells_per_spheroid'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -709,14 +707,14 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "spheroid_volume_ul": 999.000049,
-          "expected_diameter_um": 9.0
+          "spheroid_volume_ul": 0.0,
+          "expected_diameter_um": 0.0
         },
         "hallucination_rate": 0.0,
-        "valid": false,
+        "valid": true,
         "unit_misread": {},
-        "failure": "wrong_target",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -796,16 +794,14 @@
         "target_selected": false
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "expected_cells_after_growth": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
+        "plan": false,
+        "error": "schema_error: 'cell_diameter_um'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
         "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -1413,5 +1409,25 @@
     "usable_design_rate": 0.3333333333333333
   },
   "model": "kimi-for-coding",
-  "generated_at": "2026-08-13T12:24:55+00:00"
+  "generated_at": "2026-08-13T12:24:55+00:00",
+  "finetuned": {
+    "self_consistent_rate": 0.7333333333333333,
+    "usable_rate": 0.6666666666666666,
+    "hallucination_rate": 0.26666666666666666,
+    "recovery": {
+      "spheroid_volume_ul": 0.0,
+      "expected_diameter_um": 0.0,
+      "cells_per_spheroid": 0.0,
+      "medium_volume_per_spheroid_ul": 0.0,
+      "total_medium_ml": 0.329861,
+      "cells_total": 0.4947915
+    },
+    "failure_counts": {
+      "ok": 10,
+      "silence": 4,
+      "wrong_target": 1
+    },
+    "unit_misread_rate": 0.0,
+    "target_selection_accuracy": 0.6666666666666666
+  }
 }
