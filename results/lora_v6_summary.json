@@ -1,0 +1,626 @@
+{
+  "reading": {
+    "set": "reading",
+    "n": 24,
+    "lora_v5": {
+      "n": 24,
+      "usable_rate": 0.9167,
+      "hallucination_rate": 0.0,
+      "self_consistent_rate": 1.0
+    },
+    "lora_v6": {
+      "n": 24,
+      "usable_rate": 0.9583,
+      "hallucination_rate": 0.0,
+      "self_consistent_rate": 1.0
+    },
+    "lora_v6_repair": {
+      "n": 24,
+      "usable_rate": 0.9583,
+      "hallucination_rate": 0.0,
+      "self_consistent_rate": 1.0
+    },
+    "detail": [
+      {
+        "id": "liver-sinusoid-shear",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "kidney-proximal-tubule",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "microvascular-venular",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "lung-alveolar-shear",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "selfconsistent-400x100-shear",
+        "v5_to_v6": "recovered",
+        "v5_to_v6repair": "recovered"
+      },
+      {
+        "id": "selfconsistent-800x100-shear",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "reynolds-laminar-check",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "seeding-density-hepg2",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "seeding-primary-hepatocytes",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "dmso-vehicle-check",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "power-80-effect-1",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "power-80-effect-half",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "arterial-shear-15dyn",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "venular-shear-3dyn",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "seeding-endothelial-5e4",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "selfconsistent-residence-60s",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "selfconsistent-channel-volume",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "selfconsistent-mean-velocity",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "selfconsistent-pressure-drop-40mm",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "selfconsistent-flow-for-01Pa-200x50",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "power-80-effect-02",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "power-90-effect-1",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "reynolds-800x100-100uLmin",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "dmso-at-guideline-1mM",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      }
+    ]
+  },
+  "blind": {
+    "set": "blind",
+    "n": 15,
+    "lora_v5": {
+      "n": 15,
+      "usable_rate": 0.2667,
+      "hallucination_rate": 0.0667,
+      "self_consistent_rate": 0.9333
+    },
+    "lora_v6": {
+      "n": 15,
+      "usable_rate": 0.2667,
+      "hallucination_rate": 0.0,
+      "self_consistent_rate": 1.0
+    },
+    "lora_v6_repair": {
+      "n": 15,
+      "usable_rate": 0.2667,
+      "hallucination_rate": 0.0,
+      "self_consistent_rate": 1.0
+    },
+    "detail": [
+      {
+        "id": "blind-liver-sinusoid",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-kidney-ptec",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-arterial-shear",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-venular-shear",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-lung-alveolar",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-seed-hepg2-log",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-phh-seed",
+        "v5_to_v6": "schema_error->fail",
+        "v5_to_v6repair": "schema_error->fail"
+      },
+      {
+        "id": "blind-bbb-shear",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "blind-pulmonary-artery-shear",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-gut-epithelial-shear",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-retinal-arteriole-shear",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-lymphatic-shear",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-kidney-ptec-unit-ambiguity",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "blind-24well-medium-partial",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "blind-bbb-shear-residence-multitarget",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      }
+    ]
+  },
+  "spheroid": {
+    "set": "spheroid",
+    "n": 15,
+    "lora_v5": {
+      "n": 15,
+      "usable_rate": 0.6667,
+      "hallucination_rate": 0.2667,
+      "self_consistent_rate": 0.7333
+    },
+    "lora_v6": {
+      "n": 15,
+      "usable_rate": 0.7333,
+      "hallucination_rate": 0.1333,
+      "self_consistent_rate": 0.8667
+    },
+    "lora_v6_repair": {
+      "n": 15,
+      "usable_rate": 0.8,
+      "hallucination_rate": 0.0667,
+      "self_consistent_rate": 0.9333
+    },
+    "detail": [
+      {
+        "id": "spheroid-volume-from-diameter",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "spheroid-diameter-from-cells",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "spheroid-200um-hypoxic",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "spheroid-count-from-suspension",
+        "v5_to_v6": "schema_error->fail",
+        "v5_to_v6repair": "schema_error->fail"
+      },
+      {
+        "id": "spheroid-96ula-medium",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "spheroid-384ula-medium",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "spheroid-hanging-drop-total",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "spheroid-um-mm-unit-ambiguity",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "spheroid-growth-72h",
+        "v5_to_v6": "recovered",
+        "v5_to_v6repair": "recovered"
+      },
+      {
+        "id": "spheroid-96well-total",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "spheroid-doxorubicin-dosing",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-spheroid-hepatocyte-formation",
+        "v5_to_v6": "still_schema_error",
+        "v5_to_v6repair": "recovered"
+      },
+      {
+        "id": "blind-spheroid-96ula-medium",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "blind-spheroid-384ula-medium",
+        "v5_to_v6": "still_schema_error",
+        "v5_to_v6repair": "still_schema_error"
+      },
+      {
+        "id": "blind-spheroid-hanging-drop",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      }
+    ]
+  },
+  "culture": {
+    "set": "culture",
+    "n": 14,
+    "lora_v5": {
+      "n": 14,
+      "usable_rate": 0.6429,
+      "hallucination_rate": 0.0714,
+      "self_consistent_rate": 0.9286
+    },
+    "lora_v6": {
+      "n": 14,
+      "usable_rate": 0.5714,
+      "hallucination_rate": 0.1429,
+      "self_consistent_rate": 0.8571
+    },
+    "lora_v6_repair": {
+      "n": 14,
+      "usable_rate": 0.5714,
+      "hallucination_rate": 0.1429,
+      "self_consistent_rate": 0.8571
+    },
+    "detail": [
+      {
+        "id": "plate-96well-hepg2-seed",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "plate-6well-phh-seed",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "plate-hemocytometer-seed-96well",
+        "v5_to_v6": "fail->schema_error",
+        "v5_to_v6repair": "fail->schema_error"
+      },
+      {
+        "id": "plate-confluence-hepg2-72h",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "plate-24well-seed-from-count",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "plate-split-replating",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "plate-48well-medium",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "plate-thaw-viability-6well",
+        "v5_to_v6": "still_schema_error",
+        "v5_to_v6repair": "still_schema_error"
+      },
+      {
+        "id": "plate-12well-seed-hepg2",
+        "v5_to_v6": "regressed",
+        "v5_to_v6repair": "regressed"
+      },
+      {
+        "id": "plate-96well-total-medium",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "blind-6well-phh-sandwich-seed",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-24well-phh-seed",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "blind-96well-area-and-medium",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "blind-hemocytometer-phh-96well",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      }
+    ]
+  },
+  "pk": {
+    "set": "pk",
+    "n": 14,
+    "lora_v5": {
+      "n": 14,
+      "usable_rate": 0.5,
+      "hallucination_rate": 0.5,
+      "self_consistent_rate": 0.5
+    },
+    "lora_v6": {
+      "n": 14,
+      "usable_rate": 0.5,
+      "hallucination_rate": 0.5,
+      "self_consistent_rate": 0.5
+    },
+    "lora_v6_repair": {
+      "n": 14,
+      "usable_rate": 0.5,
+      "hallucination_rate": 0.5,
+      "self_consistent_rate": 0.5
+    },
+    "detail": [
+      {
+        "id": "pk-extraction-ratio",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "pk-clearance",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "pk-half-life",
+        "v5_to_v6": "regressed",
+        "v5_to_v6repair": "regressed"
+      },
+      {
+        "id": "pk-accumulation-ratio",
+        "v5_to_v6": "recovered",
+        "v5_to_v6repair": "recovered"
+      },
+      {
+        "id": "pk-mass-cleared",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "pk-complete-clearance-panel",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "pk-mM-unit-trap",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "pk-half-life-min-trap",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "pk-cell-free-subtraction",
+        "v5_to_v6": "still_schema_error",
+        "v5_to_v6repair": "still_schema_error"
+      },
+      {
+        "id": "pk-repeat-dose-24h",
+        "v5_to_v6": "still_derived_field_rejected",
+        "v5_to_v6repair": "derived_field_rejected->schema_error"
+      },
+      {
+        "id": "pk-high-extraction-clearance",
+        "v5_to_v6": "derived_field_rejected->schema_error",
+        "v5_to_v6repair": "derived_field_rejected->schema_error"
+      },
+      {
+        "id": "pk-low-extraction-clearance",
+        "v5_to_v6": "still_schema_error",
+        "v5_to_v6repair": "still_schema_error"
+      },
+      {
+        "id": "blind-pk-high-extraction-propranolol",
+        "v5_to_v6": "still_schema_error",
+        "v5_to_v6repair": "still_schema_error"
+      },
+      {
+        "id": "blind-pk-low-extraction-antipyrine",
+        "v5_to_v6": "still_schema_error",
+        "v5_to_v6repair": "still_schema_error"
+      }
+    ]
+  },
+  "newdomains": {
+    "set": "newdomains",
+    "n": 14,
+    "lora_v5": {
+      "n": 14,
+      "usable_rate": 0.2857,
+      "hallucination_rate": 0.5,
+      "self_consistent_rate": 0.5
+    },
+    "lora_v6": {
+      "n": 14,
+      "usable_rate": 0.2857,
+      "hallucination_rate": 0.5714,
+      "self_consistent_rate": 0.4286
+    },
+    "lora_v6_repair": {
+      "n": 14,
+      "usable_rate": 0.3571,
+      "hallucination_rate": 0.5,
+      "self_consistent_rate": 0.5
+    },
+    "detail": [
+      {
+        "id": "barrier-caco2-teer-papp",
+        "v5_to_v6": "regressed",
+        "v5_to_v6repair": "regressed"
+      },
+      {
+        "id": "barrier-hcmec-teer",
+        "v5_to_v6": "recovered",
+        "v5_to_v6repair": "recovered"
+      },
+      {
+        "id": "oxygen-phh-sinusoid",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "oxygen-hepg2-hypoxic-core",
+        "v5_to_v6": "fail->schema_error",
+        "v5_to_v6repair": "fail->schema_error"
+      },
+      {
+        "id": "pumpless-hepg2-rocking",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "pumpless-hcmec-tesla",
+        "v5_to_v6": "still_schema_error",
+        "v5_to_v6repair": "still_schema_error"
+      },
+      {
+        "id": "breathing-ali-h1299",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "breathing-alveoli-5pct",
+        "v5_to_v6": "schema_error->fail",
+        "v5_to_v6repair": "schema_error->fail"
+      },
+      {
+        "id": "pulsatile-aortic-heartchip",
+        "v5_to_v6": "fail->fail",
+        "v5_to_v6repair": "fail->fail"
+      },
+      {
+        "id": "pulsatile-venous-heartchip",
+        "v5_to_v6": "still_schema_error",
+        "v5_to_v6repair": "still_schema_error"
+      },
+      {
+        "id": "scaling-liver-chip",
+        "v5_to_v6": "still_schema_error",
+        "v5_to_v6repair": "still_schema_error"
+      },
+      {
+        "id": "scaling-kidney-chip",
+        "v5_to_v6": "still_schema_error",
+        "v5_to_v6repair": "recovered"
+      },
+      {
+        "id": "gradient-cxcl12-chemotaxis",
+        "v5_to_v6": "unchanged_ok",
+        "v5_to_v6repair": "unchanged_ok"
+      },
+      {
+        "id": "gradient-fgf8-pattern",
+        "v5_to_v6": "fail->schema_error",
+        "v5_to_v6repair": "fail->schema_error"
+      }
+    ]
+  }
+}

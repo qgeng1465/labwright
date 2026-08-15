@@ -1,0 +1,514 @@
+{
+  "n_gold": 24,
+  "per_entry": [
+    {
+      "id": "liver-sinusoid-shear",
+      "gold": {
+        "id": "liver-sinusoid-shear",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "kidney-proximal-tubule",
+      "gold": {
+        "id": "kidney-proximal-tubule",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "microvascular-venular",
+      "gold": {
+        "id": "microvascular-venular",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "lung-alveolar-shear",
+      "gold": {
+        "id": "lung-alveolar-shear",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "selfconsistent-400x100-shear",
+      "gold": {
+        "id": "selfconsistent-400x100-shear",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0,
+          "pressure_drop_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "selfconsistent-800x100-shear",
+      "gold": {
+        "id": "selfconsistent-800x100-shear",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0,
+          "flow_rate_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "reynolds-laminar-check",
+      "gold": {
+        "id": "reynolds-laminar-check",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "reynolds": 1e-05
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "seeding-density-hepg2",
+      "gold": {
+        "id": "seeding-density-hepg2",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "seeding-primary-hepatocytes",
+      "gold": {
+        "id": "seeding-primary-hepatocytes",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "dmso-vehicle-check",
+      "gold": {
+        "id": "dmso-vehicle-check",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "dmso_fraction_vv": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "power-80-effect-1",
+      "gold": {
+        "id": "power-80-effect-1",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "n_per_group": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "power-80-effect-half",
+      "gold": {
+        "id": "power-80-effect-half",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "n_per_group": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "arterial-shear-15dyn",
+      "gold": {
+        "id": "arterial-shear-15dyn",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "venular-shear-3dyn",
+      "gold": {
+        "id": "venular-shear-3dyn",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "seeding-endothelial-5e4",
+      "gold": {
+        "id": "seeding-endothelial-5e4",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "selfconsistent-residence-60s",
+      "gold": {
+        "id": "selfconsistent-residence-60s",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "residence_time_s": 0.983333
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {
+          "residence_time_s": {
+            "alias": "min read as s",
+            "from": "min",
+            "to": "s",
+            "ratio": 0.016667,
+            "expected_in_from": 1.0
+          }
+        },
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "selfconsistent-channel-volume",
+      "gold": {
+        "id": "selfconsistent-channel-volume",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "channel_volume_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "selfconsistent-mean-velocity",
+      "gold": {
+        "id": "selfconsistent-mean-velocity",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "mean_velocity_mms": 4e-05
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "selfconsistent-pressure-drop-40mm",
+      "gold": {
+        "id": "selfconsistent-pressure-drop-40mm",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "pressure_drop_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "selfconsistent-flow-for-01Pa-200x50",
+      "gold": {
+        "id": "selfconsistent-flow-for-01Pa-200x50",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "flow_rate_uLmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "power-80-effect-02",
+      "gold": {
+        "id": "power-80-effect-02",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "n_per_group": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "power-90-effect-1",
+      "gold": {
+        "id": "power-90-effect-1",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "n_per_group": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "reynolds-800x100-100uLmin",
+      "gold": {
+        "id": "reynolds-800x100-100uLmin",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "reynolds": 1e-06
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "dmso-at-guideline-1mM",
+      "gold": {
+        "id": "dmso-at-guideline-1mM",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "dmso_fraction_vv": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    }
+  ],
+  "finetuned": {
+    "recovery": {
+      "shear_pa": 0.0,
+      "pressure_drop_pa": 0.0,
+      "flow_rate_uLmin": 0.0,
+      "reynolds": 5.500000000000001e-06,
+      "seed_count": 0.0,
+      "dmso_fraction_vv": 0.0,
+      "n_per_group": 0.0,
+      "residence_time_s": 0.983333,
+      "channel_volume_ul": 0.0,
+      "mean_velocity_mms": 4e-05
+    },
+    "hallucination_rate": 0.0,
+    "self_consistent_rate": 1.0,
+    "usable_design_rate": 0.9583333333333334
+  },
+  "system": "finetuned",
+  "generated_at": "2026-08-15T21:44:23+00:00"
+}

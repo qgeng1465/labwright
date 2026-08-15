@@ -1,0 +1,298 @@
+{
+  "n_gold": 14,
+  "per_entry": [
+    {
+      "id": "plate-96well-hepg2-seed",
+      "gold": {
+        "id": "plate-96well-hepg2-seed",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "medium_volume_per_well_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-6well-phh-seed",
+      "gold": {
+        "id": "plate-6well-phh-seed",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-hemocytometer-seed-96well",
+      "gold": {
+        "id": "plate-hemocytometer-seed-96well",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 1 validation error for CellPlan\nwells\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "plate-confluence-hepg2-72h",
+      "gold": {
+        "id": "plate-confluence-hepg2-72h",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "expected_confluence_pct": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-24well-seed-from-count",
+      "gold": {
+        "id": "plate-24well-seed-from-count",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.0,
+          "medium_volume_per_well_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-split-replating",
+      "gold": {
+        "id": "plate-split-replating",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_seed_count": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-48well-medium",
+      "gold": {
+        "id": "plate-48well-medium",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_well_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "plate-thaw-viability-6well",
+      "gold": {
+        "id": "plate-thaw-viability-6well",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 1 validation error for CellPlan\nviability_pct\n  Extra inputs are not permitted [type=extra_forbidden, input_value=96.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "plate-12well-seed-hepg2",
+      "gold": {
+        "id": "plate-12well-seed-hepg2",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.9,
+          "medium_volume_per_well_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "plate-96well-total-medium",
+      "gold": {
+        "id": "plate-96well-total-medium",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "blind-6well-phh-sandwich-seed",
+      "gold": {
+        "id": "blind-6well-phh-sandwich-seed",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.993333,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-24well-phh-seed",
+      "gold": {
+        "id": "blind-24well-phh-seed",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_per_well": 0.933333
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-96well-area-and-medium",
+      "gold": {
+        "id": "blind-96well-area-and-medium",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_well_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "blind-hemocytometer-phh-96well",
+      "gold": {
+        "id": "blind-hemocytometer-phh-96well",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {},
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    }
+  ],
+  "finetuned": {
+    "recovery": {
+      "seed_per_well": 0.47111100000000006,
+      "medium_volume_per_well_ml": 0.0,
+      "total_medium_ml": 0.0,
+      "expected_confluence_pct": 0.0,
+      "total_seed_count": 0.0
+    },
+    "hallucination_rate": 0.14285714285714285,
+    "self_consistent_rate": 0.8571428571428571,
+    "usable_design_rate": 0.5714285714285714
+  },
+  "system": "finetuned",
+  "generated_at": "2026-08-15T22:02:00+00:00"
+}

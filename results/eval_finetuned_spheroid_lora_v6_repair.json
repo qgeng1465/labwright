@@ -1,0 +1,323 @@
+{
+  "n_gold": 15,
+  "per_entry": [
+    {
+      "id": "spheroid-volume-from-diameter",
+      "gold": {
+        "id": "spheroid-volume-from-diameter",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_volume_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "spheroid-diameter-from-cells",
+      "gold": {
+        "id": "spheroid-diameter-from-cells",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "spheroid-200um-hypoxic",
+      "gold": {
+        "id": "spheroid-200um-hypoxic",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_per_spheroid": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "spheroid-count-from-suspension",
+      "gold": {
+        "id": "spheroid-count-from-suspension",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_count": 0.479167
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "spheroid-96ula-medium",
+      "gold": {
+        "id": "spheroid-96ula-medium",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "spheroid-384ula-medium",
+      "gold": {
+        "id": "spheroid-384ula-medium",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "spheroid-hanging-drop-total",
+      "gold": {
+        "id": "spheroid-hanging-drop-total",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "spheroid-um-mm-unit-ambiguity",
+      "gold": {
+        "id": "spheroid-um-mm-unit-ambiguity",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "spheroid_volume_ul": 0.0,
+          "expected_diameter_um": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "spheroid-growth-72h",
+      "gold": {
+        "id": "spheroid-growth-72h",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "expected_cells_after_growth": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "spheroid-96well-total",
+      "gold": {
+        "id": "spheroid-96well-total",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_total": 0.0,
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "spheroid-doxorubicin-dosing",
+      "gold": {
+        "id": "spheroid-doxorubicin-dosing",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_total": 0.989583,
+          "total_medium_ml": 0.989583
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-spheroid-hepatocyte-formation",
+      "gold": {
+        "id": "blind-spheroid-hepatocyte-formation",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "cells_per_spheroid": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "blind-spheroid-96ula-medium",
+      "gold": {
+        "id": "blind-spheroid-96ula-medium",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    },
+    {
+      "id": "blind-spheroid-384ula-medium",
+      "gold": {
+        "id": "blind-spheroid-384ula-medium",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-well'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "blind-spheroid-hanging-drop",
+      "gold": {
+        "id": "blind-spheroid-hanging-drop",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "medium_volume_per_spheroid_ul": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true
+      }
+    }
+  ],
+  "finetuned": {
+    "recovery": {
+      "spheroid_volume_ul": 0.0,
+      "expected_diameter_um": 0.0,
+      "cells_per_spheroid": 0.0,
+      "spheroid_count": 0.479167,
+      "medium_volume_per_spheroid_ul": 0.0,
+      "total_medium_ml": 0.329861,
+      "expected_cells_after_growth": 0.0,
+      "cells_total": 0.4947915
+    },
+    "hallucination_rate": 0.06666666666666667,
+    "self_consistent_rate": 0.9333333333333333,
+    "usable_design_rate": 0.8
+  },
+  "system": "finetuned",
+  "generated_at": "2026-08-15T22:27:35+00:00"
+}
