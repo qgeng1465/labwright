@@ -73,9 +73,16 @@ class Extractor:
         adapter_path: str | None = _DEFAULT_ADAPTER,
         device: str | None = None,
         multi_block: bool = False,
+        repair_retries: int = 0,
     ):
         self.multi_block = multi_block
         self.system_prompt = SYSTEM_PROMPT_MULTI if multi_block else SYSTEM_PROMPT
+        #: schema-repair retries per goal (see :meth:`extract_plan`). 0 = the
+        #: baseline behaviour: a schema error is final and the entry fails.
+        self.repair_retries = repair_retries
+        #: cumulative count of repair re-prompts issued across this instance's
+        #: lifetime (for reporting; a repair is only counted when it actually runs).
+        self.repairs = 0
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         configure_tokenizer(self.tokenizer)
@@ -105,33 +112,73 @@ class Extractor:
         text = self.tokenizer.decode(out[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True)
         return parse_json(text)
 
-    def extract_plan(self, goal: str) -> tuple[object | None, list[Issue] | None, str | None]:
+    def _repair(self, goal: str, raw: dict[str, Any] | None, error: str) -> dict[str, Any] | None:
+        """Re-run the extractor with the rejection reason appended to the goal.
+
+        The extractor is an instruct model, so a follow-up prompt that quotes
+        the rejected block and the validator's error lets it drop an extra
+        field, fix an enum value, or add a missing key. Greedy decoding is
+        deterministic, so a repair is a *different* single attempt, not a
+        stochastic retry — an A/B with ``repair_retries=0`` cleanly isolates
+        the effect.
+        """
+        self.repairs += 1
+        block = json.dumps(raw, ensure_ascii=False) if raw is not None else "no JSON object parsed"
+        user = (
+            "Your previous raw-input block was rejected. Fix the fields the "
+            "validator names and output only the corrected raw-input block as JSON.\n\n"
+            f"Goal: {goal}\n\nRejected block:\n{block}\n\n"
+            f"Validator error:\n{error}"
+        )
+        return self.extract(user)
+
+    def extract_plan(self, goal: str, repair_retries: int | None = None) -> tuple[object | None, list[Issue] | None, str | None]:
         """Extract → build → verify. Returns ``(plan, issues, error)``.
 
         ``plan`` is a :class:`~labwright.schema.design.DesignPlan` (or ``None``
         on parse/schema failure), ``issues`` the verifier findings, and
-        ``error`` a short reason when the pipeline could not run.
+        ``error`` a short reason when the pipeline could not run. With
+        ``repair_retries`` (defaults to the instance setting) a failed parse or
+        schema gate is re-attempted by re-prompting the model with the error —
+        up to ``repair_retries`` extra attempts. A successful plan still crosses
+        the *same* derived-field / schema / build gates on every attempt.
         """
+        if repair_retries is None:
+            repair_retries = self.repair_retries
         raw = self.extract(goal)
-        if raw is None:
-            return None, None, "unparseable_json"
-        # The extracted raw inputs cross the *same* gate as the agent's
-        # submit_design: a derived field (seed_count, expected_diameter_um, ...)
-        # invented by the extractor is rejected, never silently overwritten.
-        try:
-            _reject_derived_fields(raw)
-        except ValueError as exc:
-            return None, None, f"derived_field_rejected: {exc}"
-        try:
-            inp = DesignInput(goal=goal, rationale="Auto-extracted raw inputs", **raw)
-        except (ValidationError, TypeError) as exc:
-            return None, None, f"schema_error: {exc}"
-        try:
-            plan = build_design(inp)
-        except (ValueError, KeyError, TypeError) as exc:
-            return None, None, f"schema_error: {exc}"
-        issues = verify_design(plan)
-        return plan, issues, None
+        for attempt in range(repair_retries + 1):
+            if raw is None:
+                if attempt < repair_retries:
+                    raw = self._repair(goal, None, "unparseable_json: no valid JSON object in the output")
+                    continue
+                return None, None, "unparseable_json"
+            # The extracted raw inputs cross the *same* gate as the agent's
+            # submit_design: a derived field (seed_count, expected_diameter_um, ...)
+            # invented by the extractor is rejected, never silently overwritten.
+            try:
+                _reject_derived_fields(raw)
+            except ValueError as exc:
+                if attempt < repair_retries:
+                    raw = self._repair(goal, raw, f"derived_field_rejected: {exc}")
+                    continue
+                return None, None, f"derived_field_rejected: {exc}"
+            try:
+                inp = DesignInput(goal=goal, rationale="Auto-extracted raw inputs", **raw)
+            except (ValidationError, TypeError) as exc:
+                if attempt < repair_retries:
+                    raw = self._repair(goal, raw, f"schema_error: {exc}")
+                    continue
+                return None, None, f"schema_error: {exc}"
+            try:
+                plan = build_design(inp)
+            except (ValueError, KeyError, TypeError) as exc:
+                if attempt < repair_retries:
+                    raw = self._repair(goal, raw, f"build_error: {exc}")
+                    continue
+                return None, None, f"schema_error: {exc}"
+            issues = verify_design(plan)
+            return plan, issues, None
+        return None, None, "repair_exhausted"
 
     def extract_batch(self, goals: list[str], max_new_tokens: int = 384) -> list[dict[str, Any] | None]:
         """Decode a batch of goals in one generate call (left-padded).

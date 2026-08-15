@@ -343,6 +343,8 @@ def _mock_extractor(raw: dict | None):
     """An Extractor that skips model loading and returns ``raw`` from extract()."""
     ext = object.__new__(Extractor)
     ext.extract = lambda goal, max_new_tokens=384: raw
+    ext.repair_retries = 0
+    ext.repairs = 0
     return ext
 
 
@@ -382,6 +384,49 @@ def test_extract_plan_happy_path():
     assert plan is not None
     assert plan.derived is not None
     assert not has_errors(verify_design(plan))
+
+
+def test_extract_plan_repair_recovers_schema_error():
+    # First attempt emits an unknown top-level key; the repair re-prompt drops it.
+    calls = {"n": 0}
+
+    def flaky(goal, max_new_tokens=384):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return {"chip": {"width_um": 400, "height_um": 100, "length_mm": 20},
+                    "flow": {"flow_rate_uLmin": 10, "viscosity_pas": 1e-3},
+                    "cell_diameter_um": 15}  # top-level unknown -> schema_error
+        return {"chip": {"width_um": 400, "height_um": 100, "length_mm": 20},
+                "flow": {"flow_rate_uLmin": 10, "viscosity_pas": 1e-3}}
+
+    ext = object.__new__(Extractor)
+    ext.repair_retries = 1
+    ext.repairs = 0
+    ext.extract = flaky
+    plan, _issues, error = ext.extract_plan("goal")
+    assert error is None
+    assert plan is not None
+    assert ext.repairs == 1
+    assert calls["n"] == 2
+
+
+def test_extract_plan_repair_exhausts_and_counts():
+    calls = {"n": 0}
+
+    def always_bad(goal, max_new_tokens=384):
+        calls["n"] += 1
+        return {"chip": {"width_um": 400, "height_um": 100, "length_mm": 20},
+                "cell_diameter_um": 15}
+
+    ext = object.__new__(Extractor)
+    ext.repair_retries = 2
+    ext.repairs = 0
+    ext.extract = always_bad
+    plan, _issues, error = ext.extract_plan("goal")
+    assert plan is None
+    assert error is not None and error.startswith("schema_error")
+    assert calls["n"] == 3  # initial attempt + 2 repairs
+    assert ext.repairs == 2
 
 
 def test_score_batch_with_stub_extractor():

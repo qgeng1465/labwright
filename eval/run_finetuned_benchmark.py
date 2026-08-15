@@ -45,13 +45,16 @@ def main() -> int:
     ap.add_argument("--device", default=None, help="cuda / cpu (default: auto)")
     ap.add_argument("--multi-block", action="store_true",
                     help="use SYSTEM_PROMPT_MULTI (lora_v4 composite extraction)")
+    ap.add_argument("--repair-retries", type=int, default=0,
+                    help="on schema/build failure, re-prompt the model with the validator "
+                         "error up to N extra attempts (0 = baseline, schema error is final)")
     args = ap.parse_args()
 
     gold = load_gold(args.gold)
-    print(f"gold entries: {len(gold)}   adapter: {args.adapter}", flush=True)
+    print(f"gold entries: {len(gold)}   adapter: {args.adapter}   repair-retries: {args.repair_retries}", flush=True)
 
     ext = Extractor(model_path=args.model, adapter_path=args.adapter, device=args.device,
-                    multi_block=args.multi_block)
+                    multi_block=args.multi_block, repair_retries=args.repair_retries)
     print(f"extractor on {ext.device}", flush=True)
 
     def progress(msg: str) -> None:
@@ -78,6 +81,7 @@ def main() -> int:
         json.dump(summary, fh, indent=2, ensure_ascii=False)
     print("\n=== summary ===")
     print(json.dumps({k: v for k, v in summary.items() if k != "per_entry"}, indent=2))
+    print(f"repairs issued: {ext.repairs}")
     print(f"\nsaved -> {out}")
     return 0
 
