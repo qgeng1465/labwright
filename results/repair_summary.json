@@ -1,0 +1,393 @@
+{
+  "reading": {
+    "set": "reading",
+    "baseline": {
+      "n": 24,
+      "usable_rate": 0.9583,
+      "hallucination_rate": 0.0,
+      "self_consistent_rate": 1.0
+    },
+    "repair": {
+      "n": 24,
+      "usable_rate": 0.9583,
+      "hallucination_rate": 0.0,
+      "self_consistent_rate": 1.0
+    },
+    "classes": {
+      "unchanged_ok": 23,
+      "fail->fail": 1
+    },
+    "detail": [
+      {
+        "id": "selfconsistent-residence-60s",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      }
+    ]
+  },
+  "blind": {
+    "set": "blind",
+    "baseline": {
+      "n": 15,
+      "usable_rate": 0.2667,
+      "hallucination_rate": 0.0667,
+      "self_consistent_rate": 0.9333
+    },
+    "repair": {
+      "n": 15,
+      "usable_rate": 0.2667,
+      "hallucination_rate": 0.0667,
+      "self_consistent_rate": 0.9333
+    },
+    "classes": {
+      "fail->fail": 10,
+      "still_schema_error": 1,
+      "unchanged_ok": 4
+    },
+    "detail": [
+      {
+        "id": "blind-liver-sinusoid",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-kidney-ptec",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-arterial-shear",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-venular-shear",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-lung-alveolar",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-seed-hepg2-log",
+        "change": "still_schema_error",
+        "base": "schema_error: 1 validation error for CellPlan\ngrowth_phase\n  Extra inputs are not permitted [type=extra_forbidden, input_value='logarithmic', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "repair": "schema_error: 1 validation error for CellPlan\ngrowth_phase\n  Extra inputs are not permitted [type=extra_forbidden, input_value='logarithmic', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+      },
+      {
+        "id": "blind-phh-seed",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-pulmonary-artery-shear",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-gut-epithelial-shear",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-retinal-arteriole-shear",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-lymphatic-shear",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      }
+    ]
+  },
+  "spheroid": {
+    "set": "spheroid",
+    "baseline": {
+      "n": 15,
+      "usable_rate": 0.6667,
+      "hallucination_rate": 0.1333,
+      "self_consistent_rate": 0.8667
+    },
+    "repair": {
+      "n": 15,
+      "usable_rate": 0.7333,
+      "hallucination_rate": 0.0667,
+      "self_consistent_rate": 0.9333
+    },
+    "classes": {
+      "unchanged_ok": 10,
+      "fail->fail": 3,
+      "recovered": 1,
+      "still_schema_error": 1
+    },
+    "detail": [
+      {
+        "id": "spheroid-count-from-suspension",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "spheroid-um-mm-unit-ambiguity",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "spheroid-doxorubicin-dosing",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-spheroid-hepatocyte-formation",
+        "change": "recovered",
+        "base": "schema_error: spheroid_format must be one of 96-ula / 384-ula / hanging-drop, got 'ULA'",
+        "repair": null
+      },
+      {
+        "id": "blind-spheroid-384ula-medium",
+        "change": "still_schema_error",
+        "base": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-well'",
+        "repair": "schema_error: plate_format must be one of 6/12/24/48/96-well, got '384-well'"
+      }
+    ]
+  },
+  "culture": {
+    "set": "culture",
+    "baseline": {
+      "n": 14,
+      "usable_rate": 0.5714,
+      "hallucination_rate": 0.1429,
+      "self_consistent_rate": 0.8571
+    },
+    "repair": {
+      "n": 14,
+      "usable_rate": 0.5714,
+      "hallucination_rate": 0.1429,
+      "self_consistent_rate": 0.8571
+    },
+    "classes": {
+      "unchanged_ok": 8,
+      "still_schema_error": 2,
+      "fail->fail": 4
+    },
+    "detail": [
+      {
+        "id": "plate-hemocytometer-seed-96well",
+        "change": "still_schema_error",
+        "base": "schema_error: 2 validation errors for CellPlan\nsquare_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntray_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "repair": "schema_error: 2 validation errors for CellPlan\nsquare_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntray_count\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+      },
+      {
+        "id": "plate-confluence-hepg2-72h",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "plate-thaw-viability-6well",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-6well-phh-sandwich-seed",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-24well-phh-seed",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "blind-hemocytometer-phh-96well",
+        "change": "still_schema_error",
+        "base": "schema_error: 1 validation error for CellPlan\nwells\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "repair": "schema_error: 1 validation error for CellPlan\nwells\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+      }
+    ]
+  },
+  "pk": {
+    "set": "pk",
+    "baseline": {
+      "n": 14,
+      "usable_rate": 0.5714,
+      "hallucination_rate": 0.4286,
+      "self_consistent_rate": 0.5714
+    },
+    "repair": {
+      "n": 14,
+      "usable_rate": 0.5714,
+      "hallucination_rate": 0.4286,
+      "self_consistent_rate": 0.5714
+    },
+    "classes": {
+      "unchanged_ok": 8,
+      "still_schema_error": 5,
+      "derived_field_rejected->schema_error": 1
+    },
+    "detail": [
+      {
+        "id": "pk-cell-free-subtraction",
+        "change": "still_schema_error",
+        "base": "schema_error: 2 validation errors for PkPlan\nprobe\n  Extra inputs are not permitted [type=extra_forbidden, input_value='cell-mediated', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntarget_clearance_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0.05, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "repair": "schema_error: 2 validation errors for PkPlan\nprobe\n  Extra inputs are not permitted [type=extra_forbidden, input_value='cell-attributable', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntarget_clearance_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0.05, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+      },
+      {
+        "id": "pk-repeat-dose-24h",
+        "change": "derived_field_rejected->schema_error",
+        "base": "derived_field_rejected: derived field(s) are computed by Labwright, not accepted from the model: half_life_h. Remove them and submit raw inputs only.",
+        "repair": "schema_error: 3 validation errors for DesignInput\ncompound\n  Extra inputs are not permitted [type=extra_forbidden, input_value='a drug', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ndose_interval_h\n  Extra inputs are not permitted [type=extra_forbidden, input_value=24.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nstudy_type\n  Extra inputs are not permitted [type=extra_forbidden, input_value='repeat-dose', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+      },
+      {
+        "id": "pk-high-extraction-clearance",
+        "change": "still_schema_error",
+        "base": "schema_error: 'inlet_concentration_uM'",
+        "repair": "schema_error: 'inlet_concentration_uM'"
+      },
+      {
+        "id": "pk-low-extraction-clearance",
+        "change": "still_schema_error",
+        "base": "schema_error: 'inlet_concentration_uM'",
+        "repair": "schema_error: 'inlet_concentration_uM'"
+      },
+      {
+        "id": "blind-pk-high-extraction-propranolol",
+        "change": "still_schema_error",
+        "base": "schema_error: 'inlet_concentration_uM'",
+        "repair": "schema_error: 'inlet_concentration_uM'"
+      },
+      {
+        "id": "blind-pk-low-extraction-antipyrine",
+        "change": "still_schema_error",
+        "base": "schema_error: 'inlet_concentration_uM'",
+        "repair": "schema_error: 'inlet_concentration_uM'"
+      }
+    ]
+  },
+  "newdomains": {
+    "set": "newdomains",
+    "baseline": {
+      "n": 14,
+      "usable_rate": 0.0,
+      "hallucination_rate": 0.8571,
+      "self_consistent_rate": 0.1429
+    },
+    "repair": {
+      "n": 14,
+      "usable_rate": 0.0,
+      "hallucination_rate": 0.7857,
+      "self_consistent_rate": 0.2143
+    },
+    "classes": {
+      "schema_error->fail": 1,
+      "still_schema_error": 10,
+      "fail->fail": 2,
+      "schema_error->derived_field_rejected": 1
+    },
+    "detail": [
+      {
+        "id": "barrier-caco2-teer-papp",
+        "change": "schema_error->fail",
+        "base": "schema_error: 'resistance_total_ohm'",
+        "repair": null
+      },
+      {
+        "id": "barrier-hcmec-teer",
+        "change": "still_schema_error",
+        "base": "schema_error: 'resistance_total_ohm'",
+        "repair": "schema_error: 'resistance_total_ohm'"
+      },
+      {
+        "id": "oxygen-phh-sinusoid",
+        "change": "still_schema_error",
+        "base": "schema_error: 'target_po2_mmhg'",
+        "repair": "schema_error: 'target_po2_mmhg'"
+      },
+      {
+        "id": "oxygen-hepg2-hypoxic-core",
+        "change": "still_schema_error",
+        "base": "schema_error: 'resistance_total_ohm'",
+        "repair": "schema_error: 'resistance_total_ohm'"
+      },
+      {
+        "id": "pumpless-hepg2-rocking",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "pumpless-hcmec-tesla",
+        "change": "schema_error->derived_field_rejected",
+        "base": "schema_error: 'resistance_total_ohm'",
+        "repair": "derived_field_rejected: derived field(s) are computed by Labwright, not accepted from the model: barrier.oscillatory_shear_index. Remove them and submit raw inputs only."
+      },
+      {
+        "id": "breathing-ali-h1299",
+        "change": "still_schema_error",
+        "base": "schema_error: 'frequency_hz'",
+        "repair": "schema_error: 'frequency_hz'"
+      },
+      {
+        "id": "breathing-alveoli-5pct",
+        "change": "still_schema_error",
+        "base": "schema_error: 'frequency_hz'",
+        "repair": "schema_error: 'frequency_hz'"
+      },
+      {
+        "id": "pulsatile-aortic-heartchip",
+        "change": "fail->fail",
+        "base": null,
+        "repair": null
+      },
+      {
+        "id": "pulsatile-venous-heartchip",
+        "change": "still_schema_error",
+        "base": "schema_error: 1 validation error for PulsatilePlan\nmaximum_flow_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=5.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "repair": "schema_error: 1 validation error for PulsatilePlan\nmaximum_flow_uLmin\n  Extra inputs are not permitted [type=extra_forbidden, input_value=15.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+      },
+      {
+        "id": "scaling-liver-chip",
+        "change": "still_schema_error",
+        "base": "schema_error: 'total_cells_chip'",
+        "repair": "schema_error: 'total_cells_chip'"
+      },
+      {
+        "id": "scaling-kidney-chip",
+        "change": "still_schema_error",
+        "base": "schema_error: 1 validation error for DesignInput\nkidney\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'cell_type': 'HepG2', 'c...'human_weight_kg': 70.0}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+        "repair": "schema_error: 1 validation error for DesignInput\nkidney\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'cell_type': 'HepG2', 'c...'human_weight_kg': 70.0}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+      },
+      {
+        "id": "gradient-cxcl12-chemotaxis",
+        "change": "still_schema_error",
+        "base": "schema_error: 'source_conc_um'",
+        "repair": "schema_error: 'source_conc_um'"
+      },
+      {
+        "id": "gradient-fgf8-pattern",
+        "change": "still_schema_error",
+        "base": "schema_error: 'sink_conc_um'",
+        "repair": "schema_error: 'sink_conc_um'"
+      }
+    ]
+  }
+}

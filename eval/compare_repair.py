@@ -56,8 +56,8 @@ def _classify(base_f, rep_f):
         return "recovered"
     if base_ok and not rep_ok:
         return "regressed"
-    base_err = (base_f or {}).get("error", "").split(":")[0]
-    rep_err = (rep_f or {}).get("error", "").split(":")[0]
+    base_err = ((base_f or {}).get("error") or "").split(":")[0]
+    rep_err = ((rep_f or {}).get("error") or "").split(":")[0]
     if base_err == rep_err and base_err:
         return f"still_{base_err}"
     if base_err == "schema_error" and rep_err == "schema_error":
