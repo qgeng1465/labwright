@@ -169,11 +169,17 @@ def main() -> int:
 
     model.save_pretrained(str(out_dir))
     tokenizer.save_pretrained(str(out_dir))
+    # The last log_history entry is the epoch-end eval (no "loss" key) and
+    # best_metric is unset without load_best_model_at_end, so take the last
+    # non-None train loss and eval loss instead of trusting the tail entry.
+    _log = trainer.state.log_history
+    final_train_loss = next((h.get("loss") for h in reversed(_log) if h.get("loss") is not None), None)
+    final_eval_loss = next((h.get("eval_loss") for h in reversed(_log) if h.get("eval_loss") is not None), None)
     final = {
         "n_train": len(train_ex),
         "n_eval": len(eval_ex),
-        "final_train_loss": trainer.state.log_history[-1].get("loss"),
-        "eval_loss": getattr(trainer.state, "best_metric", None),
+        "final_train_loss": final_train_loss,
+        "eval_loss": final_eval_loss,
     }
     with open(log_dir.parent / "train_report.json", "w") as fh:
         json.dump(final, fh, indent=2)

@@ -1,6 +1,6 @@
 {
-  "n_train": 44591,
-  "n_eval": 4955,
-  "final_train_loss": null,
-  "eval_loss": null
+  "n_train": 46211,
+  "n_eval": 5135,
+  "final_train_loss": 0.03817416429519653,
+  "eval_loss": 0.04213927686214447
 }
