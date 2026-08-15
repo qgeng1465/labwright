@@ -862,6 +862,18 @@ _BARRIER_TEMPLATES = [
     "{rtot} Ω with a {rblank} Ω cell-free blank. Report the TEER (Ω·cm²).",
     "QC the {cell} monolayer on a {area} cm² insert — {rtot} Ω total, {rblank} Ω blank. "
     "What is the area-normalised TEER?",
+    # Hand-written-register variants added for lora_v5: the benchmark goals phrase
+    # the two resistances as a *cell-free blank* and a *seeded total* rather than
+    # "total vs blank", and often name the plate ("12-well Transwell insert") for
+    # free. The lora_v4 model mapped the template wording but not this one, so it
+    # dropped resistance_total_ohm on every barrier goal. Same fields, new register.
+    "Measure barrier integrity of a {cell} monolayer on a {area} cm² {well} Transwell "
+    "insert. The cell-free blank reads {rblank} Ω; the seeded monolayer totals {rtot} Ω. "
+    "What is the TEER in Ω·cm²?",
+    "A {cell} barrier model on a {area} cm² {well} insert: blank {rblank} Ω, seeded total "
+    "{rtot} Ω. Report the area-normalised TEER (Ω·cm²).",
+    "Check the {cell} monolayer on a {area} cm² membrane — the empty insert reads "
+    "{rblank} Ω, the cell-covered one {rtot} Ω. What TEER does that give?",
 ]
 
 
@@ -893,12 +905,16 @@ def generate_barrier(rng: random.Random) -> dict:
         raw["flux_nmol_min"] = _r(flux, 6)
         prose = (
             f"{cell} on a {area:g} cm² insert shows a {probe} flux of {flux:.4g} "
-            f"nmol/min from a {conc:g} µM donor. What is the apparent permeability "
-            f"(cm/s)? (TEER {teer:g} Ω·cm².)"
+            f"nmol/min from a {conc:g} µM donor, against a {rblank:g} Ω blank. "
+            f"What is the apparent permeability (cm/s)? (TEER {teer:g} Ω·cm².)"
         )
     else:
+        # Well label is descriptive only (like "solid sphere" for spheroid) —
+        # it never becomes a raw field, it just matches how the benchmark prose
+        # names the insert so the model learns the "24-well / 12-well" register.
+        well = "24-well" if area == 0.33 else "12-well"
         prose = _pick(rng, _BARRIER_TEMPLATES).format(
-            cell=cell, area=area, rtot=rtot, rblank=rblank
+            cell=cell, area=area, rtot=rtot, rblank=rblank, well=well
         )
     return {"goal": prose + _maybe_distractor(rng), "raw": {"barrier": raw}, "domain": "barrier"}
 
@@ -937,17 +953,39 @@ def generate_oxygen(rng: random.Random) -> dict:
     if rng.random() < 0.6:
         raw["spheroid_diameter_um"] = float(rng.choice([200, 300, 400, 500, 600, 800, 1000]))
 
+    dia = raw.get("spheroid_diameter_um")
+    # Template register (v2) — states the fields with calculator vocabulary.
     parts = [
         f"Culture {cell} at a target pO2 of {po2:g} mmHg with a cell density of "
         f"{density:.2e} cells/mL."
     ]
-    if "spheroid_diameter_um" in raw:
+    if dia is not None:
         parts.append(
-            f"The culture forms {raw['spheroid_diameter_um']:g} µm spheroids — "
+            f"The culture forms {dia:g} µm spheroids — "
             "what fraction of the spheroid is hypoxic?"
         )
     parts.append("How deep does oxygen penetrate (µm)?")
-    prose = " ".join(parts)
+    template_prose = " ".join(parts)
+    # Hand-written register (lora_v5): the benchmark phrases pO2 as a "tissue
+    # pO2", packs density as "2e8 cells/mL" and states spheroids inline — no
+    # "target pO2" / "How deep does oxygen penetrate" template vocabulary.
+    if dia is not None:
+        natural_variants = [
+            f"{cell} perfused at a tissue pO2 of {po2:g} mmHg with a cell density of "
+            f"{density:.2e} cells/mL and {dia:g} µm spheroids. Report the penetration "
+            f"depth (µm) and the hypoxic fraction.",
+            f"Keep {cell} at a dissolved-oxygen target of {po2:g} mmHg; the tissue packs "
+            f"{density:.2e} cells/mL in {dia:g} µm spheroids. What depth does oxygen "
+            f"reach before the core goes hypoxic?",
+        ]
+    else:
+        natural_variants = [
+            f"{cell} perfused at a tissue pO2 of {po2:g} mmHg with a cell density of "
+            f"{density:.2e} cells/mL. Report the oxygen penetration depth (µm).",
+            f"Maintain {cell} at {po2:g} mmHg dissolved oxygen with {density:.2e} "
+            f"cells/mL. How far does oxygen penetrate into the tissue?",
+        ]
+    prose = _pick(rng, [template_prose] + natural_variants)
     return {"goal": prose + _maybe_distractor(rng), "raw": {"oxygen": raw}, "domain": "oxygen"}
 
 
@@ -992,12 +1030,24 @@ def generate_pumpless(rng: random.Random) -> dict:
         "rocking_half_period_s": float(period),
         "backward_shear_fraction": float(bwd),
     }
-    prose = (
+    template_prose = (
         f"A rocking-platform chip cultures {cell} (physiological wall shear "
         f"{lo:g}–{hi:g} Pa) on a {w} µm × {h} µm × {L} mm channel tilted {tilt}° "
         f"with a {period} s rocking half-period. What peak wall shear (Pa) do the "
         f"cells experience and how does it compare with the physiological range?"
     )
+    # Hand-written register (lora_v5): benchmark names the platform "rocked on a
+    # ... channel at N° with a N s half-period" and gives the physiology as a
+    # "physiological WSS a–b Pa" band rather than "target wall shear".
+    natural_variants = [
+        f"An {cell} chip on a gravity-flow rocker: a {w} µm × {h} µm × {L} mm channel "
+        f"at {tilt}° tilt rocking every {period} s half-period. The peak shear should "
+        f"land in the physiological {lo:g}–{hi:g} Pa band — does it?",
+        f"Rock {cell} on a {w} µm × {h} µm × {L} mm channel tilted {tilt}°, one rock "
+        f"every {period} s (half-period). Physiology wants {lo:g}–{hi:g} Pa peak wall "
+        f"shear. What does the platform deliver?",
+    ]
+    prose = _pick(rng, [template_prose] + natural_variants)
     return {"goal": prose + _maybe_distractor(rng), "raw": {"pumpless": raw}, "domain": "pumpless"}
 
 
@@ -1045,7 +1095,7 @@ def generate_breathing(rng: random.Random) -> dict:
     }
     bpm = cb.breaths_per_minute(freq)
     film = cb.ali_liquid_film_um(apical, area)
-    prose = (
+    template_prose = (
         f"A lung-on-chip for {cell} cycles at {freq:g} Hz with {strain:g}% linear "
         f"strain over a {span} µm membrane for {dur} h, holding {stretch:g} s at "
         f"peak strain in each {cycle:g} s cycle. At ALI the apical surface carries "
@@ -1053,6 +1103,19 @@ def generate_breathing(rng: random.Random) -> dict:
         f"({bpm:g} breaths/min is the expected rate), the total stretch cycles, and "
         f"the residual apical film thickness (≈{film:.0f} µm)?"
     )
+    # Hand-written register (lora_v5): benchmark says the chip "breathes at 0.2 Hz
+    # with 10 % linear strain on a 300 µm membrane span" and that apical medium
+    # "sits on" the insert — the strain/span/freq vocabulary the v2 template lacks.
+    natural_variants = [
+        f"An ALI lung-chip for {cell} breathes at {freq:g} Hz with {strain:g}% linear "
+        f"strain on a {span} µm membrane span. {apical} µL of apical medium sits on "
+        f"{area:g} cm²; each {cycle:g} s cycle holds {stretch:g} s at peak strain and "
+        f"the run lasts {dur} h. Report the breathing rate and residual film.",
+        f"{cell} stretched at {freq:g} Hz and {strain:g}% strain on a {span} µm span "
+        f"for {dur} h — {apical} µL apical medium on {area:g} cm², {stretch:g} s dwell "
+        f"at peak in a {cycle:g} s cycle. What is the resulting breathing rate?",
+    ]
+    prose = _pick(rng, [template_prose] + natural_variants)
     return {"goal": prose + _maybe_distractor(rng), "raw": {"breathing": raw}, "domain": "breathing"}
 
 
@@ -1088,13 +1151,28 @@ def generate_pulsatile(rng: random.Random) -> dict:
         "minimum_flow_uLmin": float(mn),
         "mean_flow_uLmin": float(mflow),
     }
-    prose = (
+    template_prose = (
         f"A heart-on-chip perfuses {cell} with a pulsatile waveform at {freq:g} Hz "
         f"in a {height} µm channel: mean shear {mean_shear:g} Pa with amplitude "
         f"{amp:g} Pa (peak flow {peak:g} µL/min, minimum {mn:g} µL/min, mean "
         f"{mflow:g} µL/min). Compute the Womersley number, the oscillatory shear "
         f"index and the Gosling pulsatility index."
     )
+    # Hand-written register (lora_v5): the benchmark states only frequency,
+    # channel height, mean shear and amplitude — the flow trio is optional in the
+    # schema, so these rows teach the model to *omit* unstated optional fields
+    # instead of inventing them. Raw drops peak/min/mean flow accordingly.
+    natural_prose = (
+        f"{cell} on-chip at {freq:g} Hz in a {height} µm channel, mean shear "
+        f"{mean_shear:g} Pa with amplitude {amp:g} Pa. Compute the Womersley number "
+        f"and the oscillatory shear index."
+    )
+    if rng.random() < 0.5:
+        prose = natural_prose
+        for key in ("peak_flow_uLmin", "minimum_flow_uLmin", "mean_flow_uLmin"):
+            raw.pop(key, None)
+    else:
+        prose = template_prose
     return {"goal": prose + _maybe_distractor(rng), "raw": {"pulsatile": raw}, "domain": "pulsatile"}
 
 
@@ -1140,7 +1218,7 @@ def generate_scaling(rng: random.Random) -> dict:
     frac = cs.organ_flow_fraction(organ)
     organ_flow = frac * co
     cells = cs.scale_cell_number(cs.ORGAN_MASS_G[organ], cs.BODY_MASS_G, total_cells)
-    prose = (
+    template_prose = (
         f"Scale a body-on-chip for a {_SCALING_ORGAN_NAME[organ]} compartment: the chip "
         f"supports {total_cells:.3g} total cells perfused at a cardiac output of "
         f"{co:g} mL/min. How many cells go to the {organ} compartment, what perfusion "
@@ -1148,6 +1226,24 @@ def generate_scaling(rng: random.Random) -> dict:
         f"compartment at {flow:g} µL/min match the ~{target:g} s in-vivo transit? "
         f"(≈{cells:.0f} cells at the {frac * 100:.0f}% flow fraction.)"
     )
+    # Hand-written register (lora_v5): benchmark says a compartment "is scaled to
+    # an adult (cardiac output X mL/min)" and "the chip carries Y cells in Z µL" —
+    # the flow is optional in the schema, so these rows omit it and teach the
+    # model not to invent an unstated optional field.
+    natural_variants = [
+        f"A body-on-chip {_SCALING_ORGAN_NAME[organ]} compartment is scaled to an adult "
+        f"(cardiac output {co:g} mL/min). The chip carries {total_cells:.3g} cells in "
+        f"{volume:g} µL, and the in-vivo {organ} transit is ~{target:g} s. Does the "
+        f"platform match it?",
+        f"Size a {_SCALING_ORGAN_NAME[organ]}-on-chip for an adult with a cardiac output "
+        f"of {co:g} mL/min: {total_cells:.3g} cells in {volume:g} µL. The platform flow "
+        f"should reproduce the ~{target:g} s in-vivo {organ} transit.",
+    ]
+    if rng.random() < 0.5:
+        prose = _pick(rng, natural_variants)
+        raw.pop("flow_rate_uLmin", None)
+    else:
+        prose = template_prose
     return {"goal": prose + _maybe_distractor(rng), "raw": {"scaling": raw}, "domain": "scaling"}
 
 
@@ -1188,12 +1284,30 @@ def generate_gradient(rng: random.Random) -> dict:
         if rng.random() < 0.5:
             hours = 48.0
             raw["experiment_hours"] = hours
-    prose = (
+    template_prose = (
         f"A chemotaxis chip exposes {cell} to {src:g} µM {chemo} in the source "
         f"channel vs {sink:g} µM buffer across a {distance:g} µm agarose bridge, run "
         f"for {hours:g} h. What is the gradient steepness (≈{steep:.0f} µM/mm) and "
         f"how long until it reaches steady state?"
     )
+    # Hand-written register (lora_v5): benchmark says "Build a 500 µm source–sink
+    # CXCL12 gradient: 500 µM source, 0 µM sink, diffusivity 5e-10 m²/s, 24 h
+    # chemotaxis" — "source–sink" + "diffusivity" vocabulary the template lacks.
+    # diffusivity_m2s is schema-optional, so these rows add it to the raw.
+    D = float(rng.choice([1e-10, 2e-10, 5e-10, 1e-9]))
+    natural_variants = [
+        f"Build a {distance:g} µm source–sink {chemo} gradient for {cell}: {src:g} µM "
+        f"source, {sink:g} µM sink, diffusivity {D:.0e} m²/s, {hours:g} h chemotaxis. "
+        f"Give the steepness (µM/mm).",
+        f"A {distance:g} µm {chemo} gradient ({src:g} µM source, {sink:g} µM sink, "
+        f"diffusivity {D:.0e} m²/s) is run for {hours:g} h for {cell}. Report the "
+        f"steepness and the steady-state time.",
+    ]
+    if rng.random() < 0.5:
+        prose = _pick(rng, natural_variants)
+        raw["diffusivity_m2s"] = D
+    else:
+        prose = template_prose
     return {"goal": prose + _maybe_distractor(rng), "raw": {"gradient": raw}, "domain": "gradient"}
 
 

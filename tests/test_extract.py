@@ -112,6 +112,60 @@ def test_synthetic_optional_fields_are_coupled_to_prose():
                 assert "viability" in goal
 
 
+def test_synthetic_v2_domains_coupled_and_schema_legal():
+    """The seven v2 domains (barrier/oxygen/pumpless/breathing/pulsatile/
+    scaling/gradient) generate rows whose optional raw fields are stated in the
+    prose — or omitted from the raw when the prose omits them (pulsatile flows,
+    scaling flow, gradient diffusivity) — and every row builds a verifier-clean
+    design. This is the coupling rule that lets the extractor learn to *omit*
+    rather than invent, and it guards the lora_v5 hand-written-register
+    variants added for the 0/14 new-domains gap."""
+    rows = generate(0, 0, n_barrier=50, n_oxygen=50, n_pumpless=50, n_breathing=50,
+                    n_pulsatile=50, n_scaling=50, n_gradient=50, seed=11)
+    domains = {r["domain"] for r in rows}
+    assert {"barrier", "oxygen", "pumpless", "breathing", "pulsatile",
+            "scaling", "gradient"} <= domains
+    seen_natural = {"pulsatile_no_flow": False, "scaling_no_flow": False,
+                    "gradient_diff": False}
+    for row in rows:
+        goal = row["goal"].lower()
+        dom = row["domain"]
+        block = row["raw"][dom]
+        # schema + build gate on every row
+        inp = DesignInput(goal=row["goal"], rationale="test", **row["raw"])
+        assert not has_errors(verify_design(build_design(inp)))
+        if dom == "pulsatile":
+            if "peak_flow_uLmin" in block:
+                assert "peak flow" in goal
+            else:
+                assert "peak flow" not in goal
+                assert "peak_flow_uLmin" not in row["raw"]["pulsatile"]
+                seen_natural["pulsatile_no_flow"] = True
+        elif dom == "scaling":
+            if "flow_rate_uLmin" in block:
+                assert "flow" in goal
+            else:
+                seen_natural["scaling_no_flow"] = True
+        elif dom == "gradient":
+            if "diffusivity_m2s" in block:
+                assert "diffusivity" in goal
+                seen_natural["gradient_diff"] = True
+        elif dom == "oxygen":
+            if "spheroid_diameter_um" in block:
+                assert "spheroids" in goal
+            # template says "target pO2", natural variants "tissue pO2" /
+            # "dissolved-oxygen" — all name the oxygen target either way
+            assert "po2" in goal or "oxygen" in goal
+        elif dom == "barrier":
+            # every variant names the two resistances: "blank vs total",
+            # "cell-free blank / seeded total", or "empty insert / cell-covered"
+            assert "cm²" in goal and ("blank" in goal or "empty" in goal)
+        elif dom == "breathing":
+            assert "hz" in goal and "strain" in goal and ("membrane" in goal or "span" in goal)
+    # the natural-register branches actually fire (they are the lora_v5 fix)
+    assert all(seen_natural.values()), seen_natural
+
+
 def test_synthetic_spheroid_and_pk_coupled_and_calc_legal():
     """Spheroid/pk raw fields are stated in the prose *or* are the canonical
     defaults the gold set forces the model to infer, and every raw builds a
