@@ -978,6 +978,15 @@ set. The fine-tuned model's 0.25 and `pro`'s 0.0909 are therefore ~1 hit
 within ±20% out of a few such goals; small-n noise, not a real capability
 fraction.
 
+**Adapter weights.** The fine-tuned adapter itself (`results/extractor/lora`,
+~74 MB of safetensors) is **not committed** (binary weights are gitignored);
+only its evaluation artifacts are in the repo. It is fully *regenerable*,
+though: the 61,043 synthetic rows (`results/extractor_11dom_v4/`, train/eval/
+gold_pairs all committed) and the trainer (`labwright/extract/train.py`) are
+in the repo, so retraining on a GPU per the README reproduces the same adapter;
+even without retraining, the scores above are reproducible as-is from the
+committed `results/extractor/eval_report.json`.
+
 **Statistical caveat.** The headline cells in the table above are **single
 runs** over 24/15 goals. A 5-seed re-run of the 24-reading set
 (`results/eval_seed_benchmark.json`, 24 goals × 5 seeds = 120 trials per

@@ -397,6 +397,8 @@ hallucination rate                 1.000         0.125
 
 即使对微调模型，目标恢复也接近0：抽取器恢复的是一个目标所隐含的*原始输入*，而非生理目标数字（那是agent的职责）。微调模型的 `mean_field_rel_error` 为0.00062（flash / pro 分别为0.0066 / 0.032）。`target_recovery` **不是**基于400个评估行（也不是含盲测目标的415个）的比率：它只在同时满足“携带生理剪切目标 **且** 抽取出的原始值构建了设计”的盲测目标上计分，这是15目标盲测集中的一个个位数子集。因此微调模型的0.25和 `pro` 的0.0909是在少数这样的目标中约1次命中在 ±20% 内；小样本噪声，而非真实能力分数。
 
+**适配器权重。** 微调适配器本身（`results/extractor/lora`，约 74 MB safetensors）**没有入库**（二进制权重 gitignored）——仓库里只有它的评估产物。但它是**完全可再生的**：61,043 行合成数据（`results/extractor_11dom_v4/`，train/eval/gold_pairs 全部提交）与训练器（`labwright/extract/train.py`）都在仓库里，在 GPU 上按 README 训练说明重跑即得同权重 adapter；且不重跑也能复现分数——上表直接来自已提交的 `results/extractor/eval_report.json`。
+
 **统计提醒。** 上表中的头条单元格是24/15目标上的**单次运行**。24-阅读集的5种子重跑（`results/eval_seed_benchmark.json`，24目标 × 5种子 = 每个系统/模型120次试验）给出Wilson 95% CI（`eval/ci.py`）：
 
 | 模型 | 系统 | 可用率（k/n） | 95% CI |
