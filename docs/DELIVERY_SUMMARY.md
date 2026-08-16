@@ -1,6 +1,6 @@
 # Labwright — 交付总结
 
-**日期**：2026-08-16 ｜ **HEAD**：`58a7997` ｜ **提交作者**：`qgeng1465` ｜ **状态**：GREEN，交付就绪
+**日期**：2026-08-16 ｜ **HEAD**：`edfd4ba` ｜ **提交作者**：`qgeng1465` ｜ **状态**：GREEN，交付就绪
 
 > 本文档是 50 小时自主马拉松的收尾交付物。除本节外，文中**每一个数字**都可由
 > committed `results/*.json` 用 `eval.report.derive()` 或仓库自带分析脚本重算得出；
@@ -173,7 +173,7 @@ prompt-backed + 2 scenario）+ 14 culture + 15 spheroid + 14 pk + 14 新域。
 ## 6. 交付物清单
 
 ### 6.1 对外
-- **GitHub** `qgeng1465/labwright`（main = `257c14e`）：完整代码、测试、基准、结果、
+- **GitHub** `qgeng1465/labwright`（main = `edfd4ba`）：完整代码、测试、基准、结果、
   README EN/ZH、8 张论文图源、训练数据生成器。
 - **HF Space** `qgeng1465/labwright`：静态展示页（index.html + 3 张图 + README），
   与本地 byte-identical。
@@ -188,7 +188,11 @@ EN/ZH v6）→ `ef265ad`（教师报告 v6）→ `29edd95`（fast-path 重述+se
 `4cda257`（消融补进教师报告）→ `d3f0bb0`（清理）→ `2639fad`（audit_claims 78 断言+
 register 披露+schema-prompt 阴性）→ `d9370af`（HF Space 同步）→ `8fa2190`（论文侧
 register 披露）→ `4526eca`（投稿前审计 5 项修复）→ `6b172d4`（交付总结）→
-`257c14e`（冷克隆审计：README 权重可再生成说明 + 交付总结收口）。
+`257c14e`（冷克隆审计：README 权重可再生成说明 + 交付总结收口）→ `896bfb4`
+（P0-2 冷题扩 8→12 + calc-embedded 披露）→ `3ab3e2f`（教师报告补 P0-2）→
+`58a7997`（P0-3 新域 5-seed Wilson CI）→ `eb58240`（A3 README 去 AI 感）→
+`5cc11c6`（A1+A2 README 顶部重构 + scoring 正文化）→ `edfd4ba`（README
+EN/ZH 同步 P0-2/P0-3 汇总，即本文档 HEAD）。
 
 ## 7. 未来工作
 
