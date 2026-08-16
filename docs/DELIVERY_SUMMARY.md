@@ -1,6 +1,6 @@
 # Labwright — 交付总结
 
-**日期**：2026-08-16 ｜ **HEAD**：`d679652` ｜ **提交作者**：`qgeng1465` ｜ **状态**：GREEN，交付就绪
+**日期**：2026-08-17 ｜ **HEAD**：`eb4fa6e` ｜ **提交作者**：`qgeng1465` ｜ **状态**：GREEN，交付就绪
 
 > 本文档是 50 小时自主马拉松的收尾交付物。除本节外，文中**每一个数字**都可由
 > committed `results/*.json` 用 `eval.report.derive()` 或仓库自带分析脚本重算得出；
@@ -173,8 +173,8 @@ prompt-backed + 2 scenario）+ 14 culture + 15 spheroid + 14 pk + 14 新域。
 ## 6. 交付物清单
 
 ### 6.1 对外
-- **GitHub** `qgeng1465/labwright`（main = `d679652`）：完整代码、测试、基准、结果、
-  README EN/ZH、8 张论文图源、训练数据生成器。
+- **GitHub** `qgeng1465/labwright`（main = `eb4fa6e`，release **v0.2.0**）：完整代码、
+  测试、基准、结果、README EN/ZH、8 张论文图源、训练数据生成器。
 - **HF Space** `qgeng1465/labwright`：静态展示页（index.html + 3 张图 + README），
   与本地 byte-identical。
 - **HF Dataset** `qgeng1465/scirecipe-audit`：21,094 条真实协议审计集。
@@ -192,7 +192,8 @@ register 披露）→ `4526eca`（投稿前审计 5 项修复）→ `6b172d4`（
 （P0-2 冷题扩 8→12 + calc-embedded 披露）→ `3ab3e2f`（教师报告补 P0-2）→
 `58a7997`（P0-3 新域 5-seed Wilson CI）→ `eb58240`（A3 README 去 AI 感）→
 `5cc11c6`（A1+A2 README 顶部重构 + scoring 正文化）→ `edfd4ba`（README
-EN/ZH 同步 P0-2/P0-3 汇总）→ `d679652`（交付总结收口，即当前 HEAD）。
+EN/ZH 同步 P0-2/P0-3 汇总）→ `d679652`（交付总结收口）→ `eb4fa6e`
+（v0.2.0：版本 bump 0.2.0 + tag + GitHub release）。
 
 ## 7. 未来工作
 
