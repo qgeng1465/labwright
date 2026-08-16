@@ -1,0 +1,46 @@
+[
+  {
+    "id": "cold-brain-organ-flow-fraction",
+    "goal": "A body-on-chip brain compartment is scaled to an adult (70 kg, cardiac output 5000 mL/min) and the chip carries 2e6 cells. Report the brain compartment's organ flow fraction and the organ flow rate (mL/min) it receives.",
+    "expected": {
+      "organ_flow_fraction": 0.15,
+      "organ_flow_rate_mlmin": 750.0
+    },
+    "source": "Blind design target (cold): the brain receives ~15% of cardiac output — the committed body-on-chip flow-fraction table (labwright/calc/scaling.py:ORGAN_FLOW_FRACTIONS, sourced to Ucciferri, Sbrana & Ahluwalia, Allometric Scaling and Cell Ratios in Multi-Organ in vitro Models of Human Metabolism, Frontiers in Bioengineering and Biotechnology 2014, doi:10.3389/fbioe.2014.00074). The goal text states neither the fraction nor the flow; not in the Labwright system prompt either.",
+    "blind_strength": "cold",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "cold-heart-organ-flow-fraction",
+    "goal": "A body-on-chip heart compartment is scaled to an adult (70 kg, cardiac output 5000 mL/min) and the chip carries 1e6 cells. Report the heart compartment's organ flow fraction and the organ flow rate (mL/min) it receives.",
+    "expected": {
+      "organ_flow_fraction": 0.05,
+      "organ_flow_rate_mlmin": 250.0
+    },
+    "source": "Blind design target (cold): the heart (coronary) receives ~5% of cardiac output — the committed body-on-chip flow-fraction table (labwright/calc/scaling.py:ORGAN_FLOW_FRACTIONS, sourced to Ucciferri et al. 2014, doi:10.3389/fbioe.2014.00074). The goal text states neither the fraction nor the flow; not in the Labwright system prompt either.",
+    "blind_strength": "cold",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "cold-gut-organ-flow-fraction",
+    "goal": "A body-on-chip gut compartment is scaled to an adult (70 kg, cardiac output 5000 mL/min) and the chip carries 2e6 cells. Report the gut compartment's organ flow fraction and the organ flow rate (mL/min) it receives.",
+    "expected": {
+      "organ_flow_fraction": 0.15,
+      "organ_flow_rate_mlmin": 750.0
+    },
+    "source": "Blind design target (cold): gut/splanchnic flow is ~15% of cardiac output in the committed body-on-chip flow-fraction table (labwright/calc/scaling.py:ORGAN_FLOW_FRACTIONS, sourced to Ucciferri et al. 2014, doi:10.3389/fbioe.2014.00074). Honest note: splanchnic conventions range ~15–25% of cardiac output; the committed project table pins 0.15 and the gold targets the project standard. The goal text states neither the fraction nor the flow; not in the Labwright system prompt either.",
+    "blind_strength": "cold",
+    "scenario": "complete-info"
+  },
+  {
+    "id": "cold-skin-organ-flow-fraction",
+    "goal": "A body-on-chip skin compartment is scaled to an adult (70 kg, cardiac output 5000 mL/min) and the chip carries 5e6 cells. Report the skin compartment's organ flow fraction and the organ flow rate (mL/min) it receives.",
+    "expected": {
+      "organ_flow_fraction": 0.06,
+      "organ_flow_rate_mlmin": 300.0
+    },
+    "source": "Blind design target (cold): skin flow is ~6% of cardiac output in the committed body-on-chip flow-fraction table (labwright/calc/scaling.py:ORGAN_FLOW_FRACTIONS, sourced to Ucciferri et al. 2014, doi:10.3389/fbioe.2014.00074). Honest note: skin flow conventions range ~6–10% of cardiac output; the committed project table pins 0.06 and the gold targets the project standard. The goal text states neither the fraction nor the flow; not in the Labwright system prompt either.",
+    "blind_strength": "cold",
+    "scenario": "complete-info"
+  }
+]

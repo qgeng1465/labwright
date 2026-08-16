@@ -1,0 +1,85 @@
+{
+  "n_gold": 4,
+  "per_entry": [
+    {
+      "id": "cold-brain-organ-flow-fraction",
+      "gold": {
+        "id": "cold-brain-organ-flow-fraction",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'total_cells_chip'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "cold-heart-organ-flow-fraction",
+      "gold": {
+        "id": "cold-heart-organ-flow-fraction",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'total_cells_chip'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "cold-gut-organ-flow-fraction",
+      "gold": {
+        "id": "cold-gut-organ-flow-fraction",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'organ'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "cold-skin-organ-flow-fraction",
+      "gold": {
+        "id": "cold-skin-organ-flow-fraction",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'organ'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    }
+  ],
+  "finetuned": {
+    "recovery": {},
+    "hallucination_rate": 1.0,
+    "self_consistent_rate": 0.0,
+    "usable_design_rate": 0.0
+  },
+  "system": "finetuned",
+  "generated_at": "2026-08-16T13:05:19+00:00"
+}

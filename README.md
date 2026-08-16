@@ -22,8 +22,10 @@ That one rule buys two separate properties, and keeping them separate matters:
    only has to extract and compute it) and a *blind set* (15 goals that name no
    number, so the model must recall the target itself). On the reading set the
    usable rate is 88–100%; on the blind set it falls to 40–47%, and on the
-   eight genuinely *cold* goals (the answer is in neither the goal nor the
-   prompt) neither model does better than 3/8 = 38%.
+   twelve genuinely *cold* goals (the answer is in neither the goal nor the
+   prompt) Labwright reaches 7/12 = 58% (95% CI 32–81%) — though four of those
+   are scaling goals the calculator derives from the organ name, not model
+   memory, so the eight recall-only cold goals still sit at 3/8 = 38%.
 
 The gate stops fabricated numbers, not wrong targets. That boundary is the
 project's headline claim: **verification solves numerical consistency, not
@@ -113,11 +115,14 @@ plainly instead of claiming a head-to-head. One honest boundary: verification
 is *necessary, not sufficient*. Labwright proves numbers are internally
 consistent; it cannot supply physiology the model doesn't know. On the 15-goal
 blind set the usable rate collapses from 88–100% on the reading set to
-**40–47%** (`flash` 6/15, `pro` 7/15). Restricting to the eight genuinely
-**cold** goals (answer in neither the goal nor the prompt), each model recovers
-only **3/8 = 38%** (95% Wilson CI 14–69%); the other five are *prompt-backed*,
-the answer sitting inside a range in the prompt. That boundary is the real
-research frontier, and closing it is where this project is headed.
+**40–47%** (`flash` 6/15, `pro` 7/15). Restricting to the twelve genuinely
+**cold** goals (answer in neither the goal nor the prompt), Labwright recovers
+**7/12 = 58%** (95% Wilson CI 32–81%) — four of those are organ-flow goals the
+scaling calculator derives from the organ name (the gated path, not model
+memory), so on the eight recall-only cold goals both models still sit at
+**3/8 = 38%** (95% Wilson CI 14–69%); the other five blind goals are
+*prompt-backed*, the answer sitting inside a range in the prompt. That boundary
+is the real research frontier, and closing it is where this project is headed.
 
 ## What you get
 
@@ -741,16 +746,27 @@ ablation ordering.
   Both usable rates are single-run point estimates with wide error bars: the
   95% Wilson CI around 6/15 = 40% is **20–64%**, around 7/15 = 47% it is
   **25–70%**; n=15 is too thin to separate the two models, or either from
-  the cold-only 38% below.
+  the cold-only rates below.
   **Cold-only honesty check:** five of the 15 goals are `prompt-backed` (the
   answer sits inside the system prompt's physiological-anchor range: liver,
-  lung, BBB, venular, lymphatic), so on the eight genuinely cold goals `flash`
-  and `pro` each recover only **3** (arterial, HepG2, 24-well medium):
-  cold-only usable ≈ **38% / 38%**, each with a 95% Wilson CI of **14–69%**
-  ; n=8 is still too thin to separate the models, and cold recall is nowhere
-  near the reading set. Of the recoveries that look like domain knowledge,
-  only those three are actually cold; the others (lung, BBB, venular) sit
-  inside the prompted range. Remove the two scenario-only goals (they state
+  lung, BBB, venular, lymphatic), so the blind headline overstates recall on
+  the genuinely cold goals. A 2026-08-16 expansion
+  (`eval/gold_cold_expansion.json`) adds four cold organ-flow goals (brain,
+  heart, gut, skin fractions of cardiac output, Ucciferri et al. 2014),
+  bringing the cold set to twelve. On all twelve `flash` and `pro` Labwright
+  each recover **7/12 = 58%**, with a 95% Wilson CI of **32–81%** — but the
+  four new goals are scaling goals the pipeline's calculator derives from the
+  organ name (the gated path, not model memory), so on the eight recall-only
+  cold goals both models still sit at **3/8 = 38%**, 95% Wilson CI **14–69%**;
+  n=12 is still too thin to separate the models, and cold recall is nowhere
+  near the reading set. The un-gated baseline's value-recall over the twelve
+  (every recovered value within ±5%, no hallucination gate) is **4/12 = 33%**
+  for `flash` (**14–61%**) and **3/12 = 25%** for `pro` (**9–53%**), and the
+  fine-tuned read-extractor is **1/12** (the one genuinely unseen-value
+  recovery, 24-well medium; 0/4 on the scaling goals, which need derivation
+  rather than extraction). Of the recoveries that look like domain knowledge,
+  only the recall-only three are actually cold; the others (lung, BBB, venular)
+  sit inside the prompted range. Remove the two scenario-only goals (they state
   the magnitude, so they test a failure mode, not recall) and the
   *domain*-target recovery is **4/13 = 31%** for `flash` and **6/13 = 46%**
   for `pro`; scenario goals should not be lumped into cold recall.

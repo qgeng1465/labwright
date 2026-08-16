@@ -554,19 +554,30 @@ target, Labwright's verified designs hit the wrong physiology. On the expanded
 Both usable rates are single-run point estimates with wide error bars: the
 95 % Wilson CI around 6/15 = 40 % is **20–64 %**, around 7/15 = 47 % it is
 **25–70 %** — n=15 is too thin to separate the two models, or either from the
-cold-only 38 % below.
+cold-only rates below.
 **Cold-only sub-rates:** five of the 15 goals are `prompt-backed` (liver, lung,
 BBB, venular, lymphatic), so the headline 40 %/47 % usable overstates recall on
-the genuinely cold goals — on the eight cold entries `flash` and `pro` each
-recover only 3 (arterial, HepG2 seeding, 24-well medium), i.e. cold-only usable
-≈ **38 % / 38 %**, each with a 95 % Wilson CI of 14–69 %; n=8 is still too thin
-to separate the two models, and cold recall is nowhere near the reading set. Of
-the recoveries that look like domain knowledge, only those three are actually
-cold; the others (lung, BBB, venular) sit inside prompted ranges. Remove the
-two scenario-only goals (they state the magnitude, so they test a failure mode,
-not recall) and the *domain*-target recovery is **4/13 = 31 %** for `flash` and
-**6/13 = 46 %** for `pro` — scenario goals should not be lumped into cold
-recall.
+the genuinely cold goals. The cold set was expanded on 2026-08-16
+(`eval/gold_cold_expansion.json`): four cold organ-flow goals (brain, heart,
+gut, skin fractions of cardiac output, Ucciferri et al. 2014) join the eight
+committed cold entries, for a cold-only n=12. On the twelve, `flash` and `pro`
+Labwright each recover **7/12 = 58 %**, 95 % Wilson CI **32–81 %** — but the
+four new goals are scaling goals the pipeline's calculator derives from the
+organ name (the gated path, not model memory), so on the eight recall-only cold
+entries both models still recover only 3 (arterial, HepG2 seeding, 24-well
+medium), i.e. recall-only usable ≈ **38 % / 38 %**, 95 % Wilson CI **14–69 %**;
+n=12 is still too thin to separate the two models, and cold recall is nowhere
+near the reading set. The un-gated baseline's value-recall over the twelve
+(every recovered value within ±5 %, no hallucination gate) is **4/12 = 33 %**
+for `flash` (**14–61 %**) and **3/12 = 25 %** for `pro` (**9–53 %**); the
+fine-tuned read-extractor reaches **1/12** (the genuinely unseen-value 24-well
+recovery; 0/4 on the scaling goals, which require derivation, not extraction).
+Of the recoveries that look like domain knowledge, only the recall-only three
+are actually cold; the others (lung, BBB, venular) sit inside prompted ranges.
+Remove the two scenario-only goals (they state the magnitude, so they test a
+failure mode, not recall) and the *domain*-target recovery is **4/13 = 31 %**
+for `flash` and **6/13 = 46 %** for `pro` — scenario goals should not be lumped
+into cold recall.
 Both models correctly select the prompt-backed entries they are primed for
 (`pro` recovers venular 0.3 Pa, lung and BBB; `flash` recovers lung) yet both
 miss liver (0.05 Pa): they propose the mid-range 0.10 Pa — inside the prompt's

@@ -88,6 +88,12 @@ prompt-backed + 2 scenario）+ 14 culture + 15 spheroid + 14 pk + 14 新域。
 - **盲测 3 种子 × 45 试次**：flash 0.444 [0.309, 0.588]、pro 0.489 [0.350, 0.630]，
   自洽 1.000；裸跑 0.000。cold-only（8 条冷题）flash/pro 均 **3/8 = 38%**
   （95% Wilson CI 14–69%）。
+- **2026-08-16 P0-2 冷题扩到 12**（`eval/gold_cold_expansion.json` +4 条器官流量
+  fraction 题，值锚定 `calc/scaling.py` 的 Ucciferri 表）：12 条上 Labwright
+  双模型均 **7/12 = 58%**（CI 32–81%）——但 4 条新题由 scaling 计算器按器官名推导
+  （门控路径，非模型记忆），8 条记忆型冷题仍 **3/8 = 38%**（14–69%）；裸跑
+  value-recall 12 条上 flash **4/12 = 33%**（14–61%）、pro **3/12 = 25%**
+  （9–53%）；finetuned 抽取器 **1/12**（scaling 推导型 0/4）。
 - **thinking 消融（各两遍，完全复现）**：pro 盲测 47% → **67%**（10/15）、
   flash 40% → 47–53%。4 条硬核靶（肾小管 0.02 Pa、肺动脉 2.0 Pa、视网膜 5.4 Pa、
   淋巴 0.2 Pa）两模型×两遍全 miss = **领域知识边界，不是推理预算**。门禁每遍
@@ -152,7 +158,8 @@ prompt-backed + 2 scenario）+ 14 culture + 15 spheroid + 14 pk + 14 新域。
 
 - 终局独立审计 agent 裁决 **GREEN**（16 PASS 类）；发现的 5 项（2 P1 措辞精确度 +
   3 P2 整理）已全部修复并入 `4526eca`。
-- 诚实修正历史：盲测 12→15 题集、cold-only 双 3/8、新域 13/14+11/14、silence
+- 诚实修正历史：盲测 12→15 题集、cold-only 扩 8→12 题（Labwright 7/12 = 58%，
+  其中 4 条 scaling 计算器推导、记忆型 8 条仍 3/8 = 38%）、新域 13/14+11/14、silence
   行 hall=1.0 约定、schema-prompt 0/14 阴性、register-provenance 披露进 README/
   eval-README/教师报告/manuscript 四处。
 - 无发明生理值/DOI：每个金标 `expected` 归入三桶之一（source-pinned DOI / 显式

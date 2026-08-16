@@ -230,6 +230,121 @@ def audit_blind_split() -> None:
 # E. Gold-pairs inventory and new-domain exclusion
 # ---------------------------------------------------------------------------
 
+def audit_cold_expansion() -> None:
+    """Structure + provenance of the cold-blind expansion (P0-2, 2026-08-16).
+
+    ``eval/gold_cold_expansion.json`` adds 4 organ-flow-fraction goals to the
+    8 committed cold blind goals. Every value must be:
+      * cold for the base LLM (absent from the goal text and from the Labwright
+        system prompt — the prompt never phrases flow as a cardiac-output
+        fraction);
+      * traceable to the committed body-on-chip flow table
+        ``labwright/calc/scaling.py:ORGAN_FLOW_FRACTIONS`` (Ucciferri et al.
+        2014, doi:10.3389/fbioe.2014.00074);
+      * distinct from the organ-flow values already pinned in
+        ``eval/gold_new_domains.json`` (liver 0.27 / kidneys 0.22).
+    """
+    import labwright.agent.agent as _agent
+    from labwright.calc import scaling as _cs
+    from labwright.physiology import physiology_anchor_text
+
+    path = ROOT / "eval/gold_cold_expansion.json"
+    golds = json.load(open(path))
+    _check("G  cold expansion has 4 goals, all blind_strength=cold",
+           len(golds) == 4 and all(g.get("blind_strength") == "cold" for g in golds),
+           f"n={len(golds)}")
+    new_domain_vals = {
+        float(v)
+        for g in json.load(open(ROOT / "eval/gold_new_domains.json"))
+        for k, v in g["expected"].items()
+        if k in ("organ_flow_fraction", "organ_flow_rate_mlmin")
+    }
+    prompt_text = _agent.SYSTEM_PROMPT + "\n" + physiology_anchor_text()
+    # The system prompt never phrases perfusion as a cardiac-output fraction,
+    # so a scaling goal cannot be prompt-backed.
+    _check("G  cold expansion: system prompt has no flow-fraction phrasing",
+           "flow fraction" not in prompt_text and "cardiac output" not in prompt_text)
+    seen_organs: set[str] = set()
+    for g in golds:
+        organ = g["goal"].split("body-on-chip ")[1].split(" compartment")[0]
+        frac = _cs.ORGAN_FLOW_FRACTIONS[organ]
+        flow = round(frac * _cs.CARDIAC_OUTPUT_MLMIN, 6)
+        _check(f"G  {g['id']}: expected == committed table ({organ} {frac} x CO)",
+               abs(g["expected"]["organ_flow_fraction"] - frac) < 1e-9
+               and abs(g["expected"]["organ_flow_rate_mlmin"] - flow) < 1e-9,
+               f"got {g['expected']}")
+        _check(f"G  {g['id']}: value absent from goal text (cold)",
+               str(frac) not in g["goal"] and str(int(flow)) not in g["goal"])
+        _check(f"G  {g['id']}: value distinct from committed new-domain fractions",
+               float(g["expected"]["organ_flow_fraction"]) not in new_domain_vals,
+               f"collides with {sorted(new_domain_vals)}")
+        _check(f"G  {g['id']}: source cites Ucciferri DOI",
+               "10.3389/fbioe.2014.00074" in g.get("source", ""))
+        seen_organs.add(organ)
+    _check("G  cold expansion: organs brain/heart/gut/skin, none reused",
+           seen_organs == {"brain", "heart", "gut", "skin"})
+
+
+def _cold_entries(name: str) -> list[dict]:
+    """Per-entry records whose gold is blind_strength=cold in a committed file."""
+    return [e for e in _load(name)["per_entry"]
+            if (e.get("gold") or {}).get("blind_strength") == "cold"]
+
+
+def _value_recall(rows: list[dict], system: str) -> int:
+    """Value-recall: a recovery was submitted and every value lands within ±5%.
+
+    Unlike ``_entry_usable`` this drops the hallucination gate: the un-gated
+    systems (bare / soft_gate / self_verify) are scored hallucination=1.0 on
+    any invented value by construction, so their *usable* rate is always 0 for
+    these goals. The docs report their value-recall instead.
+    """
+    n = 0
+    for e in rows:
+        recv = e[system].get("recovery") or {}
+        if recv and all(abs(float(v)) <= 0.05 for v in recv.values()):
+            n += 1
+    return n
+
+
+def audit_cold_aggregates() -> None:
+    """Combined cold-only aggregates (n=12) pinned by README ("Cold-only" box).
+
+    The 8 committed cold blind goals (``eval/gold_blind.json``) plus the 4 cold
+    organ-flow goals (``eval/gold_cold_expansion.json``) form one cold-only set.
+    This check recomputes the headline numbers the docs display:
+      * Labwright usable (the documented usable rule: hallucination 0.0 AND
+        every recovery within ±5 %) — 7/12 = 58 % [32, 81] for both models;
+      * the un-gated systems' value-recall (recovery within ±5 %, hallucination
+        gate dropped as above) — bare flash 4/12, bare pro 3/12;
+      * the pre-expansion 8-goal Labwright usable stays 3/8 = 38 % [14, 69].
+    """
+    from eval.ci import format_ci as _ci
+
+    bf = _cold_entries("eval_blind_flash.json")
+    bp = _cold_entries("eval_blind_pro.json")
+    ef = _load("eval_cold_expansion_flash.json")["per_entry"]
+    ep = _load("eval_cold_expansion_pro.json")["per_entry"]
+    _check("D  cold-only n=12: 8 blind + 4 expansion, same ids per model",
+           len(bf) == 8 and len(ef) == 4
+           and {e["id"] for e in bf + ef} == {e["id"] for e in bp + ep})
+
+    for model, rows in (("flash", bf + ef), ("pro", bp + ep)):
+        k = sum(1 for e in rows if _entry_usable(e.get("labwright")))
+        _check(f"D  cold-only n=12 {model} labwright usable 7/12 = {_ci(k, len(rows))}",
+               k == 7, f"got {k}")
+        k = _value_recall(rows, "bare")
+        _check(f"D  cold-only n=12 {model} bare value-recall "
+               f"{k}/12 = {_ci(k, len(rows))}",
+               (model == "flash" and k == 4) or (model == "pro" and k == 3),
+               f"got {k}")
+
+    for model, rows in (("flash", bf), ("pro", bp)):
+        k = sum(1 for e in rows if _entry_usable(e.get("labwright")))
+        _check(f"D  orig-8 cold-only {model} labwright usable 3/8 = {_ci(k, len(rows))}",
+               k == 3, f"got {k}")
+
+
 def audit_gold_pairs() -> None:
     pairs = [json.loads(line) for line in (RESULTS / "extractor/gold_pairs.jsonl").open()]
     domains = {}
@@ -428,6 +543,8 @@ def main() -> int:
     audit_fast_rows()
     audit_thinking()
     audit_blind_split()
+    audit_cold_expansion()
+    audit_cold_aggregates()
     audit_gold_pairs()
     audit_leak_free()
     audit_seed_intervals()

@@ -56,6 +56,11 @@ SETS = {
            "eval_pk_k3.json", "eval_pk_kimicode.json"),
     "newdomains": ("eval_new_domains_labwright_flash.json",
                    "eval_new_domains_labwright_pro.json"),
+    # P0-2 cold-blind expansion (2026-08-16): 4 organ-flow-fraction goals added
+    # to the 8 committed cold goals, so cold-only recall is n=12. The finetuned
+    # rows graft in exactly like the other sets.
+    "cold_expansion": ("eval_cold_expansion_flash.json",
+                       "eval_cold_expansion_pro.json"),
 }
 
 DEFAULT_ADAPTER = "lora_v6"

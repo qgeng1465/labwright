@@ -1,0 +1,406 @@
+{
+  "n_gold": 4,
+  "per_entry": [
+    {
+      "id": "cold-brain-organ-flow-fraction",
+      "gold": {
+        "id": "cold-brain-organ-flow-fraction",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.15,
+          "organ_flow_rate_mlmin": 750.0,
+          "total_cells_chip": 2000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.15,
+          "organ_flow_rate_mlmin": 750.0,
+          "total_cells_chip": 2000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.15,
+          "organ_flow_rate_mlmin": 750.0,
+          "total_cells_chip": 2000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 1,
+        "prose_refusals": 0,
+        "no_plan": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'total_cells_chip'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "cold-heart-organ-flow-fraction",
+      "gold": {
+        "id": "cold-heart-organ-flow-fraction",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.045,
+          "organ_flow_rate_mlmin": 225.0,
+          "total_cells_chip": 1000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.1,
+          "organ_flow_rate_mlmin": 0.1
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.05,
+          "organ_flow_rate_mlmin": 250.0,
+          "total_cells_chip": 1000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.045,
+          "organ_flow_rate_mlmin": 225.0,
+          "total_cells_chip": 1000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.1,
+          "organ_flow_rate_mlmin": 0.1
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 3,
+        "prose_refusals": 0,
+        "no_plan": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'total_cells_chip'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "cold-gut-organ-flow-fraction",
+      "gold": {
+        "id": "cold-gut-organ-flow-fraction",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.2,
+          "organ_flow_rate_mlmin": 1000.0,
+          "total_cells_chip": 2000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.333333,
+          "organ_flow_rate_mlmin": 0.333333
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "soft_gate": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.15,
+          "organ_flow_rate_mlmin": 750.0,
+          "total_cells_chip": 2000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.2,
+          "organ_flow_rate_mlmin": 1000.0,
+          "total_cells_chip": 2000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.333333,
+          "organ_flow_rate_mlmin": 0.333333
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": false
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 3,
+        "prose_refusals": 0,
+        "no_plan": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'organ'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "cold-skin-organ-flow-fraction",
+      "gold": {
+        "id": "cold-skin-organ-flow-fraction",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "bare": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.06,
+          "organ_flow_rate_mlmin": 300.0,
+          "total_cells_chip": 5000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "soft_gate": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.06,
+          "organ_flow_rate_mlmin": 300.0,
+          "total_cells_chip": 5000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "self_verify": {
+        "reported": {
+          "cardiac_output_mlmin": 5000.0,
+          "organ_flow_fraction": 0.06,
+          "organ_flow_rate_mlmin": 300.0,
+          "total_cells_chip": 5000000.0
+        },
+        "verifiable": false,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "calculation_error",
+        "target_selected": true
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "organ_flow_fraction": 0.0,
+          "organ_flow_rate_mlmin": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 2,
+        "prose_refusals": 0,
+        "no_plan": false
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "schema_error: 'organ'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    }
+  ],
+  "bare": {
+    "recovery": {
+      "organ_flow_fraction": 0.10833324999999999,
+      "organ_flow_rate_mlmin": 0.10833324999999999
+    },
+    "hallucination_rate": 1.0,
+    "self_consistent_rate": 0.0,
+    "usable_design_rate": 0.0
+  },
+  "soft_gate": {
+    "recovery": {
+      "organ_flow_fraction": 0.0,
+      "organ_flow_rate_mlmin": 0.0
+    },
+    "hallucination_rate": 1.0,
+    "self_consistent_rate": 0.0,
+    "usable_design_rate": 0.0
+  },
+  "self_verify": {
+    "recovery": {
+      "organ_flow_fraction": 0.10833324999999999,
+      "organ_flow_rate_mlmin": 0.10833324999999999
+    },
+    "hallucination_rate": 1.0,
+    "self_consistent_rate": 0.0,
+    "usable_design_rate": 0.0
+  },
+  "labwright": {
+    "recovery": {
+      "organ_flow_fraction": 0.0,
+      "organ_flow_rate_mlmin": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "self_consistent_rate": 1.0,
+    "usable_design_rate": 1.0
+  },
+  "model": "deepseek-v4-flash",
+  "generated_at": "2026-08-16T12:59:41+00:00",
+  "finetuned": {
+    "self_consistent_rate": 0.0,
+    "usable_rate": 0.0,
+    "hallucination_rate": 1.0,
+    "recovery": {},
+    "failure_counts": {
+      "silence": 4
+    },
+    "unit_misread_rate": 0.0,
+    "target_selection_accuracy": 0.0
+  }
+}
