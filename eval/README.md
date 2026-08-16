@@ -771,10 +771,11 @@ sensitivity.
 
 The headline cells above are **single runs** over 24/15/14 goals. Every set has
 now been re-run over multiple seeds (Wilson 95 % CI via `eval/ci.py`), so the
-point estimates have honest bounds: the 24-reading set over **5** seeds
-(`results/eval_seed_benchmark.json`, 24 goals × 5 seeds = 120 trials per
-system/model), and the blind / spheroid / culture / PK sets over **3** seeds
-(`results/eval_seed_{blind,spheroid,culture,pk}.json`).
+point estimates have honest bounds: the 24-reading and 14-new-domains sets over
+**5** seeds (`results/eval_seed_benchmark.json`, 24 goals × 5 seeds = 120
+trials per system/model; `results/eval_seed_newdomains.json`, 14 goals × 5
+seeds = 70 trials), and the blind / spheroid / culture / PK sets over **3**
+seeds (`results/eval_seed_{blind,spheroid,culture,pk}.json`).
 
 24-reading, 5 seeds:
 
@@ -802,12 +803,31 @@ The four other sets, 3 seeds each (pooled usable rate, Wilson 95 % CI):
 | 14-perfused-PK | `flash` | 31 % [0.191, 0.460] | 45 % [0.312, 0.601] | 33 % [0.210, 0.484] | **81 % [0.667, 0.900]** |
 | 14-perfused-PK | `pro` | 29 % [0.172, 0.436] | 38 % [0.250, 0.532] | 33 % [0.210, 0.484] | **76 % [0.615, 0.865]** |
 
-The qualitative ordering (Labwright ≫ memory systems; flash vs pro within ~5 %)
-is stable across seeds. The Labwright interval and the memory-system interval
-never overlap on any set, so the headline gap is not a sampling artifact; on the
-hardest set (blind) the Labwright point estimate itself has a wide interval
-(44–49 %, n = 45 trials), which is honest about how much headroom remains. The
-thinking-on blind cells below were run twice (`pro` reached 10/15 in both
+14-new-domains, 5 seeds (`results/eval_seed_newdomains.json`, 14 goals × 5 seeds
+= 70 trials per system/model):
+
+| model | system | usable rate (k/n) | 95 % CI |
+|---|---|---|---|
+| `flash` | bare | 0/70 = 0.000 | [0.000, 0.052] |
+| `flash` | soft-gate | 0/70 = 0.000 | [0.000, 0.052] |
+| `flash` | self-verify | 0/70 = 0.000 | [0.000, 0.052] |
+| `flash` | **Labwright** | 69/70 = 0.986 | [0.923, 0.997] |
+| `pro` | bare | 14/70 = 0.200 | [0.123, 0.308] |
+| `pro` | soft-gate | 8/70 = 0.114 | [0.059, 0.210] |
+| `pro` | self-verify | 0/70 = 0.000 | [0.000, 0.052] |
+| `pro` | **Labwright** | 55/70 = 0.786 | [0.676, 0.866] |
+
+The qualitative ordering (Labwright ≫ memory systems) is stable across seeds.
+Flash vs pro is within ~5 % on reading, spheroid, culture and PK, but
+**new-domains is the one set where `flash` beats `pro` by a wide margin**
+(0.986 vs 0.786; the intervals [0.923, 0.997] and [0.676, 0.866] barely
+touch) — this is complete-info calculator work, where the extra `pro`
+reasoning is not only unneeded but slightly hurts integration. The Labwright
+interval and the memory-system interval never overlap on any set, so the
+headline gap is not a sampling artifact; on the hardest set (blind) the
+Labwright point estimate itself has a wide interval (44–49 %, n = 45 trials),
+which is honest about how much headroom remains. The thinking-on blind cells
+below were run twice (`pro` reached 10/15 in both
 runs, with one recovered goal swapped — `blind-liver-sinusoid` in run 1 vs
 `blind-venular-shear` in run 2 — and `flash` 7/15 and 8/15); each is still one
 point per run, not a precision claim — the qualitative direction, not the

@@ -395,19 +395,34 @@ SEED_EXPECTED = {
     ("pro", "bare"): (0.108, "0.108 [0.064, 0.177]"),
     ("pro", "labwright"): (0.958, "0.958 [0.906, 0.982]"),
 }
+#: P0-3 (2026-08-16): the 14-goal new-domains set re-run over 5 seeds
+#: (results/eval_seed_newdomains.json, 14 goals x 5 seeds = 70 trials).
+ND_SEED_EXPECTED = {
+    ("flash", "bare"): (0.000, "0.000 [0.000, 0.052]"),
+    ("flash", "soft_gate"): (0.000, "0.000 [0.000, 0.052]"),
+    ("flash", "self_verify"): (0.000, "0.000 [0.000, 0.052]"),
+    ("flash", "labwright"): (0.986, "0.986 [0.923, 0.997]"),
+    ("pro", "bare"): (0.200, "0.200 [0.123, 0.308]"),
+    ("pro", "soft_gate"): (0.114, "0.114 [0.059, 0.210]"),
+    ("pro", "self_verify"): (0.000, "0.000 [0.000, 0.052]"),
+    ("pro", "labwright"): (0.786, "0.786 [0.676, 0.866]"),
+}
 _SEED_MODEL = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 
 
 def audit_seed_intervals() -> None:
-    pooled = _load("eval_seed_benchmark.json")["pooled"]
-    for (model, sysname), (exp_rate, exp_ci) in SEED_EXPECTED.items():
-        v = pooled[_SEED_MODEL[model]][sysname]
-        _check(f"G  seed usable {model}/{sysname} == {exp_rate}",
-               abs(v["usable_design_rate"] - exp_rate) < 1e-3,
-               f"recomputed {v['usable_design_rate']}")
-        _check(f"G  seed CI {model}/{sysname} == {exp_ci}",
-               v["usable_ci_str"] == exp_ci,
-               f"recomputed '{v['usable_ci_str']}'")
+    for fname, expected in (("eval_seed_benchmark.json", SEED_EXPECTED),
+                            ("eval_seed_newdomains.json", ND_SEED_EXPECTED)):
+        tag = fname[len("eval_seed_"):-len(".json")]
+        pooled = _load(fname)["pooled"]
+        for (model, sysname), (exp_rate, exp_ci) in expected.items():
+            v = pooled[_SEED_MODEL[model]][sysname]
+            _check(f"G  seed usable {tag} {model}/{sysname} == {exp_rate}",
+                   abs(v["usable_design_rate"] - exp_rate) < 1e-3,
+                   f"recomputed {v['usable_design_rate']}")
+            _check(f"G  seed CI {tag} {model}/{sysname} == {exp_ci}",
+                   v["usable_ci_str"] == exp_ci,
+                   f"recomputed '{v['usable_ci_str']}'")
 
 
 # ---------------------------------------------------------------------------
