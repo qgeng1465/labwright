@@ -1,0 +1,265 @@
+{
+  "n_gold": 14,
+  "per_entry": [
+    {
+      "id": "barrier-caco2-teer-papp",
+      "gold": {
+        "id": "barrier-caco2-teer-papp",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "barrier-hcmec-teer",
+      "gold": {
+        "id": "barrier-hcmec-teer",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "oxygen-phh-sinusoid",
+      "gold": {
+        "id": "oxygen-phh-sinusoid",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "oxygen-hepg2-hypoxic-core",
+      "gold": {
+        "id": "oxygen-hepg2-hypoxic-core",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pumpless-hepg2-rocking",
+      "gold": {
+        "id": "pumpless-hepg2-rocking",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pumpless-hcmec-tesla",
+      "gold": {
+        "id": "pumpless-hcmec-tesla",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "breathing-ali-h1299",
+      "gold": {
+        "id": "breathing-ali-h1299",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "breathing-alveoli-5pct",
+      "gold": {
+        "id": "breathing-alveoli-5pct",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pulsatile-aortic-heartchip",
+      "gold": {
+        "id": "pulsatile-aortic-heartchip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "pulsatile-venous-heartchip",
+      "gold": {
+        "id": "pulsatile-venous-heartchip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "scaling-liver-chip",
+      "gold": {
+        "id": "scaling-liver-chip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "scaling-kidney-chip",
+      "gold": {
+        "id": "scaling-kidney-chip",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "gradient-cxcl12-chemotaxis",
+      "gold": {
+        "id": "gradient-cxcl12-chemotaxis",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    },
+    {
+      "id": "gradient-fgf8-pattern",
+      "gold": {
+        "id": "gradient-fgf8-pattern",
+        "blind_strength": null,
+        "scenario": "complete-info"
+      },
+      "finetuned": {
+        "plan": false,
+        "error": "unparseable_json",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "silence",
+        "target_selected": false
+      }
+    }
+  ],
+  "finetuned": {
+    "recovery": {},
+    "hallucination_rate": 1.0,
+    "self_consistent_rate": 0.0,
+    "usable_design_rate": 0.0
+  },
+  "system": "finetuned",
+  "generated_at": "2026-08-16T07:05:52+00:00"
+}

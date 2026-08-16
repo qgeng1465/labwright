@@ -5,7 +5,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
 [![CI](https://github.com/qgeng1465/labwright/actions/workflows/tests.yml/badge.svg)](https://github.com/qgeng1465/labwright/actions)
-[![Tests](https://img.shields.io/badge/tests-515%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-516%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
 当一个大语言模型（LLM）被要求撰写湿实验设计时，它会凭记忆产生数字，而记忆不会做算术。Labwright拒绝让任何数字进入设计，除非它是由确定性计算器算出来的、并且验证器（verifier）重新证明过。这一条规则换来两个独立的性质，而把两者区分开来很重要：
@@ -181,6 +181,8 @@ Web演示（Hugging Face Space）：[`hf_space/`](hf_space/)，部署见 [`hf_sp
   2. **`extractor_11dom_v2`**（56,725行，51,300训练 / 5,425评估）：新增**跨领域复合目标**（一个平台上两个子系统，各一个block）和**负样本**（目标里内嵌的 `≈value` 派生主张被翻转为错误值，让模型学会目标文本可能断言一个计算器会反对的数字）。
   3. **`extractor_11dom_v3`**（约49.8k行，含46个gold对）：用手写书面语变体重新生成七个post-v1领域——这正是Benchmark中新领域提升（0/14 → 4/14）背后的修复。
   4. **`extractor_11dom_v4`**（当前；61,043行合成 + 46个gold对，90/10划分 → 54,980训练 / 6,109评估）：向四个核心生成器（flow/culture/spheroid/pk）追加自然语域（手写散文）模板。这就是生产适配器（`lora_v6`）训练所用的划分。
+
+  **表述来源披露。** post-v1 生成器刻意用与 benchmark 目标*相同*的书面语表述方式来写目标。这**不是**数据泄漏：46 个有监督 gold 对里不包含任何新领域目标、合成实例只采样数值（没有 gold 数字原样出现在训练目标中）、留出的 `extractor_clean400` 集与 `train.jsonl` 在 raw/goal 上零重叠——这三条都由 `eval/audit_claims.py` 每次机器核验。镜像表述对快速通道数字的含义在下面的基准说明里如实陈述：新领域分数衡量的是从镜像语域模板吸收 schema 的能力，而非"未见表述"的泛化（针对它的 prompt 级修复也已被证伪——见 [`eval/README.md`](eval/README.md)）。
 
   一次数据审计还修好了呼吸生成器：牵拉周期现在等于 `1/frequency`（0.2 Hz → 5 s，0.25 Hz → 4 s），因此 `stretch_seconds`/`cycle_seconds` 在物理上一致且能从目标恢复；v2以确定性方式重新生成，完整的验证器审计报告0个错误行（6.4% 抽查）。
 - **`schema/` + `published.py`：** 验证过的设计方案类型（`DesignPlan`、`CulturePlan`，……）；`published.py` 把*相同的*计算器反向运行在已发表协议自身的输入上。新增领域就是一个 `calc/` 模块 + 一次 `tools.py` 注册，而不是fork。

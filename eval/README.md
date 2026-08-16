@@ -444,6 +444,44 @@ boundary is still those domains: 9/14 of the hand-written goals still do not
 transfer from the synthetic phrasing — that boundary is improved but not
 solved.
 
+**Register provenance, disclosed.** The seven post-v1 generators (v3 onward)
+write their goals in a hand-written register that *mirrors how the benchmark's
+own goals phrase the same inputs* — a barrier goal states the two resistances
+as a cell-free blank and a seeded total, an oxygen goal states a tissue
+`pO2`, and so on (the per-domain comments in
+`labwright/extract/synthetic.py` say so explicitly). This is deliberate: the
+synthetic goals exercise the vocabulary a user or the benchmark would use. It
+is **not** leakage into the eval set, on three machine-checkable grounds
+(re-verified by `eval/audit_claims.py` on every run):
+1. the 14 new-domain gold goals are complete-info, but the 46 supervised gold
+   pairs contain **zero** new-domain goals (`gold_pairs.jsonl` = 24 flow +
+   8 culture + 8 spheroid + 6 pk), so the fast-path is never trained toward the
+   eval set's own rows;
+2. every synthetic instance samples *values* in physiological ranges — no gold
+   number appears verbatim in a training goal;
+3. the held-out `extractor_clean400` eval set has zero raw/goal overlap with
+   `train.jsonl`.
+
+What the mirroring *does* mean: the 4/14 (29 %) fast-path score on new domains
+is **not** a "never-seen phrasing" number — the training register was written
+to resemble the benchmark's phrasing. It measures something sharper: whether a
+1.5B extractor can absorb the seven-domain schema from a limited set of
+mirror-register templates. It mostly cannot: 10/14 still fail, the residual
+hallucination (0.512) is concentrated in the silence rows, and handing the
+model the exact key-name listing at inference collapses the set entirely (see
+below). The gap is data, not prompt.
+
+**The cheap fix was falsified.** Giving the fine-tuned extractor the exact
+key-name listing at inference (`--schema-prompt`, which swaps the
+natural-register system prompt for a field-by-field schema) collapses the
+new-domain set: **0/14 unparseable** on both v4
+(`results/eval_finetuned_newdomains_lora_v4_schemaprompt.json`) and v6
+(`results/eval_finetuned_newdomains_lora_v6_schemaprompt.json`); even the
+repair-retries variant stays at 0/14 on v6
+(`results/eval_finetuned_newdomains_lora_v6_schemaprompt_repair.json`). The
+schema-prompt never rescues a goal the natural-register prompt already solves,
+so the 29 % gap is data/register, not prompt engineering.
+
 The blind-set drop is the honest headline: when the goal does not hand over the
 target, Labwright's verified designs hit the wrong physiology. On the expanded
 15 goals:
@@ -699,9 +737,11 @@ is stable across seeds. The Labwright interval and the memory-system interval
 never overlap on any set, so the headline gap is not a sampling artifact; on the
 hardest set (blind) the Labwright point estimate itself has a wide interval
 (44–49 %, n = 45 trials), which is honest about how much headroom remains. The
-thinking-on blind cells below were run twice (`pro` identical at 10/15, `flash`
-7/15 and 8/15); each is still one point per run, not a precision claim — the
-qualitative direction, not the exact count, is the finding.
+thinking-on blind cells below were run twice (`pro` reached 10/15 in both
+runs, with one recovered goal swapped — `blind-liver-sinusoid` in run 1 vs
+`blind-venular-shear` in run 2 — and `flash` 7/15 and 8/15); each is still one
+point per run, not a precision claim — the qualitative direction, not the
+exact count, is the finding.
 
 ### Ablation: thinking on vs off
 
@@ -722,13 +762,18 @@ reasoning-budget gap. Labwright self-consistency / usable / hallucination:
 
 The grid was re-run on the current **15-goal** blind set (an earlier ablation
 used the pre-scenario 12-goal set; this supersedes it). The 15-blind
-thinking-on rows were run **twice**: `pro` recovered the same 10/15 both times
-(67 %), `flash` 7/15 and 8/15 (47–53 %); the table shows run 1.
+thinking-on rows were run **twice**: `pro` recovered 10/15 both times (67 %),
+though the two runs swap one goal — run 1 recovered `blind-liver-sinusoid`
+but not `blind-venular-shear`, run 2 the reverse; `flash` recovered 7/15 and
+8/15 (47–53 %). The table shows run 1.
 
 Thinking on *does* help `pro` recover targets. Off → on, `pro` usable goes
 47 % → 67 % (7/15 → 10/15, replicated), and the goals it gains are not the
 easy ones — two are **cold** (gut-epithelial shear, PHH seeding) and one is the
-multi-target scenario (`bbb-shear-residence-multitarget`). `flash` moves
+multi-target scenario (`bbb-shear-residence-multitarget`). Run 1 additionally
+recovered the prompt-backed `blind-liver-sinusoid` while dropping the
+prompt-backed `blind-venular-shear` it already held with thinking off; run 2
+kept `venular-shear` and gained only the three common goals. `flash` moves
 40 % → 47–53 %, gaining the cold PHH-seeding goal in both runs. So part of the
 blind gap is an *effort* gap: `pro` demonstrably knows enough to pick targets
 it does not reach with thinking off.

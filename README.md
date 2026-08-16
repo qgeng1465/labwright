@@ -5,7 +5,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
 [![CI](https://github.com/qgeng1465/labwright/actions/workflows/tests.yml/badge.svg)](https://github.com/qgeng1465/labwright/actions)
-[![Tests](https://img.shields.io/badge/tests-515%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-516%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
 An LLM asked to write a wet-lab design produces its numbers from memory, and
@@ -329,6 +329,18 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
      (hand-written-prose) templates to the four core generators
      (flow/culture/spheroid/pk). This is the split the production adapter
      (`lora_v6`) is trained on.
+
+  **Register provenance.** The post-v1 generators deliberately write their
+  goals in a hand-written register that *mirrors how the benchmark's own goals
+  phrase the same inputs*. That is **not** leakage: the 46 supervised gold
+  pairs contain zero new-domain goals, synthetic instances sample values (no
+  gold number appears verbatim), and the held-out `extractor_clean400` set has
+  zero raw/goal overlap with `train.jsonl` — all machine-checked by
+  `eval/audit_claims.py`. What the mirroring means for the fast-path numbers is
+  stated honestly in the benchmark note below: the new-domain score measures
+  schema absorption from mirror-register templates, not never-seen phrasing
+  (and a prompt-level fix for it was falsified — see
+  [`eval/README.md`](eval/README.md)).
 
   A data audit also fixed the breathing generator: the stretch-cycle period now
   equals `1/frequency` (0.2 Hz → 5 s, 0.25 Hz → 4 s), so
