@@ -652,6 +652,14 @@ def audit_adversarial() -> None:
         "code_interpreter": (0.7333, 0.2333, 0.0, 0.0),
         "labwright": (0.9333, 0.0667, 0.6667, 0.2333),
     }
+    PINNED_PRO = {
+        # Filled with the exact summary values once adversarial_pro.json lands
+        # (30/30). Same (system) -> (fail_safe, fabrication, elicitation,
+        # exception_catch) contract as PINNED_FLASH.
+        "bare": (None, None, None, None),
+        "code_interpreter": (None, None, None, None),
+        "labwright": (None, None, None, None),
+    }
     for model, name in (("deepseek-v4-flash", "adversarial_flash.json"),
                         ("deepseek-v4-pro", "adversarial_pro.json")):
         path = RESULTS / name
@@ -668,15 +676,16 @@ def audit_adversarial() -> None:
             agg = summary.get(sys_name, {})
             _check(f"K  adversarial {model} {sys_name}: fail_safe_rate present",
                    "fail_safe_rate" in agg, str(agg.get("fail_safe_rate")))
-            if model == "deepseek-v4-flash" and sys_name in PINNED_FLASH:
-                fs, fab, elic, exc = PINNED_FLASH[sys_name]
-                _check(f"K  adversarial flash {sys_name}: fail_safe pinned",
+            pinned = PINNED_FLASH if model == "deepseek-v4-flash" else PINNED_PRO
+            if sys_name in pinned and all(x is not None for x in pinned[sys_name]):
+                fs, fab, elic, exc = pinned[sys_name]
+                _check(f"K  adversarial {model} {sys_name}: fail_safe pinned",
                        abs(agg["fail_safe_rate"] - fs) < 1e-4, f"{agg['fail_safe_rate']:.4f}")
-                _check(f"K  adversarial flash {sys_name}: fabrication pinned",
+                _check(f"K  adversarial {model} {sys_name}: fabrication pinned",
                        abs(agg["fabrication_rate"] - fab) < 1e-4, f"{agg['fabrication_rate']:.4f}")
-                _check(f"K  adversarial flash {sys_name}: elicitation pinned",
+                _check(f"K  adversarial {model} {sys_name}: elicitation pinned",
                        abs(agg["elicitation_rate"] - elic) < 1e-4, f"{agg['elicitation_rate']:.4f}")
-                _check(f"K  adversarial flash {sys_name}: exception_catch pinned",
+                _check(f"K  adversarial {model} {sys_name}: exception_catch pinned",
                        abs(agg["exception_catch_rate"] - exc) < 1e-4, f"{agg['exception_catch_rate']:.4f}")
 
 
