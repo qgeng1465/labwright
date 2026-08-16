@@ -9,7 +9,7 @@ to add a goal without breaking the invariants.
 | file | n | what it tests | does the goal state the answer? |
 |---|---|---|---|
 | `gold_experiments.json` | 24 | **reading**: number-extraction + tool-calling | yes — every goal states the geometry/flow/density/effect-size or the physiological target |
-| `gold_blind.json` | 12 | **recall**: target selection from domain knowledge | no — the goal states physiology ("recapitulate physiological venular wall shear"), the model must supply the canonical number |
+| `gold_blind.json` | 15 | **recall**: target selection from domain knowledge | no — the goal states physiology ("recapitulate physiological venular wall shear"), the model must supply the canonical number |
 | `gold_cell_culture.json` | 14 | **reading + recall** in the plate-culture domain (wells, seeding, counting, viability, confluence) | 10 reading (plate geometry / density stated) and 4 blind-`cold` (model must recall the pinned PHH sandwich density or plate-table volume) |
 | `gold_spheroid.json` | 15 | **reading + recall + scenarios** in the 3D-culture domain (spheroid/organoid geometry, ULA & hanging-drop working volumes, necrotic-core limits) | 11 reading/scenario (geometry and targets stated, or a failure mode named) and 4 blind (2 `prompt-backed`: 1000 cells/spheroid, 96-ULA 100 µL — stated in the system prompt; 2 `cold`: 384-ULA 50 µL, hanging-drop 20 µL — in neither the goal nor the prompt) |
 | `gold_pk.json` | 14 | **reading + recall + scenarios** in the perfused-system PK domain (extraction ratio, clearance, half-life, accumulation, mass cleared; unit traps) | 12 reading/scenario (every input stated, or the formula's raw numbers given; 2 unit-ambiguity) and 2 blind `prompt-backed` (propranolol high-extraction / antipyrine low-extraction — the classification is stated in the system prompt) |
@@ -40,7 +40,7 @@ Every `expected` value must fall into exactly one of three buckets:
    hands over geometry + flow and asks for the resulting shear is
    self-consistent by construction). These are labelled as such in `source`;
    they must never be phrased as if they came from a paper.
-3. **`prompt-backed` blind entries** (liver, lung, BBB; spheroid 1000
+3. **`prompt-backed` blind entries** (liver, venular, lung, BBB, lymphatic; spheroid 1000
    cells/spheroid and 96-ULA 100 µL; PK propranolol high-extraction and
    antipyrine low-extraction) — the canonical target *is* listed in the
    Labwright system prompt (as a range or an anchor value), but the model must
@@ -80,8 +80,8 @@ value cannot be sourced, it is removed or relabelled, not silently kept.
   construction. The real signal is extraction and tool-calling.
 - **Blind-set usability is where domain knowledge is tested**: usable =
   self-consistent **and** recovers every gold target within ±5 %. The honest
-  cold-only sub-rates (excluding the three `prompt-backed` goals) are reported
-  alongside the headline 25 %/33 %.
+  cold-only sub-rates (excluding the five `prompt-backed` and two scenario
+  goals) are reported alongside the headline 40 %/47 %.
 
 ## Adding a goal
 

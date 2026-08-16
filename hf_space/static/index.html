@@ -128,7 +128,7 @@
     <div class="kicker">Benchmark</div>
     <h2>Bare LLM vs Labwright</h2>
     <p class="lead">Two frontier models (deepseek-v4-flash / deepseek-v4-pro), five systems,
-      five gold sets. A design is <b>usable</b> only if it is internally consistent
+      six gold sets. A design is <b>usable</b> only if it is internally consistent
       <i>and</i> recovers every target within ±5 %.</p>
 
     <table>
@@ -155,7 +155,9 @@
       all eleven domains on ~61k synthetic goals — answers 4/14 here (v4 scored 0/14), 5/14
       with schema repair: the v6 retrain adds
       natural-register variants for these domains, closing part of the phrasing gap; the
-      remaining 9/14 still end in silence rather than fabrication (hallucination 0.512 mean).</p>
+      failures are silence-dominated rather than fabrication: six of the nine still-unanswered
+      goals end in silence, the rest in wrong-target or calculation errors (base hallucination
+      mean 0.512).</p>
     <p class="note">Memory-only systems (bare, soft-gate, self-verify) rarely produce a usable
       design. Labwright's derived numbers are <i>architecturally</i> consistent — the honest
       headline is the blind-set drop: the gate stops fabricated numbers, but it cannot supply
@@ -166,9 +168,10 @@
       not a domain-knowledge loop.</p>
 
     <div class="fig">
-      <img src="assets/fig_benchmark.png" alt="Benchmark: self-consistent rate, usable rate and hallucination rate across five sets and two models">
+      <img src="assets/fig_benchmark.png" alt="Benchmark: self-consistent rate, usable rate and hallucination rate across six sets and two models">
       <figcaption>Self-consistent rate, usable rate and hallucination rate across the
-        24-reading, 15-blind, 15-3D-spheroid, 14-plate-culture and 14-perfused-PK sets.</figcaption>
+        24-reading, 15-blind, 15-3D-spheroid, 14-plate-culture, 14-perfused-PK and 14-new-domain
+        sets.</figcaption>
     </div>
 
     <div class="fig">

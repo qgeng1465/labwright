@@ -30,8 +30,9 @@ reverse-verification tab works without any key.
 - Open audit dataset (the same verifier over 21,094 real SciRecipe protocols,
   with Crossref DOI provenance):
   https://huggingface.co/datasets/qgeng1465/scirecipe-audit
-- Benchmark (bare LLM vs Labwright, five gold sets — reading, blind,
-  spheroid, plate-culture, perfused-PK): a bare frontier LLM hallucinates
+- Benchmark (bare LLM vs Labwright, six gold sets — reading, blind,
+  spheroid, plate-culture, perfused-PK, new-domain goals): a bare frontier LLM
+  hallucinates
   ~0.9–1.0 of its derived numbers and rarely produces a usable design;
   Labwright's hallucination rate is **0.000** by construction with **64–100 %**
   usable designs on every set except the blind set, where usable drops to

@@ -902,8 +902,9 @@ is a correctness loop, not a domain-knowledge loop.
 The spheroid row shows the same pattern at higher absolute rate: the iter loop
 rescued 2 entries the first-submit agent lost (`spheroid-384ula-medium`,
 `spheroid-um-mm-unit-ambiguity`) and lost 2 it would have kept
-(`spheroid-volume-from-diameter`, where a fix round degraded a valid plan into a
-hallucinated one; `blind-spheroid-384ula-medium`). On the culture and PK sets
+(`spheroid-volume-from-diameter`, where a valid first-submit plan was lost to a
+wrong-target sampling miss with no fix round fired; `blind-spheroid-384ula-medium`).
+On the culture and PK sets
 there is zero divergence either way and every verifier firing is repaired. The
 aggregate is the point: across 58 submissions the verifier fired 41 times and
 the iter loop repaired **all 41** to verifier-clean, exhausting its budget on

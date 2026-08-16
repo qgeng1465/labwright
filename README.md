@@ -817,12 +817,12 @@ ablation ordering.
   regressed) and reaches **5/14 (36%)** with repair (scaling-kidney-chip also
   recovered), versus v5's 4/14. A benchmark-time repair variant (up to 2
   schema-retry attempts) also lifts spheroid to **80%** usable / **93%**
-  self-consistent. The honest boundary: 9/14 of the hand-written new-domain
-  goals still do not transfer, and the residual hallucination there (0.512 mean
-  = silence and partially-hallucinated rows) is still concentrated in the
-  never-seen phrasing. Strong on what it saw in the right phrasing, weaker when
-  the phrasing drifts. (The extractor's bars are identical under flash and pro
-  by construction.)
+  self-consistent. The honest boundary: most of the hand-written new-domain
+  goals still do not transfer (10/14 plain, 9/14 even with the repair variant),
+  and the residual hallucination there (0.512 mean, dominated by the silence
+  rows) is still concentrated in the never-seen phrasing. Strong on what it saw
+  in the right phrasing, weaker when the phrasing drifts. (The extractor's bars
+  are identical under flash and pro by construction.)
 
 **Robustness, and the honest boundary of the gate: three further results**
 
