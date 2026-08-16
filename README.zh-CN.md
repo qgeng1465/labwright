@@ -432,7 +432,7 @@ Apache-2.0。由 [qgeng1465](https://github.com/qgeng1465) 构建与维护。
 ```bibtex
 @software{labwright,
   author = {Geng, Q.},
-  title = {Labwright: the AI bench copilot that gets your numbers right},
+  title = {Labwright: calculator-gated wet-lab protocol design},
   year = {2026},
   url = {https://github.com/qgeng1465/labwright},
   license = {Apache-2.0}

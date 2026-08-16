@@ -1,6 +1,6 @@
 # 🧪 Labwright
 
-**The AI bench copilot that gets your numbers right.**
+**A wet-lab design assistant whose numbers are computed and re-proved, never guessed.**
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
@@ -23,7 +23,7 @@ That one rule buys two separate properties, and keeping them separate matters:
    number, so the model must recall the target itself). On the reading set the
    usable rate is 88–100%; on the blind set it falls to 40–47%, and on the
    twelve genuinely *cold* goals (the answer is in neither the goal nor the
-   prompt) Labwright reaches 7/12 = 58% (95% CI 32–81%) — though four of those
+   prompt) Labwright reaches 7/12 = 58% (95% CI 32–81%), though four of those
    are scaling goals the calculator derives from the organ name, not model
    memory, so the eight recall-only cold goals still sit at 3/8 = 38%.
 
@@ -71,19 +71,19 @@ cells are silence or a single rejected field, never a fabricated number
 
 More than half of published life-science results can't be reproduced
 ([reproducibility crisis, ~$28B/yr](https://pmc.ncbi.nlm.nih.gov/articles/PMC11537370/)).
-A big driver: experiment designs with wrong numbers — an unphysiological shear
-stress, an underpowered replicate count, a cytotoxic DMSO concentration — that
+A big driver: experiment designs with wrong numbers (an unphysiological shear
+stress, an underpowered replicate count, a cytotoxic DMSO concentration) that
 survive peer review because nobody checks the arithmetic.
 
 LLMs make this worse. Asked to design a perfusion experiment, a frontier model
 will confidently write "shear stress 0.25 Pa" whether or not that follows from
 the geometry it chose. **When the numbers come from memory, they are not
-computed — they are guessed.**
+computed; they are guessed.**
 
 ## The gap today's wet-lab LLMs haven't closed
 
-An LLM can write you a beautiful protocol. But **every number in it** — shear
-stress, flow rate, seeding density, DMSO carry-over, replicate count — is a
+An LLM can write you a beautiful protocol. But **every number in it** (shear
+stress, flow rate, seeding density, DMSO carry-over, replicate count) is a
 *derived* quantity: it only exists once you choose a geometry, a flow, a cell
 density. Models write these from memory, and memory can't do arithmetic.
 
@@ -99,14 +99,14 @@ this gap; Labwright is the one that does:
 | **MMFT OoC Designer** (IEEE TCAD 2024) | deterministic organ-chip *geometry* synthesis | No LLM, no natural language, no cell/dosing/stats layer |
 | **Labwright** (this repo) | LLM proposes **raw inputs**; deterministic calculators compute every derived number; the verifier **re-derives each one** | **Yes: a hard gate.** No number enters a design unless a calculator produced it and the verifier re-proved it |
 
-**Labwright inverts the responsibility: the model cannot type a number the
-calculators didn't check — a hard gate, not a soft reward.** The *same*
+**The calculators own the numbers: the model cannot type a number the
+calculators didn't check (a hard gate, not a soft reward).** The *same*
 calculators also run backwards. Paste a published paper's geometry, flow and
 claimed shear; Labwright recomputes the claims and flags anything that does not
-follow from the paper's own inputs — a reproducibility check in three seconds
+follow from the paper's own inputs: a reproducibility check in three seconds
 ([`labwright verify-protocol`](#quickstart)).
 
-**We publish a yardstick the others don't.** None of the systems above measures
+**We measure the one thing the others don't.** None of the systems above measures
 whether its own output numbers follow from its own inputs; we do (table at the
 top, protocol in [`eval/`](eval/README.md)). The two that could conceivably be
 run are not runnable here (BPL's released pipeline needs ~60 GB of GPU memory;
@@ -117,7 +117,7 @@ consistent; it cannot supply physiology the model doesn't know. On the 15-goal
 blind set the usable rate collapses from 88–100% on the reading set to
 **40–47%** (`flash` 6/15, `pro` 7/15). Restricting to the twelve genuinely
 **cold** goals (answer in neither the goal nor the prompt), Labwright recovers
-**7/12 = 58%** (95% Wilson CI 32–81%) — four of those are organ-flow goals the
+**7/12 = 58%** (95% Wilson CI 32–81%); four of those are organ-flow goals the
 scaling calculator derives from the organ name (the gated path, not model
 memory), so on the eight recall-only cold goals both models still sit at
 **3/8 = 38%** (95% Wilson CI 14–69%); the other five blind goals are
@@ -273,7 +273,7 @@ Web demo (Hugging Face Space): [`hf_space/`](hf_space/), see
 
 ## How it works
 
-![Labwright architecture: (a) the eight-layer stack — the LLM proposes raw inputs, deterministic calculators compute, the verifier re-proves; (b) the bounded agentic workflow; (c) the five-layer verifier; (d) the 46-tool calculator toolbox in 10 classes; (e) internal components, benchmark systems and the honest boundary](paper/fig_architecture.png)
+![Labwright architecture: (a) the eight-layer stack (the LLM proposes raw inputs, deterministic calculators compute, the verifier re-proves); (b) the bounded agentic workflow; (c) the five-layer verifier; (d) the 46-tool calculator toolbox in 10 classes; (e) internal components, benchmark systems and the honest boundary](paper/fig_architecture.png)
 
 ![Labwright pipeline, condensed: goal → LLM proposes raw inputs → calculators compute → verifier re-proves → SOP + design JSON](paper/fig_pipeline.png)
 
@@ -281,7 +281,7 @@ The goal goes in; a design whose every number was computed by
 `labwright.calc` and re-proved by `labwright.verify` comes out. The agent
 writes the narrative; the arithmetic is exiled to unit-tested code.
 
-- **`calc/`:** pure, unit-tested engineering math — eleven design domains, each
+- **`calc/`:** pure, unit-tested engineering math: eleven design domains, each
   a `calc/` module with its own schema model, derive function and `Block`
   (raw/derived keys, sanity bands, canonical units):
   - four core domains: microfluidics (`calc/microfluidics.py`), plate cell
@@ -313,10 +313,10 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
   blind goals (no overlap with the training split), against the untuned
   `deepseek-v4-flash`/`pro` baselines on the same rows
   (`results/extractor/eval_report.json`; eval set at
-  `results/extractor_clean400/`). Training data is synthetic — raw inputs
+  `results/extractor_clean400/`). Training data is synthetic (raw inputs
   sampled in physiological ranges, derived numbers recomputed deterministically
   by the same calculators the verifier uses, every number traceable to a
-  source-pinned gold or blind DOI — and grew in four generations:
+  source-pinned gold or blind DOI) and grew in four generations:
   1. **11 domains** (54,742 rows on disk, 49,500 train / 5,242 eval): up from
      two; the seven post-v1 domains are generated by their own calculators in
      the same format.
@@ -327,7 +327,7 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
      assert a number the calculators will contradict).
   3. **`extractor_11dom_v3`** (~49.8k rows incl. the 46 gold pairs):
      regenerates the seven post-v1 domains with hand-written-register prose
-     variants — the fix behind the new-domain gain (0/14 → 4/14) in the
+     variants, the fix behind the new-domain gain (0/14 → 4/14) in the
      Benchmark.
   4. **`extractor_11dom_v4`** (current; 61,043 synthetic rows + the 46 gold
      pairs, 90/10 split → 54,980 train / 6,109 eval): appends natural-register
@@ -343,7 +343,7 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
   with `train.jsonl`. One overlap is **disclosed, not asserted**: the
   generators sample target *values* from the gold sets' source-pinned DOIs
   (`labwright/extract/synthetic.py`), so gold values **do** appear verbatim in
-  training goals — 11 of the 15 blind goals carry a gold target (value matched
+  training goals: 11 of the 15 blind goals carry a gold target (value matched
   with its unit), and the new-domain generators likewise sample the golds'
   values and mirror their phrasing (counts re-verified by
   `eval/audit_claims.py`). The benchmark note below labels the
@@ -351,7 +351,7 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
   in-distribution value recall, not novel-target generalization. What the
   mirroring means for the new-domain score is also stated below: it measures
   schema absorption from mirror-register templates, not never-seen phrasing
-  (and a prompt-level fix for it was falsified — see
+  (and a prompt-level fix for it was falsified; see
   [`eval/README.md`](eval/README.md)).
 
   A data audit also fixed the breathing generator: the stretch-cycle period now
@@ -445,14 +445,14 @@ Rules of the road: a calculator's test must reproduce a value you can derive
 by hand or cite (literature constants need a source); a computable quantity
 must never be emitted by the model; `calc/` stays pure (I/O lives in the
 agent/UI layer). If you can't independently verify a number, don't add it.
-Report a bug with the function, inputs, actual/expected output and — for
-literature constants — the source.
+Report a bug with the function, inputs, actual/expected output and, for
+literature constants, the source.
 
 Development quickstart: venv is `.venv/bin/python`; tests are
 `.venv/bin/python -m pytest tests/`; the CLI is
 `.venv/bin/python -m labwright.cli design "..."` (needs an API key). Pip uses
 the TUNA mirror (`PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple`) and
-HF downloads go through `HF_ENDPOINT=https://hf-mirror.com`. No `gh` CLI — use
+HF downloads go through `HF_ENDPOINT=https://hf-mirror.com`. No `gh` CLI; use
 `curl` + a PAT supplied via `GIT_ASKPASS`, never the token on a command line.
 
 ## Benchmark
@@ -466,7 +466,7 @@ writes every number from memory) and two naive fixes (**soft-gate**,
 calculators compute, the verifier re-proves) and the **fast path**
 (a fixed local Qwen2.5-1.5B LoRA fine-tuned extractor turns the goal prose
 straight into raw inputs). Both front-ends share the same calculators, the
-same verifier and the same hard gate — the fast path only replaces the LLM
+same verifier and the same hard gate; the fast path only replaces the LLM
 extraction step (no agent loop, no API cost). The gold sets:
 
 1. **24 "reading" goals** (`eval/gold_experiments.json`): every goal states
@@ -521,7 +521,7 @@ extraction step (no agent loop, no API cost). The gold sets:
    Gibaldi & Perrier; one literature citation is to Baudoin et al.
    (doi:10.1002/jps.23796).
 6. **14 post-v1 organ-on-chip goals** (`eval/gold_new_domains.json`): seven more
-   domains beyond microfluidics/culture/spheroid/PK — barrier integrity
+   domains beyond microfluidics/culture/spheroid/PK: barrier integrity
    (TEER / Papp / clearance), dissolved-pO2 (Krogh penetration depth, necrotic
    core), gravity-driven pumpless perfusion (rocking WSS, OSI), lung
    ALI + breathing stretch (breaths/min, strain rate, ALI film), pulsatile /
@@ -541,13 +541,13 @@ rival system: it is Labwright with the LLM extraction step replaced by a local
 Qwen2.5-1.5B-Instruct LoRA fine-tuned on ~61k synthetic goals spanning all 11
 domains (plus 46 source-pinned gold pairs), with natural-register prose
 variants appended to the four core generators. Those raw inputs cross the
-exact same gate as the agent loop's `submit_design` — the calculators derive,
+exact same gate as the agent loop's `submit_design`: the calculators derive,
 the verifier re-proves, rejected designs come back for re-extraction. Its bars
 are identical under flash and pro by construction (a fixed local model). Read
 alongside the agent-loop rows, the pattern is the architecture doing its job:
 in-distribution phrasing the fast path is stronger and cheaper; on never-seen
 phrasing it is weaker, and on the blind set the honest reading is **value
-recall, not novel physiology** — the generators reuse the gold target values,
+recall, not novel physiology**; the generators reuse the gold target values,
 so 11 of the 15 blind goals carry a target that also appears in the fast
 path's training goals (see `eval/audit_claims.py`), and 3 of its 4 blind
 recoveries land on such goals (`blind-24well-medium-partial`, 4.08 mL, is the
@@ -568,7 +568,7 @@ blind-set cells are split by hint strength (cold vs prompt-backed). The `eval.re
 renderer prints all of it; the classification and misread logic are unit-tested
 (`tests/test_metrics.py`).
 
-![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind, 15-3D-spheroid, 14-culture and 14-PK sets (flash & pro; the fast-path row is model-independent, identical under both). The memory systems (stone / ochre / sage) reach a usable design only on the single-step goals the goal hands over; the Labwright agent loop (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on spheroid, culture and PK; the Labwright fast-path — the fine-tuned extractor front-end of the same gate (lilac) — reaches 23/24 on the reading set (the 400×100-shear regression is recovered; all 24 reading goals are supervised gold pairs) and reaches spheroid (73%), culture (57%) and PK (50%) usable — 3/7, 1/6 and 2/8 of the truly never-seen goals recover — blind (27%; self-consistent 100%, hallucination 0.000; value recall — 11/15 blind targets also appear in its training goals), and answers 4/14 of the hand-written post-v1 domains (5/14 with schema repair, see below).](paper/fig_benchmark.png)
+![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind, 15-3D-spheroid, 14-culture and 14-PK sets (flash & pro; the fast-path row is model-independent, identical under both). The memory systems (stone / ochre / sage) reach a usable design only on the single-step goals the goal hands over; the Labwright agent loop (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on spheroid, culture and PK; the Labwright fast-path, the fine-tuned extractor front-end of the same gate (lilac), reaches 23/24 on the reading set (the 400×100-shear regression is recovered; all 24 reading goals are supervised gold pairs) and reaches spheroid (73%), culture (57%) and PK (50%) usable; 3/7, 1/6 and 2/8 of the truly never-seen goals recover; blind (27%; self-consistent 100%, hallucination 0.000; value recall: 11/15 blind targets also appear in its training goals), and answers 4/14 of the hand-written post-v1 domains (5/14 with schema repair, see below).](paper/fig_benchmark.png)
 
 A *usable* design is internally consistent **and** hits every target within
 ±5%. This is an *ablation*, not an equal-resource race: Labwright's
@@ -686,7 +686,7 @@ Read the numbers honestly, and the boundary of what they mean.
 
 The seven post-v1 domains (barrier, oxygen, pumpless, breathing, pulsatile,
 scaling, gradient) were benchmarked end-to-end with the **Labwright** system on
-the 14 new-domain goals — the full agent loop, calculators and gate, on a
+the 14 new-domain goals: the full agent loop, calculators and gate, on a
 live model:
 
 | set | model | system | usable | hallucination |
@@ -698,15 +698,15 @@ live model:
 
 Every submitted design recovers every gold target to machine precision, and
 **among submitted designs hallucination is 0.000 on both models**. The
-non-zero hallucination entries are exactly the *silence* rows — a goal on
+non-zero hallucination entries are exactly the *silence* rows; a goal on
 which the agent iterates the full 12-tool budget and never submits. The scorer
 counts a missing plan as hallucination 1.0 (nothing can be trusted), so flash's
 0.071 = its one silence row and pro's 0.214 = its three. The honest boundary:
 the **gradient-fgf8-pattern** goal ends in *silence* on both models, and
-`gradient-cxcl12-chemotaxis` only on `pro` — `flash` recovers the cxcl12
-source–sink to machine precision — the gate holds and nothing fabricated
+`gradient-cxcl12-chemotaxis` only on `pro`; `flash` recovers the cxcl12
+source–sink to machine precision; the gate holds and nothing fabricated
 passes.
-`pro` also times out on `pumpless-hepg2-rocking` (which `flash` solves) —
+`pro` also times out on `pumpless-hepg2-rocking` (which `flash` solves):
 model flakiness, not a domain gap. The memory-system rows were not re-run on
 these goals; this set measures whether the new Blocks integrate, not the
 ablation ordering.
@@ -754,7 +754,7 @@ ablation ordering.
   (`eval/gold_cold_expansion.json`) adds four cold organ-flow goals (brain,
   heart, gut, skin fractions of cardiac output, Ucciferri et al. 2014),
   bringing the cold set to twelve. On all twelve `flash` and `pro` Labwright
-  each recover **7/12 = 58%**, with a 95% Wilson CI of **32–81%** — but the
+  each recover **7/12 = 58%**, with a 95% Wilson CI of **32–81%**, but the
   four new goals are scaling goals the pipeline's calculator derives from the
   organ name (the gated path, not model memory), so on the eight recall-only
   cold goals both models still sit at **3/8 = 38%**, 95% Wilson CI **14–69%**;
@@ -831,27 +831,27 @@ ablation ordering.
   not), plus one unit-trap entry where the unit layer caught the mM→µM
   conversion before it entered the plan. The two genuine **unit traps** (mM-vs-µM
   and min-vs-h) are recovered cleanly by Labwright on both models.
-- **Labwright's fast path — the fine-tuned extractor front-end of the same gate
+- **Labwright's fast path, the fine-tuned extractor front-end of the same gate
   (lora_v6, multi-block, ~61k synthetic goals across all 11 domains;
   natural-register prose variants appended to the flow/culture/spheroid/pk
-  generators) — is strong where it has seen the phrasing, and honest about what
+  generators), is strong where it has seen the phrasing, and honest about what
   that means.** Reading: usable **96%** / self-consistent **100%** /
-  **0.000** — but **all 24 of those goals have gold-pair supervision** (the 46
+  **0.000**, but **all 24 of those goals have gold-pair supervision** (the 46
   pairs split into 24 reading + 8 spheroid + 8 culture + 6 PK; blind and
   new-domains have none by design), so that column measures memorization more
   than transfer; the one goal lora_v5 had regressed (the 400×100-shear goal)
   is **recovered**, and the single remaining miss (the *seen* residence-time
-  goal) was already failing. Spheroid: **73%** usable (up from v5's 67%) —
+  goal) was already failing. Spheroid: **73%** usable (up from v5's 67%):
   8/15 of the golds are supervised pairs (all 8 recover, incl. the
   spheroid-growth-72h goal), and 3 of the 7 never-seen goals recover.
-  Plate-culture: **57%** usable — one regression (plate-12well-seed-hepg2, a
+  Plate-culture: **57%** usable: one regression (plate-12well-seed-hepg2, a
   *seen* goal) costs a point against v5's 64%; 7 of the 8 supervised goals
-  recover and 1 of the 6 never-seen ones does. PK: **50%** usable — 6/14 have
+  recover and 1 of the 6 never-seen ones does. PK: **50%** usable: 6/14 have
   gold-pair supervision (5 recover; pk-accumulation-ratio is recovered while
   pk-half-life regresses), and 2 of the 8 never-seen goals recover. Blind:
   **27%** usable
   / **100%** self-consistent (hallucination **0.000**, up from v5's 93% /
-  0.067), 4/15 recovered — the extractor still cannot supply the physiology a
+  0.067), 4/15 recovered: the extractor still cannot supply the physiology a
   blind goal withholds. Against lora_v5, v6 retrains on the larger 61k-row
   split with the natural-register variants; it holds the new-domain set at
   **4/14 (29%)** plain (barrier-hcmec-teer recovered, barrier-caco2-teer
@@ -1095,7 +1095,7 @@ Apache-2.0. Built and maintained by [qgeng1465](https://github.com/qgeng1465).
 ```bibtex
 @software{labwright,
   author = {Geng, Q.},
-  title = {Labwright: the AI bench copilot that gets your numbers right},
+  title = {Labwright: calculator-gated wet-lab protocol design},
   year = {2026},
   url = {https://github.com/qgeng1465/labwright},
   license = {Apache-2.0}
