@@ -1,6 +1,6 @@
 # Labwright — 交付总结
 
-**日期**：2026-08-16 ｜ **HEAD**：`4526eca` ｜ **提交作者**：`qgeng1465` ｜ **状态**：GREEN，交付就绪
+**日期**：2026-08-16 ｜ **HEAD**：`257c14e` ｜ **提交作者**：`qgeng1465` ｜ **状态**：GREEN，交付就绪
 
 > 本文档是 50 小时自主马拉松的收尾交付物。除本节外，文中**每一个数字**都可由
 > committed `results/*.json` 用 `eval.report.derive()` 或仓库自带分析脚本重算得出；
@@ -134,6 +134,13 @@ reading 同集可比——**0 可用、9 成数字编数 → 门禁后 88–100%
   `results/` 与 `eval/`，`_check_render.py` 程序化验证 8 图 0 overlap。
 - `eval/audit_claims.py`：**78 项机器断言**（从 committed JSON 用 `derive()` 重算并
   与 README/eval-README 显示值核对），接入 pytest，漂移即 CI 红。
+- **冷克隆可复现性审计（2026-08-16，`257c14e`）**：从 committed 状态新鲜
+  `git clone` 后——全量测试 **516 passed**（14.2s）、7 张论文图全部渲染 **0 overlap**、
+  41/41 迭代修复计数逐集复现（blind 15 + culture 10 + pk 3 + spheroid 13）、
+  61,043 行 v4 训练数据与 gold_pairs 均在库。唯一缺口：fast-path 适配器权重
+  （`results/extractor/lora`，约 74 MB）未入库——已在两版 README 说明其完全可再生成
+  （committed 训练数据 + 训练器），且评估分数无需权重即可从 committed
+  `results/extractor/eval_report.json` 复现。
 - `eval/supervised_split.py`：gold-pair 成员法复现 seen/novel 拆分。
 - `eval/analyze_iter.py`：复现 41/41 迭代修复计数。
 - 报告 docx（`paper/report_to_teacher.py` 生成，gitignored）：`check_docx_text.py`
@@ -154,7 +161,7 @@ reading 同集可比——**0 可用、9 成数字编数 → 门禁后 88–100%
 ## 6. 交付物清单
 
 ### 6.1 对外
-- **GitHub** `qgeng1465/labwright`（main = `4526eca`）：完整代码、测试、基准、结果、
+- **GitHub** `qgeng1465/labwright`（main = `257c14e`）：完整代码、测试、基准、结果、
   README EN/ZH、8 张论文图源、训练数据生成器。
 - **HF Space** `qgeng1465/labwright`：静态展示页（index.html + 3 张图 + README），
   与本地 byte-identical。
@@ -168,7 +175,8 @@ EN/ZH v6）→ `ef265ad`（教师报告 v6）→ `29edd95`（fast-path 重述+se
 → `c3ae02c`（教师报告新域+摘要现代化）→ `51108ee`（15 题 thinking 消融真跑）→
 `4cda257`（消融补进教师报告）→ `d3f0bb0`（清理）→ `2639fad`（audit_claims 78 断言+
 register 披露+schema-prompt 阴性）→ `d9370af`（HF Space 同步）→ `8fa2190`（论文侧
-register 披露）→ `4526eca`（投稿前审计 5 项修复）。
+register 披露）→ `4526eca`（投稿前审计 5 项修复）→ `6b172d4`（交付总结）→
+`257c14e`（冷克隆审计：README 权重可再生成说明 + 交付总结收口）。
 
 ## 7. 未来工作
 
