@@ -220,7 +220,7 @@ agent、验证器和演示都读取同一个注册表；新计算器立即可调
 
 ## 基准测试
 
-LLM能不能在写湿实验设计时不编造数字？我们来测量。`eval/` 在六个gold集合上运行五个系统：**裸LLM**（模型凭记忆写每个数字）、两个朴素修复（**soft-gate**、**self-verify**）、**Labwright**（模型提出、计算器计算、验证器重新证明），以及**微调的原始输入抽取器**（一个固定的本地Qwen2.5-1.5B LoRA）：
+LLM能不能在写湿实验设计时不编造数字？我们来测量。`eval/` 在六个gold集合上对比三个记忆基线与Labwright门禁的两种前端。基线是**裸LLM**（模型凭记忆写每个数字）和两个朴素修复（**soft-gate**、**self-verify**）。Labwright以两种形态出现：**agent循环**（deepseek-v4-flash/pro 通过ReAct工具循环提出原始输入；计算器计算、验证器重新证明）与**快速通道**（一个固定的本地Qwen2.5-1.5B LoRA微调抽取器把目标散文直接变成原始输入）。两种前端共用同一套计算器、同一个验证器和同一道硬门禁——快速通道只是替换了LLM的抽取步骤（无agent循环、无API成本）：
 
 1. **24个“阅读”目标**（`eval/gold_experiments.json`）：每个目标都陈述了答案（几何、流量或生理目标数字）。这测试pipeline能否抽取所述数字并把计算器驱动到它们。它刻意*不*测试领域知识。
 2. **15个“盲测”目标**（`eval/gold_blind.json`）：目标不含任何数字（“重现生理性的小静脉壁面剪切力”）；模型必须自己提供规范目标值。八个是 `cold`（答案哪里都没有：肾PTEC、动脉、HepG2接种、PHH接种、肺动脉、肠道、视网膜小动脉、24孔板培养基体积）；五个是 `prompt-backed`（肝、小静脉、肺、BBB、淋巴；答案位于系统提示里的一个区间内；模型仍必须选对值，且以落在区间内为判据，因此小静脉和淋巴也计为提示内）；两个是**仅场景**（量级已陈述，所以它们测试的是失败模式，而非冷回忆）：
@@ -232,11 +232,11 @@ LLM能不能在写湿实验设计时不编造数字？我们来测量。`eval/` 
 5. **14个灌注系统PK目标**（`eval/gold_pk.json`）：第五个领域：芯片上单室药代动力学（提取率、清除率、半衰期、稳态蓄积、清除的质量）。十二个是阅读/场景（每个输入都已陈述，或给出公式的原始数字，含两个**单位陷阱**：mM-对-µM和 分钟-对-小时），两个是盲测 `prompt-backed`（普萘洛尔高提取 / 安替比林低提取；分类在系统提示中陈述，目标数字不在）。PK方程钉在Rowland & Tozer和Gibaldi & Perrier上；一处文献引用指向Baudoin等（doi:10.1002/jps.23796）。
 6. **14个post-v1器官芯片目标**（`eval/gold_new_domains.json`）：微流控/培养/球状体/PK之外的七个更多领域——屏障完整性（TEER / Papp / clearance）、溶解pO2（Krogh穿透深度、坏死核）、重力驱动无泵灌注（摇摆WSS、OSI）、肺部ALI + 呼吸牵拉（每分钟呼吸次数、应变率、ALI液膜）、脉动/心脏波形（Womersley数、OSI、PI）、多器官异速缩放（器官流量分数、按质量比例的细胞数）、趋化梯度（陡度、弛豫时间）。全部14个都是完整信息（每个原始值都已陈述），因此这一集合隔离了新的计算器和Block能否端到端集成；每个期望值都由 `eval/make_gold_new_domains.py` 中的真实计算器重新推导，每条都钉住一个可引用的来源。
 
-五个系统在两个前沿模型上对比（外加一个与模型无关的固定本地抽取器）。三个LLM记忆系统（bare-LLM、soft-gate、self-verify）凭记忆写数字，用*完全相同*的规则打分；只有提示/阶段结构不同。Labwright增加了计算器和验证器。第五个，**finetuned-ext**，是一个本地Qwen2.5-1.5B-Instruct LoRA，在覆盖全部11个领域的约61k个合成目标（外加46个来源钉死的gold对）上微调，四个核心生成器追加了自然语域散文变体。它的柱状在flash和pro下按构造完全相同。诚实的提醒：阅读集和平板培养列仍然高估了泛化：23/24个阅读目标和8/14个平板培养gold目标*逐字*出现在gold对监督中，因此这些行衡量的是记忆而非迁移；在从未见过的目标上，各比率是球状体10/14、PK 7/14、盲测4/15、新领域4/14（带schema修复则5/14）。
+三个记忆基线与两种Labwright前端在两个前沿模型上对比。记忆系统（bare-LLM、soft-gate、self-verify）凭记忆写数字，用*完全相同*的规则打分；只有提示/阶段结构不同。Labwright增加了计算器和验证器。它的**快速通道**行（标记为**Labwright fast-path**）不是对手系统：它是把LLM抽取步骤替换成本地Qwen2.5-1.5B-Instruct LoRA的Labwright，该LoRA在覆盖全部11个领域的约61k个合成目标（外加46个来源钉死的gold对）上微调，四个核心生成器追加了自然语域散文变体。那些原始输入与agent循环的 `submit_design` 跨过*完全相同*的门禁——计算器推导、验证器重新证明、被拒的设计回来重新抽取。它的柱状在flash和pro下按构造完全相同（固定的本地模型）。与agent循环行并排读，模式就是架构在干它该干的活：在分布内表述上快速通道更强也更便宜；在从未见过的表述与被隐藏的生理学上它更弱（盲测27%可用，agent循环为40–47%）。诚实的提醒：阅读集和平板培养列仍然高估了泛化：24/24个阅读目标和8/14个平板培养gold目标出现在gold对监督中（46个配对 = 24阅读 + 8球状体 + 8培养 + 6药代；盲测与新领域刻意没有配对），因此这些行衡量的是记忆而非迁移；在没有配对的目标上，恢复率是球状体3/7、培养1/6、药代2/8、盲测4/15、新领域4/14（带schema修复则5/14）。
 
 **新的失败模式指标。** 每条还会被分类*为什么*失败（`ok` / `silence` / `calculation_error` / `wrong_target`）、错误数字是否可能是**单位误读**（dyn/cm²-对-Pa等，经由单位层）、标题目标是否在 ±5% 内被**选中**，盲测集单元格按提示强度拆分（cold对prompt-backed）。`eval.report` 渲染器打印所有这些；分类和误读逻辑有单元测试（`tests/test_metrics.py`）。
 
-![基准测试：24-阅读、15-盲测、15-3D-球状体、14-培养和14-PK集合上的自洽率、可用率和幻觉率（flash与pro；finetuned-ext在两者下相同）。记忆系统（石色 / 赭色 / 鼠尾草色）只在目标直接交付的单步目标上达到可用设计；Labwright（深蓝）守住门禁、漏掉盲测集生理学，并在球状体、培养和PK上贴近阅读集上限；微调抽取器（淡紫色）在阅读集上达到23/24（400×100剪切回归已恢复），并在新目标上迁移到球状体（73%）、培养（57%）和PK（50%）、盲测（27%；自洽100%、幻觉0.000），回答14个手写post-v1领域中的4个（带schema修复则5/14，见下文）。](paper/fig_benchmark.png)
+![基准测试：24-阅读、15-盲测、15-3D-球状体、14-培养和14-PK集合上的自洽率、可用率和幻觉率（flash与pro；快速通道行与模型无关，在两者下相同）。记忆系统（石色 / 赭色 / 鼠尾草色）只在目标直接交付的单步目标上达到可用设计；Labwright agent循环（深蓝）守住门禁、漏掉盲测集生理学，并在球状体、培养和PK上贴近阅读集上限；Labwright快速通道——同一门禁的微调抽取器前端（淡紫色）——在阅读集上达到23/24（400×100剪切回归已恢复；24个阅读目标全有gold对监督），并达到球状体（73%）、培养（57%）和PK（50%）可用（真正未见目标恢复3/7、1/6、2/8）、盲测（27%；自洽100%、幻觉0.000），回答14个手写post-v1领域中的4个（带schema修复则5/14，见下文）。](paper/fig_benchmark.png)
 
 *可用*设计是内部一致**并且**在 ±5% 内命中每个目标。这是一个*消融实验*，而不是等资源竞赛：Labwright的迭代预算、工具和锚定提示是被测试的处理；唯一偏向bare的不对称是 ±5% 容差和3次重试。完整协议、公平性说明和逐条记录：[`eval/README.md`](eval/README.md)。
 
@@ -260,52 +260,52 @@ hallucination rate                 1.000         0.125
 | 24-reading | `flash` | soft-gate | 12% | 12% | 0.875 |
 | 24-reading | `flash` | self-verify | 0% | 0% | 0.792 |
 | 24-reading | `flash` | **Labwright** | **88%** | **88%** | **0.125** |
-| 24-reading | `flash` | finetuned-ext (23/24 seen) | 100% | 96% | 0.000 |
+| 24-reading | `flash` | Labwright fast-path (24/24 seen) | 100% | 96% | 0.000 |
 | 24-reading | `pro` | bare-LLM | 12% | 12% | 0.875 |
 | 24-reading | `pro` | soft-gate | 8% | 8% | 0.917 |
 | 24-reading | `pro` | self-verify | 0% | 0% | 0.750 |
 | 24-reading | `pro` | **Labwright** | **100%** | **100%** | **0.000** |
-| 24-reading | `pro` | finetuned-ext (23/24 seen) | 100% | 96% | 0.000 |
+| 24-reading | `pro` | Labwright fast-path (24/24 seen) | 100% | 96% | 0.000 |
 | 15-blind | `flash` | bare-LLM | 7% | 0% | 0.933 |
 | 15-blind | `flash` | soft-gate | 13% | 0% | 0.867 |
 | 15-blind | `flash` | self-verify | 0% | 0% | 0.611 |
 | 15-blind | `flash` | **Labwright** | **100%** | **40%** | **0.000** |
-| 15-blind | `flash` | finetuned-ext (novel) | 100% | 27% | 0.000 |
+| 15-blind | `flash` | Labwright fast-path (novel) | 100% | 27% | 0.000 |
 | 15-blind | `pro` | bare-LLM | 7% | 0% | 0.933 |
 | 15-blind | `pro` | soft-gate | 13% | 0% | 0.867 |
 | 15-blind | `pro` | self-verify | 0% | 0% | 0.733 |
 | 15-blind | `pro` | **Labwright** | **100%** | **47%** | **0.000** |
-| 15-blind | `pro` | finetuned-ext (novel) | 100% | 27% | 0.000 |
+| 15-blind | `pro` | Labwright fast-path (novel) | 100% | 27% | 0.000 |
 | 15-3D-spheroid | `flash` | bare-LLM | 20% | 20% | 0.800 |
 | 15-3D-spheroid | `flash` | soft-gate | 13% | 13% | 0.867 |
 | 15-3D-spheroid | `flash` | self-verify | 20% | 20% | 0.569 |
 | 15-3D-spheroid | `flash` | **Labwright** | **93%** | **87%** | **0.011** |
-| 15-3D-spheroid | `flash` | finetuned-ext (1/15 seen) | 87% | 73% | 0.133 |
+| 15-3D-spheroid | `flash` | Labwright fast-path (8/15 seen) | 87% | 73% | 0.133 |
 | 15-3D-spheroid | `pro` | bare-LLM | 27% | 27% | 0.733 |
 | 15-3D-spheroid | `pro` | soft-gate | 27% | 27% | 0.733 |
 | 15-3D-spheroid | `pro` | self-verify | 40% | 20% | 0.400 |
 | 15-3D-spheroid | `pro` | **Labwright** | **93%** | **87%** | **0.067** |
-| 15-3D-spheroid | `pro` | finetuned-ext (1/15 seen) | 87% | 73% | 0.133 |
+| 15-3D-spheroid | `pro` | Labwright fast-path (8/15 seen) | 87% | 73% | 0.133 |
 | 14-plate-culture | `flash` | bare-LLM | 0% | 0% | 0.893 |
 | 14-plate-culture | `flash` | soft-gate | 0% | 0% | 0.893 |
 | 14-plate-culture | `flash` | self-verify | 0% | 0% | 0.929 |
 | 14-plate-culture | `flash` | **Labwright** | **93%** | **86%** | **0.071** |
-| 14-plate-culture | `flash` | finetuned-ext (8/14 seen) | 86% | 57% | 0.143 |
+| 14-plate-culture | `flash` | Labwright fast-path (8/14 seen) | 86% | 57% | 0.143 |
 | 14-plate-culture | `pro` | bare-LLM | 7% | 7% | 0.750 |
 | 14-plate-culture | `pro` | soft-gate | 7% | 7% | 0.786 |
 | 14-plate-culture | `pro` | self-verify | 0% | 0% | 0.821 |
 | 14-plate-culture | `pro` | **Labwright** | **86%** | **64%** | **0.043** |
-| 14-plate-culture | `pro` | finetuned-ext (8/14 seen) | 86% | 57% | 0.143 |
+| 14-plate-culture | `pro` | Labwright fast-path (8/14 seen) | 86% | 57% | 0.143 |
 | 14-perfused-PK | `flash` | bare-LLM | 50% | 36% | 0.500 |
 | 14-perfused-PK | `flash` | soft-gate | 50% | 50% | 0.500 |
 | 14-perfused-PK | `flash` | self-verify | 79% | 29% | 0.214 |
 | 14-perfused-PK | `flash` | **Labwright** | **100%** | **79%** | **0.000** |
-| 14-perfused-PK | `flash` | finetuned-ext (novel) | 50% | 50% | 0.500 |
+| 14-perfused-PK | `flash` | Labwright fast-path (6/14 seen) | 50% | 50% | 0.500 |
 | 14-perfused-PK | `pro` | bare-LLM | 43% | 36% | 0.536 |
 | 14-perfused-PK | `pro` | soft-gate | 50% | 36% | 0.500 |
 | 14-perfused-PK | `pro` | self-verify | 79% | 29% | 0.214 |
 | 14-perfused-PK | `pro` | **Labwright** | **100%** | **86%** | **0.000** |
-| 14-perfused-PK | `pro` | finetuned-ext (novel) | 50% | 50% | 0.500 |
+| 14-perfused-PK | `pro` | Labwright fast-path (6/14 seen) | 50% | 50% | 0.500 |
 
 *所有记忆系统行都来自温度0.2下的单次重跑——在发现并修复了一个把目标文本弄丢的提示回归之后（见 [`eval/README.md`](eval/README.md) 中的透明度说明）；Labwright行是已提交的运行，逐字保留；Labwright的agent始终收到目标，因此这个bug从未触及它。15-3D球状体记忆系统行还因打分器的公平性修复而重跑：字符串培养器皿格式（`spheroid_format` / `plate_format`）以前从未从记忆系统输出中抽取，因此每个球状体惯例目标都计1.0不可验证，无论答案如何；修复恢复了它们，从所需的原始值重新计算每个派生数字，并排除已报告但不可重算的数字。之前提交的0% / 1.000球状体单元格正是这个伪影。修复后，唯一可用的记忆系统条目是24-阅读集上三个单步算术目标（`pro` bare / `flash` soft-gate为12%）外加少量单步球状体几何/查询目标（bare 20% / 27%，`flash`/`pro`）。记忆系统之间一两个百分点是采样噪声；定性排序（Labwright ≫ 记忆系统）不是。为什么相关工作里已发表的那些系统没有在这里做基准测试，详见 [`eval/README.md`](eval/README.md#benchmarking-scope-why-these-systems-and-not-the-named-ones)。*
 
@@ -319,8 +319,8 @@ hallucination rate                 1.000         0.125
 |---|---|---|---|---|
 | 14-new-domains | `flash` | **Labwright** | **13/14 (93%)** | **0.071** |
 | 14-new-domains | `pro` | **Labwright** | **11/14 (79%)** | **0.214** |
-| 14-new-domains | `flash` | finetuned-ext | 4/14 (29%) | 0.512 |
-| 14-new-domains | `pro` | finetuned-ext | 4/14 (29%) | 0.512 |
+| 14-new-domains | `flash` | Labwright fast-path | 4/14 (29%) | 0.512 |
+| 14-new-domains | `pro` | Labwright fast-path | 4/14 (29%) | 0.512 |
 
 每个提交的设计都以机器精度恢复每个gold目标，且**在已提交的设计中，两个模型的幻觉率都是0.000**。非零的幻觉条目正是*静默*行——agent在这些目标上耗尽了完整的12个工具预算却从不提交。打分器把缺失方案计为幻觉1.0（什么都不能信），因此flash的0.071 = 它的一个静默行，pro的0.214 = 它的三个。诚实的边界：**gradient-fgf8-pattern** 目标在两个模型上都以*静默*告终，而 `gradient-cxcl12-chemotaxis` 只在 `pro` 上如此——`flash` 以机器精度恢复了cxcl12源–汇——硬门禁守住了，没有任何编造通过。`pro` 还在 `pumpless-hepg2-rocking` 上超时（`flash` 解决了它）——这是模型不稳定，而非领域缺口。记忆系统行没有在这些目标上重跑；这一集合测量的是新Block能否集成，而非消融排序。
 
@@ -340,7 +340,7 @@ hallucination rate                 1.000         0.125
   单次点估计；n=15时模型对之间的差异是噪声。
 - **平板培养集是每个记忆系统都塌到 ~0% 的地方。** 三个朴素系统在两个模型上都落在0% 可用（self-verify `flash` 幻觉 **0.929**；它几乎在每个目标上都把正确数字覆盖成自信的错误数字），而Labwright守住 **86%**（`flash`）/ **64%**（`pro`）。这是基准测试中*最严格*的交叉检查：每个培养答案都由plate_format + 接种密度 + 孔重新推导，而目标没要求的多出的一个字段就会让整个条目不可验证。4个盲测-`cold` 回忆单元格（PHH三明治密度、平板表格体积）正是bare失败的地方；这些数字住在 `CULTURE_*` 表里，而非模型记忆。Labwright在这个集合上自己的非零单元格是硬门禁在抓自己的错误，而非门禁失效：`flash` **0.071** 是一次静默（严格的细胞计数板目标 `plate-hemocytometer-seed-96well` 没有产出设计，hall 1.0），`pro` **0.043** 是两个目标（`plate-96well-total-medium`、盲测-`cold` 的 `blind-96well-area-and-medium`），验证器在这些目标上拒绝了一或两个派生字段（计算错误）；被拒的是字段，绝不是编造的数字。
 - **灌注PK集是算术上的升级。** Labwright自洽 **100%** / 可用 **79%**（`flash`）和 **86%**（`pro`），幻觉率 **0.000**。对朴素系统来说PK是个*好*消息：因为大多数目标直接交付公式的原始数字，soft-gate达到 **50%** 可用、self-verify **29%**，正是那些系统偶尔能成功的单步算术。Labwright剩余的缺口是两个盲测 `prompt-backed` 的普萘洛尔/安替比林目标（E = 0.8和0.1位于提示的分类区间内，但确切数字不在），外加一个单位陷阱条目，单位层在mM→µM换算进入方案前就抓住了它。两个真正的**单位陷阱**（mM-对-µM和min-对-h）都被Labwright在两个模型上干净地恢复。
-- **微调抽取器（lora_v6，multi-block，覆盖全部11个领域的约61k个合成目标；flow/culture/spheroid/pk生成器追加了自然语域散文变体）在见过表述的地方很强，并且对它意味着什么很诚实。** 阅读：可用 **96%** / 自洽 **100%** / **0.000**——但**这些目标中23/24逐字出现在gold对监督里**，因此这一列衡量的是记忆多于迁移；lora_v5回归过的那个目标（400×100剪切目标）**已恢复**，剩下的唯一未命中（一个滞留时间目标）本来就在失败。球状体：**73%** 可用（高于v5的67%；新目标spheroid-growth-72h已恢复；gold中只有1/15是逐字训练对）。平板培养：**57%** 可用——一处回归（plate-12well-seed-hepg2，一个*见过*的目标）比v5的64% 少一分。PK：**50%** 可用（全部14个新），与v5持平但并非完全相同：pk-accumulation-ratio已恢复而pk-half-life回归，同一总数上的互换。盲测：**27%** 可用 / **100%** 自洽（幻觉 **0.000**，高于v5的93% / 0.067），4/15恢复——抽取器仍无法供给盲测目标所隐藏的生理学。对比lora_v5，v6在更大的61k行划分上重新训练并带自然语域变体；它把新领域集保持在 **4/14（29%）** 朴素水平（barrier-hcmec-teer已恢复、barrier-caco2-teer回归），带修复则到 **5/14（36%）**（scaling-kidney-chip也恢复），相对v5的4/14。一个基准时修复变体（最多2次schema重试尝试）还额外把球状体抬到 **80%** 可用 / **93%** 自洽。诚实的边界：手写新领域目标中仍有9/14无法迁移，那里的残留幻觉（0.512均值 = 静默行和部分幻觉行）仍集中在从未见过的表述上。以正确表述见过的东西很强，表述漂移时就变弱。（抽取器的柱状按构造在flash和pro下相同。）
+- **Labwright快速通道——同一门禁的微调抽取器前端（lora_v6，multi-block，覆盖全部11个领域的约61k个合成目标；flow/culture/spheroid/pk生成器追加了自然语域散文变体）——在见过表述的地方很强，并且对它意味着什么很诚实。** 阅读：可用 **96%** / 自洽 **100%** / **0.000**——但**这24个目标全部有gold对监督**（46个配对 = 24阅读 + 8球状体 + 8培养 + 6药代；盲测与新领域刻意没有配对），因此这一列衡量的是记忆多于迁移；lora_v5回归过的那个目标（400×100剪切目标）**已恢复**，剩下的唯一未命中（一个*见过*的滞留时间目标）本来就在失败。球状体：**73%** 可用（高于v5的67%）——8/15个gold有配对监督（8个全部恢复，含spheroid-growth-72h目标），真正未见的7个里恢复3个。平板培养：**57%** 可用——一处回归（plate-12well-seed-hepg2，一个*见过*的目标）比v5的64% 少一分；8个有配对的目标恢复7个，6个真正未见的目标恢复1个。PK：**50%** 可用——6/14有配对监督（恢复5个；pk-accumulation-ratio已恢复而pk-half-life回归），8个真正未见的目标恢复2个。盲测：**27%** 可用 / **100%** 自洽（幻觉 **0.000**，高于v5的93% / 0.067），4/15恢复——抽取器仍无法供给盲测目标所隐藏的生理学。对比lora_v5，v6在更大的61k行划分上重新训练并带自然语域变体；它把新领域集保持在 **4/14（29%）** 朴素水平（barrier-hcmec-teer已恢复、barrier-caco2-teer回归），带修复则到 **5/14（36%）**（scaling-kidney-chip也恢复），相对v5的4/14。一个基准时修复变体（最多2次schema重试尝试）还额外把球状体抬到 **80%** 可用 / **93%** 自洽。诚实的边界：手写新领域目标中仍有9/14无法迁移，那里的残留幻觉（0.512均值 = 静默行和部分幻觉行）仍集中在从未见过的表述上。以正确表述见过的东西很强，表述漂移时就变弱。（抽取器的柱状按构造在flash和pro下相同。）
 
 **稳健性，以及硬门禁的诚实边界：另外三项结果**
 
@@ -371,7 +371,7 @@ hallucination rate                 1.000         0.125
 
 ![跨提供方可用率：四个后端（flash、pro、k3、kimi-for-coding）在五个集合上，Labwright（左）对bare-LLM（右）。有硬门禁时flash和pro贴近上限；k3迁移到同族中的新后端；kimi-for-coding（无法运行工具循环的后端）除了那一次球状体成功外到处塌到0%。两个面板共享一个y轴。](paper/fig_model_compare.png)
 
-*可用设计（%）。完整的逐系统自洽 / 幻觉列在已提交的结果文件里（`results/eval_{set}_{k3,kimicode}.json`）。五个集合 × 两个后端是完整扫描。配置说明：Kimi运行使用温度 **0.6** 且关闭思考；DeepSeek运行使用 **0.2**；Kimi编码端点的普通补全路径把温度校验到1.0，而Labwright的请求形态（关闭思考的 `extra_body`）接受0.6（`LABWRIGHT_TEMPERATURE` 覆盖0.2默认值）。更高温度无法解释k3的高可用率（若有影响，反而会伤害基于一致性的指标），而kimi-for-coding的失败是参数固执，而非温度敏感。微调抽取器是固定的本地模型，不按后端重新基准。*
+*可用设计（%）。完整的逐系统自洽 / 幻觉列在已提交的结果文件里（`results/eval_{set}_{k3,kimicode}.json`）。五个集合 × 两个后端是完整扫描。配置说明：Kimi运行使用温度 **0.6** 且关闭思考；DeepSeek运行使用 **0.2**；Kimi编码端点的普通补全路径把温度校验到1.0，而Labwright的请求形态（关闭思考的 `extra_body`）接受0.6（`LABWRIGHT_TEMPERATURE` 覆盖0.2默认值）。更高温度无法解释k3的高可用率（若有影响，反而会伤害基于一致性的指标），而kimi-for-coding的失败是参数固执，而非温度敏感。Labwright快速通道前端（微调抽取器）是固定的本地模型，不按后端重新基准。*
 
 ## 可复现性：提示、模型与溯源
 

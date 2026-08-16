@@ -23,8 +23,8 @@ On every gold-standard experiment, run the systems being compared:
 | bare-LLM | the model is given the full design JSON schema and asked to write the complete design *including derived numbers*, from memory |
 | soft-gate | bare-LLM plus a "check yourself" instruction: re-derive your own derived numbers from your own reported geometry/flow before finalising. No calculators, no verifier. |
 | self-verify | two LLM passes: the model proposes numbers from memory, then is handed back its *own reported raw inputs* and asked to recompute the derived numbers itself. The naive "use the LLM as the verifier" alternative to Labwright's deterministic verifier. |
-| Labwright | the model proposes raw inputs; derived numbers come from `labwright.calc` and pass `labwright.verify` |
-| finetuned-ext | a fixed local Qwen2.5-1.5B LoRA run through the same design path (goal → raw → derive → verify), scored identically; model-independent, so identical under flash and pro |
+| Labwright (agent loop) | the model proposes raw inputs via the ReAct tool loop; derived numbers come from `labwright.calc` and pass `labwright.verify` |
+| Labwright fast-path | Labwright's deterministic front-end: a fixed local Qwen2.5-1.5B LoRA extracts raw inputs straight from the goal prose, then the *same* path (derive → verify → hard gate); no agent loop, no API cost; model-independent, so identical under flash and pro. Not a rival system — it is Labwright with the LLM extraction step replaced (see [`benchmark.py::run_finetuned`](benchmark.py#L1424)) |
 
 The three LLM-memory systems (bare, soft-gate, self-verify) are scored by
 **exactly the same** rules — extraction, ±5 % consistency tolerance,
@@ -129,7 +129,8 @@ endpoint (`https://api.kimi.com/coding/v1`), models `kimi-for-coding` and `k3`
 (`results/eval_*_kimicode.json` / `results/eval_*_k3.json`), at temperature
 **0.6** — the endpoint's plain completion path validates temperature to 1.0,
 and the Labwright request shape (thinking disabled) accepts 0.6;
-`LABWRIGHT_TEMPERATURE` overrides the 0.2 DeepSeek default. The finetuned-ext rows come from
+`LABWRIGHT_TEMPERATURE` overrides the 0.2 DeepSeek default. The Labwright
+fast-path rows come from
 `eval/run_finetuned_benchmark.py` (a fixed local Qwen2.5-1.5B LoRA, adapter at
 `results/extractor/lora`) and are grafted into both model files of their set by
 `eval/merge_finetuned.py` — model-independent by construction.
@@ -303,7 +304,7 @@ New in the 15-entry blind run, every record also carries:
 ## Results (honest)
 
 All systems, all five sets, two models (`flash`, `pro`) plus the
-model-independent `finetuned-ext`. Self-consistent = zero verifier errors;
+model-independent Labwright fast-path row. Self-consistent = zero verifier errors;
 usable = self-consistent *and* recovers every gold target within ±5 %. The
 memory systems (bare, soft-gate, self-verify) are scored by identical
 extraction/tolerance/unverifiable=1.0 rules — only the prompt/stage structure
@@ -315,52 +316,52 @@ differs.
 | `flash` | 24-reading | soft-gate | 12 % | 12 % | 0.875 |
 | `flash` | 24-reading | self-verify | 0 % | 0 % | 0.792 |
 | `flash` | 24-reading | **Labwright** | **88 %** | **88 %** | **0.125** |
-| `flash` | 24-reading | finetuned-ext (in-dist) | 100 % | 92 % | 0.000 |
+| `flash` | 24-reading | Labwright fast-path (24/24 supervised) | 100 % | 96 % | 0.000 |
 | `pro` | 24-reading | bare-LLM | 12 % | 12 % | 0.875 |
 | `pro` | 24-reading | soft-gate | 8 % | 8 % | 0.917 |
 | `pro` | 24-reading | self-verify | 0 % | 0 % | 0.750 |
 | `pro` | 24-reading | **Labwright** | **100 %** | **100 %** | **0.000** |
-| `pro` | 24-reading | finetuned-ext (in-dist) | 100 % | 92 % | 0.000 |
+| `pro` | 24-reading | Labwright fast-path (24/24 supervised) | 100 % | 96 % | 0.000 |
 | `flash` | 15-blind | bare-LLM | 7 % | 0 % | 0.933 |
 | `flash` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
 | `flash` | 15-blind | self-verify | 0 % | 0 % | 0.611 |
 | `flash` | 15-blind | **Labwright** | **100 %** | **40 %** | **0.000** |
-| `flash` | 15-blind | finetuned-ext | 93 % | 27 % | 0.067 |
+| `flash` | 15-blind | Labwright fast-path (novel) | 100 % | 27 % | 0.000 |
 | `pro` | 15-blind | bare-LLM | 7 % | 0 % | 0.933 |
 | `pro` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
 | `pro` | 15-blind | self-verify | 0 % | 0 % | 0.733 |
 | `pro` | 15-blind | **Labwright** | **100 %** | **47 %** | **0.000** |
-| `pro` | 15-blind | finetuned-ext | 93 % | 27 % | 0.067 |
+| `pro` | 15-blind | Labwright fast-path (novel) | 100 % | 27 % | 0.000 |
 | `flash` | 15-3D-spheroid | bare-LLM | 20 % | 20 % | 0.800 |
 | `flash` | 15-3D-spheroid | soft-gate | 13 % | 13 % | 0.867 |
 | `flash` | 15-3D-spheroid | self-verify | 20 % | 20 % | 0.569 |
 | `flash` | 15-3D-spheroid | **Labwright** | **93 %** | **87 %** | **0.011** |
-| `flash` | 15-3D-spheroid | finetuned-ext (in-dist) | 73 % | 67 % | 0.267 |
+| `flash` | 15-3D-spheroid | Labwright fast-path (8/15 supervised) | 87 % | 73 % | 0.133 |
 | `pro` | 15-3D-spheroid | bare-LLM | 27 % | 27 % | 0.733 |
 | `pro` | 15-3D-spheroid | soft-gate | 27 % | 27 % | 0.733 |
 | `pro` | 15-3D-spheroid | self-verify | 40 % | 20 % | 0.400 |
 | `pro` | 15-3D-spheroid | **Labwright** | **93 %** | **87 %** | **0.067** |
-| `pro` | 15-3D-spheroid | finetuned-ext (in-dist) | 73 % | 67 % | 0.267 |
+| `pro` | 15-3D-spheroid | Labwright fast-path (8/15 supervised) | 87 % | 73 % | 0.133 |
 | `flash` | 14-plate-culture | bare-LLM | 0 % | 0 % | 0.893 |
 | `flash` | 14-plate-culture | soft-gate | 0 % | 0 % | 0.893 |
 | `flash` | 14-plate-culture | self-verify | 0 % | 0 % | 0.929 |
 | `flash` | 14-plate-culture | **Labwright** | **93 %** | **86 %** | **0.071** |
-| `flash` | 14-plate-culture | finetuned-ext (in-dist) | 93 % | 64 % | 0.071 |
+| `flash` | 14-plate-culture | Labwright fast-path (8/14 supervised) | 86 % | 57 % | 0.143 |
 | `pro` | 14-plate-culture | bare-LLM | 7 % | 7 % | 0.750 |
 | `pro` | 14-plate-culture | soft-gate | 7 % | 7 % | 0.786 |
 | `pro` | 14-plate-culture | self-verify | 0 % | 0 % | 0.821 |
 | `pro` | 14-plate-culture | **Labwright** | **86 %** | **64 %** | **0.043** |
-| `pro` | 14-plate-culture | finetuned-ext (in-dist) | 93 % | 64 % | 0.071 |
+| `pro` | 14-plate-culture | Labwright fast-path (8/14 supervised) | 86 % | 57 % | 0.143 |
 | `flash` | 14-perfused-PK | bare-LLM | 50 % | 36 % | 0.500 |
 | `flash` | 14-perfused-PK | soft-gate | 50 % | 50 % | 0.500 |
 | `flash` | 14-perfused-PK | self-verify | 79 % | 29 % | 0.214 |
 | `flash` | 14-perfused-PK | **Labwright** | **100 %** | **79 %** | **0.000** |
-| `flash` | 14-perfused-PK | finetuned-ext (in-dist) | 50 % | 50 % | 0.500 |
+| `flash` | 14-perfused-PK | Labwright fast-path (6/14 supervised) | 50 % | 50 % | 0.500 |
 | `pro` | 14-perfused-PK | bare-LLM | 43 % | 36 % | 0.536 |
 | `pro` | 14-perfused-PK | soft-gate | 50 % | 36 % | 0.500 |
 | `pro` | 14-perfused-PK | self-verify | 79 % | 29 % | 0.214 |
 | `pro` | 14-perfused-PK | **Labwright** | **100 %** | **86 %** | **0.000** |
-| `pro` | 14-perfused-PK | finetuned-ext (in-dist) | 50 % | 50 % | 0.500 |
+| `pro` | 14-perfused-PK | Labwright fast-path (6/14 supervised) | 50 % | 50 % | 0.500 |
 
 The memory systems never produce a usable *design* on the flow sets (24-reading,
 15-blind), and the two naive "fixes" do not help there. On the 24-reading set the
@@ -404,27 +405,43 @@ self-consistent **100 %** / usable **79 %** (`flash`) / **86 %** (`pro`) with
 hallucination **0.000**, its residue being the two blind propranolol/antipyrine
 targets and one mM→µM unit-trap that the unit layer caught.
 
-The **finetuned-ext** rows are the 11-domain multi-block extractor (lora_v5,
-fine-tuned on ~49.8k synthetic rows covering flow, culture, spheroid, pk and
-the seven post-v1 domains; single-block lora_v3 on 49,500 rows and multi-block
-lora_v4 are the earlier generations). Reading is the in-distribution ceiling:
-**100 % self-consistent**, **92 % usable**, **0.000** hallucination (23/24 of
-those goals are verbatim gold pairs — memorization, not transfer; the single
-regression vs v4 is the 400×100-shear goal, recovery residual 0 → 3.0).
-Spheroid — previously out-of-distribution and at **0 % usable** — is now a
-trained domain: **73 % self-consistent**, **67 % usable** (hallucination
-**0.267**), with **9/14** of the *novel* goals recovering. pk is all-novel
-(none of its goals is a verbatim pair): **50 % usable**, hallucination
-**0.500**, 7/14 novel goals recover (v4 reached 8/14). Culture stays in-dist at
-**64 % usable** (hallucination **0.071**). The blind set drops to **27 %
-usable** — the goal does not state the target, so a clean design can miss the
-physiology — with hallucination held at **0.067** (14/15 self-consistent).
-Against lora_v4, v5 adds hand-written-register variants for the seven post-v1
-domains, and that is the one clear win: the 14 new-domain goals go from **0 %
-to 29 % usable** (**4/14**, hallucination **0.446** = six silence rows + one
-partial row). The remaining honest boundary is still those domains: 10/14 of
-the hand-written goals do not transfer from the synthetic phrasing — that
-boundary is improved but not solved.
+The **Labwright fast-path** rows are Labwright's deterministic front-end: the
+11-domain multi-block extractor (lora_v6,
+fine-tuned on ~61k synthetic rows covering flow, culture, spheroid, pk and
+the seven post-v1 domains — `results/extractor_11dom_v4`, 61,043 synthetic +
+46 gold pairs; v6 appends natural-register phrasing variants to the flow/
+culture/spheroid/pk generators on top of the v5 rows; single-block lora_v3 on
+49,500 rows and multi-block lora_v4/v5 are the earlier generations) replaces
+the LLM extraction step; the resulting raw inputs cross the *same* gate as the
+agent loop's `submit_design` (derive → verify → reject). The 46
+gold pairs split by supervision: 24 reading + 8 spheroid + 8 culture +
+6 pk; the blind and new-domain sets have no gold pairs by design
+(`eval/supervised_split.py` reproduces this). Reading is the in-distribution
+ceiling: **100 % self-consistent**, **96 % usable**, **0.000** hallucination
+(23/24 usable — all 24 goals have gold-pair supervision, so the score is
+largely memorization, not transfer; the single miss is the *seen*
+residence-time goal `selfconsistent-residence-60s`, wrong-target recovery
+residual 0.98, and the 400×100-shear goal v5 had regressed is recovered).
+Spheroid, previously out-of-distribution at **0 % usable**, is now a trained
+domain: **87 % self-consistent**, **73 % usable** (hallucination **0.133**) —
+8/15 of the goals have gold-pair supervision (all 8 recover) and 3 of the
+7 never-seen goals recover. pk: **50 % usable**, hallucination **0.500** —
+6/14 supervised (5 recover; pk-accumulation-ratio recovered, pk-half-life
+regressed) and 2 of the 8 never-seen goals recover. Culture stays in-dist but
+dips to **57 % usable** (hallucination **0.143**, 8/14 usable): 8/14
+supervised (7 recover; `plate-12well-seed-hepg2` regresses vs v5) and 1 of
+the 6 never-seen goals recovers. The blind set drops to **27 % usable** — the
+goal does not state the target, so a clean design can miss the physiology —
+with v6 holding self-consistency at **100 %** and hallucination **0.000**
+(v5 had one 0.067-silence row); 4 of 15 never-seen goals recover. Against
+lora_v5, the v6 natural-register retrain recovers the 400×100-shear reading
+goal and the `barrier-hcmec-teer` new-domain goal but swaps a regression in
+`barrier-caco2-teer-papp`, leaving the 14 new-domain goals at **29 % usable**
+(**4/14**, hallucination **0.512** = seven silence rows + one partial row;
+schema repair recovers `scaling-kidney-chip`, 5/14). The remaining honest
+boundary is still those domains: 9/14 of the hand-written goals still do not
+transfer from the synthetic phrasing — that boundary is improved but not
+solved.
 
 The blind-set drop is the honest headline: when the goal does not hand over the
 target, Labwright's verified designs hit the wrong physiology. On the expanded
@@ -560,9 +577,9 @@ The tables above are one backend (DeepSeek). To check the architecture
 transfers, the same five sets × four systems were re-run against **`k3`** and
 **`kimi-for-coding`** (Kimi Code, OpenAI-compatible coding endpoint) under the
 identical harness — no re-typed numbers, all derived from the committed
-per-entry records (`results/eval_{set}_{k3,kimicode}.json`). The `finetuned-ext`
-row is a fixed local model and is identical under every backend, so it is not
-repeated here. The five sets × two backends below are the complete sweep.
+per-entry records (`results/eval_{set}_{k3,kimicode}.json`). The Labwright
+fast-path row is a fixed local model and is identical under every backend, so it
+is not repeated here. The five sets × two backends below are the complete sweep.
 
 | model | set | system | self-consistent | usable | hallucination |
 |---|---|---|---|---|---|
@@ -721,7 +738,7 @@ model does not know.
 The benchmark's "0.000 hallucination" invites a circularity objection: *the
 calculators derive the numbers and the verifier recomputes them from the same
 calculators, so of course they match.* The objection is answered empirically
-with a fifth system, **`tool_no_gate`**: the exact same model runs the exact
+with a further ablation, **`tool_no_gate`**: the exact same model runs the exact
 same ReAct loop with the exact same calculator tools, but the verification layer
 is switched off — `submit_design` never runs the verifier, never reports
 `review_required`, and the system prompt drops every promise the verifier backs

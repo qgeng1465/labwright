@@ -7,21 +7,23 @@ and the 14-perfused-PK set — as 3 × 5 small
 multiples, one row per headline metric (self-consistent rate, usable rate,
 hallucination rate). Within each panel the two model families
 (deepseek-v4-flash, deepseek-v4-pro) are grouped; the five systems (bare-LLM,
-soft-gate, self-verify, Labwright, and the local fine-tuned extractor) sit as
+soft-gate, self-verify, and the two Labwright front-ends) sit as
 adjacent bars. Color follows the *system*: one categorical hue per system —
-neutral stone, warm ochre, cool sage, deep academic blue for Labwright, lilac
-for the fine-tuned extractor — so the texture channel (45° hatch on Labwright,
-crosshatch on the extractor) plus the legend keep identity readable in print
+neutral stone, warm ochre, cool sage, deep academic blue for the Labwright
+agent loop, lilac for the Labwright fast-path (the local fine-tuned extractor)
+— so the texture channel (45° hatch on Labwright, crosshatch on the
+fast-path) plus the legend keep identity readable in print
 and for CVD.
 
-The fifth bar is the fine-tuned raw-input extractor (Qwen2.5-1.5B LoRA). It is
-a *fixed local model*, so its bars are identical under flash and pro — it does
-not depend on the API model. Honesty note carried in the figure: it is trained
-on synthetic instances across all 11 domains (reading targets reused from the
-reading gold set), so the reading column is in-distribution and the spheroid /
-culture / PK columns are close to it; the blind column is a mix, and the
-hand-written post-v1 domains (fig_benchmark does not draw them) are the true
-held-out set.
+The last bar is **Labwright's fast path**: the same gate (raw inputs → derive
+via the same calculators → the same verifier), but the raw inputs are produced
+by a fixed local Qwen2.5-1.5B LoRA fine-tuned extractor instead of the LLM
+agent loop. It is model-independent, so its bars are identical under flash and
+pro. Honesty note carried in the figure: it is trained on synthetic instances
+across all 11 domains (reading targets reused from the reading gold set), so
+the reading column is in-distribution and the spheroid / culture / PK columns
+are close to it; the blind column is a mix, and the hand-written post-v1
+domains (fig_benchmark does not draw them) are the true held-out set.
 
 The blind set is where the honest boundary of the gate shows: self-consistency
 stays high for Labwright while the usable rate collapses, and the naive
@@ -113,7 +115,7 @@ SYSTEMS = [
     ("soft_gate", "soft-gate", "#C07C2B", "#9A611F", "o"),
     ("self_verify", "self-verify", "#5F7668", "#3F5146", "+"),
     ("labwright", "Labwright", "#2E5598", "#1f3f70", "//"),
-    ("finetuned", "finetuned-ext", "#A080B0", "#6E4F8A", "x"),
+    ("finetuned", "Labwright fast-path", "#A080B0", "#6E4F8A", "x"),
 ]
 INK = "#262522"          # text primary
 MUT = "#8a8782"          # muted text (axis, sub-label)
