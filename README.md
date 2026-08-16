@@ -48,6 +48,13 @@ below). Labwright's hallucination is **0.000 on most sets**; the few non-zero
 cells are silence or a single rejected field, never a fabricated number
 (per-set detail in the Benchmark section).*
 
+**What Labwright does not do.** It checks arithmetic and internal
+consistency; it does not choose your biological target, replace your judgment,
+or guarantee that a design is physiologically correct. A wrong target passes
+the gate as internally consistent (that is exactly what the blind-set recall
+gap above shows), so the target and the safety-critical numbers are yours to
+verify, not the tool's to warrant.
+
 ![Labwright graphical abstract: goal → LLM proposes raw inputs → deterministic calculators → verifier re-proves every number → SOP + design JSON; naive alternatives rejected at the hard gate](paper/fig_abstract.png)
 
 **Built for organ-on-chip and perfused cell culture first. General wet-lab by design.**
@@ -58,9 +65,10 @@ cells are silence or a single rejected field, never a fabricated number
 `labwright verify-protocol examples/verify_protocol.json`
 
 **Who this is for.**
-- *Bench scientists*: paste a paper's geometry/flow/shear and get a
-  discrepancy check in 3 seconds (`labwright verify-protocol`), or describe an
-  experiment and get a verified SOP.
+- *Bench scientists*: paste a paper's geometry, flow and claimed shear into
+  `labwright verify-protocol` and get a discrepancy check in 3 seconds, or
+  describe an experiment and get a verified SOP where every bolded number is
+  re-derived from the inputs you gave.
 - *AI-for-science researchers*: a hard-gate agent architecture with a
   reproducible benchmark and an honestly stated boundary ([`eval/`](eval/README.md)).
 - *Contributors*: adding a domain is a folder, not a fork ([Extending Labwright](#extending-labwright)).
@@ -458,7 +466,20 @@ HF downloads go through `HF_ENDPOINT=https://hf-mirror.com`. No `gh` CLI; use
 ## Benchmark
 
 Can an LLM write a wet-lab design without hallucinating the numbers? We measure
-it. `eval/` compares three memory baselines and the two front-ends of the
+it.
+
+### Scoring: self-consistent, usable, hallucination
+
+Three numbers are reported per system per set:
+
+- **self-consistent** = every submitted number was re-derived from its own raw
+  inputs (zero verifier errors);
+- **usable** = self-consistent **and** every physiological target within ±5%;
+- **hallucination** = the fraction of a plan's `derived` fields the verifier
+  rejects at error level, averaged over goals; a run that submits no design
+  scores 1.0 by convention (denominator = derived fields per plan, not goals).
+
+`eval/` compares three memory baselines and the two front-ends of the
 Labwright gate on six gold sets. The baselines are **bare LLM** (the model
 writes every number from memory) and two naive fixes (**soft-gate**,
 **self-verify**). Labwright appears in its two forms: the **agent loop**
@@ -593,19 +614,13 @@ produced **no design** (`plan: false`); a no-submit run scores 1.0 by
 convention, so 3/24 → 0.125. It never wrote a number the calculators didn't
 check.*
 
-*Definitions: **self-consistent** = every submitted number was re-derived from
-its own raw inputs (zero verifier errors); **usable** = self-consistent
-**and** every physiological target within ±5%; **hallucination** = the
-fraction of a plan's `derived` fields the verifier rejects at error level,
-averaged over goals (a run that submits no design scores 1.0). The
-hallucination denominator is derived fields per plan, not goals; a single
+*The hallucination denominator is derived fields per plan, not goals: a single
 goal with one rejected field moves the set-level number by 1/(goals × fields),
 so a goal that scores 0.000 does not pull the set to 0.000, and a raw-input
-absurdity that the verifier flags (e.g. an unphysical doubling time) makes a
-plan invalid without moving hallucination at all; the two signals must be
-read together. A plan can be fully self-consistent and still miss the target;
-that is exactly what the 15-blind rows show (100% self-consistent, 40–47%
-usable).*
+absurdity the verifier flags (e.g. an unphysical doubling time) invalidates a
+plan without moving hallucination at all; read the two signals together. A plan
+can be fully self-consistent and still miss the target; that is exactly what
+the 15-blind rows show (100% self-consistent, 40–47% usable).*
 
 | set | model | system | self-consistent | usable | hallucination |
 |---|---|---|---|---|---|
