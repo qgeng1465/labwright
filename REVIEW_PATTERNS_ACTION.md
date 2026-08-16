@@ -43,27 +43,58 @@
 ## 进度
 
 - **P0 [完成]**：基线验证（pytest 516 绿、GPU 空、API key 在）。
-- **P1 LabMath-Bench [完成，待 commit]**：
-  - **1a 五新 calc 全链路**：bioprinting/coculture/enzyme/bioinformatics(champ+plink)/
-    solvent 六域，每域 = pydantic schema + Block（raw/derived/consistency/field_map/
-    sanity_bands/canonical_units）+ derive_* + tools + sanity 带 + gold 全链路接入。
-  - **1b TBA 指标**：`GoldExperiment.level`（默认 None 向后兼容）；`tba(records, τ)`
-    按 (entry, key) 相对误差二值平均；report.py `derive()` 加 `tba` + `tba_by_level`
-    （Wilson CI over key-pairs，旧结果 JSON 无 level 则不显示，向后兼容）。
-  - **1c 数据集**：`make_labmath_bench.py` 生成 **510 条**（L1=170/L2=170/L3=170，
-    hard 158/medium 207/easy 145，1590 可打分目标，seed=20260817 确定性）。
-    `tag_existing_levels.py` 打标既有 7 个 gold 集 100 条 → 合并
-    **610 条**（L1=213/L2=223/L3=174）。每条含 {id, goal, expected(裸 derived 键),
-    source, level, scenario="complete-info", difficulty}，期望值由同一计算器经
-    `submit_design` 算出，self-consistent。
-  - **关键修正**：溶剂采样原窗口 [0.05,4.0]h 大片落在 d² 定律全蒸干区
-    （1 µL 滴 37 °C/30%RH/edge 1.5 半小时即干）→ 43/56 条 residual=0.0，
-    relative-error 除零毒化 TBA。修正 = `_sample_solvent` 拒绝采样至
-    residual ≥ 15% V0（用实际 edge_well_factor），重生成后 0 退化目标。
-  - **1d 测试**：`eval/test_labmath_bench.py` 5 测（数据集形状/键域/路由/确定性
-    逐字节复现/合并文件）→ **pytest 552 绿**；audit_claims 新加 J 节 10 断言
-    → **142 通过**。**commit 待做**（作者仅 qgeng1465）。
-- **P2 Code Interpreter + 全消融 [待]**。
-- **P3 边界对抗 + 主动提问 [待]**。
-- **P4 工程规范 [待]**。
-- **P5 终审 [待]**。
+- **P1 LabMath-Bench [完成]**（commit 3b0a26f）：
+  - 五新 calc 全链路（bioprinting/coculture/enzyme/bioinformatics/solvent）；
+    `GoldExperiment.level`（默认 None）+ TBA 指标（τ=0.05 为主，report.py 按 level
+    Wilson CI）；生成 510 条 + 打标既有 → 合并 610 条（L1=213/L2=223/L3=174）；
+    溶剂采样 reject 到 residual≥15% V0 防除零。pytest 552 绿、audit J 节 10 断言。
+- **P2a Code Interpreter 沙箱 [完成]**（已并入 f69efc1）：
+  - `eval/benchmark.py` 新系统 `code_interpreter`（Baseline B）：LLM 输出 Python 片段
+    算 `RESULT = {...}`，沙箱子进程 `[sys.executable, -c, code]` 执行，timeout 30s +
+    rlimit 限制，失败分类 `code_exec_error`（语法/运行错）区别于 silence/wrong_target。
+    60 条 benchmark 测试绿。
+- **P2b 全消融跑 [进行中]**：
+  - flash-core（610×bare/code_interpreter/labwright，pid 2263496，02:13 起，~19s/条，
+    预计 ~3h）写入 `results/eval_labmath_flash.json`（新代码带 plan+provenance+tool_trace）。
+  - ext-flash（102×soft_gate/self_verify/tool_no_gate/labwright_iter，pid 2263555，
+    ~40min 完成）写入 `results/eval_labmath_ext_flash.json`。
+  - **pro-core 全量 610 待 flash-core 完成后起跑**；thoth-8b 分层子集（V100 claim）。
+  - `_score_design` 现存全 plan dict + 复验 provenance + tool_trace。
+  - 混淆矩阵图 `paper/fig_ablation.py` 已写，等 pro 结果。
+- **P3a/P3b 边界对抗 + 主动提问 [完成]**（并入 f69efc1）：
+  - `request_info` 工具 + `DesignAgent.elicit` 开关（默认 False 保兼容）；
+    gold_adversarial.json 30 条（missing_parameter/physical_conflict/lethal_condition），
+    验证器硬拦截 18/18。
+- **P3c 对抗全跑 [flash 完成 / pro 进行中]**：
+  - flash 30/30 完成并 commit（fail_safe labwright 0.933 / bare 0.833 /
+    code_interpreter 0.733；elicitation 0.667；exception_catch 0.233；fabrication 0.067）。
+  - pro 进行中（pid 2263907，~7min 完成）→ 完成后跑 fig_failsafe + pin pro 审计值。
+- **P4a 工程规范 [完成]**（并入 f69efc1）：requirements.txt + Dockerfile（非 root）
+  + docs/PLUGINS.md（第三方 calculator 扩展契约全链路）。
+- **P4b DAG 图 + 溯源日志 + 复现脚本 [完成，已 commit f69efc1]**：
+  - `paper/fig_protocol_dag.py`：3 面板（a 管道拓扑 / b 字段级 provenance DAG 74 节点
+    85 边，derived→derived 边带流值 / c 守恒审计 cells+seed 恒等式真验）。修 phantom
+    tick label 重叠（axis-off 轴清空 tick 文本）→ **_check_render 0 overlap 全 8 图**。
+  - `eval/make_traceability_log.py` + 4 测：从结果 JSON 逐条重建溯源日志
+    （plan+provenance+tool_trace → supplementary/traceability/{model}/...json + INDEX +
+    README），诚实统计 no-plan/plan-without-prov。
+  - `scripts/reproduce_all.sh`：FULL=1 全量复现 / 默认 5 条冒烟；gold 确定性已验证
+    （MD5 逐字节）。
+  - `audit_claims`：audit_adversarial 钉 flash 精确值（<1e-4）+ 新 audit_traceability
+    机制/覆盖断言。当前 **174 通过 / 4 失败**（4 失败全是 pro 对抗未跑完的预期项）。
+- **P4e 文档同步 [待]**：README/README.zh-CN/eval-README 加 LabMath-Bench 节 + TBA 表
+  + 消融混淆矩阵 + fail-safe 对抗 + GPT-4/Claude 替代诚实注 + 插件/Docker/复现链接。
+- **P5 终审 [待]**：全量 pytest + audit 绿 + 结果 JSON 全 commit + 文档同步 + 本地
+  commit（不推）。
+
+## 后台跑批状态（2026-08-17 02:26）
+
+| 批 | 内容 | pid | 起跑 | 进度 | 预计 |
+|---|---|---|---|---|---|
+| flash-core | 610×3 系统 | 2263496 | 02:13 | 33/610 | ~3h |
+| ext-flash | 102×4 系统 | 2263555 | 02:13 | 21/102 | ~40min |
+| adv-pro | 30×3 系统 | 2263907 | 02:14 | 18/30 | ~7min |
+
+落地顺序：adv-pro 完 → commit 对抗 pro + fig_failsafe + pin 审计；ext-flash 完 → commit
+ext 结果；flash-core 完 → 起跑 pro-core 610 + commit flash 结果；最终 pytest/audit 绿 +
+文档 + 本地 commit（不推）。
