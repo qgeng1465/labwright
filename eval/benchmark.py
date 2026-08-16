@@ -1433,7 +1433,7 @@ def run_finetuned(gold: GoldExperiment, extractor: Callable) -> tuple[DesignPlan
 
     Fairness note: the extractor is fine-tuned on synthetic goals whose target
     values are sampled from the benchmark gold sets (see
-    ``labwright/extract/synthetic.py``) — including, for 10 of the 15 blind
+    ``labwright/extract/synthetic.py``) — including, for 11 of the 15 blind
     goals, the blind target values themselves — so the blind row measures
     in-distribution *value recall*, not novel physiology, and must be labelled
     as such at report time (the README/eval-README tables now say
