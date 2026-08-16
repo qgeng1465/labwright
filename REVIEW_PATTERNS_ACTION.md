@@ -87,19 +87,18 @@
 - **P5 终审 [待]**：全量 pytest + audit 绿 + 结果 JSON 全 commit + 文档同步 + 本地
   commit（不推）。
 
-## 后台跑批状态（2026-08-17 02:45）
+## 后台跑批状态（2026-08-17 03:20）
 
 | 批 | 内容 | pid | 起跑 | 进度 | 预计 |
 |---|---|---|---|---|---|
-| ~~adv-pro~~ | 30×3 系统 | 已完成 | 02:14 | **30/30 ✓** | 已落地 |
-| ext-flash | 102×4 系统 | 2263555 | 02:13 | 58/102 | ~02:55 |
-| flash-core | 610×3 系统 | 2263496 | 02:13 | 77/610 | ~05:50 |
+| ~~adv-pro~~ | 30×3 系统 | 已完成 | 02:14 | **30/30 ✓** | 已落地 7ea4c97 |
+| ~~ext-flash~~ | 102×4 系统 | 已完成 | 02:13 | **102/102 ✓** | 已落地 a7b1e60 |
+| flash-core | 610×3 系统 | 2263496 | 02:13 | 172/610 | ~05:30 |
 
-**adv-pro 已落地（commit a9689be 之后补 commit）**：fail_safe bare 0.9667 / code_interpreter
-**0.5** / labwright 0.9；fabrication bare 0.0333 / **code_interpreter 0.4333** / labwright 0.1；
-labwright elicitation 0.6、exception_catch 0.1667。**pro 下 Baseline B 崩最狠**（43% 捏造）=
-纸面最强对照组。fig_failsafe 已渲染并接入 _check_render（0 overlap）；PINNED_PRO 已钉
-精确值 → **audit_claims 190 通过 0 失败（全绿）**。
+**ext-flash 已落地（a7b1e60）**：102 条分层子集 × soft_gate/self_verify/tool_no_gate/
+labwright_iter。**门控消融故事成立**：soft_gate usable 0.029 / self_verify 0.010（halluc
+~0.80）在 L1-L3 新域无硬验证器门即崩；tool_no_gate usable 0.902 / halluc 0.000、
+labwright_iter usable 0.912 / halluc 0.010 胜出 → 硬 verifier 门是数字可信的来源。
 
-落地顺序：ext-flash 完 → commit ext 结果；flash-core 完 → 起跑 pro-core 610 + commit
-flash 结果；最终 pytest/audit 绿 + 文档 + 本地 commit（不推）。
+落地顺序：flash-core 完 → 起跑 pro-core 610 + commit flash 结果；最终 pytest/audit 绿 +
+文档 + 本地 commit（不推）。
