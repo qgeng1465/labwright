@@ -92,7 +92,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 2.333333
+          "shear_pa": 3.166667
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -112,7 +112,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "seed_count": 1.0
+          "seed_count": 0.98
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -129,13 +129,15 @@
         "scenario": "complete-info"
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: cells block requires seeding_density_cells_cm2 and culture_area_cm2",
-        "recovery": {},
-        "hallucination_rate": 1.0,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "seed_count": 0.993333
+        },
+        "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "silence",
+        "failure": "wrong_target",
         "target_selected": false
       }
     },
@@ -230,7 +232,7 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 4.0
+          "shear_pa": 0.5
         },
         "hallucination_rate": 0.0,
         "valid": false,
@@ -303,15 +305,15 @@
   ],
   "finetuned": {
     "recovery": {
-      "shear_pa": 9.109567833333333,
-      "seed_count": 1.0,
+      "shear_pa": 8.887345666666667,
+      "seed_count": 0.9866665,
       "total_medium_ml": 0.0,
       "residence_time_s": 0.0
     },
-    "hallucination_rate": 0.06666666666666667,
-    "self_consistent_rate": 0.9333333333333333,
+    "hallucination_rate": 0.0,
+    "self_consistent_rate": 1.0,
     "usable_design_rate": 0.26666666666666666
   },
   "system": "finetuned",
-  "generated_at": "2026-08-15T15:04:29+00:00"
+  "generated_at": "2026-08-15T22:53:56+00:00"
 }

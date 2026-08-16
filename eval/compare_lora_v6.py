@@ -31,7 +31,25 @@ import json
 import sys
 from pathlib import Path
 
-from eval.compare_repair import _usable, _metrics, _classify
+from eval.compare_repair import _usable, _classify
+
+
+def _metrics(per_entry) -> dict:
+    """Aggregate usable / self-consistent / hallucination over one adapter run.
+
+    Matches ``eval.report.derive``'s definitions exactly, so the numbers here
+    agree with the README / figure presentation: hallucination is the *mean*
+    per-entry hallucination_rate, not the fraction of hallucinating entries
+    (they diverge whenever any entry is only partially hallucinated).
+    """
+    n = len(per_entry)
+    usable = sum(1 for e in per_entry if _usable(e.get("finetuned"))) / n
+    hall = [e.get("finetuned", {}).get("hallucination_rate", 1.0) for e in per_entry]
+    mean_hall = sum(hall) / n
+    self_cons = sum(1 for h in hall if h == 0.0) / n
+    return {"n": n, "usable_rate": round(usable, 4),
+            "hallucination_rate": round(mean_hall, 4),
+            "self_consistent_rate": round(self_cons, 4)}
 
 _HERE = Path(__file__).resolve().parent
 RESULTS = _HERE.parent / "results"

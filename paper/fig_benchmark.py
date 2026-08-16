@@ -16,10 +16,12 @@ and for CVD.
 
 The fifth bar is the fine-tuned raw-input extractor (Qwen2.5-1.5B LoRA). It is
 a *fixed local model*, so its bars are identical under flash and pro — it does
-not depend on the API model. Honesty note carried in the figure: it was trained
-on synthetic flow/culture instances whose targets are reused from the reading
-gold set, so the reading column is in-distribution for it and the spheroid
-column is out-of-distribution; the blind column is a mix.
+not depend on the API model. Honesty note carried in the figure: it is trained
+on synthetic instances across all 11 domains (reading targets reused from the
+reading gold set), so the reading column is in-distribution and the spheroid /
+culture / PK columns are close to it; the blind column is a mix, and the
+hand-written post-v1 domains (fig_benchmark does not draw them) are the true
+held-out set.
 
 The blind set is where the honest boundary of the gate shows: self-consistency
 stays high for Labwright while the usable rate collapses, and the naive

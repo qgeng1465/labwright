@@ -58,7 +58,7 @@ SETS = {
                    "eval_new_domains_labwright_pro.json"),
 }
 
-DEFAULT_ADAPTER = "lora_v5"
+DEFAULT_ADAPTER = "lora_v6"
 
 
 def _finetuned_paths(set_name: str, adapter: str) -> tuple[Path, Path]:

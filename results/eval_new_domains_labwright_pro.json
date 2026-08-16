@@ -26,18 +26,14 @@
         "no_plan": false
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "teer_ohm_cm2": 0.0,
-          "papp_cm_s": 0.0,
-          "clearance_mL_min": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true,
+        "plan": false,
+        "error": "schema_error: 'resistance_total_ohm'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
+        "valid": false,
         "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true
+        "failure": "silence",
+        "target_selected": false
       }
     },
     {
@@ -64,14 +60,16 @@
         "no_plan": false
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 'resistance_total_ohm'",
-        "recovery": {},
-        "hallucination_rate": 1.0,
-        "valid": false,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "teer_ohm_cm2": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "ok",
+        "target_selected": true
       }
     },
     {
@@ -103,7 +101,7 @@
         "error": null,
         "recovery": {
           "dissolved_o2_mM": 0.0,
-          "penetration_depth_um": 0.0,
+          "penetration_depth_um": 0.000859,
           "necrotic_fraction": 0.0
         },
         "hallucination_rate": 0.0,
@@ -139,13 +137,13 @@
         "no_plan": false
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
+        "plan": false,
+        "error": "schema_error: 'target_po2_mmhg'",
         "recovery": {},
-        "hallucination_rate": 0.0,
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "wrong_target",
+        "failure": "silence",
         "target_selected": false
       }
     },
@@ -291,14 +289,18 @@
         "no_plan": false
       },
       "finetuned": {
-        "plan": false,
-        "error": "schema_error: 1 validation error for BreathingPlan\nculture_duration_min\n  Extra inputs are not permitted [type=extra_forbidden, input_value=60.0, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
-        "recovery": {},
-        "hallucination_rate": 1.0,
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "breaths_per_minute": 0.0,
+          "cyclic_displacement_um": 0.0,
+          "ali_liquid_film_um": 0.0
+        },
+        "hallucination_rate": 0.166667,
         "valid": false,
         "unit_misread": {},
-        "failure": "silence",
-        "target_selected": false
+        "failure": "calculation_error",
+        "target_selected": true
       }
     },
     {
@@ -507,18 +509,13 @@
         "no_plan": true
       },
       "finetuned": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "steepness_um_per_mm": 999.0,
-          "midpoint_conc_um": 0.0,
-          "relaxation_time_s": 0.999999,
-          "flux_mol_m2s": 999.0
-        },
-        "hallucination_rate": 0.25,
+        "plan": false,
+        "error": "schema_error: 'distance_um'",
+        "recovery": {},
+        "hallucination_rate": 1.0,
         "valid": false,
         "unit_misread": {},
-        "failure": "calculation_error",
+        "failure": "silence",
         "target_selected": false
       }
     }
@@ -558,15 +555,13 @@
   "model": "deepseek-v4-pro",
   "generated_at": "2026-08-14T11:30:37+00:00",
   "finetuned": {
-    "self_consistent_rate": 0.5,
+    "self_consistent_rate": 0.42857142857142855,
     "usable_rate": 0.2857142857142857,
-    "hallucination_rate": 0.44642857142857145,
+    "hallucination_rate": 0.5119047857142858,
     "recovery": {
       "teer_ohm_cm2": 0.0,
-      "papp_cm_s": 0.0,
-      "clearance_mL_min": 0.0,
       "dissolved_o2_mM": 0.0,
-      "penetration_depth_um": 0.0,
+      "penetration_depth_um": 0.000859,
       "necrotic_fraction": 0.0,
       "hydrostatic_head_pa": 0.0,
       "peak_wall_shear_pa": 0.0,
@@ -581,18 +576,18 @@
       "womersley_number": 0.817109,
       "peak_shear_pa": 0.0,
       "pulsatility_index": 0.0,
-      "steepness_um_per_mm": 499.5,
+      "steepness_um_per_mm": 0.0,
       "midpoint_conc_um": 0.0,
-      "relaxation_time_s": 0.4999995,
-      "flux_mol_m2s": 499.5
+      "relaxation_time_s": 0.0,
+      "flux_mol_m2s": 0.0
     },
     "failure_counts": {
+      "silence": 7,
       "ok": 4,
-      "silence": 6,
-      "wrong_target": 3,
+      "wrong_target": 2,
       "calculation_error": 1
     },
     "unit_misread_rate": 0.0,
-    "target_selection_accuracy": 0.35714285714285715
+    "target_selection_accuracy": 0.42857142857142855
   }
 }

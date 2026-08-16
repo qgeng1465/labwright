@@ -535,19 +535,19 @@
     "lora_v5": {
       "n": 14,
       "usable_rate": 0.2857,
-      "hallucination_rate": 0.5,
+      "hallucination_rate": 0.4464,
       "self_consistent_rate": 0.5
     },
     "lora_v6": {
       "n": 14,
       "usable_rate": 0.2857,
-      "hallucination_rate": 0.5714,
+      "hallucination_rate": 0.5119,
       "self_consistent_rate": 0.4286
     },
     "lora_v6_repair": {
       "n": 14,
       "usable_rate": 0.3571,
-      "hallucination_rate": 0.5,
+      "hallucination_rate": 0.4405,
       "self_consistent_rate": 0.5
     },
     "detail": [

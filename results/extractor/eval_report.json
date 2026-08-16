@@ -1,36 +1,36 @@
 {
   "n_eval_rows": 400,
-  "n_blind": 12,
+  "n_blind": 15,
   "systems": {
     "fine-tuned-1.5B": {
       "n_rows": 400,
-      "n_blind": 12,
+      "n_blind": 15,
       "json_parse_rate": 1.0,
-      "schema_ok_rate": 0.9976,
-      "consistency_rate": 0.9976,
-      "field_recovery_ok_rate": 0.72,
-      "mean_field_rel_error": 0.00586,
-      "target_recovery_rate": 0.0
+      "schema_ok_rate": 1.0,
+      "consistency_rate": 1.0,
+      "field_recovery_ok_rate": 0.9925,
+      "mean_field_rel_error": 0.000619,
+      "target_recovery_rate": 0.25
     },
     "deepseek-v4-flash": {
       "n_rows": 400,
-      "n_blind": 12,
+      "n_blind": 15,
       "json_parse_rate": 1.0,
-      "schema_ok_rate": 0.4005,
-      "consistency_rate": 0.4005,
-      "field_recovery_ok_rate": 0.3875,
-      "mean_field_rel_error": 0.000227,
+      "schema_ok_rate": 0.7494,
+      "consistency_rate": 0.7494,
+      "field_recovery_ok_rate": 0.7325,
+      "mean_field_rel_error": 0.006628,
       "target_recovery_rate": 0.0
     },
     "deepseek-v4-pro": {
       "n_rows": 400,
-      "n_blind": 12,
+      "n_blind": 15,
       "json_parse_rate": 1.0,
-      "schema_ok_rate": 0.4005,
-      "consistency_rate": 0.4005,
-      "field_recovery_ok_rate": 0.3875,
-      "mean_field_rel_error": 0.002976,
-      "target_recovery_rate": 0.2
+      "schema_ok_rate": 0.7422,
+      "consistency_rate": 0.7422,
+      "field_recovery_ok_rate": 0.7325,
+      "mean_field_rel_error": 0.032042,
+      "target_recovery_rate": 0.0909
     }
   }
 }
