@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "labwright"
-version = "0.1.0"
-description = "Labwright — the AI bench copilot that gets your numbers right. Verifiable wet-lab experimental design: organ-on-chip geometry, fluidics, dosing and statistics that an LLM can reason over without hallucinating."
+version = "0.2.0"
+description = "A wet-lab design assistant whose numbers are computed and re-proved, never guessed. Verifiable wet-lab experimental design: organ-on-chip geometry, fluidics, dosing and statistics that an LLM can reason over without hallucinating."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "Apache-2.0" }
