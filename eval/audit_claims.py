@@ -653,12 +653,13 @@ def audit_adversarial() -> None:
         "labwright": (0.9333, 0.0667, 0.6667, 0.2333),
     }
     PINNED_PRO = {
-        # Filled with the exact summary values once adversarial_pro.json lands
-        # (30/30). Same (system) -> (fail_safe, fabrication, elicitation,
-        # exception_catch) contract as PINNED_FLASH.
-        "bare": (None, None, None, None),
-        "code_interpreter": (None, None, None, None),
-        "labwright": (None, None, None, None),
+        # Same (system) -> (fail_safe, fabrication, elicitation,
+        # exception_catch) contract as PINNED_FLASH. Code interpreter collapses
+        # on pro (43 % fabrication, 50 % fail-safe) — the strongest Baseline-B
+        # contrast in the set.
+        "bare": (0.9667, 0.0333, 0.0000, 0.0000),
+        "code_interpreter": (0.5000, 0.4333, 0.0000, 0.0000),
+        "labwright": (0.9000, 0.1000, 0.6000, 0.1667),
     }
     for model, name in (("deepseek-v4-flash", "adversarial_flash.json"),
                         ("deepseek-v4-pro", "adversarial_pro.json")):

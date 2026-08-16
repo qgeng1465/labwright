@@ -87,14 +87,19 @@
 - **P5 终审 [待]**：全量 pytest + audit 绿 + 结果 JSON 全 commit + 文档同步 + 本地
   commit（不推）。
 
-## 后台跑批状态（2026-08-17 02:26）
+## 后台跑批状态（2026-08-17 02:45）
 
 | 批 | 内容 | pid | 起跑 | 进度 | 预计 |
 |---|---|---|---|---|---|
-| flash-core | 610×3 系统 | 2263496 | 02:13 | 33/610 | ~3h |
-| ext-flash | 102×4 系统 | 2263555 | 02:13 | 21/102 | ~40min |
-| adv-pro | 30×3 系统 | 2263907 | 02:14 | 18/30 | ~7min |
+| ~~adv-pro~~ | 30×3 系统 | 已完成 | 02:14 | **30/30 ✓** | 已落地 |
+| ext-flash | 102×4 系统 | 2263555 | 02:13 | 58/102 | ~02:55 |
+| flash-core | 610×3 系统 | 2263496 | 02:13 | 77/610 | ~05:50 |
 
-落地顺序：adv-pro 完 → commit 对抗 pro + fig_failsafe + pin 审计；ext-flash 完 → commit
-ext 结果；flash-core 完 → 起跑 pro-core 610 + commit flash 结果；最终 pytest/audit 绿 +
-文档 + 本地 commit（不推）。
+**adv-pro 已落地（commit a9689be 之后补 commit）**：fail_safe bare 0.9667 / code_interpreter
+**0.5** / labwright 0.9；fabrication bare 0.0333 / **code_interpreter 0.4333** / labwright 0.1；
+labwright elicitation 0.6、exception_catch 0.1667。**pro 下 Baseline B 崩最狠**（43% 捏造）=
+纸面最强对照组。fig_failsafe 已渲染并接入 _check_render（0 overlap）；PINNED_PRO 已钉
+精确值 → **audit_claims 190 通过 0 失败（全绿）**。
+
+落地顺序：ext-flash 完 → commit ext 结果；flash-core 完 → 起跑 pro-core 610 + commit
+flash 结果；最终 pytest/audit 绿 + 文档 + 本地 commit（不推）。

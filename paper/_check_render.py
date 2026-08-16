@@ -126,6 +126,10 @@ def main() -> int:
     fpdg.main()
     bad += _overlaps(_captured["figs"][-1], "fig_protocol_dag")
 
+    ffs = importlib.import_module("fig_failsafe")
+    ffs.main(["results/adversarial_flash.json", "results/adversarial_pro.json"])
+    bad += _overlaps(_captured["figs"][-1], "fig_failsafe")
+
     fab = importlib.import_module("fig_abstract")
     fab.main()
     bad += _overlaps(_captured["figs"][-1], "fig_abstract")
