@@ -760,6 +760,62 @@ def audit_traceability() -> None:
                traced >= 1, f"{traced} traced labwright entries")
 
 
+def audit_labmath_results() -> None:
+    """LabMath-Bench full-set results (reviewer demands #1/#2, honest gates).
+
+    Recomputed from the committed flash/pro runs with the same
+    ``eval.report.derive`` the figures use — nothing hand-typed. The gates are
+    the paper's actual claims: Labwright beats bare-LLM on usable rate and
+    TBA(0.05) at every level; its design-path computation-error rate (CER, the
+    confusion matrix's ``calculation_error`` class) is zero; and Baseline B
+    (code interpreter) never exceeds Labwright's TBA. Incomplete / uncommitted
+    runs are reported as failures so the audit can never pass on stale numbers.
+    """
+    from eval import report as report_mod
+
+    gold = json.load(open(_HERE / "gold_labmath_combined.json"))
+    n_gold = len(gold)
+    for name, model in (("eval_labmath_flash.json", "deepseek-v4-flash"),
+                        ("eval_labmath_pro.json", "deepseek-v4-pro")):
+        path = RESULTS / name
+        if not path.exists():
+            _failures.append(f"  FAIL K  {name} not committed — LabMath results unpinned")
+            continue
+        run = json.load(open(path))
+        n = len(run.get("per_entry", []))
+        if n < n_gold:
+            _failures.append(f"  FAIL K  {name} incomplete ({n}/{n_gold}) — results unpinned")
+            continue
+        assert run["model"] == model, f"{name} model mismatch"
+        d = report_mod.derive(run)
+        have = all(s in d for s in ("bare", "code_interpreter", "labwright"))
+        _check(f"K  labmath {model}: bare/code_interpreter/labwright derived", have)
+        lw, bare, ci = d["labwright"], d["bare"], d["code_interpreter"]
+        _check(f"K  labmath {model}: labwright usable > bare",
+               lw["usable_rate"] > bare["usable_rate"],
+               f"{lw['usable_rate']:.3f} vs {bare['usable_rate']:.3f}")
+        _check(f"K  labmath {model}: labwright TBA(0.05) > bare",
+               lw["tba"] > bare["tba"], f"{lw['tba']:.3f} vs {bare['tba']:.3f}")
+        _check(f"K  labmath {model}: code_interpreter TBA <= labwright",
+               ci["tba"] <= lw["tba"] + 1e-9, f"{ci['tba']:.3f} vs {lw['tba']:.3f}")
+        _check(f"K  labmath {model}: labwright hallucination ~0 (CER->0)",
+               lw["hallucination_rate"] < 0.02, f"{lw['hallucination_rate']:.4f}")
+        for lv in ("L1", "L2", "L3"):
+            bl = lw.get("tba_by_level", {}).get(lv)
+            bb = bare.get("tba_by_level", {}).get(lv)
+            if bl and bb:
+                _check(f"K  labmath {model}: labwright TBA(0.05) {lv} > bare",
+                       bl["tba"] > bb["tba"], f"{bl['tba']:.3f} vs {bb['tba']:.3f}")
+        # Confusion-matrix CER: on the design path the calculators make the
+        # number, so a calculation error class is a computation defect — the
+        # figure's headline is that it is empty.
+        cer = sum(1 for e in run["per_entry"]
+                  if isinstance(e.get("labwright"), dict)
+                  and e["labwright"].get("failure") == "calculation_error")
+        _check(f"K  labmath {model}: labwright CER = 0 (design-path calc errors)",
+               cer == 0, f"{cer} calculation errors")
+
+
 def main() -> int:
     audit_agent_rows()
     audit_fast_rows()
@@ -777,6 +833,7 @@ def main() -> int:
     audit_adversarial()
     audit_code_interpreter()
     audit_traceability()
+    audit_labmath_results()
     print(f"audit_claims: {_passes} passed, {len(_failures)} failed")
     for f in _failures:
         print(f)
