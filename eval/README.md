@@ -3,11 +3,12 @@
 > **Version note (Aug 2026).** The blind gold set is currently **15** goals
 > (expanded 6 → 12 → 15). Anywhere "12 blind goals" appears below it means the
 > **pre-expansion** set — the extractor eval (`extract/eval.py`,
-> `results/extractor/eval_report.json`) and the thinking-ablation grid were
-> run on the 12-goal set, before the scenario entries (unit-ambiguity,
-> multi-target) and the 24-well medium-volume goal grew it to 15. Those rows
-> are historical and **not** directly comparable to the 15-goal cells; every
-> table below states its own set.
+> `results/extractor/eval_report.json`) was run on the 12-goal set, before the
+> scenario entries (unit-ambiguity, multi-target) and the 24-well medium-volume
+> goal grew it to 15. Those rows are historical and **not** directly comparable
+> to the 15-goal cells; every table below states its own set. (The
+> thinking-ablation grid has since been re-run on the 15-goal set — see its
+> section.)
 
 ## Question
 
@@ -698,8 +699,9 @@ is stable across seeds. The Labwright interval and the memory-system interval
 never overlap on any set, so the headline gap is not a sampling artifact; on the
 hardest set (blind) the Labwright point estimate itself has a wide interval
 (44–49 %, n = 45 trials), which is honest about how much headroom remains. The
-thinking-ablation cells below are single-run and should be read as such — a
-single point is a pilot, not a precision claim.
+thinking-on blind cells below were run twice (`pro` identical at 10/15, `flash`
+7/15 and 8/15); each is still one point per run, not a precision claim — the
+qualitative direction, not the exact count, is the finding.
 
 ### Ablation: thinking on vs off
 
@@ -711,27 +713,37 @@ reasoning-budget gap. Labwright self-consistency / usable / hallucination:
 |---|---|---|---|---|---|
 | `flash` | 24-reading | off | 88 % | 88 % | 0.125 |
 | `flash` | 24-reading | on | 100 % | 100 % | 0.000 |
-| `flash` | 12-blind* | off | 100 % | 25 % | 0.000 |
-| `flash` | 12-blind* | on | 100 % | 17 % | 0.000 |
+| `flash` | 15-blind | off | 100 % | 40 % | 0.000 |
+| `flash` | 15-blind | on | 100 % | 47 % | 0.000 |
 | `pro` | 24-reading | off | 100 % | 100 % | 0.000 |
 | `pro` | 24-reading | on | 100 % | 100 % | 0.000 |
-| `pro` | 12-blind* | off | 100 % | 33 % | 0.000 |
-| `pro` | 12-blind* | on | 100 % | 42 % | 0.000 |
+| `pro` | 15-blind | off | 100 % | 47 % | 0.000 |
+| `pro` | 15-blind | on | 100 % | 67 % | 0.000 |
 
-\* The thinking-ablation grid was run on the **12-goal** blind set, before the
-scenario expansion grew it to 15; the thinking rows were not repeated on the
-expanded set, so they are historical and are **not** directly comparable to the
-15-entry cells above.
+The grid was re-run on the current **15-goal** blind set (an earlier ablation
+used the pre-scenario 12-goal set; this supersedes it). The 15-blind
+thinking-on rows were run **twice**: `pro` recovered the same 10/15 both times
+(67 %), `flash` 7/15 and 8/15 (47–53 %); the table shows run 1.
 
-The blind misses persist with thinking on (17 % / 42 % vs 25 % / 33 % off —
-within a goal of each other): thinking neither recovers targets the model does
-not know (`flash` dropped a prompt-backed hit, BBB; `pro` picked up one cold
-goal, arterial) nor breaks the gate's 100 % self-consistency. The misses are a
-domain-knowledge gap, not an effort one. The one row where thinking *helps* is
-the `flash` 24-reading set (88 % → 100 % usable): the three silent
-non-completions of the thinking-off run each submitted a verified design under
-thinking — effort recovers goals the answer is handed over, not physiology the
-model does not know.
+Thinking on *does* help `pro` recover targets. Off → on, `pro` usable goes
+47 % → 67 % (7/15 → 10/15, replicated), and the goals it gains are not the
+easy ones — two are **cold** (gut-epithelial shear, PHH seeding) and one is the
+multi-target scenario (`bbb-shear-residence-multitarget`). `flash` moves
+40 % → 47–53 %, gaining the cold PHH-seeding goal in both runs. So part of the
+blind gap is an *effort* gap: `pro` demonstrably knows enough to pick targets
+it does not reach with thinking off.
+
+What thinking does **not** fix is the residual hard core: four goals stay
+missed under thinking on both models in every run — kidney-PTEC shear,
+pulmonary-artery shear and retinal-arteriole shear (all cold), and lymphatic
+shear (prompt-backed, its 0.2 Pa sitting at the low end of the 0.1–1 Pa
+microvascular band). Those are the genuine domain-knowledge boundary. And the
+gate never bends: self-consistency stays 100 % and hallucination 0.000 on
+every thinking-on run. The other row where thinking helps is the `flash`
+24-reading set (88 % → 100 %): the three silent non-completions of the
+thinking-off run each submitted a verified design under thinking — effort
+recovers goals the answer is handed over, and physiology the model partially
+knows, but not the four goals neither model knows.
 
 ### Ablation: the same calculators, with the verifier switched off
 

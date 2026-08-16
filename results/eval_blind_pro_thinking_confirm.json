@@ -12,14 +12,14 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.0
+          "shear_pa": 1.0
         },
         "hallucination_rate": 0.0,
-        "valid": true,
+        "valid": false,
         "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 10,
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 8,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -42,7 +42,7 @@
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false,
-        "tool_calls": 10,
+        "tool_calls": 11,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -81,14 +81,14 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.333333
+          "shear_pa": 0.0
         },
         "hallucination_rate": 0.0,
-        "valid": false,
+        "valid": true,
         "unit_misread": {},
-        "failure": "wrong_target",
-        "target_selected": false,
-        "tool_calls": 7,
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 9,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -111,7 +111,7 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true,
-        "tool_calls": 10,
+        "tool_calls": 8,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -180,7 +180,7 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true,
-        "tool_calls": 8,
+        "tool_calls": 10,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -203,7 +203,7 @@
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false,
-        "tool_calls": 13,
+        "tool_calls": 10,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -242,14 +242,14 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.074074
+          "shear_pa": 0.777778
         },
         "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false,
-        "tool_calls": 7,
+        "tool_calls": 12,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -272,7 +272,7 @@
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false,
-        "tool_calls": 10,
+        "tool_calls": 9,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -295,7 +295,7 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true,
-        "tool_calls": 8,
+        "tool_calls": 7,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -350,7 +350,7 @@
   ],
   "labwright": {
     "recovery": {
-      "shear_pa": 0.29645058333333335,
+      "shear_pa": 0.41064816666666665,
       "seed_count": 0.0,
       "total_medium_ml": 0.0,
       "residence_time_s": 0.0
@@ -360,5 +360,5 @@
     "usable_design_rate": 0.6666666666666666
   },
   "model": "deepseek-v4-pro",
-  "generated_at": "2026-08-16T05:29:32+00:00"
+  "generated_at": "2026-08-16T05:48:16+00:00"
 }

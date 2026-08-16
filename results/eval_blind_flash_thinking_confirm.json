@@ -12,14 +12,14 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.0
+          "shear_pa": 1.0
         },
         "hallucination_rate": 0.0,
-        "valid": true,
+        "valid": false,
         "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 10,
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 9,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -35,14 +35,14 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 1.5
+          "shear_pa": 4.0
         },
         "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false,
-        "tool_calls": 10,
+        "tool_calls": 12,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -88,7 +88,7 @@
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false,
-        "tool_calls": 7,
+        "tool_calls": 9,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -111,7 +111,7 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true,
-        "tool_calls": 10,
+        "tool_calls": 9,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -157,7 +157,7 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true,
-        "tool_calls": 4,
+        "tool_calls": 5,
         "prose_refusals": 1,
         "no_plan": false
       }
@@ -173,14 +173,14 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.0
+          "shear_pa": 0.5
         },
         "hallucination_rate": 0.0,
-        "valid": true,
+        "valid": false,
         "unit_misread": {},
-        "failure": "ok",
-        "target_selected": true,
-        "tool_calls": 8,
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 12,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -196,14 +196,14 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.9
+          "shear_pa": 0.5
         },
         "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false,
-        "tool_calls": 13,
+        "tool_calls": 8,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -226,7 +226,7 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true,
-        "tool_calls": 8,
+        "tool_calls": 12,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -242,14 +242,14 @@
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 0.074074
+          "shear_pa": 0.259259
         },
         "hallucination_rate": 0.0,
         "valid": false,
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false,
-        "tool_calls": 7,
+        "tool_calls": 9,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -272,7 +272,7 @@
         "unit_misread": {},
         "failure": "wrong_target",
         "target_selected": false,
-        "tool_calls": 10,
+        "tool_calls": 8,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -318,8 +318,8 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true,
-        "tool_calls": 2,
-        "prose_refusals": 1,
+        "tool_calls": 4,
+        "prose_refusals": 0,
         "no_plan": false
       }
     },
@@ -342,7 +342,7 @@
         "unit_misread": {},
         "failure": "ok",
         "target_selected": true,
-        "tool_calls": 8,
+        "tool_calls": 6,
         "prose_refusals": 0,
         "no_plan": false
       }
@@ -350,15 +350,15 @@
   ],
   "labwright": {
     "recovery": {
-      "shear_pa": 0.29645058333333335,
+      "shear_pa": 0.6118826666666667,
       "seed_count": 0.0,
       "total_medium_ml": 0.0,
       "residence_time_s": 0.0
     },
     "hallucination_rate": 0.0,
     "self_consistent_rate": 1.0,
-    "usable_design_rate": 0.6666666666666666
+    "usable_design_rate": 0.5333333333333333
   },
-  "model": "deepseek-v4-pro",
-  "generated_at": "2026-08-16T05:29:32+00:00"
+  "model": "deepseek-v4-flash",
+  "generated_at": "2026-08-16T05:42:30+00:00"
 }

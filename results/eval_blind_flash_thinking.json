@@ -1,24 +1,12 @@
 {
-  "n_gold": 12,
+  "n_gold": 15,
   "per_entry": [
     {
       "id": "blind-liver-sinusoid",
-      "bare": {
-        "reported": {
-          "density_kgm3": 1000.0,
-          "flow_rate_uLmin": 100.0,
-          "height_um": 100.0,
-          "length_mm": 10.0,
-          "shear_pa": 1.0,
-          "viscosity_pas": 0.001,
-          "width_um": 1000.0
-        },
-        "verifiable": true,
-        "recovery": {
-          "shear_pa": 19.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": false
+      "gold": {
+        "id": "blind-liver-sinusoid",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
       },
       "labwright": {
         "plan": true,
@@ -27,69 +15,44 @@
           "shear_pa": 1.0
         },
         "hallucination_rate": 0.0,
-        "valid": false
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 9,
+        "prose_refusals": 0,
+        "no_plan": false
       }
     },
     {
       "id": "blind-kidney-ptec",
-      "bare": {
-        "reported": {},
-        "verifiable": false,
-        "recovery": {
-          "shear_pa": Infinity
-        },
-        "hallucination_rate": 1.0,
-        "valid": false
+      "gold": {
+        "id": "blind-kidney-ptec",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
       },
       "labwright": {
         "plan": true,
         "error": null,
         "recovery": {
-          "shear_pa": 4.0
+          "shear_pa": 24.0
         },
         "hallucination_rate": 0.0,
-        "valid": false
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 12,
+        "prose_refusals": 0,
+        "no_plan": false
       }
     },
     {
       "id": "blind-arterial-shear",
-      "bare": {
-        "reported": {},
-        "verifiable": false,
-        "recovery": {
-          "shear_pa": Infinity
-        },
-        "hallucination_rate": 1.0,
-        "valid": false
-      },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "shear_pa": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true
-      }
-    },
-    {
-      "id": "blind-venular-shear",
-      "bare": {
-        "reported": {
-          "density_kgm3": 1000.0,
-          "flow_rate_uLmin": 100.0,
-          "height_um": 100.0,
-          "length_mm": 10.0,
-          "shear_pa": 1.0,
-          "viscosity_pas": 0.001,
-          "width_um": 1000.0
-        },
-        "verifiable": true,
-        "recovery": {
-          "shear_pa": 2.333333
-        },
-        "hallucination_rate": 0.0,
-        "valid": false
+      "gold": {
+        "id": "blind-arterial-shear",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
       },
       "labwright": {
         "plan": true,
@@ -98,19 +61,44 @@
           "shear_pa": 0.333333
         },
         "hallucination_rate": 0.0,
-        "valid": false
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 9,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "blind-venular-shear",
+      "gold": {
+        "id": "blind-venular-shear",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 10,
+        "prose_refusals": 0,
+        "no_plan": false
       }
     },
     {
       "id": "blind-lung-alveolar",
-      "bare": {
-        "reported": {},
-        "verifiable": false,
-        "recovery": {
-          "shear_pa": Infinity
-        },
-        "hallucination_rate": 1.0,
-        "valid": false
+      "gold": {
+        "id": "blind-lung-alveolar",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
       },
       "labwright": {
         "plan": true,
@@ -119,69 +107,67 @@
           "shear_pa": 0.0
         },
         "hallucination_rate": 0.0,
-        "valid": true
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 8,
+        "prose_refusals": 0,
+        "no_plan": false
       }
     },
     {
       "id": "blind-seed-hepg2-log",
-      "bare": {
-        "reported": {},
-        "verifiable": false,
-        "recovery": {
-          "seed_count": Infinity
-        },
-        "hallucination_rate": 1.0,
-        "valid": false
+      "gold": {
+        "id": "blind-seed-hepg2-log",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
       },
       "labwright": {
         "plan": true,
         "error": null,
         "recovery": {
-          "seed_count": 1.0
+          "seed_count": 0.0
         },
         "hallucination_rate": 0.0,
-        "valid": false
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "no_plan": false
       }
     },
     {
       "id": "blind-phh-seed",
-      "bare": {
-        "reported": {},
-        "verifiable": false,
-        "recovery": {
-          "seed_count": Infinity
-        },
-        "hallucination_rate": 1.0,
-        "valid": false
+      "gold": {
+        "id": "blind-phh-seed",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
       },
       "labwright": {
         "plan": true,
         "error": null,
         "recovery": {
-          "seed_count": 0.333333
+          "seed_count": 0.0
         },
         "hallucination_rate": 0.0,
-        "valid": false
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "no_plan": false
       }
     },
     {
       "id": "blind-bbb-shear",
-      "bare": {
-        "reported": {
-          "density_kgm3": 1000.0,
-          "flow_rate_uLmin": 100.0,
-          "height_um": 100.0,
-          "length_mm": 20.0,
-          "shear_pa": 1.0,
-          "viscosity_pas": 0.001,
-          "width_um": 1000.0
-        },
-        "verifiable": true,
-        "recovery": {
-          "shear_pa": 0.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": true
+      "gold": {
+        "id": "blind-bbb-shear",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
       },
       "labwright": {
         "plan": true,
@@ -190,98 +176,21 @@
           "shear_pa": 0.5
         },
         "hallucination_rate": 0.0,
-        "valid": false
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 10,
+        "prose_refusals": 0,
+        "no_plan": false
       }
     },
     {
       "id": "blind-pulmonary-artery-shear",
-      "bare": {
-        "reported": {},
-        "verifiable": false,
-        "recovery": {
-          "shear_pa": Infinity
-        },
-        "hallucination_rate": 1.0,
-        "valid": false
-      },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "shear_pa": 0.8
-        },
-        "hallucination_rate": 0.0,
-        "valid": false
-      }
-    },
-    {
-      "id": "blind-gut-epithelial-shear",
-      "bare": {
-        "reported": {},
-        "verifiable": false,
-        "recovery": {
-          "shear_pa": Infinity
-        },
-        "hallucination_rate": 1.0,
-        "valid": false
-      },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "shear_pa": 4.0
-        },
-        "hallucination_rate": 0.0,
-        "valid": false
-      }
-    },
-    {
-      "id": "blind-retinal-arteriole-shear",
-      "bare": {
-        "reported": {
-          "density_kgm3": 1000.0,
-          "flow_rate_uLmin": 1000.0,
-          "height_um": 100.0,
-          "length_mm": 10.0,
-          "shear_pa": 10.0,
-          "viscosity_pas": 0.001,
-          "width_um": 1000.0
-        },
-        "verifiable": true,
-        "recovery": {
-          "shear_pa": 0.851852
-        },
-        "hallucination_rate": 0.0,
-        "valid": false
-      },
-      "labwright": {
-        "plan": true,
-        "error": null,
-        "recovery": {
-          "shear_pa": 0.074074
-        },
-        "hallucination_rate": 0.0,
-        "valid": false
-      }
-    },
-    {
-      "id": "blind-lymphatic-shear",
-      "bare": {
-        "reported": {
-          "density_kgm3": 1000.0,
-          "flow_rate_uLmin": 10.0,
-          "height_um": 100.0,
-          "length_mm": 10.0,
-          "shear_pa": 0.1,
-          "viscosity_pas": 0.001,
-          "width_um": 1000.0
-        },
-        "verifiable": true,
-        "recovery": {
-          "shear_pa": 0.5
-        },
-        "hallucination_rate": 0.0,
-        "valid": false
+      "gold": {
+        "id": "blind-pulmonary-artery-shear",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
       },
       "labwright": {
         "plan": true,
@@ -290,28 +199,174 @@
           "shear_pa": 0.75
         },
         "hallucination_rate": 0.0,
-        "valid": false
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 12,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "blind-gut-epithelial-shear",
+      "gold": {
+        "id": "blind-gut-epithelial-shear",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 9.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {
+          "shear_pa": {
+            "alias": "dyn/cm^2 read as Pa",
+            "from": "dyn/cm^2",
+            "to": "Pa",
+            "ratio": 10.0,
+            "expected_in_from": 0.02
+          }
+        },
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 9,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "blind-retinal-arteriole-shear",
+      "gold": {
+        "id": "blind-retinal-arteriole-shear",
+        "blind_strength": "cold",
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.111111
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 8,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "blind-lymphatic-shear",
+      "gold": {
+        "id": "blind-lymphatic-shear",
+        "blind_strength": "prompt-backed",
+        "scenario": "complete-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.85
+        },
+        "hallucination_rate": 0.0,
+        "valid": false,
+        "unit_misread": {},
+        "failure": "wrong_target",
+        "target_selected": false,
+        "tool_calls": 10,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "blind-kidney-ptec-unit-ambiguity",
+      "gold": {
+        "id": "blind-kidney-ptec-unit-ambiguity",
+        "blind_strength": null,
+        "scenario": "unit-ambiguity"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 9,
+        "prose_refusals": 0,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "blind-24well-medium-partial",
+      "gold": {
+        "id": "blind-24well-medium-partial",
+        "blind_strength": "cold",
+        "scenario": "partial-info"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "total_medium_ml": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 4,
+        "prose_refusals": 1,
+        "no_plan": false
+      }
+    },
+    {
+      "id": "blind-bbb-shear-residence-multitarget",
+      "gold": {
+        "id": "blind-bbb-shear-residence-multitarget",
+        "blind_strength": null,
+        "scenario": "multi-target"
+      },
+      "labwright": {
+        "plan": true,
+        "error": null,
+        "recovery": {
+          "shear_pa": 0.0,
+          "residence_time_s": 0.0
+        },
+        "hallucination_rate": 0.0,
+        "valid": true,
+        "unit_misread": {},
+        "failure": "ok",
+        "target_selected": true,
+        "tool_calls": 6,
+        "prose_refusals": 0,
+        "no_plan": false
       }
     }
   ],
-  "bare": {
-    "recovery": {
-      "shear_pa": Infinity,
-      "seed_count": Infinity
-    },
-    "hallucination_rate": 0.5833333333333334,
-    "self_consistent_rate": 0.4166666666666667,
-    "usable_design_rate": 0.08333333333333333
-  },
   "labwright": {
     "recovery": {
-      "shear_pa": 1.1457407,
-      "seed_count": 0.6666665
+      "shear_pa": 3.045370333333333,
+      "seed_count": 0.0,
+      "total_medium_ml": 0.0,
+      "residence_time_s": 0.0
     },
     "hallucination_rate": 0.0,
     "self_consistent_rate": 1.0,
-    "usable_design_rate": 0.16666666666666666
+    "usable_design_rate": 0.4666666666666667
   },
   "model": "deepseek-v4-flash",
-  "generated_at": "2026-08-11T16:04:28+00:00"
+  "generated_at": "2026-08-16T05:24:34+00:00"
 }
