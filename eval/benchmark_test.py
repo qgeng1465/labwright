@@ -328,7 +328,9 @@ def test_evaluate_supports_finetuned_system():
                       extractor=_MockExtractor(plan=None, error="unparseable_json"))
     assert broken["finetuned"]["usable_design_rate"] == 0.0
     assert broken["finetuned"]["hallucination_rate"] == 1.0
-    assert broken["per_entry"][0]["finetuned"]["plan"] is False
+    # v0.7: "plan" now carries the full DesignPlan JSON when one exists, else None.
+    assert broken["per_entry"][0]["finetuned"]["plan"] is None
+    assert broken["per_entry"][0]["finetuned"]["provenance"] == []
     assert broken["per_entry"][0]["finetuned"]["error"] == "unparseable_json"
 
 
@@ -796,3 +798,137 @@ def test_evaluate_carries_level_into_gold_metadata():
     )
     summary = evaluate([gold], agent_factory, chat, systems=("bare",))
     assert summary["per_entry"][0]["gold"]["level"] == "L1"
+
+
+# ---------------------------------------------------------------------------
+# Code Interpreter baseline (Baseline B) — LLM writes Python, sandbox runs it.
+# ---------------------------------------------------------------------------
+
+def _flow_program(flow=2.0, mu=1e-3, wrong_formula=False):
+    """A plausible model-written program computing the flow design numbers."""
+    if wrong_formula:
+        # e.g. a formula missing the 6× wall-shear factor (a real LLM mistake).
+        lines = "shear_pa = mu * Q / (w * h)\n"
+    else:
+        lines = "shear_pa = 6 * mu * Q / (w * h * h)\n"
+    return (
+        "import math\n"
+        "Q = float(%r) / 60.0 / 1e9\n"  # uL/min -> m^3/s
+        "w, h, L = 400e-6, 100e-6, 20e-3\n"
+        "mu = float(%r)\n"
+        "rho = 1000.0\n"
+        % (flow, mu)
+        + lines
+        + "RESULT = {'width_um': 400.0, 'height_um': 100.0, 'length_mm': 20.0,\n"
+        " 'flow_rate_uLmin': float(%r), 'viscosity_pas': float(%r),\n"
+        " 'density_kgm3': 1000.0, 'shear_pa': shear_pa}\n" % (flow, mu)
+    )
+
+
+def test_code_interpreter_prompt_asks_for_code_and_keys():
+    from eval.benchmark import code_interpreter_prompt_for
+    prompt = code_interpreter_prompt_for(_GOLD)
+    assert "RESULT" in prompt
+    assert "Python program" in prompt
+    for key in ("shear_pa", "width_um", "flow_rate_uLmin"):
+        assert key in prompt
+
+
+def test_run_code_sandbox_runs_clean_program():
+    from eval.benchmark import _run_code_sandbox
+    result, err = _run_code_sandbox(_flow_program())
+    assert err is None
+    assert result is not None
+    assert abs(result["shear_pa"] - 0.05) < 1e-9
+    assert result["flow_rate_uLmin"] == 2.0
+
+
+def test_run_code_sandbox_blocks_imports_and_io():
+    from eval.benchmark import _run_code_sandbox
+    result, err = _run_code_sandbox("import os\nRESULT = {'x': 1.0}")
+    assert result is None
+    assert "import" in (err or "") and "disabled" in (err or "")
+
+    result, err = _run_code_sandbox("open('/etc/passwd')\nRESULT = {'x': 1.0}")
+    assert result is None
+
+
+def test_run_code_sandbox_reports_syntax_error():
+    from eval.benchmark import _run_code_sandbox
+    result, err = _run_code_sandbox("def f(\nRESULT = {'x': 1.0}")
+    assert result is None
+    assert err
+
+
+def test_run_code_sandbox_timeout_is_bounded():
+    from eval.benchmark import _run_code_sandbox
+    import time
+    t0 = time.monotonic()
+    result, err = _run_code_sandbox("while True: pass", timeout_s=1.5)
+    assert result is None
+    assert "timeout" in (err or "")
+    assert time.monotonic() - t0 < 20  # the RLIMIT_CPU backstop also holds
+
+
+def test_run_code_interpreter_extracts_result():
+    from eval.benchmark import run_code_interpreter
+    seen = {}
+
+    def chat(prompt):
+        seen["prompt"] = prompt
+        return _flow_program()
+
+    reported, err = run_code_interpreter(_GOLD, chat)
+    assert err is None
+    assert reported["shear_pa"] == 0.05
+    assert reported["flow_rate_uLmin"] == 2.0
+
+
+def test_code_interpreter_failure_is_distinct_from_silence():
+    from eval.benchmark import run_code_interpreter
+    # model returns prose that is not runnable Python on every attempt
+    def chat(prompt):
+        return "The shear stress would be about 0.05 Pa, trust me."
+
+    reported, err = run_code_interpreter(_GOLD, chat)
+    assert all(v is None for v in reported.values())
+    assert err is not None
+
+
+def test_run_system_records_code_exec_error_class():
+    from eval.benchmark import _run_system
+    def chat(prompt):
+        return "I can't write code for that."
+
+    rec = _run_system("code_interpreter", _GOLD, chat, agent_factory=None)
+    assert rec["failure"] == "code_exec_error"
+    assert "code_error" in rec
+
+
+def test_run_system_code_wrong_parameters_is_wrong_target():
+    """Code that runs and is internally consistent, but used the wrong parameter
+    value (Q=20 instead of 2), must land in wrong_target, not code_exec_error —
+    that is the "the code ran, the parameter extraction was wrong" cell."""
+    from eval.benchmark import _run_system
+
+    def chat(prompt):
+        return _flow_program(flow=20.0)
+
+    rec = _run_system("code_interpreter", _GOLD, chat, agent_factory=None)
+    assert rec["failure"] != "code_exec_error"
+    assert rec["recovery"]["shear_pa"] > 0.05  # 10× off, so not usable
+
+
+def test_code_interpreter_runs_through_evaluate():
+    from eval.benchmark import evaluate
+
+    def chat(prompt):
+        return _flow_program()
+
+    def agent_factory():
+        raise AssertionError("labwright should not run when excluded")
+
+    summary = evaluate([_GOLD], agent_factory, chat, systems=("code_interpreter",))
+    rec = summary["per_entry"][0]["code_interpreter"]
+    assert rec["valid"] is True
+    assert rec["failure"] == "ok"

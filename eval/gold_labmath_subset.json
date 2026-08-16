@@ -1,0 +1,1327 @@
+[
+ {
+  "id": "arterial-shear-15dyn",
+  "goal": "Design an arterial-channel that reproduces mid-range arterial wall shear, 15 dyn/cm^2 (1.5 Pa), and pick the geometry and flow that achieve it.",
+  "expected": {
+   "shear_pa": 1.5
+  },
+  "source": "Arterial wall shear stress ~10-20 dyn/cm^2 (1-2 Pa); target 1.5 Pa (mid-range). Papaioannou & Stefanadis, Hellenic J Cardiol 2005;46(1):9-15, PMID 15807389.",
+  "level": "L1",
+  "difficulty": "easy"
+ },
+ {
+  "id": "barrier-caco2-teer-papp",
+  "goal": "Measure barrier integrity of a Caco-2 monolayer on a 1.12 cm² 12-well Transwell insert. The cell-free blank reads 150 Ω; the seeded insert reads 900 Ω. With 50 µM of a paracellular probe in the donor and a steady-state flux of 0.03 nmol/min, report the TEER (Ω·cm²), the apparent permeability Papp (cm/s) and the clearance (mL/min).",
+  "expected": {
+   "teer_ohm_cm2": 840.0000000000001,
+   "papp_cm_s": 8.928571428571428e-06,
+   "clearance_mL_min": 0.0006
+  },
+  "source": "TEER = (R_total − R_blank) × A and Papp = (flux/60)/(A·C0): standard Transwell QC (Millipore/Costar app notes). Caco-2 TEER 250–1000 Ω·cm²; hCMEC/D3 (BBB) higher — Gericke et al., Fluids Barriers CNS 2020, doi:10.1186/s12987-020-00212-5.",
+  "scenario": "complete-info",
+  "level": "L2",
+  "difficulty": "medium"
+ },
+ {
+  "id": "blind-hemocytometer-phh-96well",
+  "goal": "A suspension of primary human hepatocytes is counted on a hemocytometer: a mean of 40 cells per 1 mm^2 corner square at a 1:2 dilution. From 0.36 mL of this suspension, how many wells of a 96-well plate can be plated at the standard sandwich-culture plating density?",
+  "expected": {
+   "wells": 6
+  },
+  "blind_strength": "cold",
+  "source": "Blind design target: primary human hepatocyte sandwich-culture plating density 1.5e5 cells/cm^2 — Bioengineering 2023;10(2):131, doi:10.3390/bioengineering10020131 (goal text does NOT state the density). Hemocytometer formula (mean cells/square × dilution × 1e4) — CSH Protocols 2008, doi:10.1101/pdb.prot4498. conc = 40 × 2 × 1e4 = 8e5; total = 8e5 × 0.36 = 2.88e5; per well = 1.5e5 × 0.32 (96-well) = 48000; wells = 2.88e5 / 48000 = 6.",
+  "level": "L2",
+  "difficulty": "easy"
+ },
+ {
+  "id": "blind-kidney-ptec-unit-ambiguity",
+  "goal": "Culture human proximal tubular epithelial cells in a microchannel that reproduces the apical fluid shear these cells experience in vivo — approximately 0.2 dyn/cm². Choose geometry and flow accordingly, and report the wall shear stress in Pa.",
+  "expected": {
+   "shear_pa": 0.02
+  },
+  "source": "Blind design target (unit-ambiguity): the canonical kidney PTEC apical FSS is 0.2 dyn/cm^2 = 0.02 Pa (Jang et al., Integrative Biology 2013, 10.1039/c3ib40049b). The goal states the target in dyn/cm^2; the model must convert (×0.1) to Pa — a dyn/cm^2-as-Pa misread gives 0.2 Pa, a 10× error. blind_strength is None: the magnitude is given, so this tests unit conversion, not cold recall.",
+  "blind_strength": null,
+  "scenario": "unit-ambiguity",
+  "level": "L1",
+  "difficulty": "easy"
+ },
+ {
+  "id": "blind-spheroid-96ula-medium",
+  "goal": "A lab sets up 3D culture in 96-well ultra-low-attachment plates, one spheroid per well. What is the standard working medium volume per well?",
+  "expected": {
+   "medium_volume_per_spheroid_ul": 100.0
+  },
+  "blind_strength": "prompt-backed",
+  "source": "96-ULA working volume 100 uL/well — Corning spheroid-microplate protocol (CLS-AN-235), Sartorius/IncuCyte, PerkinElmer ATPlite 3D. Stated in the Labwright system prompt (96-ULA = 100 uL/well), so prompt-backed.",
+  "level": "L2",
+  "difficulty": "easy"
+ },
+ {
+  "id": "blind-venular-shear",
+  "goal": "Design a venular channel recapitulating physiological venular wall shear stress. Choose geometry and flow that achieve the physiological target.",
+  "expected": {
+   "shear_pa": 0.3
+  },
+  "blind_strength": "prompt-backed",
+  "source": "Blind design target: mid-range venular WSS 3 dyn/cm^2 = 0.3 Pa (venular range ~1-6 dyn/cm^2). Papaioannou & Stefanadis 2005, PMID 15807389; Koutsiaris et al., Biorheology 2007;44(5-6):375-386, PMID 18401076. The goal text does NOT state the number.",
+  "level": "L1",
+  "difficulty": "easy"
+ },
+ {
+  "id": "cold-skin-organ-flow-fraction",
+  "goal": "A body-on-chip skin compartment is scaled to an adult (70 kg, cardiac output 5000 mL/min) and the chip carries 5e6 cells. Report the skin compartment's organ flow fraction and the organ flow rate (mL/min) it receives.",
+  "expected": {
+   "organ_flow_fraction": 0.06,
+   "organ_flow_rate_mlmin": 300.0
+  },
+  "source": "Blind design target (cold): skin flow is ~6% of cardiac output in the committed body-on-chip flow-fraction table (labwright/calc/scaling.py:ORGAN_FLOW_FRACTIONS, sourced to Ucciferri et al. 2014, doi:10.3389/fbioe.2014.00074). Honest note: skin flow conventions range ~6–10% of cardiac output; the committed project table pins 0.06 and the gold targets the project standard. The goal text states neither the fraction nor the flow; not in the Labwright system prompt either.",
+  "blind_strength": "cold",
+  "scenario": "complete-info",
+  "level": "L1",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-bioprinting-001",
+  "goal": "Extrude bioink through the standard-6 (150 µm) nozzle along a 20733 µm G-code path at 46.53 mm/min (ink density 1.191 g/cm³). The footprint is 33133 µm wide and will be filled at 202 µm centre-to-centre line pitch. Report the number of fill lines, the deposition rate (nL/min) and the extruded ink volume (nL).",
+  "expected": {
+   "lines_to_cover": 165.0,
+   "extrusion_rate_nl_min": 822.2529722148736,
+   "extrusion_volume_nl": 366.3823527386842
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-bioprinting-007",
+  "goal": "Extrude bioink through the UV-5 (300 µm) nozzle along a 40683 µm G-code path at 52.27 mm/min (ink density 1.126 g/cm³). The footprint is 25883 µm wide and will be filled at 166 µm centre-to-centre line pitch. Report the number of fill lines, the deposition rate (nL/min), the filament mass (µg), the print time (s) and the extruded ink volume (nL).",
+  "expected": {
+   "lines_to_cover": 156.0,
+   "extrusion_rate_nl_min": 3694.7485800706168,
+   "filament_mass_ug": 3238.0515018150463,
+   "print_time_s": 46.69944518844461,
+   "extrusion_volume_nl": 2875.711813334855
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-bioprinting-013",
+  "goal": "Extrude bioink through the UV-5 (300 µm) nozzle along a 8896 µm G-code path at 1.71 mm/min (ink density 1.062 g/cm³). The footprint is 46411 µm wide and will be filled at 857 µm centre-to-centre line pitch. Report the number of fill lines, the deposition rate (nL/min) and the print time (s).",
+  "expected": {
+   "lines_to_cover": 55.0,
+   "extrusion_rate_nl_min": 120.87277734686728,
+   "print_time_s": 312.14035087719304
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-bioprinting-019",
+  "goal": "Extrude bioink through the UV-4 (200 µm) nozzle along a 47829 µm G-code path at 24.57 mm/min (ink density 1.189 g/cm³). The footprint is 40541 µm wide and will be filled at 829 µm centre-to-centre line pitch. Report the filament mass (µg).",
+  "expected": {
+   "filament_mass_ug": 1786.5823044894146
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-bioprinting-025",
+  "goal": "Extrude bioink through the cryo-2 (410 µm) nozzle along a 43652 µm G-code path at 9.63 mm/min (ink density 1.18 g/cm³). The footprint is 30815 µm wide and will be filled at 883 µm centre-to-centre line pitch. Report the extruded ink volume (nL).",
+  "expected": {
+   "extrusion_volume_nl": 5763.1741256719315
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-bioprinting-031",
+  "goal": "Extrude bioink through the standard-6 (150 µm) nozzle along a 13886 µm G-code path at 20.94 mm/min (ink density 1.16 g/cm³). The footprint is 49955 µm wide and will be filled at 224 µm centre-to-centre line pitch. Report the deposition rate (nL/min), the extruded ink volume (nL) and the filament mass (µg).",
+  "expected": {
+   "extrusion_rate_nl_min": 370.04034468470775,
+   "extrusion_volume_nl": 245.38587518108176,
+   "filament_mass_ug": 284.6476152100548
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-bioprinting-037",
+  "goal": "Extrude bioink through the standard-6 (150 µm) nozzle along a 10378 µm G-code path at 33.71 mm/min (ink density 0.988 g/cm³). The footprint is 10544 µm wide and will be filled at 523 µm centre-to-centre line pitch. Report the number of fill lines.",
+  "expected": {
+   "lines_to_cover": 21.0
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-bioprinting-043",
+  "goal": "Extrude bioink through the cryo-2 (410 µm) nozzle along a 30576 µm G-code path at 21.39 mm/min (ink density 1.132 g/cm³). The footprint is 37366 µm wide and will be filled at 268 µm centre-to-centre line pitch. Report the print time (s), the extruded ink volume (nL), the deposition rate (nL/min), the number of fill lines and the filament mass (µg).",
+  "expected": {
+   "print_time_s": 85.7671809256662,
+   "extrusion_volume_nl": 4036.809586423188,
+   "extrusion_rate_nl_min": 2824.023974803506,
+   "lines_to_cover": 140.0,
+   "filament_mass_ug": 4569.6684518310485
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-bioprinting-049",
+  "goal": "Extrude bioink through the cryo-3 (500 µm) nozzle along a 9949 µm G-code path at 25.66 mm/min (ink density 1.036 g/cm³). The footprint is 28810 µm wide and will be filled at 243 µm centre-to-centre line pitch. Report the extruded ink volume (nL).",
+  "expected": {
+   "extrusion_volume_nl": 1953.481581910303
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-bioprinting-055",
+  "goal": "Extrude bioink through the cryo-3 (500 µm) nozzle along a 11107 µm G-code path at 39.29 mm/min (ink density 1.005 g/cm³). The footprint is 26362 µm wide and will be filled at 611 µm centre-to-centre line pitch. Report the number of fill lines, the extruded ink volume (nL) and the print time (s).",
+  "expected": {
+   "lines_to_cover": 44.0,
+   "extrusion_volume_nl": 2180.854350213864,
+   "print_time_s": 16.961567828964117
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-bioprinting-061",
+  "goal": "Extrude bioink through the cryo-3 (500 µm) nozzle along a 32788 µm G-code path at 31.73 mm/min (ink density 1.154 g/cm³). The footprint is 39092 µm wide and will be filled at 613 µm centre-to-centre line pitch. Report the deposition rate (nL/min).",
+  "expected": {
+   "extrusion_rate_nl_min": 6230.170931150257
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-bioprinting-067",
+  "goal": "Extrude bioink through the UV-4 (200 µm) nozzle along a 44668 µm G-code path at 48.86 mm/min (ink density 1.082 g/cm³). The footprint is 44930 µm wide and will be filled at 543 µm centre-to-centre line pitch. Report the number of fill lines, the print time (s) and the deposition rate (nL/min).",
+  "expected": {
+   "lines_to_cover": 83.0,
+   "print_time_s": 54.852230863692185,
+   "extrusion_rate_nl_min": 1534.9821705439729
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-bioprinting-073",
+  "goal": "Extrude bioink through the UV-4 (200 µm) nozzle along a 35239 µm G-code path at 18.22 mm/min (ink density 1.086 g/cm³). The footprint is 2687 µm wide and will be filled at 192 µm centre-to-centre line pitch. Report the extruded ink volume (nL) and the number of fill lines.",
+  "expected": {
+   "extrusion_volume_nl": 1107.0658351985073,
+   "lines_to_cover": 14.0
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-bioprinting-079",
+  "goal": "Extrude bioink through the standard-6 (150 µm) nozzle along a 32497 µm G-code path at 36.44 mm/min (ink density 1.118 g/cm³). The footprint is 7579 µm wide and will be filled at 170 µm centre-to-centre line pitch. Report the deposition rate (nL/min).",
+  "expected": {
+   "extrusion_rate_nl_min": 643.9479541695679
+  },
+  "source": "V = π(d/2)²·L filament-extrusion geometry; print time L/v; m = ρV. Nozzle diameters are equipment-spec conventions (Labwright calc.bioprinting).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-champ-000",
+  "goal": "A HumanMethylationEPIC study processes 62 samples at a 14.6% QC fail rate. Report the expected failed arrays, the number of arrays and the number of physical chips.",
+  "expected": {
+   "n_expected_failed_arrays": 9.052,
+   "n_arrays": 62.0,
+   "n_chips": 8.0
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-champ-005",
+  "goal": "A HumanMethylation450K study processes 304 samples at a 5.1% QC fail rate. Report the number of physical chips, the number of arrays and the expected failed arrays.",
+  "expected": {
+   "n_chips": 26.0,
+   "n_arrays": 304.0,
+   "n_expected_failed_arrays": 15.504
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-champ-010",
+  "goal": "A HumanMethylation450K study processes 308 samples at a 9.9% QC fail rate. Report the expected failed arrays.",
+  "expected": {
+   "n_expected_failed_arrays": 30.492
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-champ-015",
+  "goal": "A HumanMethylationEPIC study processes 273 samples at a 8.9% QC fail rate. Report the expected failed arrays.",
+  "expected": {
+   "n_expected_failed_arrays": 24.297000000000004
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-champ-020",
+  "goal": "A HumanMethylation450K study processes 226 samples at a 1.1% QC fail rate. Report the expected failed arrays, the number of arrays and the number of physical chips.",
+  "expected": {
+   "n_expected_failed_arrays": 2.486,
+   "n_arrays": 226.0,
+   "n_chips": 19.0
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-champ-025",
+  "goal": "A HumanMethylation450K study processes 75 samples at a 14.9% QC fail rate. Report the number of arrays, the number of physical chips and the expected failed arrays.",
+  "expected": {
+   "n_arrays": 75.0,
+   "n_chips": 7.0,
+   "n_expected_failed_arrays": 11.174999999999999
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-champ-030",
+  "goal": "A HumanMethylation450K study processes 206 samples at a 12.9% QC fail rate. Report the number of arrays, the number of physical chips and the expected failed arrays.",
+  "expected": {
+   "n_arrays": 206.0,
+   "n_chips": 18.0,
+   "n_expected_failed_arrays": 26.574
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-champ-035",
+  "goal": "A HumanMethylationEPIC study processes 52 samples at a 1.5% QC fail rate. Report the number of arrays, the expected failed arrays and the number of physical chips.",
+  "expected": {
+   "n_arrays": 52.0,
+   "n_expected_failed_arrays": 0.78,
+   "n_chips": 7.0
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-champ-040",
+  "goal": "A HumanMethylation450K study processes 142 samples at a 13.7% QC fail rate. Report the number of physical chips, the expected failed arrays and the number of arrays.",
+  "expected": {
+   "n_chips": 12.0,
+   "n_expected_failed_arrays": 19.453999999999997,
+   "n_arrays": 142.0
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-champ-045",
+  "goal": "A HumanMethylationEPIC study processes 273 samples at a 8.8% QC fail rate. Report the number of arrays, the number of physical chips and the expected failed arrays.",
+  "expected": {
+   "n_arrays": 273.0,
+   "n_chips": 35.0,
+   "n_expected_failed_arrays": 24.024
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-champ-050",
+  "goal": "A HumanMethylation450K study processes 439 samples at a 2.7% QC fail rate. Report the number of physical chips, the number of arrays and the expected failed arrays.",
+  "expected": {
+   "n_chips": 37.0,
+   "n_arrays": 439.0,
+   "n_expected_failed_arrays": 11.853000000000002
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-champ-055",
+  "goal": "A HumanMethylationEPIC study processes 56 samples at a 9.6% QC fail rate. Report the number of arrays, the number of physical chips and the expected failed arrays.",
+  "expected": {
+   "n_arrays": 56.0,
+   "n_chips": 7.0,
+   "n_expected_failed_arrays": 5.376
+  },
+  "source": "one array per sample; chips = ⌈n/chip_capacity⌉ (450k:12, EPIC:8) — Illumina product convention, not a measurement (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-coculture-001",
+  "goal": "Co-seed HMEC-1 and PHH in a 6-well plate at 3.11e+05 cells/cm² total across 3.35 cm² per well, with 0.802 of the total assigned to HMEC-1. Report the per-well count of population B, the total B cells across all wells and the total A cells across all wells.",
+  "expected": {
+   "cells_per_well_b": 206286.29999999993,
+   "total_cells_b": 1237717.7999999996,
+   "total_cells_a": 5013382.2
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-coculture-007",
+  "goal": "Co-seed HUVEC and HepG2 in a 12-well plate at 2.01e+05 cells/cm² total across 0.45 cm² per well, with 0.826 of the total assigned to HUVEC. Report the A:B seeding ratio, the total B cells across all wells, the per-well count of population A and the per-well count of population B.",
+  "expected": {
+   "seeding_ratio_ab": 4.747126436781608,
+   "total_cells_b": 188859.60000000003,
+   "cells_per_well_a": 74711.7,
+   "cells_per_well_b": 15738.300000000003
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-coculture-013",
+  "goal": "Co-seed HUVEC-T1 and PHH in a 96-well plate at 7.5e+04 cells/cm² total across 4.33 cm² per well, with 0.209 of the total assigned to HUVEC-T1. Report the total B cells across all wells and the per-well count of population B.",
+  "expected": {
+   "total_cells_b": 24660216.0,
+   "cells_per_well_b": 256877.25
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-coculture-019",
+  "goal": "Co-seed HUVEC-T1 and Huh7 in a 24-well plate at 3.81e+05 cells/cm² total across 8.98 cm² per well, with 0.673 of the total assigned to HUVEC-T1. Report the A:B seeding ratio, the total A cells across all wells, the per-well count of population A and the per-well count of population B.",
+  "expected": {
+   "seeding_ratio_ab": 2.0581039755351687,
+   "total_cells_a": 55262129.760000005,
+   "cells_per_well_a": 2302588.74,
+   "cells_per_well_b": 1118791.2599999998
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-coculture-025",
+  "goal": "Co-seed HMEC-1 and LX-2 in a 48-well plate at 6.3e+04 cells/cm² total across 1.01 cm² per well, with 0.559 of the total assigned to HMEC-1. Report the per-well count of population A, the A:B seeding ratio, the per-well count of population B, the total A cells across all wells and the total B cells across all wells.",
+  "expected": {
+   "cells_per_well_a": 35569.170000000006,
+   "seeding_ratio_ab": 1.2675736961451252,
+   "cells_per_well_b": 28060.829999999994,
+   "total_cells_a": 1707320.1600000001,
+   "total_cells_b": 1346919.8399999999
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-coculture-031",
+  "goal": "Co-seed HUVEC and LX-2 in a 12-well plate at 1.2e+05 cells/cm² total across 0.58 cm² per well, with 0.578 of the total assigned to HUVEC. Report the total B cells across all wells, the per-well count of population A, the total A cells across all wells, the A:B seeding ratio and the per-well count of population B.",
+  "expected": {
+   "total_cells_b": 352454.4,
+   "cells_per_well_a": 40228.799999999996,
+   "total_cells_a": 482745.6,
+   "seeding_ratio_ab": 1.3696682464454972,
+   "cells_per_well_b": 29371.200000000004
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-coculture-037",
+  "goal": "Co-seed HMEC-1 and PHH in a 12-well plate at 1.18e+05 cells/cm² total across 9.07 cm² per well, with 0.941 of the total assigned to HMEC-1. Report the A:B seeding ratio and the per-well count of population A.",
+  "expected": {
+   "seeding_ratio_ab": 15.94915254237286,
+   "cells_per_well_a": 1007114.6599999999
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-coculture-043",
+  "goal": "Co-seed HUVEC-T1 and Huh7 in a 48-well plate at 6.8e+04 cells/cm² total across 7.84 cm² per well, with 0.596 of the total assigned to HUVEC-T1. Report the total B cells across all wells.",
+  "expected": {
+   "total_cells_b": 10338263.040000003
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-coculture-049",
+  "goal": "Co-seed ECFC and LX-2 in a 48-well plate at 1.11e+05 cells/cm² total across 0.72 cm² per well, with 0.884 of the total assigned to ECFC. Report the per-well count of population A, the per-well count of population B, the total A cells across all wells, the A:B seeding ratio and the total B cells across all wells.",
+  "expected": {
+   "cells_per_well_a": 70649.28,
+   "cells_per_well_b": 9270.720000000001,
+   "total_cells_a": 3391165.44,
+   "seeding_ratio_ab": 7.620689655172413,
+   "total_cells_b": 444994.56000000006
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-coculture-055",
+  "goal": "Co-seed HMEC-1 and LX-2 in a 6-well plate at 4.55e+05 cells/cm² total across 5.6 cm² per well, with 0.897 of the total assigned to HMEC-1. Report the per-well count of population A, the total B cells across all wells, the per-well count of population B, the A:B seeding ratio and the total A cells across all wells.",
+  "expected": {
+   "cells_per_well_a": 2285556.0,
+   "total_cells_b": 1574664.0,
+   "cells_per_well_b": 262444.0,
+   "seeding_ratio_ab": 8.70873786407767,
+   "total_cells_a": 13713336.0
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-coculture-061",
+  "goal": "Co-seed HMEC-1 and PHH in a 12-well plate at 2.63e+05 cells/cm² total across 0.72 cm² per well, with 0.765 of the total assigned to HMEC-1. Report the per-well count of population A, the total B cells across all wells and the A:B seeding ratio.",
+  "expected": {
+   "cells_per_well_a": 144860.4,
+   "total_cells_b": 533995.2000000001,
+   "seeding_ratio_ab": 3.2553191489361697
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-coculture-067",
+  "goal": "Co-seed HUVEC and HepG2 in a 24-well plate at 1.36e+05 cells/cm² total across 1.66 cm² per well, with 0.783 of the total assigned to HUVEC. Report the total B cells across all wells, the per-well count of population A, the total A cells across all wells and the A:B seeding ratio.",
+  "expected": {
+   "total_cells_b": 1175758.0799999996,
+   "cells_per_well_a": 176770.08000000002,
+   "total_cells_a": 4242481.92,
+   "seeding_ratio_ab": 3.6082949308755774
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-coculture-073",
+  "goal": "Co-seed HUVEC-T1 and Huh7 in a 24-well plate at 2.98e+05 cells/cm² total across 2.09 cm² per well, with 0.546 of the total assigned to HUVEC-T1. Report the A:B seeding ratio, the total A cells across all wells, the per-well count of population A and the total B cells across all wells.",
+  "expected": {
+   "seeding_ratio_ab": 1.2026431718061676,
+   "total_cells_a": 8161433.280000001,
+   "cells_per_well_a": 340059.72000000003,
+   "total_cells_b": 6786246.719999999
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-coculture-079",
+  "goal": "Co-seed HUVEC and Huh7 in a 6-well plate at 3.02e+05 cells/cm² total across 7.6 cm² per well, with 0.135 of the total assigned to HUVEC. Report the A:B seeding ratio, the total B cells across all wells, the total A cells across all wells, the per-well count of population A and the per-well count of population B.",
+  "expected": {
+   "seeding_ratio_ab": 0.15606936416184972,
+   "total_cells_b": 11912088.0,
+   "total_cells_a": 1859112.0,
+   "cells_per_well_a": 309852.0,
+   "cells_per_well_b": 1985348.0
+  },
+  "source": "N_A = f·N, N_B = N − N_A, ratio = N_A/N_B — fraction-to-count stoichiometry (Labwright calc.coculture).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-enzyme-000",
+  "goal": "Co-incubate UGT1A1 with 4-methylumbelliferone at 451.1 µM ([S], Km = 182.1 µM) in the presence of a competitive inhibitor (Ki = 117.4 µM) at 178.1 µM, Vmax = 2.4892 µmol/min. Report the fractional activity remaining, the run-condition IC50 (µM), the inhibited reaction velocity (µmol/min) and the apparent Km (µM).",
+  "expected": {
+   "fractional_activity": 0.49601286657290106,
+   "ic50_um": 408.22449203734215,
+   "velocity_umol_min": 1.2346752274732653,
+   "apparent_km_um": 458.35221465076654
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-enzyme-006",
+  "goal": "Co-incubate CYP3A4 with testosterone at 5317.0 µM ([S], Km = 1985.8 µM) in the presence of a competitive inhibitor (Ki = 227.5 µM) at 38.2 µM, Vmax = 2.5283 µmol/min. Report the apparent Km (µM) and the inhibitor:substrate molar ratio.",
+  "expected": {
+   "apparent_km_um": 2319.239824175824,
+   "inhibitor_substrate_ratio": 0.007184502539025767
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-enzyme-012",
+  "goal": "Co-incubate UGT1A1 with UDPGA at 1100.4 µM ([S], Km = 824.2 µM) in the presence of a competitive inhibitor (Ki = 200.7 µM) at 64.7 µM, Vmax = 4.1 µmol/min. Report the inhibitor:substrate molar ratio, the run-condition IC50 (µM), the apparent Km (µM), the percent inhibition and the fractional activity remaining.",
+  "expected": {
+   "inhibitor_substrate_ratio": 0.058796801163213376,
+   "ic50_um": 468.6571463237078,
+   "apparent_km_um": 1089.898754359741,
+   "percent_inhibition": 49.760278235575015,
+   "fractional_activity": 0.5023972176442498
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-enzyme-018",
+  "goal": "Co-incubate UGT1A1 with 4-methylumbelliferone at 448.1 µM ([S], Km = 176.4 µM) in the presence of a competitive inhibitor (Ki = 75.0 µM) at 72.3 µM, Vmax = 2.9413 µmol/min. Report the percent inhibition, the inhibitor:substrate molar ratio, the apparent Km (µM), the fractional activity remaining and the inhibited reaction velocity (µmol/min).",
+  "expected": {
+   "percent_inhibition": 43.60326907218882,
+   "inhibitor_substrate_ratio": 0.16134791341218477,
+   "apparent_km_um": 346.44960000000003,
+   "fractional_activity": 0.5639673092781118,
+   "velocity_umol_min": 1.6587970467797102
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-enzyme-024",
+  "goal": "Co-incubate UGT1A1 with UDPGA at 1938.6 µM ([S], Km = 958.9 µM) in the presence of a competitive inhibitor (Ki = 24.2 µM) at 11.8 µM, Vmax = 7.4048 µmol/min. Report the apparent Km (µM) and the run-condition IC50 (µM).",
+  "expected": {
+   "apparent_km_um": 1426.4628099173553,
+   "ic50_um": 73.12493482114922
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-enzyme-030",
+  "goal": "Co-incubate CYP3A4 with testosterone at 1654.8 µM ([S], Km = 1148.9 µM) in the presence of a competitive inhibitor (Ki = 36.4 µM) at 69.2 µM, Vmax = 6.0855 µmol/min. Report the apparent Km (µM), the inhibited reaction velocity (µmol/min), the inhibitor:substrate molar ratio and the fractional activity remaining.",
+  "expected": {
+   "apparent_km_um": 3333.0725274725282,
+   "velocity_umol_min": 2.0189540419355603,
+   "inhibitor_substrate_ratio": 0.04181774232535654,
+   "fractional_activity": 0.3317646934410583
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-enzyme-036",
+  "goal": "Co-incubate UGT2B7 with UDPGA at 933.5 µM ([S], Km = 656.6 µM) in the presence of a competitive inhibitor (Ki = 146.3 µM) at 25.7 µM, Vmax = 0.1811 µmol/min. Report the percent inhibition.",
+  "expected": {
+   "percent_inhibition": 45.2634753638436
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-enzyme-042",
+  "goal": "Co-incubate UGT1A1 with 4-methylumbelliferone at 3630.2 µM ([S], Km = 1265.9 µM) in the presence of a competitive inhibitor (Ki = 28.0 µM) at 48.2 µM, Vmax = 6.7855 µmol/min. Report the apparent Km (µM), the fractional activity remaining, the inhibited reaction velocity (µmol/min), the inhibitor:substrate molar ratio, the percent inhibition and the run-condition IC50 (µM).",
+  "expected": {
+   "apparent_km_um": 3445.056428571429,
+   "fractional_activity": 0.5130838771214652,
+   "velocity_umol_min": 3.481530648207702,
+   "inhibitor_substrate_ratio": 0.013277505371604872,
+   "percent_inhibition": 48.69161228785348,
+   "ic50_um": 108.29512599731414
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-enzyme-048",
+  "goal": "Co-incubate CYP3A4 with testosterone at 1316.3 µM ([S], Km = 1102.0 µM) in the presence of a competitive inhibitor (Ki = 101.6 µM) at 53.8 µM, Vmax = 4.3273 µmol/min. Report the inhibited reaction velocity (µmol/min), the fractional activity remaining, the percent inhibition, the run-condition IC50 (µM) and the inhibitor:substrate molar ratio.",
+  "expected": {
+   "velocity_umol_min": 1.8975115879869981,
+   "fractional_activity": 0.4384978134141377,
+   "percent_inhibition": 56.150218658586226,
+   "ic50_um": 222.95760435571688,
+   "inhibitor_substrate_ratio": 0.04087214160905569
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-enzyme-054",
+  "goal": "Co-incubate UGT1A1 with UDPGA at 2067.9 µM ([S], Km = 1193.9 µM) in the presence of a competitive inhibitor (Ki = 262.8 µM) at 275.0 µM, Vmax = 9.7816 µmol/min. Report the inhibitor:substrate molar ratio, the run-condition IC50 (µM), the fractional activity remaining, the inhibited reaction velocity (µmol/min) and the percent inhibition.",
+  "expected": {
+   "inhibitor_substrate_ratio": 0.13298515402098746,
+   "ic50_um": 717.9839517547533,
+   "fractional_activity": 0.45840010903537187,
+   "velocity_umol_min": 4.483886506540393,
+   "percent_inhibition": 54.159989096462816
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-enzyme-060",
+  "goal": "Co-incubate UGT1A1 with UDPGA at 194.4 µM ([S], Km = 147.2 µM) in the presence of a competitive inhibitor (Ki = 130.0 µM) at 251.7 µM, Vmax = 6.0987 µmol/min. Report the inhibited reaction velocity (µmol/min), the fractional activity remaining, the percent inhibition and the inhibitor:substrate molar ratio.",
+  "expected": {
+   "velocity_umol_min": 1.8920903078681788,
+   "fractional_activity": 0.3102448567511402,
+   "percent_inhibition": 68.97551432488598,
+   "inhibitor_substrate_ratio": 1.294753086419753
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-enzyme-066",
+  "goal": "Co-incubate CYP3A4 with 4-methylumbelliferone at 1609.4 µM ([S], Km = 1488.9 µM) in the presence of a competitive inhibitor (Ki = 174.1 µM) at 24.7 µM, Vmax = 2.438 µmol/min. Report the inhibited reaction velocity (µmol/min), the fractional activity remaining and the apparent Km (µM).",
+  "expected": {
+   "velocity_umol_min": 1.1855799831673541,
+   "fractional_activity": 0.48629203575363167,
+   "apparent_km_um": 1700.1339460080412
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-enzyme-072",
+  "goal": "Co-incubate CYP2D6 with UDPGA at 2539.5 µM ([S], Km = 1719.6 µM) in the presence of a competitive inhibitor (Ki = 99.0 µM) at 183.3 µM, Vmax = 9.4663 µmol/min. Report the fractional activity remaining, the run-condition IC50 (µM) and the apparent Km (µM).",
+  "expected": {
+   "fractional_activity": 0.34119465091015777,
+   "ic50_um": 245.20289602233078,
+   "apparent_km_um": 4903.465454545454
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-enzyme-078",
+  "goal": "Co-incubate UGT2B7 with UDPGA at 4807.1 µM ([S], Km = 1850.9 µM) in the presence of a competitive inhibitor (Ki = 251.7 µM) at 376.6 µM, Vmax = 0.2698 µmol/min. Report the run-condition IC50 (µM), the inhibited reaction velocity (µmol/min), the apparent Km (µM) and the percent inhibition.",
+  "expected": {
+   "ic50_um": 905.4074234156357,
+   "velocity_umol_min": 0.13757351136675755,
+   "apparent_km_um": 4620.264084227255,
+   "percent_inhibition": 49.00907658756206
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-enzyme-084",
+  "goal": "Co-incubate UGT2B7 with 4-methylumbelliferone at 103.5 µM ([S], Km = 205.2 µM) in the presence of a competitive inhibitor (Ki = 143.5 µM) at 35.1 µM, Vmax = 5.8985 µmol/min. Report the fractional activity remaining, the inhibited reaction velocity (µmol/min) and the percent inhibition.",
+  "expected": {
+   "fractional_activity": 0.2883877721138068,
+   "velocity_umol_min": 1.7010552738132894,
+   "percent_inhibition": 71.16122278861931
+  },
+  "source": "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]) (competitive inhibition); IC50 = Ki(1+[S]/Km) — Cheng & Prusoff, Biochem. Pharmacol. 22:3099–3108 (1973), doi:10.1016/0006-2952(73)90196-2 (Labwright calc.enzyme).",
+  "level": "L2",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-flow-000",
+  "goal": "A microfluidic channel of 235 µm × 51 µm × 31.0 mm is perfused with medium (μ = 0.001 Pa·s, ρ = 1060 kg/m³) at 5.01 µL/min. Report the wall shear stress (Pa), the Reynolds number and the residence time (s).",
+  "expected": {
+   "shear_pa": 0.8196520160003931,
+   "reynolds": 0.6189510489510491,
+   "residence_time_s": 4.449520958083832
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-flow-006",
+  "goal": "A microfluidic channel of 263 µm × 179 µm × 23.0 mm is perfused with medium (μ = 0.0014 Pa·s, ρ = 1060 kg/m³) at 23.97 µL/min. Report the mean velocity (mm/s), the channel volume (µL), the wall shear stress (Pa) and the pressure drop (Pa).",
+  "expected": {
+   "mean_velocity_mms": 8.486097244939144,
+   "channel_volume_ul": 1.082771,
+   "shear_pa": 0.39823026177368054,
+   "pressure_drop_pa": 102.33850302563854
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-flow-012",
+  "goal": "A microfluidic channel of 638 µm × 170 µm × 39.3 mm is perfused with medium (μ = 0.001 Pa·s, ρ = 1060 kg/m³) at 19.81 µL/min. Report the residence time (s), the pressure drop (Pa) and the channel volume (µL).",
+  "expected": {
+   "residence_time_s": 12.910079757698131,
+   "pressure_drop_pa": 49.67519478422994,
+   "channel_volume_ul": 4.262478
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-flow-018",
+  "goal": "A microfluidic channel of 458 µm × 141 µm × 30.5 mm is perfused with medium (μ = 0.0035 Pa·s, ρ = 1000 kg/m³) at 29.14 µL/min. Report the channel volume (µL) and the wall shear stress (Pa).",
+  "expected": {
+   "channel_volume_ul": 1.9696289999999999,
+   "shear_pa": 1.1200924979611224
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-flow-024",
+  "goal": "A microfluidic channel of 784 µm × 146 µm × 8.0 mm is perfused with medium (μ = 0.0014 Pa·s, ρ = 1000 kg/m³) at 7.3 µL/min. Report the Reynolds number, the mean velocity (mm/s), the channel volume (µL) and the residence time (s).",
+  "expected": {
+   "reynolds": 0.18689196108550948,
+   "mean_velocity_mms": 1.0629251700680273,
+   "channel_volume_ul": 0.915712,
+   "residence_time_s": 7.5264
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-flow-030",
+  "goal": "A microfluidic channel of 512 µm × 182 µm × 31.7 mm is perfused with medium (μ = 0.0035 Pa·s, ρ = 1060 kg/m³) at 5.41 µL/min. Report the pressure drop (Pa).",
+  "expected": {
+   "pressure_drop_pa": 38.89291033749642
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-flow-036",
+  "goal": "A microfluidic channel of 272 µm × 177 µm × 31.9 mm is perfused with medium (μ = 0.002 Pa·s, ρ = 1060 kg/m³) at 3.79 µL/min. Report the mean velocity (mm/s), the channel volume (µL), the residence time (s), the pressure drop (Pa), the Reynolds number and the wall shear stress (Pa).",
+  "expected": {
+   "mean_velocity_mms": 1.312036113880581,
+   "channel_volume_ul": 1.5357935999999999,
+   "residence_time_s": 24.31335514511873,
+   "pressure_drop_pa": 32.062780452199966,
+   "reynolds": 0.14912397921306614,
+   "shear_pa": 0.08895160094105635
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-flow-042",
+  "goal": "A microfluidic channel of 466 µm × 198 µm × 30.6 mm is perfused with medium (μ = 0.0014 Pa·s, ρ = 1000 kg/m³) at 9.28 µL/min. Report the mean velocity (mm/s), the residence time (s) and the wall shear stress (Pa).",
+  "expected": {
+   "mean_velocity_mms": 1.6762763543879426,
+   "residence_time_s": 18.254746551724143,
+   "shear_pa": 0.0711147544285794
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-flow-048",
+  "goal": "A microfluidic channel of 812 µm × 82 µm × 27.9 mm is perfused with medium (μ = 0.001 Pa·s, ρ = 1000 kg/m³) at 26.21 µL/min. Report the Reynolds number, the channel volume (µL), the residence time (s) and the wall shear stress (Pa).",
+  "expected": {
+   "reynolds": 0.9772557792692025,
+   "channel_volume_ul": 1.8576935999999997,
+   "residence_time_s": 4.252637008775276,
+   "shear_pa": 0.48004647714385373
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-flow-054",
+  "goal": "A microfluidic channel of 832 µm × 160 µm × 32.5 mm is perfused with medium (μ = 0.0035 Pa·s, ρ = 1000 kg/m³) at 5.88 µL/min. Report the residence time (s), the mean velocity (mm/s), the channel volume (µL), the pressure drop (Pa), the wall shear stress (Pa) and the Reynolds number.",
+  "expected": {
+   "residence_time_s": 44.1469387755102,
+   "mean_velocity_mms": 0.7361778846153848,
+   "channel_volume_ul": 4.3264,
+   "pressure_drop_pa": 39.253234863281264,
+   "shear_pa": 0.09662334735576927,
+   "reynolds": 0.05645161290322582
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-flow-060",
+  "goal": "A microfluidic channel of 991 µm × 117 µm × 37.3 mm is perfused with medium (μ = 0.0014 Pa·s, ρ = 1060 kg/m³) at 9.24 µL/min. Report the channel volume (µL), the Reynolds number, the mean velocity (mm/s), the pressure drop (Pa) and the wall shear stress (Pa).",
+  "expected": {
+   "channel_volume_ul": 4.3248231,
+   "reynolds": 0.21046931407942246,
+   "mean_velocity_mms": 1.3281930537228221,
+   "pressure_drop_pa": 60.800562143682455,
+   "shear_pa": 0.09535745001086927
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-flow-066",
+  "goal": "A microfluidic channel of 851 µm × 71 µm × 21.3 mm is perfused with medium (μ = 0.0014 Pa·s, ρ = 1000 kg/m³) at 1.69 µL/min. Report the mean velocity (mm/s), the channel volume (µL), the pressure drop (Pa), the residence time (s) and the wall shear stress (Pa).",
+  "expected": {
+   "mean_velocity_mms": 0.46617346066213194,
+   "channel_volume_ul": 1.2869673,
+   "pressure_drop_pa": 33.09174988362176,
+   "residence_time_s": 45.69114674556213,
+   "shear_pa": 0.055152916472702936
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-flow-072",
+  "goal": "A microfluidic channel of 581 µm × 80 µm × 28.5 mm is perfused with medium (μ = 0.001 Pa·s, ρ = 1000 kg/m³) at 26.9 µL/min. Report the Reynolds number, the residence time (s), the pressure drop (Pa), the mean velocity (mm/s) and the wall shear stress (Pa).",
+  "expected": {
+   "reynolds": 1.3565305093292999,
+   "residence_time_s": 2.9546765799256502,
+   "pressure_drop_pa": 515.4434703098109,
+   "mean_velocity_mms": 9.645725760183595,
+   "shear_pa": 0.7234294320137696
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-flow-078",
+  "goal": "A microfluidic channel of 391 µm × 81 µm × 39.9 mm is perfused with medium (μ = 0.001 Pa·s, ρ = 1060 kg/m³) at 18.51 µL/min. Report the channel volume (µL), the wall shear stress (Pa) and the Reynolds number.",
+  "expected": {
+   "channel_volume_ul": 1.2636728999999998,
+   "shear_pa": 0.721538690027213,
+   "reynolds": 1.3856355932203397
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-flow-084",
+  "goal": "A microfluidic channel of 671 µm × 88 µm × 9.8 mm is perfused with medium (μ = 0.0014 Pa·s, ρ = 1000 kg/m³) at 6.13 µL/min. Report the residence time (s) and the mean velocity (mm/s).",
+  "expected": {
+   "residence_time_s": 5.663984339314845,
+   "mean_velocity_mms": 1.7302307727046926
+  },
+  "source": "τ = 6µQ/(w·h²), Re = ρvDh/µ, ΔP = 12µQL/(w·h³) laminar microchannel flow (Labwright calc.microfluidics).",
+  "level": "L1",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-plink-003",
+  "goal": "A GWAS genotype dataset has 6122 samples and 8995231 variants (1116809 on the largest chromosome). Report the number of per-chromosome files, the per-chromosome .bed size (MB) and the binary .bed size (MB).",
+  "expected": {
+   "n_per_chr_files": 25.0,
+   "per_chr_bed_size_mb": 1709.2761745,
+   "bed_size_mb": 13767.2010455
+  },
+  "source": ".bed = 2 bits/sample/variant (4 samples/byte); 25 per-chromosome files — PLINK 1.9 format convention (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-plink-008",
+  "goal": "A GWAS genotype dataset has 8751 samples and 5508613 variants (1192880 on the largest chromosome). Report the binary .bed size (MB).",
+  "expected": {
+   "bed_size_mb": 12051.46809075
+  },
+  "source": ".bed = 2 bits/sample/variant (4 samples/byte); 25 per-chromosome files — PLINK 1.9 format convention (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-plink-013",
+  "goal": "A GWAS genotype dataset has 9148 samples and 2623973 variants (1214300 on the largest chromosome). Report the number of per-chromosome files, the per-chromosome .bed size (MB) and the binary .bed size (MB).",
+  "expected": {
+   "n_per_chr_files": 25.0,
+   "per_chr_bed_size_mb": 2777.1041,
+   "bed_size_mb": 6001.026251
+  },
+  "source": ".bed = 2 bits/sample/variant (4 samples/byte); 25 per-chromosome files — PLINK 1.9 format convention (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-plink-018",
+  "goal": "A GWAS genotype dataset has 3410 samples and 2871928 variants (439150 on the largest chromosome). Report the per-chromosome .bed size (MB), the number of per-chromosome files and the binary .bed size (MB).",
+  "expected": {
+   "per_chr_bed_size_mb": 374.375375,
+   "n_per_chr_files": 25.0,
+   "bed_size_mb": 2448.31862
+  },
+  "source": ".bed = 2 bits/sample/variant (4 samples/byte); 25 per-chromosome files — PLINK 1.9 format convention (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-plink-023",
+  "goal": "A GWAS genotype dataset has 10869 samples and 9838421 variants (662966 on the largest chromosome). Report the per-chromosome .bed size (MB) and the number of per-chromosome files.",
+  "expected": {
+   "per_chr_bed_size_mb": 1801.4443635,
+   "n_per_chr_files": 25.0
+  },
+  "source": ".bed = 2 bits/sample/variant (4 samples/byte); 25 per-chromosome files — PLINK 1.9 format convention (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-plink-028",
+  "goal": "A GWAS genotype dataset has 14894 samples and 5795421 variants (632493 on the largest chromosome). Report the binary .bed size (MB), the number of per-chromosome files and the per-chromosome .bed size (MB).",
+  "expected": {
+   "bed_size_mb": 21579.2500935,
+   "n_per_chr_files": 25.0,
+   "per_chr_bed_size_mb": 2355.0876855
+  },
+  "source": ".bed = 2 bits/sample/variant (4 samples/byte); 25 per-chromosome files — PLINK 1.9 format convention (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-plink-033",
+  "goal": "A GWAS genotype dataset has 4127 samples and 3413857 variants (515133 on the largest chromosome). Report the binary .bed size (MB), the per-chromosome .bed size (MB) and the number of per-chromosome files.",
+  "expected": {
+   "bed_size_mb": 3522.24695975,
+   "per_chr_bed_size_mb": 531.48847275,
+   "n_per_chr_files": 25.0
+  },
+  "source": ".bed = 2 bits/sample/variant (4 samples/byte); 25 per-chromosome files — PLINK 1.9 format convention (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-plink-038",
+  "goal": "A GWAS genotype dataset has 8424 samples and 7598278 variants (231808 on the largest chromosome). Report the per-chromosome .bed size (MB), the binary .bed size (MB) and the number of per-chromosome files.",
+  "expected": {
+   "per_chr_bed_size_mb": 488.187648,
+   "bed_size_mb": 16001.973468,
+   "n_per_chr_files": 25.0
+  },
+  "source": ".bed = 2 bits/sample/variant (4 samples/byte); 25 per-chromosome files — PLINK 1.9 format convention (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-plink-043",
+  "goal": "A GWAS genotype dataset has 18636 samples and 1152885 variants (168804 on the largest chromosome). Report the per-chromosome .bed size (MB), the number of per-chromosome files and the binary .bed size (MB).",
+  "expected": {
+   "per_chr_bed_size_mb": 786.457836,
+   "n_per_chr_files": 25.0,
+   "bed_size_mb": 5371.291215
+  },
+  "source": ".bed = 2 bits/sample/variant (4 samples/byte); 25 per-chromosome files — PLINK 1.9 format convention (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-plink-048",
+  "goal": "A GWAS genotype dataset has 19056 samples and 2895710 variants (411988 on the largest chromosome). Report the binary .bed size (MB), the per-chromosome .bed size (MB) and the number of per-chromosome files.",
+  "expected": {
+   "bed_size_mb": 13795.16244,
+   "per_chr_bed_size_mb": 1962.710832,
+   "n_per_chr_files": 25.0
+  },
+  "source": ".bed = 2 bits/sample/variant (4 samples/byte); 25 per-chromosome files — PLINK 1.9 format convention (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-plink-053",
+  "goal": "A GWAS genotype dataset has 3637 samples and 9175368 variants (154337 on the largest chromosome). Report the per-chromosome .bed size (MB).",
+  "expected": {
+   "per_chr_bed_size_mb": 140.33091725
+  },
+  "source": ".bed = 2 bits/sample/variant (4 samples/byte); 25 per-chromosome files — PLINK 1.9 format convention (Labwright calc.bioinformatics).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-solvent-001",
+  "goal": "A hanging-drop screen plates 2.76 µL drops at 30.9 °C and 72% relative humidity. For a well in row F, column 3, over 0.19 h, report the evaporation rate (µL/h), the plate-edge evaporation factor and the residual drop volume (µL).",
+  "expected": {
+   "evaporation_rate_ul_hr": 8.344060882236054,
+   "edge_evaporation_factor": 1.0,
+   "residual_volume_ul": 1.3378276959953836
+  },
+  "source": "Langmuir d²-law droplet evaporation (diffusion-limited, Magnus saturation); 96-well edge effect = documented-range parameter (Labwright calc.solvent).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-solvent-006",
+  "goal": "A hanging-drop screen plates 9.78 µL drops at 36.4 °C and 73% relative humidity. For a well in row D, column 6, over 0.461 h, report the plate-edge evaporation factor, the residual drop volume (µL) and the evaporation rate (µL/h).",
+  "expected": {
+   "edge_evaporation_factor": 1.0,
+   "residual_volume_ul": 3.304627501691736,
+   "evaporation_rate_ul_hr": 16.384341801725835
+  },
+  "source": "Langmuir d²-law droplet evaporation (diffusion-limited, Magnus saturation); 96-well edge effect = documented-range parameter (Labwright calc.solvent).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-solvent-011",
+  "goal": "A hanging-drop screen plates 6.29 µL drops at 11.1 °C and 59% relative humidity. For a well in row E, column 10, over 0.555 h, report the residual drop volume (µL), the evaporation rate (µL/h) and the plate-edge evaporation factor.",
+  "expected": {
+   "residual_volume_ul": 3.658774290931913,
+   "evaporation_rate_ul_hr": 5.153986126542333,
+   "edge_evaporation_factor": 1.0
+  },
+  "source": "Langmuir d²-law droplet evaporation (diffusion-limited, Magnus saturation); 96-well edge effect = documented-range parameter (Labwright calc.solvent).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-solvent-016",
+  "goal": "A hanging-drop screen plates 8.35 µL drops at 15.9 °C and 31% relative humidity. For a well in row G, column 4, over 0.671 h, report the residual drop volume (µL), the evaporation rate (µL/h) and the plate-edge evaporation factor.",
+  "expected": {
+   "residual_volume_ul": 1.47104637840348,
+   "evaporation_rate_ul_hr": 12.800083240980054,
+   "edge_evaporation_factor": 1.0
+  },
+  "source": "Langmuir d²-law droplet evaporation (diffusion-limited, Magnus saturation); 96-well edge effect = documented-range parameter (Labwright calc.solvent).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-solvent-021",
+  "goal": "A hanging-drop screen plates 5.14 µL drops at 31.1 °C and 61% relative humidity. For a well in row B, column 6, over 0.088 h, report the plate-edge evaporation factor.",
+  "expected": {
+   "edge_evaporation_factor": 1.0
+  },
+  "source": "Langmuir d²-law droplet evaporation (diffusion-limited, Magnus saturation); 96-well edge effect = documented-range parameter (Labwright calc.solvent).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "easy"
+ },
+ {
+  "id": "lmb-solvent-026",
+  "goal": "A hanging-drop screen plates 9.21 µL drops at 13.9 °C and 53% relative humidity. For a well in row A, column 12, over 0.455 h, report the evaporation rate (µL/h), the plate-edge evaporation factor and the residual drop volume (µL).",
+  "expected": {
+   "evaporation_rate_ul_hr": 11.945583134523254,
+   "edge_evaporation_factor": 1.5,
+   "residual_volume_ul": 4.350915427267682
+  },
+  "source": "Langmuir d²-law droplet evaporation (diffusion-limited, Magnus saturation); 96-well edge effect = documented-range parameter (Labwright calc.solvent).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-solvent-031",
+  "goal": "A hanging-drop screen plates 8.93 µL drops at 34.5 °C and 70% relative humidity. For a well in row E, column 9, over 0.189 h, report the plate-edge evaporation factor, the residual drop volume (µL) and the evaporation rate (µL/h).",
+  "expected": {
+   "edge_evaporation_factor": 1.0,
+   "residual_volume_ul": 6.080702709993961,
+   "evaporation_rate_ul_hr": 16.01807030058857
+  },
+  "source": "Langmuir d²-law droplet evaporation (diffusion-limited, Magnus saturation); 96-well edge effect = documented-range parameter (Labwright calc.solvent).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-solvent-036",
+  "goal": "A hanging-drop screen plates 8.04 µL drops at 20.1 °C and 74% relative humidity. For a well in row B, column 10, over 0.476 h, report the plate-edge evaporation factor, the evaporation rate (µL/h) and the residual drop volume (µL).",
+  "expected": {
+   "edge_evaporation_factor": 1.0,
+   "evaporation_rate_ul_hr": 6.033887986391972,
+   "residual_volume_ul": 5.346348950241834
+  },
+  "source": "Langmuir d²-law droplet evaporation (diffusion-limited, Magnus saturation); 96-well edge effect = documented-range parameter (Labwright calc.solvent).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-solvent-041",
+  "goal": "A hanging-drop screen plates 6.65 µL drops at 12.6 °C and 55% relative humidity. For a well in row F, column 4, over 0.867 h, report the plate-edge evaporation factor, the residual drop volume (µL) and the evaporation rate (µL/h).",
+  "expected": {
+   "edge_evaporation_factor": 1.0,
+   "residual_volume_ul": 2.0079009351270494,
+   "evaporation_rate_ul_hr": 6.327045027400868
+  },
+  "source": "Langmuir d²-law droplet evaporation (diffusion-limited, Magnus saturation); 96-well edge effect = documented-range parameter (Labwright calc.solvent).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "lmb-solvent-046",
+  "goal": "A hanging-drop screen plates 7.31 µL drops at 29.2 °C and 60% relative humidity. For a well in row G, column 4, over 0.412 h, report the plate-edge evaporation factor, the evaporation rate (µL/h) and the residual drop volume (µL).",
+  "expected": {
+   "edge_evaporation_factor": 1.0,
+   "evaporation_rate_ul_hr": 15.091050508306761,
+   "residual_volume_ul": 2.082572481087329
+  },
+  "source": "Langmuir d²-law droplet evaporation (diffusion-limited, Magnus saturation); 96-well edge effect = documented-range parameter (Labwright calc.solvent).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "hard"
+ },
+ {
+  "id": "lmb-solvent-051",
+  "goal": "A hanging-drop screen plates 1.71 µL drops at 12.7 °C and 58% relative humidity. For a well in row E, column 8, over 0.413 h, report the evaporation rate (µL/h), the plate-edge evaporation factor and the residual drop volume (µL).",
+  "expected": {
+   "evaporation_rate_ul_hr": 3.7342447445851605,
+   "edge_evaporation_factor": 1.0,
+   "residual_volume_ul": 0.4305501020180654
+  },
+  "source": "Langmuir d²-law droplet evaporation (diffusion-limited, Magnus saturation); 96-well edge effect = documented-range parameter (Labwright calc.solvent).",
+  "level": "L3",
+  "scenario": "complete-info",
+  "difficulty": "medium"
+ },
+ {
+  "id": "pk-half-life",
+  "goal": "A recirculating liver-on-chip has a total system volume (reservoir + chip + tubing) of 200 uL and is dosed at an inlet of 10 uM; the outlet reads 7 uM at a perfusion flow of 2 uL/min. What is the elimination half-life in hours (t1/2 = ln2 x V / Cl, Cl = E x Q)?",
+  "expected": {
+   "half_life_h": 3.8508176697774745
+  },
+  "source": "self-consistent (formula): Cl = (1 - 7/10) x 2 = 0.6 uL/min; t1/2 = ln2 x 200 / 0.6 = 231.0 min = 3.851 h (min -> h via /60, handled by the calculator). Rowland & Tozer, single-compartment half-life.",
+  "scenario": "complete-info",
+  "level": "L2",
+  "difficulty": "easy"
+ },
+ {
+  "id": "pk-repeat-dose-24h",
+  "goal": "A repeat-dose study doses a chip with a compound whose half-life is 12 h, every 24 h. Report the steady-state accumulation ratio.",
+  "expected": {
+   "accumulation_ratio": 1.3333333333333333
+  },
+  "source": "self-consistent (formula): R = 1/(1 - exp(-ln2 x 24 / 12)) = 1/(1 - 0.25) = 1.33 (interval = 2 x t1/2). Gibaldi & Perrier (accumulation factor).",
+  "scenario": "complete-info",
+  "level": "L2",
+  "difficulty": "easy"
+ },
+ {
+  "id": "pulsatile-venous-heartchip",
+  "goal": "Venous endothelium on-chip at 1.0 Hz in a 150 µm channel (water: 0.001 Pa·s, 1000 kg/m³), mean shear 0.10 Pa with amplitude 0.08 Pa, flow 8/2/5 µL/min (peak/min/mean). Give Womersley number, OSI, peak shear (Pa) and PI.",
+  "expected": {
+   "womersley_number": 0.187997120597325,
+   "oscillatory_shear_index": 0.0,
+   "peak_shear_pa": 0.18,
+   "pulsatility_index": 1.2
+  },
+  "source": "Womersley α = r√(ωρ/μ) (Womersley 1955); OSI (Ku et al. 1985); PI (Gosling & King 1974). Heart-on-chip aortic inflow: mean shear 0.59 Pa at 1.2 Hz, α=0.27, OSI=0.2 — Wang et al., microfluidic flow-profile generator (Lab Chip).",
+  "scenario": "complete-info",
+  "level": "L1",
+  "difficulty": "medium"
+ }
+]

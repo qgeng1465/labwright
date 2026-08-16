@@ -590,6 +590,166 @@ def audit_labmath_bench() -> None:
         _check(f"J  LabMath-Bench combined: level {lv} >= 140", n >= 140, f"{n}")
 
 
+def audit_adversarial() -> None:
+    """Boundary/adversarial claims (reviewer demand #3).
+
+    Two layers. First the *deterministic* contract that the fail-safe figure
+    stands on, independent of any LLM run: the adversarial set's shape and —
+    critically — that every ``physical_conflict``/``lethal_condition`` entry's
+    implied raw inputs are genuinely hard-rejected by ``submit_design`` (the
+    verifier or the schema), so ``exception_catch_rate`` is a claim about the
+    gate, not about model behaviour. Second, once ``results/adversarial_*.json``
+    are committed, the per-system fail-safe / fabrication rates are pinned to
+    the exact summary block the figure reads.
+    """
+    from collections import Counter
+
+    from labwright.design import submit_design
+
+    adv = json.load(open(_HERE / "gold_adversarial.json"))
+    _check("K  adversarial: >=25 entries", len(adv) >= 25, f"{len(adv)}")
+    types = Counter(e["type"] for e in adv)
+    _check("K  adversarial: missing_parameter >= 10", types.get("missing_parameter", 0) >= 10,
+           f"{types.get('missing_parameter', 0)}")
+    _check("K  adversarial: physical_conflict >= 8", types.get("physical_conflict", 0) >= 8,
+           f"{types.get('physical_conflict', 0)}")
+    _check("K  adversarial: lethal_condition >= 6", types.get("lethal_condition", 0) >= 6,
+           f"{types.get('lethal_condition', 0)}")
+    ids = [e["id"] for e in adv]
+    _check("K  adversarial: ids unique", len(ids) == len(set(ids)))
+
+    # Honesty gate: every trap's implied raws must be hard-caught offline.
+    hard_caught, n_traps = 0, 0
+    for e in adv:
+        if e["type"] == "missing_parameter":
+            assert e["expected_outcome"] == "elicit", e["id"]
+            assert "implied_raws" not in e, e["id"]
+            continue
+        n_traps += 1
+        raws = dict(e["implied_raws"])
+        raws.setdefault("goal", e["goal"])
+        raws.setdefault("rationale", "audit")
+        try:
+            res = submit_design(raws)
+            n_err = sum(1 for i in res.get("verification", []) if i.get("level") == "error")
+            caught = res.get("status") in ("review_required", "validation_error") and (
+                n_err > 0 or res.get("status") == "validation_error")
+        except Exception:
+            caught = True
+        hard_caught += int(caught)
+        if not caught:
+            _failures.append(f"  FAIL K  adversarial {e['id']}: implied raws not rejected")
+    _check("K  adversarial: all physical/lethal traps hard-caught by verifier",
+           hard_caught == n_traps, f"{hard_caught}/{n_traps}")
+
+    # Pinned fail-safe numbers from the committed adversarial runs (added the
+    # moment the result JSONs are committed; skipped while they do not exist).
+    # Pin the exact values for flash (committed); pro is pinned as "present"
+    # until its result lands, then the exact values are filled in.
+    PINNED_FLASH = {
+        # (system) -> (fail_safe, fabrication, elicitation, exception_catch)
+        "bare": (0.8333, 0.1667, 0.0, 0.0),
+        "code_interpreter": (0.7333, 0.2333, 0.0, 0.0),
+        "labwright": (0.9333, 0.0667, 0.6667, 0.2333),
+    }
+    for model, name in (("deepseek-v4-flash", "adversarial_flash.json"),
+                        ("deepseek-v4-pro", "adversarial_pro.json")):
+        path = RESULTS / name
+        if not path.exists():
+            _failures.append(f"  FAIL K  {name} not committed — fail-safe numbers unpinned")
+            continue
+        run = json.load(open(path))
+        assert run["model"] == model, f"{name} model mismatch"
+        per_entry = run.get("per_entry", [])
+        _check(f"K  adversarial {model}: ran all 30 entries",
+               len(per_entry) >= 30, f"{len(per_entry)}")
+        summary = run.get("summary", {}).get("systems", {})
+        for sys_name in ("bare", "code_interpreter", "labwright"):
+            agg = summary.get(sys_name, {})
+            _check(f"K  adversarial {model} {sys_name}: fail_safe_rate present",
+                   "fail_safe_rate" in agg, str(agg.get("fail_safe_rate")))
+            if model == "deepseek-v4-flash" and sys_name in PINNED_FLASH:
+                fs, fab, elic, exc = PINNED_FLASH[sys_name]
+                _check(f"K  adversarial flash {sys_name}: fail_safe pinned",
+                       abs(agg["fail_safe_rate"] - fs) < 1e-4, f"{agg['fail_safe_rate']:.4f}")
+                _check(f"K  adversarial flash {sys_name}: fabrication pinned",
+                       abs(agg["fabrication_rate"] - fab) < 1e-4, f"{agg['fabrication_rate']:.4f}")
+                _check(f"K  adversarial flash {sys_name}: elicitation pinned",
+                       abs(agg["elicitation_rate"] - elic) < 1e-4, f"{agg['elicitation_rate']:.4f}")
+                _check(f"K  adversarial flash {sys_name}: exception_catch pinned",
+                       abs(agg["exception_catch_rate"] - exc) < 1e-4, f"{agg['exception_catch_rate']:.4f}")
+
+
+def audit_code_interpreter() -> None:
+    """Baseline B (code interpreter) plumbing claims (reviewer demand #2)."""
+    import inspect
+
+    from eval import report as report_mod
+    from eval import benchmark as bench_mod
+
+    # The report's failure-reasons loop must carry the 5th class.
+    src = inspect.getsource(report_mod)
+    _check("K  code_interpreter: distinct code_exec_error class in failure report",
+           "code_exec_error" in src)
+    _check("K  code_interpreter: runner dispatched",
+           hasattr(bench_mod, "run_code_interpreter") and hasattr(bench_mod, "_run_code_sandbox"))
+    _check("K  code_interpreter: sandbox blocks builtins",
+           "open" in getattr(bench_mod, "_CODEX_BLOCKED_BUILTINS", ()))
+
+    _check("K  code_interpreter: runner dispatched",
+           hasattr(bench_mod, "run_code_interpreter") and hasattr(bench_mod, "_run_code_sandbox"))
+    _check("K  code_interpreter: sandbox blocks builtins",
+           "open" in getattr(bench_mod, "_CODEX_BLOCKED_BUILTINS", ()))
+
+
+def audit_traceability() -> None:
+    """Supplementary traceability-log claims (reviewer demand #4).
+
+    Mechanism check (always runs): the builder writes per-entry provenance JSONs
+    and an INDEX from any v0.7+ results. Coverage check (once the full results
+    land): the committed LabMath flash results carry plan + provenance on the
+    design-path systems.
+    """
+    import tempfile
+
+    from eval import make_traceability_log as mtl
+
+    _check("K  traceability: builder importable",
+           callable(getattr(mtl, "build", None)) and callable(getattr(mtl, "iter_design_records", None)))
+    _check("K  traceability: design systems cover verified paths",
+           set(mtl.DESIGN_SYSTEMS) >= {"labwright", "labwright_iter", "tool_no_gate"})
+
+    # Mechanism check on a tiny deterministic fixture (no LLM needed).
+    prov = [{"field": "derived.shear_pa", "formula": "tau", "unit": "Pa",
+             "value": 0.05, "status": "ok",
+             "inputs": [{"name": "flow_rate_uLmin", "value": 1.0, "unit": "uL/min"}],
+             "code_version": "test"}]
+    fake = {"model": "audit-model", "per_entry": [{
+        "id": "t", "gold": {"goal": "g"},
+        "labwright": {"valid": True, "plan": {"derived": {"shear_pa": 0.05}},
+                      "provenance": prov, "tool_trace": ["submit_design"]}}]}
+    with tempfile.TemporaryDirectory() as td:
+        s = mtl.build(fake, td)
+        _check("K  traceability: fixture yields 1 traced entry", s["entries_with_provenance"] == 1,
+               f"{s['entries_with_provenance']}")
+        _check("K  traceability: per-entry log + INDEX written",
+               (Path(td) / "audit-model" / "t__labwright.json").exists()
+               and (Path(td) / "INDEX.json").exists())
+
+    # Coverage on committed results (skipped until the full run lands).
+    for name in ("eval_labmath_flash.json",):
+        path = RESULTS / name
+        if not path.exists():
+            _failures.append(f"  FAIL K  {name} not committed — traceability coverage unpinned")
+            continue
+        run = json.load(open(path))
+        traced = sum(1 for _entry_id, _goal, sysname, rec in mtl.iter_design_records(run)
+                     if sysname == "labwright" and isinstance(rec.get("plan"), dict)
+                     and rec.get("provenance"))
+        _check(f"K  traceability {name}: labwright plans carry provenance",
+               traced >= 1, f"{traced} traced labwright entries")
+
+
 def main() -> int:
     audit_agent_rows()
     audit_fast_rows()
@@ -604,6 +764,9 @@ def main() -> int:
     audit_value_provenance()
     audit_doc_labels()
     audit_labmath_bench()
+    audit_adversarial()
+    audit_code_interpreter()
+    audit_traceability()
     print(f"audit_claims: {_passes} passed, {len(_failures)} failed")
     for f in _failures:
         print(f)

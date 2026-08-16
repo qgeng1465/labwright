@@ -1,0 +1,21 @@
+# Labwright runtime — what the agent and the calculators need.
+# Generated from pyproject.toml dependencies + the agent extra (2026-08-17).
+# Tested with the versions resolved in the project venv; floors are lower bounds.
+#
+# Optional stacks (not needed for the core runtime, listed for completeness):
+#   - fine-tuned raw-input extractor + SciRecipe audit:  requirements-eval.txt (torch/peft)
+#   - knowledge-base retrieval (chromadb / sentence-transformers): not used by the eval
+#   - web demo (gradio): not used by the eval
+#
+# Install:  python -m pip install -r requirements.txt
+
+pint>=0.24
+pydantic>=2.5
+numpy>=1.24
+scipy>=1.9
+
+# Agent brain — calls any OpenAI-compatible API (default DeepSeek).
+# The `labwright/agent/llm.py` client also speaks the Anthropic Messages schema,
+# so GPT-4 / Claude 3.5 Sonnet can be substituted by pointing --base-url at a
+# compatible gateway (see README "Model substitution").
+openai>=1.30

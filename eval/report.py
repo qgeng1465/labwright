@@ -215,6 +215,7 @@ def render_scirecipe(report: dict) -> str:
 
 _LABELS = {
     "bare": "bare-LLM",
+    "code_interpreter": "code-interp",
     "soft_gate": "soft-gate",
     "self_verify": "self-verify",
     "labwright": "Labwright",
@@ -271,8 +272,8 @@ def render(result: dict) -> str:
     if systems and "failure_counts" in d[systems[0]]:
         labels = {k: v for k, v in _LABELS.items() if k in systems}
         lines.append("")
-        lines.append("Failure reasons (ok / silence / calculation_error / wrong_target):")
-        for key in ("ok", "silence", "calculation_error", "wrong_target"):
+        lines.append("Failure reasons (ok / silence / calculation_error / code_exec_error / wrong_target):")
+        for key in ("ok", "silence", "calculation_error", "code_exec_error", "wrong_target"):
             cells = []
             for s in systems:
                 cells.append(f"{d[s]['failure_counts'].get(key, 0)}/{d['n_gold']}")

@@ -122,6 +122,10 @@ def main() -> int:
     farc.main()
     bad += _overlaps(_captured["figs"][-1], "fig_architecture")
 
+    fpdg = importlib.import_module("fig_protocol_dag")
+    fpdg.main()
+    bad += _overlaps(_captured["figs"][-1], "fig_protocol_dag")
+
     fab = importlib.import_module("fig_abstract")
     fab.main()
     bad += _overlaps(_captured["figs"][-1], "fig_abstract")

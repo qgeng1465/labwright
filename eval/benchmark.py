@@ -22,6 +22,9 @@ from __future__ import annotations
 import json
 import math
 import os
+import resource
+import subprocess
+import sys
 from dataclasses import dataclass
 from typing import Any, Callable
 
@@ -870,6 +873,170 @@ def run_self_verify(gold: GoldExperiment, chat: Callable, attempts: int = 2) -> 
     return extracted  # verifier returned nothing checkable → proposal stands
 
 
+# ---------------------------------------------------------------------------
+# Code Interpreter baseline (Baseline B): LLM writes Python, sandbox runs it.
+# ---------------------------------------------------------------------------
+
+#: Wall-clock cap for one generated program, seconds.
+CODE_INTERPRETER_TIMEOUT_S = 30
+
+#: Restricted builtins for the sandboxed exec. ``__import__`` is replaced with
+#: an allowlist raiser (only ``math``/``builtins``/``json``, already imported
+#: before the gate closes), and ``open``/``eval``/``compile``/``exec``/``input``/
+#: ``exit``/``breakpoint`` plus the introspection escapes
+#: (``globals``/``locals``/``vars``/``getattr``/``setattr``/``dir``) are removed
+#: — so a model-generated program cannot read the repo, start subprocesses,
+#: reach the network, or pry the interpreter open. This is a benchmark
+#: discipline boundary, not a hardened security sandbox: its job is to make
+#: "the code ran, here are its numbers" vs "the code never ran" an auditable
+#: distinction, while the resource limits keep a runaway program from hurting
+#: the harness.
+_CODEX_BLOCKED_BUILTINS = (
+    "open", "exec", "compile", "eval", "__import__", "input", "breakpoint",
+    "help", "exit", "quit", "globals", "locals", "vars", "getattr", "setattr",
+    "dir",
+)
+
+#: Modules the generated program may import. Only these (already loaded by the
+#: preamble) resolve; ``sys``/``os``/``subprocess``/``socket``/``importlib``
+#: etc. are rejected so the program cannot reach the OS or the network.
+_CODEX_ALLOWED_IMPORTS = ("math", "builtins", "json")
+
+
+def _codex_preamble() -> str:
+    # Mutate the *real* builtins module, not a copy: ``import`` statements look
+    # up ``__import__`` in the live builtins, so a dict-level replacement is
+    # ignored. The allowed imports happen first, then the gate closes.
+    return (
+        "import math, builtins, json, sys\n"
+        "_smod = sys.modules\n"
+        "_b = builtins.__dict__\n"
+        "for _n in " + repr(_CODEX_BLOCKED_BUILTINS) + ":\n"
+        "    _b.pop(_n, None)\n"
+        "def __import__(name, *a, **k):\n"
+        "    if name in " + repr(_CODEX_ALLOWED_IMPORTS) + ":\n"
+        "        return _smod[name]\n"
+        "    raise ImportError('import ' + name + ' disabled in code-interpreter sandbox')\n"
+        "builtins.__import__ = __import__\n"
+        "_b['math'] = math\n"
+    )
+
+
+def _codex_limit_resources() -> None:
+    """Resource caps applied to the sandboxed subprocess (RLIMITs, POSIX)."""
+    resource.setrlimit(resource.RLIMIT_CPU, (10, 15))       # 10s soft CPU
+    resource.setrlimit(resource.RLIMIT_AS, (2 << 30, 2 << 30))  # 2 GiB address space
+    resource.setrlimit(resource.RLIMIT_NOFILE, (64, 64))    # no opening many fds
+
+
+def _strip_code_fence(text: str) -> str:
+    """Pull bare Python out of a ```python ...```-fenced (or plain) answer."""
+    text = text.strip()
+    if text.startswith("```"):
+        lines = text.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        return "\n".join(lines)
+    return text
+
+
+def _run_code_sandbox(code: str, timeout_s: float = CODE_INTERPRETER_TIMEOUT_S,
+                      preamble: str | None = None) -> tuple[dict[str, Any] | None, str | None]:
+    """Execute one generated program in the restricted subprocess.
+
+    Returns ``(RESULT dict, None)`` on success, or ``(None, error)`` where the
+    error string is the sandbox's reason (timeout / traceback tail / no RESULT).
+    The code must end by defining ``RESULT``; the wrapper serialises it to
+    stdout under a marker so extraction never depends on parsing arbitrary
+    model print output.
+    """
+    body = (preamble if preamble is not None else _codex_preamble())
+    body += code.rstrip("\n") + "\nprint('__CODEX__' + json.dumps(RESULT))\n"
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-S", "-c", body],
+            capture_output=True, text=True, timeout=timeout_s,
+            preexec_fn=_codex_limit_resources, cwd="/tmp",
+        )
+    except subprocess.TimeoutExpired:
+        return None, f"timeout after {timeout_s}s"
+    if proc.returncode != 0:
+        tail = (proc.stderr or "").strip().splitlines()
+        return None, (tail[-1] if tail else f"exit {proc.returncode}")
+    out = proc.stdout or ""
+    marker = "__CODEX__"
+    if marker not in out:
+        return None, "no RESULT printed"
+    try:
+        data = json.loads(out.split(marker, 1)[1].strip())
+    except Exception as exc:  # noqa: BLE001 - malformed RESULT is a scored failure
+        return None, f"RESULT not JSON: {exc}"
+    if not isinstance(data, dict):
+        return None, "RESULT is not a dict"
+    return data, None
+
+
+def code_interpreter_prompt_for(gold: GoldExperiment) -> str:
+    """Ask the model to *write code* computing the same keys bare is asked for.
+
+    The key set is identical to :func:`bare_prompt_for` (gold targets + the raw
+    inputs that define them), so the answer is scored by the same extraction,
+    tolerance and verifiability rules as bare — the only difference is that the
+    arithmetic is delegated to a Python program instead of done in the model's
+    head. ``RESULT`` holds every key as a float (string for format identifiers).
+    """
+    keys = _prompt_keys_for(gold)
+    return (
+        "You are a wet-lab design expert. For the goal below, write a short, "
+        "self-contained Python program that computes the design numbers from "
+        "first principles and stores them in a dict named RESULT with EXACTLY "
+        "these keys (use exactly these names; every value a float, except the "
+        "format/identifier fields which are strings):\n"
+        + ", ".join(keys)
+        + ".\n"
+        "Constraints: only the math module and plain Python arithmetic; no "
+        "imports other than math, no file I/O, no network, no printing of "
+        "anything except the final RESULT. State the formula and every constant "
+        "you use as a literal inside the program. End with RESULT = {...}.\n"
+        "Return ONLY the program (no prose, no markdown fences).\n\nGoal: "
+        + gold.goal
+    )
+
+
+def run_code_interpreter(gold: GoldExperiment, chat: Callable,
+                         attempts: int = 3) -> tuple[dict[str, float | str | None], str | None]:
+    """Baseline B: the LLM writes Python, the sandbox runs it.
+
+    Returns ``(reported, code_error)``. ``reported`` is the flat key→value dict
+    (same shape as :func:`run_bare_llm`) extracted from the program's ``RESULT``.
+    ``code_error`` is the sandbox's failure reason when the program never ran to
+    a clean ``RESULT`` on any attempt — the caller records the distinct
+    ``code_exec_error`` failure class so a "code never ran" answer is not
+    conflated with a model that answered from memory and happened to be wrong.
+    """
+    keys = _prompt_keys_for(gold)
+    prompt = code_interpreter_prompt_for(gold)
+    empty = {k: None for k in keys}
+    last_error: str | None = None
+    for _ in range(attempts):
+        text = chat(prompt) or ""
+        code = _strip_code_fence(text)
+        if not code:
+            last_error = "empty_response"
+            continue
+        result, err = _run_code_sandbox(code)
+        if err is not None:
+            last_error = err
+            continue
+        extracted = {k: _extract_key(result, k) for k in keys}
+        if any(v is not None for v in extracted.values()):
+            return extracted, None
+        last_error = "no_required_keys"
+    return empty, last_error
+
+
 def bare_recovery(extracted: dict[str, float | str | None], gold: GoldExperiment) -> dict[str, float]:
     """Relative error of the *reported* numbers vs the gold standard."""
     return {key: relative_error(extracted.get(key), expected) for key, expected in gold.expected.items()}
@@ -1549,16 +1716,29 @@ def _score_design(plan: DesignPlan | None, error: str | None, gold: GoldExperime
     extractor fast path, so both are judged by identical recovery, tolerance
     and verifiability rules. The only difference is *how the plan was built*,
     which the record's ``plan``/``error`` fields make auditable.
+
+    Since v0.7 the record carries the **full design** (``plan`` = the complete
+    ``DesignPlan`` JSON) and its **computation provenance** (``provenance`` =
+    one record per derived field: formula, inputs with units, value, unit,
+    verifier status and code version). The verifier is re-run at scoring time so
+    the provenance status is the gate's own verdict, re-derived independently of
+    the agent's tool turn. This is what the supplementary traceability logs and
+    the protocol-DAG figure consume.
     """
     lw_rec: dict[str, float] = {}
     lw_hall = 1.0
     claimed: dict[str, float | str | None] = {}
+    prov: list[dict[str, Any]] = []
     if plan is not None:
         lw_rec = parameter_recovery(gold, plan)
         lw_hall = hallucination_rate(plan)
         claimed = _design_claimed(plan, gold)
+        issues = verify_design(plan)
+        from labwright.sop.provenance import provenance_for
+        prov = provenance_for(plan, issues)
     record = {
-        "plan": plan is not None,
+        "plan": plan.model_dump(mode="json") if plan is not None else None,
+        "provenance": prov,
         "error": error,
         "recovery": {k: round(v, 6) for k, v in lw_rec.items()},
         "hallucination_rate": round(lw_hall, 6),
@@ -1626,6 +1806,16 @@ def _run_system(
         rec["prose_refusals"] = sum(
             1 for s in lw_result.steps if isinstance(s, dict) and s.get("type") == "prose-refused"
         )
+        # Elicitation trace: count request_info calls (only present when the
+        # agent was built with elicit=True — the boundary evaluation). Zero in
+        # the shipped (non-elicit) configuration keeps committed results stable.
+        rec["elicited"] = sum(
+            1 for s in lw_result.steps if isinstance(s, dict) and s.get("tool") == "request_info"
+        )
+        # Tool-call trace: the ordered list of calculator/gate tools the agent
+        # actually invoked — feeds the supplementary traceability log.
+        rec["tool_trace"] = [s.get("tool") for s in lw_result.steps
+                             if isinstance(s, dict) and s.get("tool")]
         rec["no_plan"] = lw is None
         return rec
     if name == "labwright_iter":
@@ -1637,10 +1827,15 @@ def _run_system(
         rec["prose_refusals"] = sum(
             1 for s in lw_result.steps if isinstance(s, dict) and s.get("type") == "prose-refused"
         )
+        rec["elicited"] = sum(
+            1 for s in lw_result.steps if isinstance(s, dict) and s.get("tool") == "request_info"
+        )
         rec["fix_rounds"] = sum(
             1 for s in lw_result.steps
             if isinstance(s, dict) and s.get("type") == "review_required"
         )
+        rec["tool_trace"] = [s.get("tool") for s in lw_result.steps
+                             if isinstance(s, dict) and s.get("tool")]
         rec["no_plan"] = lw is None
         return rec
     if name == "tool_no_gate":
@@ -1653,7 +1848,22 @@ def _run_system(
         rec["prose_refusals"] = sum(
             1 for s in result.steps if isinstance(s, dict) and s.get("type") == "prose-refused"
         )
+        rec["elicited"] = sum(
+            1 for s in result.steps if isinstance(s, dict) and s.get("tool") == "request_info"
+        )
+        rec["tool_trace"] = [s.get("tool") for s in result.steps
+                             if isinstance(s, dict) and s.get("tool")]
         rec["no_plan"] = plan is None
+        return rec
+    if name == "code_interpreter":
+        reported, codex_err = run_code_interpreter(gold, chat)
+        rec = _score_reported(reported, gold)
+        if codex_err:
+            # The model never produced a program that ran to a clean RESULT —
+            # a distinct failure class (the confusion-matrix "code exec error"
+            # cell), not a from-memory answer that happened to be wrong.
+            rec["failure"] = "code_exec_error"
+            rec["code_error"] = codex_err
         return rec
     if name == "finetuned":
         if extractor is None:
@@ -1754,6 +1964,8 @@ __all__ = [
     "run_bare_llm",
     "run_soft_gate",
     "run_self_verify",
+    "run_code_interpreter",
+    "code_interpreter_prompt_for",
     "run_finetuned",
     "run_tools_no_gate",
     "bare_prompt_for",
