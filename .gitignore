@@ -46,6 +46,3 @@ results/*.log
 results/smoke_11dom/
 results/smoke_11dom2/
 results/evals_v1_backup/
-
-# 50h autonomous-marathon working notes (kept local)
-MARATHON_50H.md

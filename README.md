@@ -61,7 +61,7 @@ cells are silence or a single rejected field, never a fabricated number
   experiment and get a verified SOP.
 - *AI-for-science researchers*: a hard-gate agent architecture with a
   reproducible benchmark and an honestly stated boundary ([`eval/`](eval/README.md)).
-- *Contributors*: adding a domain is a folder, not a fork ([CONTRIBUTING.md](CONTRIBUTING.md)).
+- *Contributors*: adding a domain is a folder, not a fork ([Extending Labwright](#extending-labwright)).
 
 ---
 
@@ -428,7 +428,20 @@ derive function, and a `Block` in `labwright/blocks.py`; that one entry owns
 the domain's raw/derived/consistency keys, its field map, sanity bands and
 canonical units, and the design gate, verifier, units layer and benchmark all
 import from it. A domain that forgets a band or unit fails loudly at import.
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Rules of the road: a calculator's test must reproduce a value you can derive
+by hand or cite (literature constants need a source); a computable quantity
+must never be emitted by the model; `calc/` stays pure (I/O lives in the
+agent/UI layer). If you can't independently verify a number, don't add it.
+Report a bug with the function, inputs, actual/expected output and — for
+literature constants — the source.
+
+Development quickstart: venv is `.venv/bin/python`; tests are
+`.venv/bin/python -m pytest tests/`; the CLI is
+`.venv/bin/python -m labwright.cli design "..."` (needs an API key). Pip uses
+the TUNA mirror (`PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple`) and
+HF downloads go through `HF_ENDPOINT=https://hf-mirror.com`. No `gh` CLI — use
+`curl` + a PAT supplied via `GIT_ASKPASS`, never the token on a command line.
 
 ## Benchmark
 

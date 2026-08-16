@@ -34,7 +34,7 @@
 **适用人群。**
 - *湿实验科学家*：粘贴论文的几何/流量/剪切力，3秒内得到不一致检查结果（`labwright verify-protocol`），或描述一个实验并得到验证过的SOP。
 - *AI for Science研究者*：一个硬门禁agent架构，附带可复现的基准测试和诚实陈述的边界（[`eval/`](eval/README.md)）。
-- *贡献者*：新增一个领域就是一个文件夹，而不是一次fork（[CONTRIBUTING.md](CONTRIBUTING.md)）。
+- *贡献者*：新增一个领域就是一个文件夹，而不是一次fork（见下文「扩展Labwright」）。
 
 ---
 
@@ -218,7 +218,8 @@ Web演示（Hugging Face Space）：[`hf_space/`](hf_space/)，部署见 [`hf_sp
 
 agent、验证器和演示都读取同一个注册表；新计算器立即可调用、可验证、可演示。
 
-添加一个完整的*设计领域*（设计的一个新可选部分，如3D球状体方案）同样只是一次声明：一个 `calc/` 模块、一个schema模型、一个derive函数，以及 `labwright/blocks.py` 里的一个 `Block`；这一个条目拥有该领域的raw/derived/consistency键、字段映射、合理性区间和规范单位，而设计门禁、验证器、单位层和基准测试都从它导入。忘记区间或单位的领域会在导入时报错失败。见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+添加一个完整的*设计领域*（设计的一个新可选部分，如3D球状体方案）同样只是一次声明：一个 `calc/` 模块、一个schema模型、一个derive函数，以及 `labwright/blocks.py` 里的一个 `Block`；这一个条目拥有该领域的raw/derived/consistency键、字段映射、合理性区间和规范单位，而设计门禁、验证器、单位层和基准测试都从它导入。忘记区间或单位的领域会在导入时报错失败。规则与开发命令见英文 README 的
+「Extending Labwright」节。
 
 ## 基准测试
 
