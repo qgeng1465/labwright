@@ -17,6 +17,9 @@ import json
 import sys
 from pathlib import Path
 
+from eval.benchmark import tba as _tba
+from eval.ci import wilson_ci
+
 
 def _mean(values: list[float]) -> float:
     return sum(values) / len(values) if values else float("nan")
@@ -24,6 +27,39 @@ def _mean(values: list[float]) -> float:
 
 def _pct(x: float) -> str:
     return "n/a" if x != x else f"{100.0 * x:.0f}%"
+
+
+def _tba_by_level(per_entry: list[dict], system: str, tau: float = 0.05) -> dict[str, dict]:
+    """TBA grouped by the gold entry's LabMath-Bench level, with Wilson CIs.
+
+    Returns ``{level: {"n": entries, "n_pairs": scored key-pairs, "tba": ...,
+    "ci": [lo, hi]}}``. The CI is a Wilson score interval over the scored
+    key-pairs — each pair is an independent Bernoulli trial at tolerance ``tau``.
+    Entries whose gold metadata carries no ``level`` are skipped, so older
+    result JSONs simply report no level breakdown (backwards compatible).
+    """
+    buckets: dict[str, dict] = {}
+    for e in per_entry:
+        gold = e.get("gold")
+        level = gold.get("level") if isinstance(gold, dict) else None
+        if not level:
+            continue
+        rec = e.get(system, {})
+        b = buckets.setdefault(level, {"n": 0, "n_pairs": 0, "hits": 0})
+        b["n"] += 1
+        for err in rec.get("recovery", {}).values():
+            b["n_pairs"] += 1
+            b["hits"] += 1 if err <= tau else 0
+    out: dict[str, dict] = {}
+    for level, b in buckets.items():
+        if b["n_pairs"]:
+            out[level] = {
+                "n": b["n"],
+                "n_pairs": b["n_pairs"],
+                "tba": b["hits"] / b["n_pairs"],
+                "ci": list(wilson_ci(b["hits"], b["n_pairs"])),
+            }
+    return out
 
 
 def derive(result: dict) -> dict:
@@ -64,7 +100,16 @@ def derive(result: dict) -> dict:
             "usable_rate": _mean([1.0 if u else 0.0 for u in usable]),
             "hallucination_rate": _mean(hall),
             "recovery": {k: _mean(v) for k, v in recovery.items()},
+            # LabMath-Bench headline metric: tolerance-bound accuracy at the
+            # strict reviewer threshold τ=0.05, averaged over scored key-pairs.
+            "tba": _tba(entries),
         }
+        # TBA grouped by the gold entry's difficulty level (L1/L2/L3), with a
+        # Wilson CI over the scored key-pairs — present only when the run's gold
+        # files carry levels.
+        by_level = _tba_by_level(per_entry, system)
+        if by_level:
+            out[system]["tba_by_level"] = by_level
         # Systems that report numbers from memory (bare, soft-gate, self-verify)
         # carry a verifiable_rate: answers that report geometry+flow and at least
         # one derived number can be cross-checked; the rest are unverifiable and
@@ -193,6 +238,7 @@ def render(result: dict) -> str:
     rows = [
         ("self-consistent rate", "self_consistent_rate"),
         ("usable rate", "usable_rate"),
+        ("TBA (τ=0.05)", "tba"),
         ("hallucination rate", "hallucination_rate"),
     ]
     for label, key in rows:
@@ -201,6 +247,23 @@ def render(result: dict) -> str:
             v = d[s][key]
             cells.append(_pct(v) if key != "hallucination_rate" else f"{v:.3f}")
         lines.append(f"{label:<26}" + "".join(f"{c:>14}" for c in cells))
+    # TBA by LabMath-Bench difficulty level (L1/L2/L3), with Wilson CI over the
+    # scored key-pairs — shown only when the run's gold files carry levels.
+    if systems and "tba_by_level" in d[systems[0]]:
+        lines.append("TBA by level (τ=0.05, Wilson CI over key-pairs):")
+        levels = sorted({lv for s in systems for lv in d[s].get("tba_by_level", {})})
+        for level in levels:
+            cells = []
+            for s in systems:
+                sub = d[s].get("tba_by_level", {}).get(level)
+                if not sub:
+                    cells.append("—")
+                    continue
+                lo, hi = sub["ci"]
+                cells.append(
+                    f"{_pct(sub['tba'])} [{100.0 * lo:.0f}–{100.0 * hi:.0f}] ({sub['n_pairs']} keys)"
+                )
+            lines.append(f"  {level:<24}" + "".join(f"{c:>14}" for c in cells))
     if "bare" in systems:
         lines.append(f"{'bare answers verifiable':<26}" + "".join(
             f"{_pct(d[s]['verifiable_rate']):>14}" for s in ("bare",) if s in systems))

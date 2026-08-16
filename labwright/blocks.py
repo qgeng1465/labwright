@@ -41,10 +41,14 @@ from dataclasses import dataclass, field
 from types import ModuleType
 
 from labwright.calc import barrier as calc_barrier
+from labwright.calc import bioinformatics as calc_bioinformatics
+from labwright.calc import bioprinting as calc_bioprinting
 from labwright.calc import breathing as calc_breathing
 from labwright.calc import cell as calc_cell
+from labwright.calc import coculture as calc_coculture
 from labwright.calc import culture as calc_culture
 from labwright.calc import dosing as calc_dosing
+from labwright.calc import enzyme as calc_enzyme
 from labwright.calc import gradient as calc_gradient
 from labwright.calc import microfluidics as mf
 from labwright.calc import o2 as calc_o2
@@ -52,6 +56,7 @@ from labwright.calc import pk as calc_pk
 from labwright.calc import pulsatile as calc_pulsatile
 from labwright.calc import pumpless as calc_pumpless
 from labwright.calc import scaling as calc_scaling
+from labwright.calc import solvent as calc_solvent
 from labwright.calc import spheroid as calc_spheroid
 from labwright.calc import stats as calc_stats
 
@@ -904,12 +909,385 @@ def _gradient() -> Block:
     )
 
 
+def _bioprinting() -> Block:
+    """Micro-extrusion bioprinting block (LabMath-Bench L1).
+
+    Raw inputs are the G-code travel move, the chosen nozzle and the print
+    speed / ink density / footprint; the calculators own the extruded volume,
+    print time, deposition rate, filament mass and the fill-line count.
+    Nozzle diameters are equipment-spec conventions
+    (:mod:`labwright.calc.bioprinting`), never literature claims.
+    """
+    return Block(
+        name="bioprinting",
+        plan_field="bioprinting",
+        input_field="bioprinting",
+        calc=calc_bioprinting,
+        raw_keys=(
+            "nozzle_id", "travel_distance_um", "feed_rate_mm_min",
+            "density_g_cm3", "footprint_width_um", "line_pitch_um",
+        ),
+        derived_keys=(
+            "extrusion_volume_nl", "print_time_s", "extrusion_rate_nl_min",
+            "filament_mass_ug", "lines_to_cover",
+        ),
+        consistency_keys=("nozzle_id", "travel_distance_um", "feed_rate_mm_min"),
+        field_map={
+            "extrusion_volume_nl": "bioprinting.extrusion_volume_nl",
+            "print_time_s": "bioprinting.print_time_s",
+            "extrusion_rate_nl_min": "bioprinting.extrusion_rate_nl_min",
+            "filament_mass_ug": "bioprinting.filament_mass_ug",
+            "lines_to_cover": "bioprinting.lines_to_cover",
+            "travel_distance_um": "bioprinting.travel_distance_um",
+            "feed_rate_mm_min": "bioprinting.feed_rate_mm_min",
+            "density_g_cm3": "bioprinting.density_g_cm3",
+            "footprint_width_um": "bioprinting.footprint_width_um",
+            "line_pitch_um": "bioprinting.line_pitch_um",
+        },
+        sanity_bands={
+            "bioprinting.extrusion_volume_nl": Band(0.01, 1e5, 1e-6, 1e8,
+                "ink volume extruded per G-code path segment", "nL"),
+            "bioprinting.print_time_s": Band(0.01, 3600, 1e-4, 1e6,
+                "traversal time of one G-code move", "s"),
+            "bioprinting.extrusion_rate_nl_min": Band(0.01, 1e6, 1e-4, 1e9,
+                "ink deposition rate along the path", "nL/min"),
+            "bioprinting.filament_mass_ug": Band(0.01, 1e5, 1e-6, 1e8,
+                "deposited filament mass (volume × ink density)", "ug"),
+            "bioprinting.lines_to_cover": Band(1, 1e4, 1, 1e6,
+                "parallel fill lines to cover the footprint", "n"),
+            "bioprinting.travel_distance_um": Band(100, 1e6, 10, 1e7,
+                "G-code path travel distance", "um"),
+            "bioprinting.feed_rate_mm_min": Band(0.1, 1000, 0.01, 1e5,
+                "print feed rate", "mm/min"),
+            "bioprinting.density_g_cm3": Band(0.9, 1.2, 0.5, 3.0,
+                "bioink density (cell-laden hydrogels near 1 g/cm^3)", "g/cm^3"),
+            "bioprinting.footprint_width_um": Band(100, 1e6, 10, 1e7,
+                "footprint width to fill with lines", "um"),
+            "bioprinting.line_pitch_um": Band(50, 2000, 10, 1e5,
+                "centre-to-centre fill-line pitch", "um"),
+        },
+        canonical_units={
+            "bioprinting.extrusion_volume_nl": "nL",
+            "bioprinting.print_time_s": "s",
+            "bioprinting.extrusion_rate_nl_min": "nL/min",
+            "bioprinting.filament_mass_ug": "ug",
+            "bioprinting.lines_to_cover": "n",
+            "bioprinting.travel_distance_um": "um",
+            "bioprinting.feed_rate_mm_min": "mm/min",
+            "bioprinting.density_g_cm3": "g/cm^3",
+            "bioprinting.footprint_width_um": "um",
+            "bioprinting.line_pitch_um": "um",
+        },
+    )
+
+
+def _coculture() -> Block:
+    """Two-population co-culture seeding block (LabMath-Bench L2).
+
+    Raw inputs are the total seeding density, culture area, the A-fraction and
+    the well count; the calculators own per-well and total counts of each
+    population and the A:B seeding ratio. The fraction/ratio split is pure
+    arithmetic (:mod:`labwright.calc.coculture`); the total density is the
+    designer's stated input, never inferred here.
+    """
+    return Block(
+        name="coculture",
+        plan_field="coculture",
+        input_field="coculture",
+        calc=calc_coculture,
+        raw_keys=(
+            "cell_type_a", "cell_type_b", "total_density_cells_cm2",
+            "area_cm2", "fraction_a", "wells",
+        ),
+        derived_keys=(
+            "cells_per_well_a", "cells_per_well_b", "total_cells_a",
+            "total_cells_b", "seeding_ratio_ab",
+        ),
+        consistency_keys=("total_density_cells_cm2", "area_cm2", "fraction_a"),
+        field_map={
+            "cells_per_well_a": "coculture.cells_per_well_a",
+            "cells_per_well_b": "coculture.cells_per_well_b",
+            "total_cells_a": "coculture.total_cells_a",
+            "total_cells_b": "coculture.total_cells_b",
+            "seeding_ratio_ab": "coculture.seeding_ratio_ab",
+            "total_density_cells_cm2": "coculture.total_density_cells_cm2",
+            "area_cm2": "coculture.area_cm2",
+            "fraction_a": "coculture.fraction_a",
+        },
+        sanity_bands={
+            "coculture.cells_per_well_a": Band(1e2, 1e9, 1.0, 1e10,
+                "cells of population A seeded per well", "cells"),
+            "coculture.cells_per_well_b": Band(1e2, 1e9, 1.0, 1e10,
+                "cells of population B seeded per well", "cells"),
+            "coculture.total_cells_a": Band(1e2, 1e10, 1.0, 1e11,
+                "total A cells across wells", "cells"),
+            "coculture.total_cells_b": Band(1e2, 1e10, 1.0, 1e11,
+                "total B cells across wells", "cells"),
+            "coculture.seeding_ratio_ab": Band(0.001, 1000, 1e-6, 1e6,
+                "A:B seeding ratio", "dimensionless"),
+            "coculture.total_density_cells_cm2": Band(1e3, 1e7, 1.0, 1e9,
+                "total seeding density across both populations", "cells/cm^2"),
+            "coculture.area_cm2": Band(1e-4, 100, 1e-6, 1e3,
+                "culture surface area", "cm^2"),
+            "coculture.fraction_a": Band(0.01, 0.99, 0.0, 1.0,
+                "fraction of the total assigned to population A", "dimensionless"),
+        },
+        canonical_units={
+            "coculture.cells_per_well_a": "cells",
+            "coculture.cells_per_well_b": "cells",
+            "coculture.total_cells_a": "cells",
+            "coculture.total_cells_b": "cells",
+            "coculture.seeding_ratio_ab": "dimensionless",
+            "coculture.total_density_cells_cm2": "cells/cm^2",
+            "coculture.area_cm2": "cm^2",
+            "coculture.fraction_a": "dimensionless",
+        },
+    )
+
+
+def _enzyme() -> Block:
+    """Competitive-inhibition / enzyme stoichiometry block (LabMath-Bench L2).
+
+    Raw inputs are the Km, substrate, Ki and inhibitor concentrations (plus an
+    optional Vmax); the calculators own fractional activity, percent inhibition,
+    run-condition IC50 (Cheng-Prusoff), apparent Km, inhibited velocity and the
+    inhibitor:substrate molar ratio. Constants are inputs — nothing is invented
+    (:mod:`labwright.calc.enzyme`).
+    """
+    return Block(
+        name="enzyme",
+        plan_field="enzyme",
+        input_field="enzyme",
+        calc=calc_enzyme,
+        raw_keys=(
+            "enzyme", "substrate", "km_um", "s_conc_um", "ki_um", "i_conc_um",
+            "vmax_umol_min",
+        ),
+        derived_keys=(
+            "fractional_activity", "percent_inhibition", "ic50_um",
+            "apparent_km_um", "velocity_umol_min", "inhibitor_substrate_ratio",
+        ),
+        consistency_keys=("km_um", "s_conc_um", "ki_um", "i_conc_um"),
+        field_map={
+            "fractional_activity": "enzyme.fractional_activity",
+            "percent_inhibition": "enzyme.percent_inhibition",
+            "ic50_um": "enzyme.ic50_um",
+            "apparent_km_um": "enzyme.apparent_km_um",
+            "velocity_umol_min": "enzyme.velocity_umol_min",
+            "inhibitor_substrate_ratio": "enzyme.inhibitor_substrate_ratio",
+            "km_um": "enzyme.km_um",
+            "s_conc_um": "enzyme.s_conc_um",
+            "ki_um": "enzyme.ki_um",
+            "i_conc_um": "enzyme.i_conc_um",
+            "vmax_umol_min": "enzyme.vmax_umol_min",
+        },
+        sanity_bands={
+            "enzyme.fractional_activity": Band(0.01, 1.0, 0.0, 1.0,
+                "fraction of the uninhibited rate remaining", "dimensionless"),
+            "enzyme.percent_inhibition": Band(0.0, 99.0, 0.0, 100,
+                "percent inhibition", "%"),
+            "enzyme.ic50_um": Band(0.001, 1e4, 1e-6, 1e6,
+                "run-condition IC50 for a competitive inhibitor", "uM"),
+            "enzyme.apparent_km_um": Band(0.001, 1e5, 1e-6, 1e7,
+                "apparent Km under competitive inhibition", "uM"),
+            "enzyme.velocity_umol_min": Band(1e-4, 1e5, 0.0, 1e8,
+                "reaction velocity under inhibition", "umol/min"),
+            "enzyme.inhibitor_substrate_ratio": Band(1e-6, 1e6, 1e-9, 1e9,
+                "inhibitor:substrate molar ratio in the mix", "dimensionless"),
+            "enzyme.km_um": Band(0.001, 1e4, 1e-6, 1e6,
+                "Michaelis constant", "uM"),
+            "enzyme.s_conc_um": Band(0.001, 1e5, 0.0, 1e7,
+                "substrate concentration", "uM"),
+            "enzyme.ki_um": Band(0.001, 1e4, 1e-6, 1e6,
+                "inhibitor dissociation constant", "uM"),
+            "enzyme.i_conc_um": Band(0.0, 1e5, 0.0, 1e7,
+                "inhibitor concentration", "uM"),
+            "enzyme.vmax_umol_min": Band(1e-4, 1e6, 0.0, 1e9,
+                "maximum reaction velocity", "umol/min"),
+        },
+        canonical_units={
+            "enzyme.fractional_activity": "dimensionless",
+            "enzyme.percent_inhibition": "%",
+            "enzyme.ic50_um": "uM",
+            "enzyme.apparent_km_um": "uM",
+            "enzyme.velocity_umol_min": "umol/min",
+            "enzyme.inhibitor_substrate_ratio": "dimensionless",
+            "enzyme.km_um": "uM",
+            "enzyme.s_conc_um": "uM",
+            "enzyme.ki_um": "uM",
+            "enzyme.i_conc_um": "uM",
+            "enzyme.vmax_umol_min": "umol/min",
+        },
+    )
+
+
+def _champ() -> Block:
+    """ChAMP methylation-array batch block (LabMath-Bench L3).
+
+    Raw inputs are the cohort size, the BeadChip platform and an optional QC
+    fail rate; the calculators own the array/chip counts and the expected
+    failed-array number. Platform capacities are Illumina product conventions
+    (:mod:`labwright.calc.bioinformatics`), not literature measurements.
+    """
+    return Block(
+        name="champ",
+        plan_field="champ",
+        input_field="champ",
+        calc=calc_bioinformatics,
+        raw_keys=("n_samples", "platform", "fail_rate_pct"),
+        derived_keys=("n_arrays", "n_chips", "n_expected_failed_arrays"),
+        consistency_keys=("n_samples", "platform"),
+        field_map={
+            "n_arrays": "champ.n_arrays",
+            "n_chips": "champ.n_chips",
+            "n_expected_failed_arrays": "champ.n_expected_failed_arrays",
+            "n_samples": "champ.n_samples",
+        },
+        sanity_bands={
+            "champ.n_arrays": Band(1, 1e5, 1, 1e6,
+                "methylation arrays (one per sample)", "n"),
+            "champ.n_chips": Band(1, 1e5, 1, 1e6,
+                "physical BeadChips", "n"),
+            "champ.n_expected_failed_arrays": Band(0.0, 1e5, 0.0, 1e6,
+                "arrays failing the QC gate at the stated fail rate", "n"),
+            "champ.n_samples": Band(1, 1e6, 1, 1e7,
+                "cohort size", "n"),
+            "champ.fail_rate_pct": Band(0.0, 20, 0.0, 100,
+                "array QC fail rate", "%"),
+        },
+        canonical_units={
+            "champ.n_arrays": "n",
+            "champ.n_chips": "n",
+            "champ.n_expected_failed_arrays": "n",
+            "champ.n_samples": "n",
+            "champ.fail_rate_pct": "%",
+        },
+    )
+
+
+def _plink() -> Block:
+    """PLINK genotype-batch block (LabMath-Bench L3).
+
+    Raw inputs are the sample and variant counts (plus an optional per-chromosome
+    variant count); the calculators own the binary dataset size and the
+    per-chromosome split. The 2-bits/sample/variant ``.bed`` format and the 25
+    standard chromosome files are PLINK 1.9 software conventions
+    (:mod:`labwright.calc.bioinformatics`), not literature values.
+    """
+    return Block(
+        name="plink",
+        plan_field="plink",
+        input_field="plink",
+        calc=calc_bioinformatics,
+        raw_keys=("n_samples", "n_variants", "n_variants_chr"),
+        derived_keys=("bed_size_mb", "n_per_chr_files", "per_chr_bed_size_mb"),
+        consistency_keys=("n_samples", "n_variants"),
+        field_map={
+            "bed_size_mb": "plink.bed_size_mb",
+            "n_per_chr_files": "plink.n_per_chr_files",
+            "per_chr_bed_size_mb": "plink.per_chr_bed_size_mb",
+            "n_samples": "plink.n_samples",
+            "n_variants": "plink.n_variants",
+        },
+        sanity_bands={
+            "plink.bed_size_mb": Band(0.001, 1e6, 0.0, 1e9,
+                "binary PLINK dataset size", "MB"),
+            "plink.n_per_chr_files": Band(25, 25, 1, 100,
+                "per-chromosome PLINK files (1-22, X, Y, MT)", "n"),
+            "plink.per_chr_bed_size_mb": Band(0.001, 1e6, 0.0, 1e9,
+                "one chromosome's binary dataset size", "MB"),
+            "plink.n_samples": Band(1, 1e6, 1, 1e7,
+                "genotyped sample count", "n"),
+            "plink.n_variants": Band(1, 1e7, 1, 1e8,
+                "variant count", "n"),
+            "plink.n_variants_chr": Band(1, 1e7, 1, 1e8,
+                "variant count on one chromosome", "n"),
+        },
+        canonical_units={
+            "plink.bed_size_mb": "MB",
+            "plink.n_per_chr_files": "n",
+            "plink.per_chr_bed_size_mb": "MB",
+            "plink.n_samples": "n",
+            "plink.n_variants": "n",
+            "plink.n_variants_chr": "n",
+        },
+    )
+
+
+def _solvent() -> Block:
+    """Hanging-drop / multi-well solvent-evaporation block (LabMath-Bench L3).
+
+    Raw inputs are the initial drop volume, elapsed time, temperature, relative
+    humidity and the well position (plus an optional edge-factor override); the
+    calculators own the per-well evaporation rate, the residual volume after the
+    stated time (Langmuir d²-law) and the plate-edge multiplier. The edge effect
+    is a documented-range parameter (:mod:`labwright.calc.solvent`), never a
+    hidden measurement.
+    """
+    return Block(
+        name="solvent",
+        plan_field="solvent",
+        input_field="solvent",
+        calc=calc_solvent,
+        raw_keys=(
+            "drop_volume_ul", "hours", "temp_c", "rh", "well_row", "well_col",
+            "edge_factor",
+        ),
+        derived_keys=(
+            "evaporation_rate_ul_hr", "residual_volume_ul",
+            "edge_evaporation_factor",
+        ),
+        consistency_keys=(
+            "drop_volume_ul", "hours", "temp_c", "rh", "well_row", "well_col",
+        ),
+        field_map={
+            "evaporation_rate_ul_hr": "solvent.evaporation_rate_ul_hr",
+            "residual_volume_ul": "solvent.residual_volume_ul",
+            "edge_evaporation_factor": "solvent.edge_evaporation_factor",
+            "drop_volume_ul": "solvent.drop_volume_ul",
+            "hours": "solvent.hours",
+            "temp_c": "solvent.temp_c",
+            "rh": "solvent.rh",
+            "edge_factor": "solvent.edge_factor",
+        },
+        sanity_bands={
+            "solvent.evaporation_rate_ul_hr": Band(0.001, 1e4, 0.0, 1e6,
+                "per-well solvent evaporation rate", "uL/hr"),
+            "solvent.residual_volume_ul": Band(0.0, 1e5, 0.0, 1e6,
+                "remaining drop volume after the stated time", "uL"),
+            "solvent.edge_evaporation_factor": Band(1.0, 2.0, 1.0, 3.0,
+                "plate-edge evaporation multiplier (documented range 1.4-2.0)", "dimensionless"),
+            "solvent.drop_volume_ul": Band(0.01, 1000, 1e-4, 1e5,
+                "initial hanging-drop volume", "uL"),
+            "solvent.hours": Band(0.0, 1000, 0.0, 1e5,
+                "elapsed evaporation time", "h"),
+            "solvent.temp_c": Band(0, 50, 0, 60,
+                "ambient temperature", "degC"),
+            "solvent.rh": Band(0.1, 0.9, 0.0, 1.0,
+                "relative humidity (fraction)", "dimensionless"),
+            "solvent.edge_factor": Band(1.4, 2.0, 1.0, 3.0,
+                "documented plate-edge factor override", "dimensionless"),
+        },
+        canonical_units={
+            "solvent.evaporation_rate_ul_hr": "uL/hr",
+            "solvent.residual_volume_ul": "uL",
+            "solvent.edge_evaporation_factor": "dimensionless",
+            "solvent.drop_volume_ul": "uL",
+            "solvent.hours": "h",
+            "solvent.temp_c": "degC",
+            "solvent.rh": "dimensionless",
+            "solvent.edge_factor": "dimensionless",
+        },
+    )
+
+
 BLOCKS: dict[str, Block] = {
     b.name: b
     for b in (
         _flow(), _cells(), _culture(), _spheroid(), _dosing(), _stats(),
         _pk(), _barrier(), _oxygen(),
         _pumpless(), _breathing(), _pulsatile(), _scaling(), _gradient(),
+        _bioprinting(), _coculture(), _enzyme(), _champ(), _plink(), _solvent(),
     )
 }
 

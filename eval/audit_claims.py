@@ -553,6 +553,43 @@ def audit_doc_labels() -> None:
                "the overclaim is back in the docs")
 
 
+def audit_labmath_bench() -> None:
+    """LabMath-Bench dataset claims (reviewer demand #1).
+
+    Pins the committed dataset the TBA metric is reported over: ≥500 entries,
+    every difficulty level ≥140, every expected value a finite positive target
+    (a zero residual would make relative-error recovery undefined), and every
+    entry tagged validly. The combined file (generated + tagged existing golds)
+    must keep all three levels populated.
+    """
+    from collections import Counter
+
+    gold = json.load(open(_HERE / "gold_labmath_bench.json"))
+    by_level = Counter(e["level"] for e in gold)
+    _check("J  LabMath-Bench: >=500 entries", len(gold) >= 500, f"{len(gold)}")
+    for lv in ("L1", "L2", "L3"):
+        _check(f"J  LabMath-Bench: level {lv} >= 140", by_level.get(lv, 0) >= 140,
+               f"{by_level.get(lv, 0)}")
+    degenerate = [(e["id"], k, v) for e in gold
+                  for k, v in e["expected"].items() if not (v == v and v > 0)]
+    _check("J  LabMath-Bench: no zero/nan expected targets", not degenerate,
+           str(degenerate[:3]))
+    tags_ok = all(
+        e["level"] in ("L1", "L2", "L3")
+        and e["difficulty"] in ("easy", "medium", "hard")
+        and e["scenario"] == "complete-info"
+        and e["source"]
+        for e in gold
+    )
+    _check("J  LabMath-Bench: valid level/difficulty/scenario/source tags", tags_ok)
+    combined = json.load(open(_HERE / "gold_labmath_combined.json"))
+    _check("J  LabMath-Bench combined: >=600 entries", len(combined) >= 600,
+           f"{len(combined)}")
+    for lv in ("L1", "L2", "L3"):
+        n = sum(1 for e in combined if e["level"] == lv)
+        _check(f"J  LabMath-Bench combined: level {lv} >= 140", n >= 140, f"{n}")
+
+
 def main() -> int:
     audit_agent_rows()
     audit_fast_rows()
@@ -566,6 +603,7 @@ def main() -> int:
     audit_schema_prompt()
     audit_value_provenance()
     audit_doc_labels()
+    audit_labmath_bench()
     print(f"audit_claims: {_passes} passed, {len(_failures)} failed")
     for f in _failures:
         print(f)

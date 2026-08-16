@@ -25,6 +25,9 @@ import subprocess
 from typing import Any
 
 from labwright import __version__
+from labwright.calc import bioinformatics as calc_bioinformatics
+from labwright.calc import bioprinting as calc_bioprinting
+from labwright.calc import solvent as calc_solvent
 from labwright.schema.design import DesignPlan
 from labwright.verify.units import CANONICAL_UNITS
 
@@ -60,6 +63,31 @@ FORMULAS: dict[str, str] = {
     "culture.expected_confluence_pct": r"conf = N(t) / (ρ_conv·A_well) × 100,  N(t) = N_0·2^(t/t_d)",
     "dosing.dmso_fraction_vv": r"f = C_working / C_stock",
     "stats.n_per_group": r"n from two-sample t-test power equation",
+    "bioprinting.extrusion_volume_nl": r"V = π·(d/2)²·L,  d = nozzle table (equipment spec)",
+    "bioprinting.print_time_s": r"t = L / v",
+    "bioprinting.extrusion_rate_nl_min": r"V̇ = V / t",
+    "bioprinting.filament_mass_ug": r"m = ρ·V",
+    "bioprinting.lines_to_cover": r"n = ⌈w / pitch⌉",
+    "coculture.cells_per_well_a": r"N_A = f·ρ·A",
+    "coculture.cells_per_well_b": r"N_B = (1−f)·ρ·A",
+    "coculture.total_cells_a": r"N_A,total = N_A,well × wells",
+    "coculture.total_cells_b": r"N_B,total = N_B,well × wells",
+    "coculture.seeding_ratio_ab": r"r = N_A / N_B",
+    "enzyme.fractional_activity": r"v_i/v_0 = [S] / (Km(1 + [I]/Ki) + [S])",
+    "enzyme.percent_inhibition": r"%I = (1 − v_i/v_0)·100",
+    "enzyme.ic50_um": r"IC50 = Ki(1 + [S]/Km)  (Cheng–Prusoff)",
+    "enzyme.apparent_km_um": r"Km^app = Km(1 + [I]/Ki)",
+    "enzyme.velocity_umol_min": r"v = Vmax · v_i/v_0",
+    "enzyme.inhibitor_substrate_ratio": r"[I]/[S]",
+    "champ.n_arrays": r"n_arrays = n_samples",
+    "champ.n_chips": r"n_chips = ⌈n_samples / capacity⌉  (12× 450k, 8× EPIC)",
+    "champ.n_expected_failed_arrays": r"n_fail = n_arrays × p",
+    "plink.bed_size_mb": r"B = n_samples·n_variants / 4 / 1e6",
+    "plink.n_per_chr_files": r"25 standard files (1–22, X, Y, MT)",
+    "plink.per_chr_bed_size_mb": r"B_chr = n_samples·n_variants_chr / 4 / 1e6",
+    "solvent.edge_evaporation_factor": r"f_edge = 1.5 (rows A/H, cols 1/12) else 1.0",
+    "solvent.evaporation_rate_ul_hr": r"V̇ = K·r(V)·f_edge,  K = 4π·D·C_sat(1−RH)/ρ",
+    "solvent.residual_volume_ul": r"V(t) = (V₀^(2/3) − c·f·t)^(3/2)  (d²-law)",
 }
 
 
@@ -187,6 +215,137 @@ def provenance_for(plan: DesignPlan, issues: list | None = None) -> list[dict[st
             ("std_dev", plan.stats.std_dev, ""),
             ("alpha", plan.stats.alpha, ""),
             ("power", plan.stats.power, ""),
+        ])
+
+    if plan.bioprinting is not None:
+        bp = plan.bioprinting
+        add("bioprinting.extrusion_volume_nl", bp.extrusion_volume_nl, [
+            ("nozzle_id", bp.nozzle_id, "—"),
+            ("nozzle_diameter_um", calc_bioprinting.nozzle_diameter_um(bp.nozzle_id), "um"),
+            ("travel_distance_um", bp.travel_distance_um, "um"),
+        ])
+        add("bioprinting.print_time_s", bp.print_time_s, [
+            ("travel_distance_um", bp.travel_distance_um, "um"),
+            ("feed_rate_mm_min", bp.feed_rate_mm_min, "mm/min"),
+        ])
+        add("bioprinting.extrusion_rate_nl_min", bp.extrusion_rate_nl_min, [
+            ("extrusion_volume_nl", bp.extrusion_volume_nl, "nL"),
+            ("print_time_s", bp.print_time_s, "s"),
+        ])
+        add("bioprinting.filament_mass_ug", bp.filament_mass_ug, [
+            ("extrusion_volume_nl", bp.extrusion_volume_nl, "nL"),
+            ("density_g_cm3", bp.density_g_cm3, "g/cm^3"),
+        ])
+        add("bioprinting.lines_to_cover", bp.lines_to_cover, [
+            ("footprint_width_um", bp.footprint_width_um, "um"),
+            ("line_pitch_um", bp.line_pitch_um, "um"),
+        ])
+
+    if plan.coculture is not None:
+        cc = plan.coculture
+        add("coculture.cells_per_well_a", cc.cells_per_well_a, [
+            ("total_density_cells_cm2", cc.total_density_cells_cm2, "cells/cm^2"),
+            ("area_cm2", cc.area_cm2, "cm^2"),
+            ("fraction_a", cc.fraction_a, "—"),
+        ])
+        add("coculture.cells_per_well_b", cc.cells_per_well_b, [
+            ("total_density_cells_cm2", cc.total_density_cells_cm2, "cells/cm^2"),
+            ("area_cm2", cc.area_cm2, "cm^2"),
+            ("fraction_a", cc.fraction_a, "—"),
+        ])
+        add("coculture.total_cells_a", cc.total_cells_a, [
+            ("cells_per_well_a", cc.cells_per_well_a, "cells"),
+            ("wells", cc.wells, "—"),
+        ])
+        add("coculture.total_cells_b", cc.total_cells_b, [
+            ("cells_per_well_b", cc.cells_per_well_b, "cells"),
+            ("wells", cc.wells, "—"),
+        ])
+        add("coculture.seeding_ratio_ab", cc.seeding_ratio_ab, [
+            ("cells_per_well_a", cc.cells_per_well_a, "cells"),
+            ("cells_per_well_b", cc.cells_per_well_b, "cells"),
+        ])
+
+    if plan.enzyme is not None:
+        en = plan.enzyme
+        add("enzyme.fractional_activity", en.fractional_activity, [
+            ("km_um", en.km_um, "uM"),
+            ("s_conc_um", en.s_conc_um, "uM"),
+            ("ki_um", en.ki_um, "uM"),
+            ("i_conc_um", en.i_conc_um, "uM"),
+        ])
+        add("enzyme.percent_inhibition", en.percent_inhibition, [
+            ("fractional_activity", en.fractional_activity, "—"),
+        ])
+        add("enzyme.ic50_um", en.ic50_um, [
+            ("ki_um", en.ki_um, "uM"),
+            ("s_conc_um", en.s_conc_um, "uM"),
+            ("km_um", en.km_um, "uM"),
+        ])
+        add("enzyme.apparent_km_um", en.apparent_km_um, [
+            ("km_um", en.km_um, "uM"),
+            ("i_conc_um", en.i_conc_um, "uM"),
+            ("ki_um", en.ki_um, "uM"),
+        ])
+        add("enzyme.velocity_umol_min", en.velocity_umol_min, [
+            ("vmax_umol_min", en.vmax_umol_min, "umol/min"),
+            ("fractional_activity", en.fractional_activity, "—"),
+        ])
+        add("enzyme.inhibitor_substrate_ratio", en.inhibitor_substrate_ratio, [
+            ("i_conc_um", en.i_conc_um, "uM"),
+            ("s_conc_um", en.s_conc_um, "uM"),
+        ])
+
+    if plan.champ is not None:
+        ch = plan.champ
+        add("champ.n_arrays", float(ch.n_arrays), [
+            ("n_samples", ch.n_samples, "—"),
+            ("platform", ch.platform, "—"),
+        ])
+        add("champ.n_chips", float(ch.n_chips), [
+            ("n_samples", ch.n_samples, "—"),
+            ("platform", ch.platform, "—"),
+            ("chip_capacity", calc_bioinformatics.CHIP_CAPACITY.get(ch.platform, "—"), "samples/chip"),
+        ])
+        add("champ.n_expected_failed_arrays", ch.n_expected_failed_arrays, [
+            ("n_arrays", float(ch.n_arrays), "—"),
+            ("fail_rate_pct", ch.fail_rate_pct, "%"),
+        ])
+
+    if plan.plink is not None:
+        pl = plan.plink
+        add("plink.bed_size_mb", pl.bed_size_mb, [
+            ("n_samples", pl.n_samples, "—"),
+            ("n_variants", pl.n_variants, "—"),
+        ])
+        add("plink.n_per_chr_files", float(pl.n_per_chr_files), [
+            ("chromosomes", "1-22, X, Y, MT", "—"),
+        ])
+        add("plink.per_chr_bed_size_mb", pl.per_chr_bed_size_mb, [
+            ("n_samples", pl.n_samples, "—"),
+            ("n_variants_chr", pl.n_variants_chr, "—"),
+        ])
+
+    if plan.solvent is not None:
+        sv = plan.solvent
+        edge_factor = sv.edge_factor or calc_solvent.EDGE_FACTOR_DEFAULT
+        add("solvent.edge_evaporation_factor", sv.edge_evaporation_factor, [
+            ("well_row", sv.well_row, "—"),
+            ("well_col", sv.well_col, "—"),
+            ("edge_factor", edge_factor, "—"),
+        ])
+        add("solvent.evaporation_rate_ul_hr", sv.evaporation_rate_ul_hr, [
+            ("drop_volume_ul", sv.drop_volume_ul, "uL"),
+            ("temp_c", sv.temp_c, "degC"),
+            ("rh", sv.rh, "—"),
+            ("edge_evaporation_factor", sv.edge_evaporation_factor, "—"),
+        ])
+        add("solvent.residual_volume_ul", sv.residual_volume_ul, [
+            ("drop_volume_ul", sv.drop_volume_ul, "uL"),
+            ("hours", sv.hours, "h"),
+            ("temp_c", sv.temp_c, "degC"),
+            ("rh", sv.rh, "—"),
+            ("edge_evaporation_factor", sv.edge_evaporation_factor, "—"),
         ])
 
     return records

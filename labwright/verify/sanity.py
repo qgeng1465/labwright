@@ -210,6 +210,88 @@ def check_sanity(plan: DesignPlan, issues: list[Issue]) -> None:
             "gradient.flux_mol_m2s": g.flux_mol_m2s,
             "gradient.experiment_hours": g.experiment_hours,
         })
+    if plan.bioprinting is not None:
+        b = plan.bioprinting
+        values.update({
+            "bioprinting.extrusion_volume_nl": b.extrusion_volume_nl,
+            "bioprinting.print_time_s": b.print_time_s,
+            "bioprinting.extrusion_rate_nl_min": b.extrusion_rate_nl_min,
+            "bioprinting.filament_mass_ug": b.filament_mass_ug,
+            "bioprinting.travel_distance_um": b.travel_distance_um,
+            "bioprinting.feed_rate_mm_min": b.feed_rate_mm_min,
+            "bioprinting.density_g_cm3": b.density_g_cm3,
+        })
+        if b.lines_to_cover is not None:
+            values["bioprinting.lines_to_cover"] = b.lines_to_cover
+        if b.footprint_width_um is not None:
+            values["bioprinting.footprint_width_um"] = b.footprint_width_um
+        if b.line_pitch_um is not None:
+            values["bioprinting.line_pitch_um"] = b.line_pitch_um
+    if plan.coculture is not None:
+        c = plan.coculture
+        values.update({
+            "coculture.cells_per_well_a": c.cells_per_well_a,
+            "coculture.cells_per_well_b": c.cells_per_well_b,
+            "coculture.total_cells_a": c.total_cells_a,
+            "coculture.total_cells_b": c.total_cells_b,
+            "coculture.seeding_ratio_ab": c.seeding_ratio_ab,
+            "coculture.total_density_cells_cm2": c.total_density_cells_cm2,
+            "coculture.area_cm2": c.area_cm2,
+            "coculture.fraction_a": c.fraction_a,
+        })
+    if plan.enzyme is not None:
+        e = plan.enzyme
+        values.update({
+            "enzyme.fractional_activity": e.fractional_activity,
+            "enzyme.percent_inhibition": e.percent_inhibition,
+            "enzyme.ic50_um": e.ic50_um,
+            "enzyme.apparent_km_um": e.apparent_km_um,
+            "enzyme.inhibitor_substrate_ratio": e.inhibitor_substrate_ratio,
+            "enzyme.km_um": e.km_um,
+            "enzyme.s_conc_um": e.s_conc_um,
+            "enzyme.ki_um": e.ki_um,
+            "enzyme.i_conc_um": e.i_conc_um,
+        })
+        if e.velocity_umol_min is not None:
+            values["enzyme.velocity_umol_min"] = e.velocity_umol_min
+        if e.vmax_umol_min is not None:
+            values["enzyme.vmax_umol_min"] = e.vmax_umol_min
+    if plan.champ is not None:
+        c = plan.champ
+        values.update({
+            "champ.n_arrays": float(c.n_arrays),
+            "champ.n_chips": float(c.n_chips),
+            "champ.n_samples": float(c.n_samples),
+        })
+        if c.n_expected_failed_arrays is not None:
+            values["champ.n_expected_failed_arrays"] = c.n_expected_failed_arrays
+        if c.fail_rate_pct is not None:
+            values["champ.fail_rate_pct"] = c.fail_rate_pct
+    if plan.plink is not None:
+        p = plan.plink
+        values.update({
+            "plink.bed_size_mb": p.bed_size_mb,
+            "plink.n_per_chr_files": float(p.n_per_chr_files),
+            "plink.n_samples": float(p.n_samples),
+            "plink.n_variants": float(p.n_variants),
+        })
+        if p.per_chr_bed_size_mb is not None:
+            values["plink.per_chr_bed_size_mb"] = p.per_chr_bed_size_mb
+        if p.n_variants_chr is not None:
+            values["plink.n_variants_chr"] = float(p.n_variants_chr)
+    if plan.solvent is not None:
+        s = plan.solvent
+        values.update({
+            "solvent.evaporation_rate_ul_hr": s.evaporation_rate_ul_hr,
+            "solvent.residual_volume_ul": s.residual_volume_ul,
+            "solvent.edge_evaporation_factor": s.edge_evaporation_factor,
+            "solvent.drop_volume_ul": s.drop_volume_ul,
+            "solvent.hours": s.hours,
+            "solvent.temp_c": s.temp_c,
+            "solvent.rh": s.rh,
+        })
+        if s.edge_factor is not None:
+            values["solvent.edge_factor"] = s.edge_factor
 
     for field, value in values.items():
         if value is None:

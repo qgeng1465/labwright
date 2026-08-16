@@ -18,28 +18,39 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from labwright.blocks import ALL_DERIVED_KEYS
 from labwright.calc import barrier as calc_barrier
+from labwright.calc import bioinformatics as calc_bioinformatics
+from labwright.calc import bioprinting as calc_bioprinting
 from labwright.calc import cell as calc_cell
+from labwright.calc import coculture as calc_coculture
 from labwright.calc import culture as calc_culture
+from labwright.calc import enzyme as calc_enzyme
 from labwright.calc import microfluidics as mf
 from labwright.calc import o2 as calc_o2
 from labwright.calc import pk as calc_pk
+from labwright.calc import solvent as calc_solvent
 from labwright.calc import spheroid as calc_spheroid
 from labwright.schema.design import (
     BarrierPlan,
+    BioprintingPlan,
     BreathingPlan,
     CellPlan,
+    ChampPlan,
     ChipGeometry,
+    CoculturePlan,
     CulturePlan,
     DerivedFlowMetrics,
     DesignPlan,
     DosePlan,
+    EnzymePlan,
     FlowParams,
     GradientPlan,
     OxygenPlan,
     PkPlan,
+    PlinkPlan,
     PulsatilePlan,
     PumplessPlan,
     ScalingPlan,
+    SolventPlan,
     SpheroidPlan,
     StatsPlan,
 )
@@ -162,6 +173,42 @@ class DesignInput(BaseModel):
         description="chemoattractant, source_conc_um, sink_conc_um, distance_um, "
         "experiment_hours, diffusivity_m2s (no steepness_um_per_mm / "
         "midpoint_conc_um / relaxation_time_s / flux_mol_m2s; they are computed)",
+    )
+    bioprinting: dict[str, Any] | None = Field(
+        default=None,
+        description="nozzle_id, travel_distance_um, feed_rate_mm_min, density_g_cm3, "
+        "footprint_width_um, line_pitch_um (no extrusion_volume_nl / "
+        "print_time_s / extrusion_rate_nl_min / filament_mass_ug / lines_to_cover; "
+        "they are computed)",
+    )
+    coculture: dict[str, Any] | None = Field(
+        default=None,
+        description="cell_type_a, cell_type_b, total_density_cells_cm2, area_cm2, "
+        "fraction_a, wells (no cells_per_well_a / cells_per_well_b / "
+        "total_cells_a / total_cells_b / seeding_ratio_ab; they are computed)",
+    )
+    enzyme: dict[str, Any] | None = Field(
+        default=None,
+        description="enzyme, substrate, km_um, s_conc_um, ki_um, i_conc_um, "
+        "vmax_umol_min (no fractional_activity / percent_inhibition / ic50_um / "
+        "apparent_km_um / velocity_umol_min / inhibitor_substrate_ratio; they are "
+        "computed)",
+    )
+    champ: dict[str, Any] | None = Field(
+        default=None,
+        description="n_samples, platform, fail_rate_pct (no n_arrays / n_chips / "
+        "n_expected_failed_arrays; they are computed)",
+    )
+    plink: dict[str, Any] | None = Field(
+        default=None,
+        description="n_samples, n_variants, n_variants_chr (no bed_size_mb / "
+        "n_per_chr_files / per_chr_bed_size_mb; they are computed)",
+    )
+    solvent: dict[str, Any] | None = Field(
+        default=None,
+        description="drop_volume_ul, hours, temp_c, rh, well_row, well_col, "
+        "edge_factor (no evaporation_rate_ul_hr / residual_volume_ul / "
+        "edge_evaporation_factor; they are computed)",
     )
     caveats: list[str] = Field(default_factory=list, description="What must be checked in the lab")
 
@@ -542,6 +589,164 @@ def derive_gradient(raw: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def derive_bioprinting(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived BioprintingPlan field from the micro-extrusion inputs.
+
+    The LLM never writes a derived bioprinting number: extruded ink volume, path
+    traversal time, deposition rate and filament mass all come from
+    :mod:`labwright.calc.bioprinting`; the nozzle diameter comes from the
+    registered nozzle table (an equipment-spec convention). Fill-line count is
+    added when both a footprint width and a line pitch are given.
+    """
+    out = dict(raw)
+    nozzle_id = raw["nozzle_id"]
+    d_um = calc_bioprinting.nozzle_diameter_um(nozzle_id)
+    out["extrusion_volume_nl"] = calc_bioprinting.extrusion_volume_nl(
+        raw["travel_distance_um"], d_um
+    )
+    out["print_time_s"] = calc_bioprinting.print_time_s(
+        raw["travel_distance_um"], raw["feed_rate_mm_min"]
+    )
+    out["extrusion_rate_nl_min"] = calc_bioprinting.extrusion_rate_nl_min(
+        out["extrusion_volume_nl"], out["print_time_s"]
+    )
+    out["filament_mass_ug"] = calc_bioprinting.filament_mass_ug(
+        out["extrusion_volume_nl"], raw.get("density_g_cm3", 1.0)
+    )
+    out["lines_to_cover"] = None
+    if raw.get("footprint_width_um") is not None and raw.get("line_pitch_um") is not None:
+        out["lines_to_cover"] = calc_bioprinting.lines_to_cover(
+            raw["footprint_width_um"], raw["line_pitch_um"]
+        )
+    return out
+
+
+def derive_coculture(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived CoculturePlan field from the co-culture seeding inputs.
+
+    The LLM never writes a derived co-culture number: per-well and total cell
+    counts for both populations and the A:B seeding ratio all come from
+    :mod:`labwright.calc.coculture` given the stated total density, surface
+    area, A-fraction and well count.
+    """
+    out = dict(raw)
+    total_density = raw["total_density_cells_cm2"]
+    area = raw["area_cm2"]
+    fraction_a = raw["fraction_a"]
+    wells = int(raw.get("wells", 1))
+    cells_a, cells_b = calc_coculture.cells_per_well(
+        total_density, area, fraction_a
+    )
+    out["cells_per_well_a"] = cells_a
+    out["cells_per_well_b"] = cells_b
+    out["total_cells_a"] = calc_coculture.total_cells(cells_a, wells)
+    out["total_cells_b"] = calc_coculture.total_cells(cells_b, wells)
+    out["seeding_ratio_ab"] = calc_coculture.seeding_ratio(cells_a, cells_b)
+    return out
+
+
+def derive_enzyme(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived EnzymePlan field from the competitive-binding inputs.
+
+    The LLM never writes a derived enzyme number: fractional activity, percent
+    inhibition, run-condition IC50 and apparent Km all come from
+    :mod:`labwright.calc.enzyme` (Cheng–Prusoff); the inhibited velocity is
+    added when a Vmax is supplied.
+    """
+    out = dict(raw)
+    out["fractional_activity"] = calc_enzyme.fractional_activity(
+        raw["km_um"], raw["s_conc_um"], raw["ki_um"], raw["i_conc_um"]
+    )
+    out["percent_inhibition"] = calc_enzyme.percent_inhibition(
+        out["fractional_activity"]
+    )
+    out["ic50_um"] = calc_enzyme.ic50_from_ki(
+        raw["km_um"], raw["s_conc_um"], raw["ki_um"]
+    )
+    out["apparent_km_um"] = calc_enzyme.apparent_km_um(
+        raw["km_um"], raw["i_conc_um"], raw["ki_um"]
+    )
+    out["velocity_umol_min"] = None
+    if raw.get("vmax_umol_min") is not None:
+        out["velocity_umol_min"] = calc_enzyme.velocity_umol_min(
+            raw["vmax_umol_min"], raw["km_um"], raw["s_conc_um"], raw["ki_um"], raw["i_conc_um"]
+        )
+    out["inhibitor_substrate_ratio"] = calc_enzyme.molar_ratio(
+        raw["i_conc_um"], raw["s_conc_um"]
+    )
+    return out
+
+
+def derive_champ(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived ChampPlan field from the methylation-batch inputs.
+
+    The LLM never writes a derived ChAMP number: arrays, physical chips and
+    expected QC failures all come from :mod:`labwright.calc.bioinformatics`
+    (Illumina product conventions). The expected-failure count is added when a
+    fail rate is given.
+    """
+    out = dict(raw)
+    platform = raw["platform"]
+    n_samples = raw["n_samples"]
+    out["n_arrays"] = calc_bioinformatics.champ_arrays_for_samples(
+        n_samples, platform
+    )
+    out["n_chips"] = calc_bioinformatics.champ_chips_for_samples(
+        n_samples, platform
+    )
+    out["n_expected_failed_arrays"] = None
+    if raw.get("fail_rate_pct") is not None:
+        out["n_expected_failed_arrays"] = calc_bioinformatics.champ_expected_failed_arrays(
+            out["n_arrays"], raw["fail_rate_pct"] / 100.0
+        )
+    return out
+
+
+def derive_plink(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived PlinkPlan field from the genotype-batch inputs.
+
+    The LLM never writes a derived PLINK number: dataset size and the standard
+    per-chromosome file count all come from :mod:`labwright.calc.bioinformatics`
+    (PLINK 1.9 software conventions). Per-chromosome size is added when a
+    per-chromosome variant count is given.
+    """
+    out = dict(raw)
+    out["bed_size_mb"] = calc_bioinformatics.plink_bed_size_mb(
+        raw["n_samples"], raw["n_variants"]
+    )
+    out["n_per_chr_files"] = calc_bioinformatics.plink_per_chr_files()
+    out["per_chr_bed_size_mb"] = None
+    if raw.get("n_variants_chr") is not None:
+        out["per_chr_bed_size_mb"] = calc_bioinformatics.plink_per_chr_bed_size_mb(
+            raw["n_samples"], raw["n_variants_chr"]
+        )
+    return out
+
+
+def derive_solvent(raw: dict[str, Any]) -> dict[str, Any]:
+    """Fill every derived SolventPlan field from the evaporation inputs.
+
+    The LLM never writes a derived solvent number: interior Langmuir rate, edge
+    factor and d²-law residual volume all come from
+    :mod:`labwright.calc.solvent` at the stated temperature, humidity and time.
+    """
+    out = dict(raw)
+    edge_factor = raw.get("edge_factor") or calc_solvent.EDGE_FACTOR_DEFAULT
+    out["edge_evaporation_factor"] = calc_solvent.edge_well_factor(
+        raw["well_row"], raw["well_col"], edge_factor
+    )
+    out["evaporation_rate_ul_hr"] = calc_solvent.effective_evaporation_rate_ul_hr(
+        raw["drop_volume_ul"], raw["well_row"], raw["well_col"],
+        temp_c=raw["temp_c"], rh=raw["rh"], edge_factor=edge_factor,
+    )
+    out["residual_volume_ul"] = calc_solvent.drop_volume_after_time(
+        raw["drop_volume_ul"], raw["hours"],
+        temp_c=raw["temp_c"], rh=raw["rh"],
+        evaporation_factor=out["edge_evaporation_factor"],
+    )
+    return out
+
+
 def build_design(inp: DesignInput) -> DesignPlan:
     """Derive every computed field from the agent's raw inputs.
 
@@ -646,6 +851,30 @@ def build_design(inp: DesignInput) -> DesignPlan:
     if inp.gradient is not None:
         gradient = GradientPlan(**derive_gradient(inp.gradient))
 
+    bioprinting = None
+    if inp.bioprinting is not None:
+        bioprinting = BioprintingPlan(**derive_bioprinting(inp.bioprinting))
+
+    coculture = None
+    if inp.coculture is not None:
+        coculture = CoculturePlan(**derive_coculture(inp.coculture))
+
+    enzyme = None
+    if inp.enzyme is not None:
+        enzyme = EnzymePlan(**derive_enzyme(inp.enzyme))
+
+    champ = None
+    if inp.champ is not None:
+        champ = ChampPlan(**derive_champ(inp.champ))
+
+    plink = None
+    if inp.plink is not None:
+        plink = PlinkPlan(**derive_plink(inp.plink))
+
+    solvent = None
+    if inp.solvent is not None:
+        solvent = SolventPlan(**derive_solvent(inp.solvent))
+
     plan = DesignPlan(
         goal=inp.goal,
         rationale=inp.rationale,
@@ -665,6 +894,12 @@ def build_design(inp: DesignInput) -> DesignPlan:
         pulsatile=pulsatile,
         scaling=scaling,
         gradient=gradient,
+        bioprinting=bioprinting,
+        coculture=coculture,
+        enzyme=enzyme,
+        champ=champ,
+        plink=plink,
+        solvent=solvent,
         caveats=inp.caveats,
     )
     return plan

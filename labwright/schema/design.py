@@ -347,6 +347,146 @@ class GradientPlan(BaseModel):
     flux_mol_m2s: float = Field(ge=0, description="DERIVED: D·(C_src − C_sink)/L, steady-state flux (mol/m²/s)")
 
 
+class BioprintingPlan(BaseModel):
+    """Micro-extrusion bioprinting plan (G-code move → deposited ink).
+
+    Derived fields (``extrusion_volume_nl``, ``print_time_s``,
+    ``extrusion_rate_nl_min``, ``filament_mass_ug``, ``lines_to_cover``) are
+    *always* computed by :mod:`labwright.calc.bioprinting` — never proposed by
+    the LLM — and re-checked by the verifier. The nozzle diameter comes from the
+    registered nozzle table, an equipment-spec convention.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    nozzle_id: str = Field(description="Registered nozzle id / alias, e.g. 'nozzle_3', '3', 'cryo3', 'uv5'")
+    travel_distance_um: float = Field(gt=0, description="G-code path travel distance (µm); a 10 mm move = 10000")
+    feed_rate_mm_min: float = Field(gt=0, description="Print feed rate (mm/min)")
+    density_g_cm3: float = Field(default=1.0, gt=0, description="Ink density (g/cm³); cell-laden hydrogels ≈ 1")
+    footprint_width_um: float | None = Field(default=None, gt=0, description="Footprint width to fill with lines (µm); needed for lines_to_cover")
+    line_pitch_um: float | None = Field(default=None, gt=0, description="Centre-to-centre fill-line pitch (µm); needed for lines_to_cover")
+    extrusion_volume_nl: float = Field(gt=0, description="DERIVED: π(d/2)²·L, ink volume over the path (nL)")
+    print_time_s: float = Field(gt=0, description="DERIVED: L/v, traversal time of the move (s)")
+    extrusion_rate_nl_min: float = Field(gt=0, description="DERIVED: volume / time, deposition rate (nL/min)")
+    filament_mass_ug: float = Field(gt=0, description="DERIVED: volume × ink density (µg)")
+    lines_to_cover: float | None = Field(default=None, ge=1, description="DERIVED: ceil(footprint_width / line_pitch), fill-line count")
+
+
+class CoculturePlan(BaseModel):
+    """Two-population co-culture seeding plan (liver-lobule / mixed models).
+
+    Derived fields (``cells_per_well_a``, ``cells_per_well_b``,
+    ``total_cells_a``, ``total_cells_b``, ``seeding_ratio_ab``) are *always*
+    computed by :mod:`labwright.calc.coculture` — never proposed by the LLM —
+    and re-checked by the verifier. The A-fraction is the designer's stated
+    choice; the total density is the stated seeding budget.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    cell_type_a: str = Field(description="Population A, e.g. HUVEC-T1")
+    cell_type_b: str = Field(description="Population B, e.g. HepG2")
+    total_density_cells_cm2: float = Field(gt=0, description="Total seeding density across both populations (cells/cm²)")
+    area_cm2: float = Field(gt=0, description="Culture surface area per well (cm²)")
+    fraction_a: float = Field(gt=0, lt=1, description="Fraction of the total assigned to population A")
+    wells: int = Field(default=1, ge=1, description="Number of wells plated")
+    cells_per_well_a: float = Field(gt=0, description="DERIVED: f·ρ·A, population A cells per well")
+    cells_per_well_b: float = Field(gt=0, description="DERIVED: (1−f)·ρ·A, population B cells per well")
+    total_cells_a: float = Field(gt=0, description="DERIVED: per-well A × wells")
+    total_cells_b: float = Field(gt=0, description="DERIVED: per-well B × wells")
+    seeding_ratio_ab: float = Field(gt=0, description="DERIVED: A cells / B cells")
+
+
+class EnzymePlan(BaseModel):
+    """Competitive-inhibition reaction plan (OA + UDPGA class of question).
+
+    Derived fields (``fractional_activity``, ``percent_inhibition``,
+    ``ic50_um``, ``apparent_km_um``, ``inhibitor_substrate_ratio``, and —
+    when Vmax is supplied — ``velocity_umol_min``) are *always* computed by
+    :mod:`labwright.calc.enzyme` — never proposed by the LLM — and re-checked
+    by the verifier. Km/Ki are stated inputs, never invented here.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    enzyme: str = Field(description="Enzyme / target protein, e.g. UGT2B7")
+    substrate: str = Field(description="Substrate / cofactor, e.g. UDPGA")
+    km_um: float = Field(gt=0, description="Michaelis constant (µM)")
+    s_conc_um: float = Field(gt=0, description="Substrate concentration in the mix (µM)")
+    ki_um: float = Field(gt=0, description="Inhibitor dissociation constant (µM)")
+    i_conc_um: float = Field(ge=0, description="Inhibitor concentration in the mix (µM)")
+    vmax_umol_min: float | None = Field(default=None, gt=0, description="Maximum reaction velocity (µmol/min); needed for velocity_umol_min")
+    fractional_activity: float = Field(gt=0, le=1, description="DERIVED: [S]/(Km(1+[I]/Ki)+[S]), fraction of uninhibited rate remaining")
+    percent_inhibition: float = Field(ge=0, le=100, description="DERIVED: (1 − v_i/v_0)·100")
+    ic50_um: float = Field(gt=0, description="DERIVED: Ki(1 + [S]/Km), run-condition IC50 (Cheng-Prusoff)")
+    apparent_km_um: float = Field(gt=0, description="DERIVED: Km(1 + [I]/Ki)")
+    velocity_umol_min: float | None = Field(default=None, ge=0, description="DERIVED: Vmax × fractional activity (µmol/min), when Vmax supplied")
+    inhibitor_substrate_ratio: float = Field(ge=0, description="DERIVED: [I]/[S] molar ratio")
+
+
+class ChampPlan(BaseModel):
+    """ChAMP methylation-array batch plan (cohort → BeadChips).
+
+    Derived fields (``n_arrays``, ``n_chips``, ``n_expected_failed_arrays``)
+    are *always* computed by :mod:`labwright.calc.bioinformatics` — never
+    proposed by the LLM — and re-checked by the verifier. Platform capacities
+    are Illumina product conventions (software spec), not literature values.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    n_samples: int = Field(ge=1, description="Cohort size (samples)")
+    platform: str = Field(description="BeadChip platform: '450k' or 'epic'")
+    fail_rate_pct: float | None = Field(default=None, ge=0, le=100, description="Expected array QC fail rate (%); needed for n_expected_failed_arrays")
+    n_arrays: int = Field(ge=1, description="DERIVED: one array per sample")
+    n_chips: int = Field(ge=1, description="DERIVED: ceil(n_samples / chip capacity) physical BeadChips")
+    n_expected_failed_arrays: float | None = Field(default=None, ge=0, description="DERIVED: n_arrays × fail_rate, expected QC failures")
+
+
+class PlinkPlan(BaseModel):
+    """PLINK genotype-batch plan (cohort × variants → dataset size).
+
+    Derived fields (``bed_size_mb``, ``n_per_chr_files``,
+    ``per_chr_bed_size_mb``) are *always* computed by
+    :mod:`labwright.calc.bioinformatics` — never proposed by the LLM — and
+    re-checked by the verifier. The 2-bits/sample/variant ``.bed`` format and
+    the 25 chromosome files are PLINK 1.9 software conventions.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    n_samples: int = Field(ge=1, description="Genotyped sample count")
+    n_variants: int = Field(ge=1, description="Variant count across the dataset")
+    n_variants_chr: int | None = Field(default=None, ge=1, description="Variant count on one chromosome; needed for per_chr_bed_size_mb")
+    bed_size_mb: float = Field(gt=0, description="DERIVED: n_samples·n_variants/4/1e6, binary .bed size (MB)")
+    n_per_chr_files: int = Field(ge=1, description="DERIVED: 25 standard per-chromosome files (1–22, X, Y, MT)")
+    per_chr_bed_size_mb: float | None = Field(default=None, ge=0, description="DERIVED: one chromosome's .bed size (MB), when n_variants_chr given")
+
+
+class SolventPlan(BaseModel):
+    """Hanging-drop / multi-well solvent-evaporation plan.
+
+    Derived fields (``evaporation_rate_ul_hr``, ``residual_volume_ul``,
+    ``edge_evaporation_factor``) are *always* computed by
+    :mod:`labwright.calc.solvent` — never proposed by the LLM — and re-checked
+    by the verifier. The edge effect is a documented-range parameter, not a
+    hidden measurement.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    drop_volume_ul: float = Field(gt=0, description="Initial hanging-drop volume (µL)")
+    hours: float = Field(ge=0, description="Elapsed evaporation time (h)")
+    temp_c: float = Field(ge=0, le=50, description="Ambient temperature (°C)")
+    rh: float = Field(ge=0, le=1, description="Relative humidity (fraction, 0–1)")
+    well_row: str = Field(description="96-well row (A–H)")
+    well_col: int = Field(ge=1, le=12, description="96-well column (1–12)")
+    edge_factor: float | None = Field(default=None, ge=1, le=3, description="Plate-edge evaporation factor override (documented range 1.4–2.0); default 1.5")
+    evaporation_rate_ul_hr: float = Field(gt=0, description="DERIVED: interior Langmuir rate × edge factor (µL/hr)")
+    residual_volume_ul: float = Field(ge=0, description="DERIVED: d²-law residual after the stated time (µL)")
+    edge_evaporation_factor: float = Field(ge=1, description="DERIVED: 1.5× for A/H rows or 1/12 columns, else 1.0")
+
+
 class DesignPlan(BaseModel):
     """Top-level output of the Labwright agent."""
 
@@ -368,4 +508,10 @@ class DesignPlan(BaseModel):
     pulsatile: PulsatilePlan | None = Field(default=None, description="Pulsatile cardiac-waveform plan (only for a heart-on-chip)")
     scaling: ScalingPlan | None = Field(default=None, description="Multi-organ allometric scaling plan (only in a body-on-chip)")
     gradient: GradientPlan | None = Field(default=None, description="Concentration-gradient chemotaxis plan (only for a gradient generator)")
+    bioprinting: BioprintingPlan | None = Field(default=None, description="Micro-extrusion bioprinting plan (only when printing ink along G-code paths)")
+    coculture: CoculturePlan | None = Field(default=None, description="Two-population co-culture seeding plan (only when plating mixed populations)")
+    enzyme: EnzymePlan | None = Field(default=None, description="Competitive-inhibition reaction plan (only when a Km/Ki competition is quantified)")
+    champ: ChampPlan | None = Field(default=None, description="ChAMP methylation batch plan (only when sizing methylation BeadChips)")
+    plink: PlinkPlan | None = Field(default=None, description="PLINK genotype batch plan (only when sizing binary .bed datasets)")
+    solvent: SolventPlan | None = Field(default=None, description="Hanging-drop / solvent-evaporation plan (only when tracking evaporation)")
     caveats: list[str] = Field(default_factory=list, description="Things to verify in the lab")

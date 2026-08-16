@@ -21,7 +21,7 @@ from typing import Any, Callable
 
 from pydantic import BaseModel, Field
 
-from labwright.calc import barrier, cell, culture, dosing, microfluidics as mf, o2, pk, spheroid, stats
+from labwright.calc import barrier, bioinformatics, bioprinting, cell, coculture, culture, dosing, enzyme, microfluidics as mf, o2, pk, solvent, spheroid, stats
 from labwright.published import verify_published_protocol
 
 # ---------------------------------------------------------------------------
@@ -276,6 +276,74 @@ _TOOL_NOTES: dict[str, tuple[str, str]] = {
     "mass_cleared_ug_h": (
         "mass_cleared_ug_h(0.6, 10, 464) -> 1.67 µg/h",
         "M = Cl·C_in·MW·6e-5; C_in in µM (not mM — 1000× error), MW in g/mol, result in µg/h",
+    ),
+    "bioprinting_extrusion_volume_nl": (
+        "bioprinting_extrusion_volume_nl(10000, 500) -> 1963.5 nL",
+        "travel in µm, nozzle diameter in µm; a 10 mm move is 10000 µm — mixing mm gives a 1000× error",
+    ),
+    "bioprinting_path_length": (
+        "bioprinting_path_length(8000, 6000, 0) -> 10000 µm",
+        "offsets are the coordinate displacement the G-code actually encodes (Pythagoras)",
+    ),
+    "bioprinting_print_time": (
+        "bioprinting_print_time(10000, 5) -> 120 s",
+        "distance in µm, feed rate in mm/min; the mm conversion is automatic",
+    ),
+    "bioprinting_lines_to_cover": (
+        "bioprinting_lines_to_cover(2000, 400) -> 5",
+        "pitch is centre-to-centre spacing in µm, same unit as the footprint width",
+    ),
+    "coculture_cells_per_well": (
+        "coculture_cells_per_well(5e4, 0.32, 0.25) -> (4000, 12000) cells/well",
+        "fraction_a is the A share (0–1), not a percent — 25% is 0.25",
+    ),
+    "coculture_seeding_ratio": (
+        "coculture_seeding_ratio(4000, 12000) -> 0.333",
+        "returns A/B; invert (B/A) if the protocol quotes the other order",
+    ),
+    "enzyme_fractional_activity": (
+        "enzyme_fractional_activity(180, 180, 25, 60) -> 0.227",
+        "all four concentrations in the same unit (µM); ki is the inhibitor constant",
+    ),
+    "enzyme_ic50_from_ki": (
+        "enzyme_ic50_from_ki(180, 180, 25) -> 50 µM",
+        "run-condition IC50 (Cheng–Prusoff); Ki without the 1+[S]/Km factor is the intrinsic value",
+    ),
+    "enzyme_apparent_km": (
+        "enzyme_apparent_km(180, 60, 25) -> 612 µM",
+        "apparent Km rises with [I]/Ki — the catalytic Km is unchanged",
+    ),
+    "enzyme_molar_ratio": (
+        "enzyme_molar_ratio(60, 180) -> 0.333",
+        "amounts in the same molar unit; this is the [I]/[S] ratio for a competitive inhibitor",
+    ),
+    "champ_chips_for_samples": (
+        "champ_chips_for_samples(98, '450k') -> 9 chips",
+        "450k holds 12 arrays/chip, EPIC holds 8; n_chips = ceil(n_samples/capacity)",
+    ),
+    "champ_expected_failed_arrays": (
+        "champ_expected_failed_arrays(98, 0.05) -> 4.9 arrays",
+        "fail_rate is a fraction (5% = 0.05), not a percent",
+    ),
+    "plink_bed_size_mb": (
+        "plink_bed_size_mb(800, 2400000) -> 480 MB",
+        "binary .bed packs 2 bits/sample/variant — divide by 4 samples/byte then by 1e6 for MB",
+    ),
+    "plink_per_chr_bed_size_mb": (
+        "plink_per_chr_bed_size_mb(800, 120000) -> 24 MB",
+        "same 2-bits rule applied to one chromosome's variant count",
+    ),
+    "solvent_evaporation_rate": (
+        "solvent_evaporation_rate(2, 'A', 1, 25, 0.6) -> ~11.7 µL/hr",
+        "edge wells (rows A/H, cols 1/12) multiply the interior Langmuir rate by ~1.5",
+    ),
+    "solvent_drop_volume_after_time": (
+        "solvent_drop_volume_after_time(2, 0.2, 25, 0.6, 1.5) -> ~1.14 µL",
+        "the d²-law slows as the drop shrinks; a 2 µL drop at 25 °C/60% RH dries in ~23 min",
+    ),
+    "solvent_edge_well_factor": (
+        "solvent_edge_well_factor('D', 6) -> 1.0, ('A', 1) -> 1.5",
+        "only rows A/H and columns 1/12 are edge wells (documented 1.4–2.0 range)",
     ),
 }
 
@@ -595,6 +663,105 @@ class MassClearedParams(BaseModel):
     clearance_uLmin: float = Field(gt=0, description="Clearance, µL/min (from clearance_uLmin)")
     inlet_concentration_uM: float = Field(gt=0, description="Inlet drug concentration, µM")
     molecular_weight_g_mol: float = Field(gt=0, description="Drug molecular weight, g/mol")
+
+
+class ExtrusionVolumeParams(BaseModel):
+    travel_distance_um: float = Field(gt=0, description="G-code path length in µm (a 10 mm move = 10000)")
+    nozzle_diameter_um: float = Field(gt=0, description="Nozzle inner diameter in µm (e.g. cryo nozzle 500, UV nozzle 300)")
+
+
+class PathLengthParams(BaseModel):
+    dx_um: float = Field(description="Cartesian x offset in µm (can be negative)")
+    dy_um: float = Field(description="Cartesian y offset in µm (can be negative)")
+    dz_um: float = Field(default=0.0, description="Cartesian z offset in µm (can be negative)")
+
+
+class BioprintPrintTimeParams(BaseModel):
+    travel_distance_um: float = Field(gt=0, description="G-code path length in µm (a 10 mm move = 10000)")
+    feed_rate_mm_min: float = Field(gt=0, description="Print feed rate in mm/min")
+
+
+class BioprintLinesParams(BaseModel):
+    footprint_width_um: float = Field(gt=0, description="Width to fill with parallel lines in µm")
+    line_pitch_um: float = Field(gt=0, description="Centre-to-centre line pitch in µm")
+
+
+class CoculturePerWellParams(BaseModel):
+    total_density_cells_cm2: float = Field(gt=0, description="Total seeding density across both populations in cells/cm^2")
+    area_cm2: float = Field(gt=0, description="Culture surface area per well in cm^2 (96-well ≈ 0.32)")
+    fraction_a: float = Field(gt=0, lt=1, description="Fraction of the total assigned to population A")
+
+
+class CocultureRatioParams(BaseModel):
+    count_a: float = Field(ge=0, description="Population A cells")
+    count_b: float = Field(gt=0, description="Population B cells")
+
+
+class EnzymeActivityParams(BaseModel):
+    km: float = Field(gt=0, description="Michaelis constant Km, same unit as [S] (µM)")
+    s_conc: float = Field(gt=0, description="Substrate concentration [S] in the mix (µM)")
+    ki: float = Field(gt=0, description="Inhibitor dissociation constant Ki (µM)")
+    i_conc: float = Field(ge=0, description="Inhibitor concentration [I] in the mix (µM)")
+
+
+class EnzymeIc50Params(BaseModel):
+    km: float = Field(gt=0, description="Michaelis constant Km (µM)")
+    s_conc: float = Field(gt=0, description="Substrate concentration [S] (µM)")
+    ki: float = Field(gt=0, description="Inhibitor Ki (µM)")
+
+
+class EnzymeApparentKmParams(BaseModel):
+    km: float = Field(gt=0, description="Michaelis constant Km (µM)")
+    i_conc: float = Field(ge=0, description="Inhibitor concentration [I] (µM)")
+    ki: float = Field(gt=0, description="Inhibitor Ki (µM)")
+
+
+class EnzymeMolarRatioParams(BaseModel):
+    amount_a: float = Field(ge=0, description="Moles/amount of component A")
+    amount_b: float = Field(gt=0, description="Moles/amount of component B")
+
+
+class ChampChipsParams(BaseModel):
+    n_samples: int = Field(ge=1, description="Cohort size (samples)")
+    platform: str = Field(description="BeadChip platform: '450k' (12/chip) or 'epic' (8/chip)")
+
+
+class ChampFailParams(BaseModel):
+    n_arrays: int = Field(ge=1, description="Number of arrays")
+    fail_rate: float = Field(ge=0, le=1, description="Expected QC fail rate as a fraction (5% = 0.05)")
+
+
+class PlinkBedParams(BaseModel):
+    n_samples: int = Field(ge=1, description="Genotyped sample count")
+    n_variants: int = Field(ge=1, description="Variant count")
+
+
+class PlinkPerChrParams(BaseModel):
+    n_samples: int = Field(ge=1, description="Genotyped sample count")
+    n_variants_chr: int = Field(ge=1, description="Variant count on one chromosome")
+
+
+class SolventEvapParams(BaseModel):
+    drop_volume_ul: float = Field(gt=0, description="Drop volume in µL")
+    row: str = Field(description="96-well row (A–H)")
+    col: int = Field(ge=1, le=12, description="96-well column (1–12)")
+    temp_c: float = Field(default=25.0, ge=0, le=50, description="Ambient temperature in °C")
+    rh: float = Field(default=0.6, ge=0, le=1, description="Relative humidity as a fraction (0–1)")
+    edge_factor: float = Field(default=1.5, ge=1.4, le=2.0, description="Plate-edge evaporation factor (documented range 1.4–2.0)")
+
+
+class SolventResidualParams(BaseModel):
+    drop_volume_ul: float = Field(gt=0, description="Initial drop volume in µL")
+    hours: float = Field(ge=0, description="Elapsed evaporation time in h")
+    temp_c: float = Field(default=25.0, ge=0, le=50, description="Ambient temperature in °C")
+    rh: float = Field(default=0.6, ge=0, le=1, description="Relative humidity as a fraction (0–1)")
+    evaporation_factor: float = Field(default=1.0, gt=0, description="Per-well rate multiplier (e.g. plate edge factor)")
+
+
+class SolventEdgeFactorParams(BaseModel):
+    row: str = Field(description="96-well row (A–H)")
+    col: int = Field(ge=1, le=12, description="96-well column (1–12)")
+    edge_factor: float = Field(default=1.5, ge=1.4, le=2.0, description="Plate-edge evaporation factor (documented range 1.4–2.0)")
 
 
 # ---------------------------------------------------------------------------
@@ -1126,6 +1293,186 @@ register_tool(
     pk.mass_cleared_ug_h,
     "pk",
     units_out="µg/h",
+)
+
+# --- LabMath-Bench domains: micro-extrusion bioprinting (L1) -----------------
+
+register_tool(
+    ExtrusionVolumeParams,
+    "bioprinting_extrusion_volume_nl",
+    "Ink volume deposited over a straight G-code path through a given nozzle: V = π(d/2)²·L, nL. "
+    "Call whenever a printing move's deposited ink (or a G-code offset's volume) must be sized.",
+    bioprinting.extrusion_volume_nl,
+    "bioprinting",
+    units_out="nL",
+)
+
+register_tool(
+    PathLengthParams,
+    "bioprinting_path_length",
+    "Cartesian length of a G-code coordinate offset (µm): L = √(Δx² + Δy² + Δz²). Call when a "
+    "printing move is given as an (x, y, z) offset and the extruded volume needs the true path length.",
+    bioprinting.path_length_from_offset,
+    "bioprinting",
+    units_out="µm",
+)
+
+register_tool(
+    BioprintPrintTimeParams,
+    "bioprinting_print_time",
+    "Time to traverse a G-code path at a feed rate: t = L/v, s. Call to check a print segment's duration.",
+    bioprinting.print_time_s,
+    "bioprinting",
+    units_out="s",
+)
+
+register_tool(
+    BioprintLinesParams,
+    "bioprinting_lines_to_cover",
+    "Parallel fill lines to cover a footprint at a line pitch: n = ⌈width/pitch⌉. Call to plan a "
+    "fill/hatch pattern for a printing region.",
+    bioprinting.lines_to_cover,
+    "bioprinting",
+    units_out="lines",
+)
+
+# --- LabMath-Bench domains: co-culture stoichiometry (L2) --------------------
+
+register_tool(
+    CoculturePerWellParams,
+    "coculture_cells_per_well",
+    "Per-well seeding counts of both populations from a total density, area and A-fraction: "
+    "N_A = f·ρ·A, N_B = (1−f)·ρ·A. Call when a mixed seeding (e.g. HUVEC-T1 : HepG2 liver-lobule "
+    "model) must be budgeted per well.",
+    coculture.cells_per_well,
+    "coculture",
+    units_out="cells/well",
+)
+
+register_tool(
+    CocultureRatioParams,
+    "coculture_seeding_ratio",
+    "A : B seeding ratio: r = N_A / N_B. Call to report or compare co-culture stoichiometry.",
+    coculture.seeding_ratio,
+    "coculture",
+    units_out="dimensionless",
+)
+
+# --- LabMath-Bench domains: enzyme competitive binding (L2) ------------------
+
+register_tool(
+    EnzymeActivityParams,
+    "enzyme_fractional_activity",
+    "Fraction of the uninhibited rate remaining under competitive inhibition: "
+    "v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]). Call when a competing small molecule (e.g. OA) must be "
+    "quantified against a substrate-cofactor reaction (e.g. UDPGA conjugation).",
+    enzyme.fractional_activity,
+    "enzyme",
+    units_out="dimensionless",
+)
+
+register_tool(
+    EnzymeIc50Params,
+    "enzyme_ic50_from_ki",
+    "Run-condition IC50 from Ki at a given substrate level (Cheng–Prusoff): IC50 = Ki(1+[S]/Km). "
+    "Call to turn an intrinsic Ki into the concentration that halves activity in this mix.",
+    enzyme.ic50_from_ki,
+    "enzyme",
+    units_out="µM",
+)
+
+register_tool(
+    EnzymeApparentKmParams,
+    "enzyme_apparent_km",
+    "Apparent Km under competitive inhibition: Km^app = Km(1 + [I]/Ki). Call when a Lineweaver-Burk "
+    "or Hanes readout (apparent Km) must be predicted from the mix.",
+    enzyme.apparent_km_um,
+    "enzyme",
+    units_out="µM",
+)
+
+register_tool(
+    EnzymeMolarRatioParams,
+    "enzyme_molar_ratio",
+    "Stoichiometric ratio of two components in a reaction mix: A/B. Call for molar ratios like "
+    "inhibitor : substrate ([I]/[S]).",
+    enzyme.molar_ratio,
+    "enzyme",
+    units_out="dimensionless",
+)
+
+# --- LabMath-Bench domains: pipeline parameterization (L3) -------------------
+
+register_tool(
+    ChampChipsParams,
+    "champ_chips_for_samples",
+    "Physical BeadChips a cohort needs: n_chips = ⌈n_samples / capacity⌉ (450k=12, EPIC=8 per chip). "
+    "Call when sizing a ChAMP methylation batch.",
+    bioinformatics.champ_chips_for_samples,
+    "bioinformatics",
+    units_out="chips",
+)
+
+register_tool(
+    ChampFailParams,
+    "champ_expected_failed_arrays",
+    "Expected arrays failing a QC gate at a given fail rate: n_fail = n_arrays × p. Call when a "
+    "methylation cohort's QC attrition must be budgeted.",
+    bioinformatics.champ_expected_failed_arrays,
+    "bioinformatics",
+    units_out="arrays",
+)
+
+register_tool(
+    PlinkBedParams,
+    "plink_bed_size_mb",
+    "Size of a PLINK binary .bed dataset: B = n_samples·n_variants / 4 / 1e6, MB (2 bits/sample/variant). "
+    "Call when a genotype dataset's disk/time budget must be sized.",
+    bioinformatics.plink_bed_size_mb,
+    "bioinformatics",
+    units_out="MB",
+)
+
+register_tool(
+    PlinkPerChrParams,
+    "plink_per_chr_bed_size_mb",
+    "Size of one chromosome's .bed given its variant count (same 2-bits rule). Call when per-chromosome "
+    "jobs are sized from a split.",
+    bioinformatics.plink_per_chr_bed_size_mb,
+    "bioinformatics",
+    units_out="MB",
+)
+
+# --- LabMath-Bench domains: solvent evaporation (L3) -------------------------
+
+register_tool(
+    SolventEvapParams,
+    "solvent_evaporation_rate",
+    "Per-well effective evaporation rate (µL/hr): interior Langmuir rate × plate edge factor. Call when "
+    "an evaporation gradient across a plate or a hanging-drop budget must be quantified.",
+    solvent.effective_evaporation_rate_ul_hr,
+    "solvent",
+    units_out="µL/hr",
+)
+
+register_tool(
+    SolventResidualParams,
+    "solvent_drop_volume_after_time",
+    "Remaining drop volume after a time at stated T/RH (d²-law): V(t) = (V₀^(2/3) − c·f·t)^(3/2), µL. "
+    "Call to project when a hanging/sitting drop dries out or its residual volume.",
+    solvent.drop_volume_after_time,
+    "solvent",
+    units_out="µL",
+)
+
+register_tool(
+    SolventEdgeFactorParams,
+    "solvent_edge_well_factor",
+    "Evaporation multiplier for a 96-well position (edge wells rows A/H, cols 1/12 ≈ 1.5×, else 1.0×). "
+    "Call when a peripheral-well evaporation bias must be applied or explained.",
+    solvent.edge_well_factor,
+    "solvent",
+    units_out="dimensionless",
 )
 
 

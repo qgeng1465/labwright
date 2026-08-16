@@ -90,6 +90,14 @@ class GoldExperiment:
     #: stated in a non-canonical unit that must be converted), "multi-target"
     #: (two or more targets must be hit jointly).
     scenario: str = "complete-info"
+    #: LabMath-Bench difficulty level: "L1" (fluid & spatial engineering),
+    #: "L2" (biochemical stoichiometry), "L3" (pipeline parameterization).
+    #: Older gold files carry no level — then None, and TBA-by-level simply
+    #: skips them (backwards compatible with committed result JSONs).
+    level: str | None = None
+    #: LabMath-Bench per-entry difficulty tag: "easy" (1–2 targets),
+    #: "medium" (3–4), "hard" (all targets). Older golds carry none.
+    difficulty: str | None = None
 
 
 def load_gold(path: str = GOLD_PATH) -> list[GoldExperiment]:
@@ -115,6 +123,28 @@ def relative_error(got: float | None, expected: float) -> float:
     if expected == 0:
         return abs(got)
     return abs(got - expected) / abs(expected)
+
+
+def tba(records: list[dict], tau: float = 0.05) -> float:
+    """Tolerance-bound accuracy over all scored (entry, key) pairs.
+
+    .. math:: \\text{TBA}(\\tau) = \\frac{1}{N}\\sum_{i} I\\left(\\frac{|y_{pred} - y_{true}|}{y_{true}} \\le \\tau\\right)
+
+    the LabMath-Bench headline metric requested by the reviewer. Each
+    ``record["recovery"]`` holds the per-key relative errors a system scored;
+    ``tba`` averages the within-tolerance indicator over every scored pair, so a
+    multi-target entry weighs each of its targets equally (the usable-rate
+    denominator weights entries). Keys a system did not recover are *absent* from
+    ``recovery`` and so are neither pass nor fail — consistent with the existing
+    ``usable`` rule that a clean but empty answer is not usable. ``tau`` defaults
+    to the strict reviewer threshold 0.05.
+    """
+    n = hits = 0
+    for rec in records:
+        for err in rec.get("recovery", {}).values():
+            n += 1
+            hits += 1 if err <= tau else 0
+    return hits / n if n else float("nan")
 
 
 def classify_failure(rec: dict, gold: GoldExperiment) -> str:
@@ -301,6 +331,23 @@ def _new_domain_claims(plan: DesignPlan) -> dict[str, float]:
     if plan.gradient is not None:
         add(("steepness_um_per_mm", "midpoint_conc_um", "relaxation_time_s",
              "flux_mol_m2s"), plan.gradient)
+    if plan.bioprinting is not None:
+        add(("extrusion_volume_nl", "print_time_s", "extrusion_rate_nl_min",
+             "filament_mass_ug", "lines_to_cover"), plan.bioprinting)
+    if plan.coculture is not None:
+        add(("cells_per_well_a", "cells_per_well_b", "total_cells_a",
+             "total_cells_b", "seeding_ratio_ab"), plan.coculture)
+    if plan.enzyme is not None:
+        add(("fractional_activity", "percent_inhibition", "ic50_um",
+             "apparent_km_um", "velocity_umol_min", "inhibitor_substrate_ratio"),
+            plan.enzyme)
+    if plan.champ is not None:
+        add(("n_arrays", "n_chips", "n_expected_failed_arrays"), plan.champ)
+    if plan.plink is not None:
+        add(("bed_size_mb", "n_per_chr_files", "per_chr_bed_size_mb"), plan.plink)
+    if plan.solvent is not None:
+        add(("evaporation_rate_ul_hr", "residual_volume_ul",
+             "edge_evaporation_factor"), plan.solvent)
     return out
 
 
@@ -408,6 +455,20 @@ _DERIVED_FIELDS = [
     "scaling.transit_time_s", "scaling.residence_time_match_error_s",
     "gradient.steepness_um_per_mm", "gradient.midpoint_conc_um",
     "gradient.relaxation_time_s", "gradient.flux_mol_m2s",
+    # LabMath-Bench domains (five new calc modules)
+    "bioprinting.extrusion_volume_nl", "bioprinting.print_time_s",
+    "bioprinting.extrusion_rate_nl_min", "bioprinting.filament_mass_ug",
+    "bioprinting.lines_to_cover",
+    "coculture.cells_per_well_a", "coculture.cells_per_well_b",
+    "coculture.total_cells_a", "coculture.total_cells_b",
+    "coculture.seeding_ratio_ab",
+    "enzyme.fractional_activity", "enzyme.percent_inhibition",
+    "enzyme.ic50_um", "enzyme.apparent_km_um", "enzyme.velocity_umol_min",
+    "enzyme.inhibitor_substrate_ratio",
+    "champ.n_arrays", "champ.n_chips", "champ.n_expected_failed_arrays",
+    "plink.bed_size_mb", "plink.n_per_chr_files", "plink.per_chr_bed_size_mb",
+    "solvent.evaporation_rate_ul_hr", "solvent.residual_volume_ul",
+    "solvent.edge_evaporation_factor",
 ]
 
 
@@ -1076,7 +1137,9 @@ def _pk_hallucination(extracted: dict[str, float | str | None]) -> float | None:
 #: first written; without explicit branches a bare run on ``gold_new_domains``
 #: would be prompted for *flow* keys and score 1.0 unconditionally.
 _NEW_DOMAIN_BLOCKS = ("barrier", "oxygen", "pumpless", "breathing",
-                     "pulsatile", "scaling", "gradient")
+                     "pulsatile", "scaling", "gradient",
+                     "bioprinting", "coculture", "enzyme", "champ", "plink",
+                     "solvent")
 
 _NEW_DOMAIN_FORMULAS: dict[str, str] = {
     "barrier": "Transwell QC: TEER = (R_total − R_blank) × A and Papp = "
@@ -1096,6 +1159,20 @@ _NEW_DOMAIN_FORMULAS: dict[str, str] = {
                 "organ mass fraction",
     "gradient": "chemotaxis: steepness = (C_src − C_sink)/d, midpoint from the "
                  "steady-state profile, relaxation time = d²/(2D)",
+    "bioprinting": "micro-extrusion: V = π(d/2)²·L (d from the nozzle table), "
+                   "t = L/v, deposition rate = V/t, filament mass = ρ·V, "
+                   "fill lines = ⌈width/pitch⌉",
+    "coculture": "co-seeding: N_A = f·ρ·A, N_B = (1−f)·ρ·A, totals × wells, "
+                 "ratio = N_A/N_B",
+    "enzyme": "competitive inhibition: v_i/v_0 = [S]/(Km(1+[I]/Ki)+[S]), "
+              "IC50 = Ki(1+[S]/Km) (Cheng–Prusoff), Km^app = Km(1+[I]/Ki)",
+    "champ": "ChAMP batch: n_arrays = n_samples, n_chips = ⌈n/12⌉ (450k) or "
+             "⌈n/8⌉ (EPIC), n_fail = n_arrays × p",
+    "plink": "PLINK .bed: B = n_samples·n_variants/4/1e6 MB; 25 per-chromosome "
+             "files, per-chr size by the same 2-bits rule",
+    "solvent": "Langmuir d²-law evaporation: rate = K·r(V)·f_edge, "
+               "V(t) = (V₀^(2/3) − c·f·t)^(3/2), edge factor 1.5 for rows "
+               "A/H and cols 1/12",
 }
 
 
@@ -1136,11 +1213,16 @@ def _new_domain_computed(extracted: dict[str, float | str | None], block: str) -
     :func:`_pk_hallucination`.
     """
     from labwright.calc import barrier as cb_
+    from labwright.calc import bioinformatics as cbi_
+    from labwright.calc import bioprinting as cbp_
+    from labwright.calc import coculture as cco_
+    from labwright.calc import enzyme as cen_
     from labwright.calc import o2 as co2_
     from labwright.calc import pumpless as cp_
     from labwright.calc import breathing as cbr_
     from labwright.calc import pulsatile as cps_
     from labwright.calc import scaling as csc_
+    from labwright.calc import solvent as csv_
     from labwright.calc import gradient as cg_
     out: dict[str, float] = {}
     try:
@@ -1247,6 +1329,82 @@ def _new_domain_computed(extracted: dict[str, float | str | None], block: str) -
                 diff = extracted.get("diffusivity_m2s") or cg_.SMALL_MOLECULE_DIFFUSIVITY_M2S
                 out["relaxation_time_s"] = cg_.diffusive_relaxation_time_s(dist, diff)
                 out["flux_mol_m2s"] = cg_.diffusive_flux_mol_m2s(src, snk, dist, diff)
+        elif block == "bioprinting":
+            travel = extracted.get("travel_distance_um")
+            feed = extracted.get("feed_rate_mm_min")
+            nozzle = extracted.get("nozzle_id")
+            if travel is not None and feed is not None and nozzle is not None:
+                d_um = cbp_.nozzle_diameter_um(nozzle)
+                vol = cbp_.extrusion_volume_nl(travel, d_um)
+                out["extrusion_volume_nl"] = vol
+                t = cbp_.print_time_s(travel, feed)
+                out["print_time_s"] = t
+                out["extrusion_rate_nl_min"] = cbp_.extrusion_rate_nl_min(vol, t)
+                if extracted.get("density_g_cm3") is not None:
+                    out["filament_mass_ug"] = cbp_.filament_mass_ug(vol, extracted["density_g_cm3"])
+                if extracted.get("footprint_width_um") is not None and extracted.get("line_pitch_um") is not None:
+                    out["lines_to_cover"] = cbp_.lines_to_cover(
+                        extracted["footprint_width_um"], extracted["line_pitch_um"])
+        elif block == "coculture":
+            rho = extracted.get("total_density_cells_cm2")
+            area = extracted.get("area_cm2")
+            frac = extracted.get("fraction_a")
+            if None not in (rho, area, frac):
+                a, b = cco_.cells_per_well(rho, area, frac)
+                out["cells_per_well_a"] = a
+                out["cells_per_well_b"] = b
+                wells = int(extracted.get("wells") or 1)
+                out["total_cells_a"] = cco_.total_cells(a, wells)
+                out["total_cells_b"] = cco_.total_cells(b, wells)
+                out["seeding_ratio_ab"] = cco_.seeding_ratio(a, b)
+        elif block == "enzyme":
+            km = extracted.get("km_um")
+            s = extracted.get("s_conc_um")
+            ki = extracted.get("ki_um")
+            i = extracted.get("i_conc_um")
+            if None not in (km, s, ki, i):
+                act = cen_.fractional_activity(km, s, ki, i)
+                out["fractional_activity"] = act
+                out["percent_inhibition"] = cen_.percent_inhibition(act)
+                out["ic50_um"] = cen_.ic50_from_ki(km, s, ki)
+                out["apparent_km_um"] = cen_.apparent_km_um(km, i, ki)
+                out["inhibitor_substrate_ratio"] = cen_.molar_ratio(i, s)
+                if extracted.get("vmax_umol_min") is not None:
+                    out["velocity_umol_min"] = cen_.velocity_umol_min(
+                        extracted["vmax_umol_min"], km, s, ki, i)
+        elif block == "champ":
+            n = extracted.get("n_samples")
+            platform = extracted.get("platform")
+            if n is not None and platform is not None:
+                out["n_arrays"] = float(cbi_.champ_arrays_for_samples(int(n), platform))
+                out["n_chips"] = float(cbi_.champ_chips_for_samples(int(n), platform))
+                if extracted.get("fail_rate_pct") is not None:
+                    out["n_expected_failed_arrays"] = cbi_.champ_expected_failed_arrays(
+                        int(out["n_arrays"]), extracted["fail_rate_pct"] / 100.0)
+        elif block == "plink":
+            n = extracted.get("n_samples")
+            v = extracted.get("n_variants")
+            if n is not None and v is not None:
+                out["bed_size_mb"] = cbi_.plink_bed_size_mb(int(n), int(v))
+                out["n_per_chr_files"] = float(cbi_.plink_per_chr_files())
+                if extracted.get("n_variants_chr") is not None:
+                    out["per_chr_bed_size_mb"] = cbi_.plink_per_chr_bed_size_mb(
+                        int(n), int(extracted["n_variants_chr"]))
+        elif block == "solvent":
+            v0 = extracted.get("drop_volume_ul")
+            hours = extracted.get("hours")
+            temp = extracted.get("temp_c")
+            rh = extracted.get("rh")
+            row = extracted.get("well_row")
+            col = extracted.get("well_col")
+            if None not in (v0, hours, temp, rh, row, col):
+                edge = extracted.get("edge_factor") or csv_.EDGE_FACTOR_DEFAULT
+                f_edge = csv_.edge_well_factor(row, int(col), edge)
+                out["edge_evaporation_factor"] = f_edge
+                out["evaporation_rate_ul_hr"] = csv_.effective_evaporation_rate_ul_hr(
+                    v0, row, int(col), temp_c=temp, rh=rh, edge_factor=edge)
+                out["residual_volume_ul"] = csv_.drop_volume_after_time(
+                    v0, hours, temp_c=temp, rh=rh, evaporation_factor=f_edge)
     except (ValueError, TypeError, ArithmeticError, KeyError):
         return {}
     return out
@@ -1548,6 +1706,7 @@ def evaluate(
                 "id": g.id,
                 "blind_strength": g.blind_strength,
                 "scenario": g.scenario,
+                "level": g.level,
             },
         }
         for name in systems:

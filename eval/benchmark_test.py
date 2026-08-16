@@ -703,3 +703,96 @@ def test_gold_new_domains_rederive_and_match_committed():
             committed_val = committed[spec["id"]]["expected"][key]
             assert relative_error(claimed[key], committed_val) < 1e-9, (
                 f"{spec['id']}: {key} drifted {claimed[key]} vs committed {committed_val}")
+
+
+# ---------------------------------------------------------------------------
+# LabMath-Bench: level field + tolerance-bound accuracy (TBA)
+# ---------------------------------------------------------------------------
+
+
+def test_tba_metric_agrees_with_usable_tolerance():
+    from eval.benchmark import tba
+
+    # every key within τ → 1.0; every key beyond τ → 0.0
+    assert tba([{"recovery": {"a": 0.0, "b": 0.04}}], tau=0.05) == 1.0
+    assert tba([{"recovery": {"a": 0.06}}], tau=0.05) == 0.0
+    # a multi-key entry weighs each pair: 1 of 2 within tolerance
+    assert tba([{"recovery": {"a": 0.01, "b": 0.5}}], tau=0.05) == 0.5
+    # aggregation across entries
+    assert tba([{"recovery": {"a": 0.01}}, {"recovery": {"b": 0.5}}], tau=0.05) == 0.5
+
+
+def test_tba_boundary_is_inclusive_and_tau_scales():
+    from eval.benchmark import tba
+
+    # exactly τ passes (≤); a hair over fails
+    assert tba([{"recovery": {"a": 0.05}}], tau=0.05) == 1.0
+    assert tba([{"recovery": {"a": 0.0500001}}], tau=0.05) == 0.0
+    # the same miss passes at a looser τ
+    assert tba([{"recovery": {"a": 0.0500001}}], tau=0.10) == 1.0
+
+
+def test_gold_level_defaults_none_and_roundtrips():
+    g = GoldExperiment(id="x", goal="g", expected={"a": 1.0}, source="s")
+    assert g.level is None
+    g2 = GoldExperiment(id="x", goal="g", expected={"a": 1.0}, source="s", level="L2")
+    assert g2.level == "L2"
+
+
+def test_report_derive_tba_and_by_level():
+    from eval.report import derive
+
+    result = {
+        "n_gold": 3,
+        "model": "test",
+        "per_entry": [
+            {"id": "g1", "gold": {"id": "g1", "level": "L1", "blind_strength": None,
+                                  "scenario": "complete-info"},
+             "bare": {"recovery": {"a": 0.01, "b": 0.02}, "hallucination_rate": 0.0,
+                      "valid": True},
+             "labwright": {"recovery": {"a": 0.0}, "hallucination_rate": 0.0,
+                           "valid": True}},
+            {"id": "g2", "gold": {"id": "g2", "level": "L1", "blind_strength": None,
+                                  "scenario": "complete-info"},
+             "bare": {"recovery": {"a": 0.9}, "hallucination_rate": 0.0, "valid": False},
+             "labwright": {"recovery": {"a": 0.0}, "hallucination_rate": 0.0,
+                           "valid": True}},
+            {"id": "g3", "gold": {"id": "g3", "level": "L2", "blind_strength": None,
+                                  "scenario": "complete-info"},
+             "bare": {"recovery": {"a": 0.01}, "hallucination_rate": 0.0, "valid": True},
+             "labwright": {"recovery": {"a": 0.0}, "hallucination_rate": 0.0,
+                           "valid": True}},
+        ],
+    }
+    d = derive(result)
+    # bare keys: g1 a(0.01), b(0.02), g2 a(0.9), g3 a(0.01) → 3 of 4 within τ=0.05
+    assert d["bare"]["tba"] == pytest.approx(0.75)
+    # labwright keys: 3 of 3 recovered at machine precision
+    assert d["labwright"]["tba"] == 1.0
+    bl = d["bare"]["tba_by_level"]
+    assert bl["L1"]["n_pairs"] == 3  # g1 a+b, g2 a
+    assert bl["L1"]["tba"] == pytest.approx(2 / 3)
+    assert bl["L2"]["n_pairs"] == 1
+    assert bl["L2"]["tba"] == 1.0
+    assert len(bl["L1"]["ci"]) == 2 and bl["L1"]["ci"][0] <= bl["L1"]["tba"] <= bl["L1"]["ci"][1]
+    # entries without a level are skipped, not NaN'd
+    assert "L3" not in bl
+
+
+def test_evaluate_carries_level_into_gold_metadata():
+    """evaluate() copies the gold level into each per-entry gold record."""
+    from eval.benchmark import evaluate
+
+    def chat(prompt: str) -> str:
+        data = {"width_um": 400, "height_um": 100, "length_mm": 20, "flow_rate_uLmin": 2.0,
+                "viscosity_pas": 1e-3, "density_kgm3": 1000.0, "shear_pa": 0.05}
+        return "{" + ",".join(f'"{k}":{v}' for k, v in data.items()) + "}"
+
+    def agent_factory():
+        raise AssertionError("labwright should not run when excluded")
+
+    gold = GoldExperiment(
+        id="flow-l1", goal="flow", expected={"shear_pa": 0.05}, source="s", level="L1"
+    )
+    summary = evaluate([gold], agent_factory, chat, systems=("bare",))
+    assert summary["per_entry"][0]["gold"]["level"] == "L1"

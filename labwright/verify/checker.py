@@ -24,11 +24,16 @@ from dataclasses import dataclass
 from typing import Any
 
 from labwright.calc import barrier as calc_barrier
+from labwright.calc import bioinformatics as calc_bioinformatics
+from labwright.calc import bioprinting as calc_bioprinting
 from labwright.calc import cell as calc_cell
+from labwright.calc import coculture as calc_coculture
 from labwright.calc import culture as calc_culture
 from labwright.calc import dosing as calc_dosing
+from labwright.calc import enzyme as calc_enzyme
 from labwright.calc import microfluidics as mf
 from labwright.calc import pk as calc_pk
+from labwright.calc import solvent as calc_solvent
 from labwright.calc import spheroid as calc_spheroid
 from labwright.schema.design import DesignPlan
 
@@ -1098,6 +1103,352 @@ def check_gradient(plan: DesignPlan, issues: list[Issue]) -> None:
         ))
 
 
+def check_bioprinting(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the micro-extrusion bioprinting plan when present.
+
+    Re-runs :mod:`labwright.calc.bioprinting` on the nozzle/path/feed inputs and
+    verifies every derived field; warns when a footprint width or line pitch is
+    missing so ``lines_to_cover`` cannot be derived.
+    """
+    b = plan.bioprinting
+    if b is None:
+        return
+
+    try:
+        d_um = calc_bioprinting.nozzle_diameter_um(b.nozzle_id)
+    except ValueError as exc:
+        issues.append(Issue(
+            level="error", field="bioprinting.nozzle_id",
+            message=f"nozzle cannot be resolved: {exc}",
+        ))
+        return
+    expected_v = calc_bioprinting.extrusion_volume_nl(b.travel_distance_um, d_um)
+    if not _close(expected_v, b.extrusion_volume_nl):
+        issues.append(Issue(
+            level="error", field="bioprinting.extrusion_volume_nl",
+            message="extrusion_volume_nl does not equal π(d/2)²·L",
+            expected=expected_v, found=b.extrusion_volume_nl,
+        ))
+    expected_t = calc_bioprinting.print_time_s(b.travel_distance_um, b.feed_rate_mm_min)
+    if not _close(expected_t, b.print_time_s):
+        issues.append(Issue(
+            level="error", field="bioprinting.print_time_s",
+            message="print_time_s does not equal L/v",
+            expected=expected_t, found=b.print_time_s,
+        ))
+    expected_rate = calc_bioprinting.extrusion_rate_nl_min(b.extrusion_volume_nl, b.print_time_s)
+    if not _close(expected_rate, b.extrusion_rate_nl_min):
+        issues.append(Issue(
+            level="error", field="bioprinting.extrusion_rate_nl_min",
+            message="extrusion_rate_nl_min does not equal volume / traversal time",
+            expected=expected_rate, found=b.extrusion_rate_nl_min,
+        ))
+    expected_mass = calc_bioprinting.filament_mass_ug(b.extrusion_volume_nl, b.density_g_cm3)
+    if not _close(expected_mass, b.filament_mass_ug):
+        issues.append(Issue(
+            level="error", field="bioprinting.filament_mass_ug",
+            message="filament_mass_ug does not equal volume × ink density",
+            expected=expected_mass, found=b.filament_mass_ug,
+        ))
+
+    if b.lines_to_cover is not None:
+        if b.footprint_width_um is None or b.line_pitch_um is None:
+            issues.append(Issue(
+                level="warning", field="bioprinting.lines_to_cover",
+                message="lines_to_cover present but footprint_width_um / line_pitch_um are missing — it cannot be re-derived",
+            ))
+        else:
+            expected_lines = calc_bioprinting.lines_to_cover(b.footprint_width_um, b.line_pitch_um)
+            if not _close(expected_lines, b.lines_to_cover):
+                issues.append(Issue(
+                    level="error", field="bioprinting.lines_to_cover",
+                    message="lines_to_cover does not equal ceil(width / pitch)",
+                    expected=expected_lines, found=b.lines_to_cover,
+                ))
+    elif b.footprint_width_um is not None and b.line_pitch_um is not None:
+        issues.append(Issue(
+            level="warning", field="bioprinting.lines_to_cover",
+            message="footprint_width_um / line_pitch_um are present but lines_to_cover is not computed",
+        ))
+
+
+def check_coculture(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the two-population co-culture seeding plan when present.
+
+    Re-runs :mod:`labwright.calc.coculture` on the density/area/fraction inputs
+    and verifies every derived field; warns when the A-fraction leaves one
+    population a negligible minority (a nominal co-culture).
+    """
+    c = plan.coculture
+    if c is None:
+        return
+
+    cells_a, cells_b = calc_coculture.cells_per_well(
+        c.total_density_cells_cm2, c.area_cm2, c.fraction_a
+    )
+    if not _close(cells_a, c.cells_per_well_a):
+        issues.append(Issue(
+            level="error", field="coculture.cells_per_well_a",
+            message="cells_per_well_a does not equal f·ρ·A",
+            expected=cells_a, found=c.cells_per_well_a,
+        ))
+    if not _close(cells_b, c.cells_per_well_b):
+        issues.append(Issue(
+            level="error", field="coculture.cells_per_well_b",
+            message="cells_per_well_b does not equal (1−f)·ρ·A",
+            expected=cells_b, found=c.cells_per_well_b,
+        ))
+    expected_ta = calc_coculture.total_cells(c.cells_per_well_a, c.wells)
+    if not _close(expected_ta, c.total_cells_a):
+        issues.append(Issue(
+            level="error", field="coculture.total_cells_a",
+            message="total_cells_a does not equal cells_per_well_a × wells",
+            expected=expected_ta, found=c.total_cells_a,
+        ))
+    expected_tb = calc_coculture.total_cells(c.cells_per_well_b, c.wells)
+    if not _close(expected_tb, c.total_cells_b):
+        issues.append(Issue(
+            level="error", field="coculture.total_cells_b",
+            message="total_cells_b does not equal cells_per_well_b × wells",
+            expected=expected_tb, found=c.total_cells_b,
+        ))
+    expected_ratio = calc_coculture.seeding_ratio(c.cells_per_well_a, c.cells_per_well_b)
+    if not _close(expected_ratio, c.seeding_ratio_ab):
+        issues.append(Issue(
+            level="error", field="coculture.seeding_ratio_ab",
+            message="seeding_ratio_ab does not equal A cells / B cells",
+            expected=expected_ratio, found=c.seeding_ratio_ab,
+        ))
+
+    if min(c.fraction_a, 1.0 - c.fraction_a) < 0.05:
+        issues.append(Issue(
+            level="warning", field="coculture.fraction_a",
+            message=f"fraction_a {c.fraction_a:.3f} leaves one population <5% of the total — "
+            "a nominal co-culture; confirm both populations are actually represented",
+        ))
+
+
+def check_enzyme(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the competitive-inhibition reaction plan when present.
+
+    Re-runs :mod:`labwright.calc.enzyme` (Cheng–Prusoff) on the Km/[S]/Ki/[I]
+    inputs and verifies every derived field; warns when the inhibitor
+    concentration exceeds the substrate (a "runaway inhibitor" regime whose IC50
+    interpretation is fragile).
+    """
+    e = plan.enzyme
+    if e is None:
+        return
+
+    act = calc_enzyme.fractional_activity(e.km_um, e.s_conc_um, e.ki_um, e.i_conc_um)
+    if not _close(act, e.fractional_activity):
+        issues.append(Issue(
+            level="error", field="enzyme.fractional_activity",
+            message="fractional_activity does not equal [S]/(Km(1+[I]/Ki)+[S])",
+            expected=act, found=e.fractional_activity,
+        ))
+    pct = calc_enzyme.percent_inhibition(act)
+    if not _close(pct, e.percent_inhibition):
+        issues.append(Issue(
+            level="error", field="enzyme.percent_inhibition",
+            message="percent_inhibition does not equal (1 − activity)·100",
+            expected=pct, found=e.percent_inhibition,
+        ))
+    ic50 = calc_enzyme.ic50_from_ki(e.km_um, e.s_conc_um, e.ki_um)
+    if not _close(ic50, e.ic50_um):
+        issues.append(Issue(
+            level="error", field="enzyme.ic50_um",
+            message="ic50_um does not equal Ki(1 + [S]/Km) (Cheng–Prusoff)",
+            expected=ic50, found=e.ic50_um,
+        ))
+    app_km = calc_enzyme.apparent_km_um(e.km_um, e.i_conc_um, e.ki_um)
+    if not _close(app_km, e.apparent_km_um):
+        issues.append(Issue(
+            level="error", field="enzyme.apparent_km_um",
+            message="apparent_km_um does not equal Km(1 + [I]/Ki)",
+            expected=app_km, found=e.apparent_km_um,
+        ))
+    ratio = calc_enzyme.molar_ratio(e.i_conc_um, e.s_conc_um)
+    if not _close(ratio, e.inhibitor_substrate_ratio):
+        issues.append(Issue(
+            level="error", field="enzyme.inhibitor_substrate_ratio",
+            message="inhibitor_substrate_ratio does not equal [I]/[S]",
+            expected=ratio, found=e.inhibitor_substrate_ratio,
+        ))
+
+    if e.velocity_umol_min is not None:
+        if e.vmax_umol_min is None:
+            issues.append(Issue(
+                level="warning", field="enzyme.velocity_umol_min",
+                message="velocity_umol_min present but vmax_umol_min is missing — it cannot be re-derived",
+            ))
+        else:
+            vel = calc_enzyme.velocity_umol_min(
+                e.vmax_umol_min, e.km_um, e.s_conc_um, e.ki_um, e.i_conc_um
+            )
+            if not _close(vel, e.velocity_umol_min):
+                issues.append(Issue(
+                    level="error", field="enzyme.velocity_umol_min",
+                    message="velocity_umol_min does not equal Vmax × fractional activity",
+                    expected=vel, found=e.velocity_umol_min,
+                ))
+    elif e.vmax_umol_min is not None:
+        issues.append(Issue(
+            level="warning", field="enzyme.velocity_umol_min",
+            message="vmax_umol_min is present but velocity_umol_min is not computed",
+        ))
+
+    if e.i_conc_um > 0 and e.i_conc_um > 10 * e.s_conc_um:
+        issues.append(Issue(
+            level="warning", field="enzyme.i_conc_um",
+            message=f"[I] {e.i_conc_um:g} µM is >10× [S] {e.s_conc_um:g} µM — the inhibitor "
+            "dominates the mix and the competitive-inhibition IC50 (Cheng–Prusoff) "
+            "interpretation is fragile at this ratio",
+        ))
+
+
+def check_champ(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the ChAMP methylation batch plan when present.
+
+    Re-runs :mod:`labwright.calc.bioinformatics` on the cohort/platform inputs
+    and verifies every derived field; warns when the expected QC failure count
+    cannot be derived for want of a fail rate.
+    """
+    c = plan.champ
+    if c is None:
+        return
+
+    expected_arrays = calc_bioinformatics.champ_arrays_for_samples(c.n_samples, c.platform)
+    if not _close(expected_arrays, c.n_arrays):
+        issues.append(Issue(
+            level="error", field="champ.n_arrays",
+            message="n_arrays does not equal n_samples",
+            expected=expected_arrays, found=c.n_arrays,
+        ))
+    expected_chips = calc_bioinformatics.champ_chips_for_samples(c.n_samples, c.platform)
+    if not _close(expected_chips, c.n_chips):
+        issues.append(Issue(
+            level="error", field="champ.n_chips",
+            message="n_chips does not equal ceil(n_samples / chip capacity)",
+            expected=expected_chips, found=c.n_chips,
+        ))
+    if c.n_expected_failed_arrays is not None:
+        if c.fail_rate_pct is None:
+            issues.append(Issue(
+                level="warning", field="champ.n_expected_failed_arrays",
+                message="n_expected_failed_arrays present but fail_rate_pct is missing — it cannot be re-derived",
+            ))
+        else:
+            expected_fail = calc_bioinformatics.champ_expected_failed_arrays(
+                c.n_arrays, c.fail_rate_pct / 100.0
+            )
+            if not _close(expected_fail, c.n_expected_failed_arrays):
+                issues.append(Issue(
+                    level="error", field="champ.n_expected_failed_arrays",
+                    message="n_expected_failed_arrays does not equal n_arrays × fail_rate",
+                    expected=expected_fail, found=c.n_expected_failed_arrays,
+                ))
+    elif c.fail_rate_pct is not None:
+        issues.append(Issue(
+            level="warning", field="champ.n_expected_failed_arrays",
+            message="fail_rate_pct is present but n_expected_failed_arrays is not computed",
+        ))
+
+
+def check_plink(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the PLINK genotype batch plan when present.
+
+    Re-runs :mod:`labwright.calc.bioinformatics` on the cohort/variant inputs
+    and verifies every derived field; warns when a per-chromosome variant count
+    is given but the per-chromosome size was not derived.
+    """
+    p = plan.plink
+    if p is None:
+        return
+
+    expected_bed = calc_bioinformatics.plink_bed_size_mb(p.n_samples, p.n_variants)
+    if not _close(expected_bed, p.bed_size_mb):
+        issues.append(Issue(
+            level="error", field="plink.bed_size_mb",
+            message="bed_size_mb does not equal n_samples × n_variants / 4 / 1e6",
+            expected=expected_bed, found=p.bed_size_mb,
+        ))
+    expected_files = calc_bioinformatics.plink_per_chr_files()
+    if not _close(expected_files, p.n_per_chr_files):
+        issues.append(Issue(
+            level="error", field="plink.n_per_chr_files",
+            message="n_per_chr_files does not equal the standard 25 per-chromosome files",
+            expected=expected_files, found=p.n_per_chr_files,
+        ))
+    if p.per_chr_bed_size_mb is not None:
+        if p.n_variants_chr is None:
+            issues.append(Issue(
+                level="warning", field="plink.per_chr_bed_size_mb",
+                message="per_chr_bed_size_mb present but n_variants_chr is missing — it cannot be re-derived",
+            ))
+        else:
+            expected_pc = calc_bioinformatics.plink_per_chr_bed_size_mb(p.n_samples, p.n_variants_chr)
+            if not _close(expected_pc, p.per_chr_bed_size_mb):
+                issues.append(Issue(
+                    level="error", field="plink.per_chr_bed_size_mb",
+                    message="per_chr_bed_size_mb does not equal n_samples × n_variants_chr / 4 / 1e6",
+                    expected=expected_pc, found=p.per_chr_bed_size_mb,
+                ))
+    elif p.n_variants_chr is not None:
+        issues.append(Issue(
+            level="warning", field="plink.per_chr_bed_size_mb",
+            message="n_variants_chr is present but per_chr_bed_size_mb is not computed",
+        ))
+
+
+def check_solvent(plan: DesignPlan, issues: list[Issue]) -> None:
+    """Cross-check the hanging-drop / solvent-evaporation plan when present.
+
+    Re-runs :mod:`labwright.calc.solvent` on the drop/position/climate inputs
+    and verifies every derived field; warns when the drop dries out entirely
+    within the stated time (residual ≈ 0 — a dried drop).
+    """
+    s = plan.solvent
+    if s is None:
+        return
+
+    edge_factor = s.edge_factor or calc_solvent.EDGE_FACTOR_DEFAULT
+    expected_edge = calc_solvent.edge_well_factor(s.well_row, s.well_col, edge_factor)
+    if not _close(expected_edge, s.edge_evaporation_factor):
+        issues.append(Issue(
+            level="error", field="solvent.edge_evaporation_factor",
+            message="edge_evaporation_factor does not match the well's plate position",
+            expected=expected_edge, found=s.edge_evaporation_factor,
+        ))
+    expected_rate = calc_solvent.effective_evaporation_rate_ul_hr(
+        s.drop_volume_ul, s.well_row, s.well_col, temp_c=s.temp_c, rh=s.rh, edge_factor=edge_factor
+    )
+    if not _close(expected_rate, s.evaporation_rate_ul_hr):
+        issues.append(Issue(
+            level="error", field="solvent.evaporation_rate_ul_hr",
+            message="evaporation_rate_ul_hr does not equal interior Langmuir rate × edge factor",
+            expected=expected_rate, found=s.evaporation_rate_ul_hr,
+        ))
+    expected_residual = calc_solvent.drop_volume_after_time(
+        s.drop_volume_ul, s.hours, temp_c=s.temp_c, rh=s.rh,
+        evaporation_factor=s.edge_evaporation_factor,
+    )
+    if not _close(expected_residual, s.residual_volume_ul):
+        issues.append(Issue(
+            level="error", field="solvent.residual_volume_ul",
+            message="residual_volume_ul does not match the d²-law projection",
+            expected=expected_residual, found=s.residual_volume_ul,
+        ))
+
+    if s.residual_volume_ul <= 0.05 * s.drop_volume_ul:
+        issues.append(Issue(
+            level="warning", field="solvent.residual_volume_ul",
+            message=f"residual volume {s.residual_volume_ul:.3g} µL is ≤5% of the initial "
+            f"{s.drop_volume_ul:g} µL — the drop dries out (or nearly) within {s.hours:g} h; "
+            "a crystal screen that dries mid-run cannot be scored",
+        ))
+
+
 def verify_design(plan: DesignPlan) -> list[Issue]:
     """Run every cross-check on a design plan. Errors must be resolved before use.
 
@@ -1120,6 +1471,12 @@ def verify_design(plan: DesignPlan) -> list[Issue]:
     check_pulsatile(plan, issues)
     check_scaling(plan, issues)
     check_gradient(plan, issues)
+    check_bioprinting(plan, issues)
+    check_coculture(plan, issues)
+    check_enzyme(plan, issues)
+    check_champ(plan, issues)
+    check_plink(plan, issues)
+    check_solvent(plan, issues)
     from labwright.verify.sanity import check_sanity
     from labwright.verify.safety import check_safety
     from labwright.verify.prose import check_prose_numbers

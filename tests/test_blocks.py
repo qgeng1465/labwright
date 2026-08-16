@@ -35,6 +35,12 @@ EXPECTED_BLOCKS = {
     "pulsatile": "pulsatile",
     "scaling": "scaling",
     "gradient": "gradient",
+    "bioprinting": "bioprinting",
+    "coculture": "coculture",
+    "enzyme": "enzyme",
+    "champ": "champ",
+    "plink": "plink",
+    "solvent": "solvent",
 }
 
 
