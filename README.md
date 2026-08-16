@@ -546,7 +546,7 @@ recall, not novel physiology** — the generators reuse the gold target values,
 so 11 of the 15 blind goals carry a target that also appears in the fast
 path's training goals (see `eval/audit_claims.py`), and 3 of its 4 blind
 recoveries land on such goals (`blind-24well-medium-partial`, 4.08 mL, is the
-one genuinely unseen-value recovery). The never-trained agent loop (40–47 %)
+one genuinely unseen-value recovery). The never-trained agent loop (40–47%)
 carries the novel-recall claim. Honest caveat: the reading and plate-culture
 columns still overstate generalization: all 24 reading and 8/14 plate-culture
 gold goals appear in the gold-pair supervision (46 pairs = 24 reading + 8
