@@ -11,11 +11,13 @@ it (the ReAct loop and its budget, the calc/ modules, the four verifier
 layers, the provenance/ELN export), so the one-glance story stays readable
 while the components a reviewer would ask about are named.
 
-A numbers band across the top anchors the claim (usable designs 88-100 %,
-hallucination 0.000 vs bare LLM 0-12 % / ~1.0); a bottom lane shows the naive
+A numbers band across the top anchors the claim (Labwright usable 88-100 %,
+hallucination 0.000 vs bare LLM 0-12 % / ~0.9-1.0), every number derived from
+``results/eval_flash.json`` + ``results/eval_pro.json`` (the 24-goal reading
+set) so the figure traces to committed data; a bottom lane shows the naive
 alternatives (type the numbers / soft self-check) rejected at the hard gate,
-and a callout states the honest boundary (blind goals: usable drops, hallucination
-stays 0.000).
+and a callout states the honest boundary (blind goals: usable drops,
+hallucination stays 0.000).
 
 Text is ink tokens only; status colors (the verifier's red reject) are reserved
 for their meaning. Layout is authored in data coordinates; before writing, a
@@ -29,6 +31,7 @@ Usage::
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import matplotlib
@@ -80,6 +83,38 @@ def _label(ax, x, y, text, fs=7.5, color=MUT, ha="left", va="bottom",
             fontweight=weight, linespacing=line_h)
 
 
+def _headline_numbers() -> tuple[str, str]:
+    """Derive the top-band headline numbers from committed benchmark JSON.
+
+    Source: the 24-goal *reading* set for both models — ``results/eval_flash.json``
+    (deepseek-v4-flash) and ``results/eval_pro.json`` (deepseek-v4-pro).
+
+    * usable: min–max of the two models' ``usable_rate`` (0.0 & 0.125 -> "0–12%";
+      0.875 & 1.0 -> "88–100%").
+    * hallucination: the bare row shows the worst case across models (max of 1.0
+      & 0.875 -> "~0.9–1.0"); the Labwright row shows the best (min of 0.125 &
+      0.0 -> "0.000", the pro model — flash's 0.125 is one silence goal, never
+      a fabricated number; see the README footnote).
+
+    Same convention as the README headline table, so figure and README agree
+    and both trace to committed JSON.
+    """
+    root = Path(__file__).resolve().parent.parent
+    flash = json.loads((root / "results/eval_flash.json").read_text())
+    pro = json.loads((root / "results/eval_pro.json").read_text())
+    bare_us = [flash["bare"]["usable_rate"], pro["bare"]["usable_rate"]]
+    lab_us = [flash["labwright"]["usable_rate"], pro["labwright"]["usable_rate"]]
+    bare_hall = [flash["bare"]["hallucination_rate"],
+                 pro["bare"]["hallucination_rate"]]
+    lab_hall = [flash["labwright"]["hallucination_rate"],
+                pro["labwright"]["hallucination_rate"]]
+    bare = (f"bare LLM  {min(bare_us) * 100:.0f}–{max(bare_us) * 100:.0f}% "
+            f"usable  ·  hallucination ~{min(bare_hall):.1f}–{max(bare_hall):.1f}")
+    lab = (f"Labwright  {min(lab_us) * 100:.0f}–{max(lab_us) * 100:.0f}% "
+           f"usable  ·  hallucination {min(lab_hall):.3f}")
+    return bare, lab
+
+
 def check_overlaps(fig, ax) -> list[str]:
     """Return a list of layout problems (text-text overlap / canvas spill)."""
     renderer = fig.canvas.get_renderer()
@@ -121,12 +156,11 @@ def main() -> int:
     ax.add_patch(FancyBboxPatch((0.15, 4.62), 11.7, 0.56,
                                 boxstyle="round,pad=0.15,rounding_size=0.08",
                                 fc="#f6f4f0", ec=GRID, linewidth=1.0, zorder=1))
+    bare_hd, lab_hd = _headline_numbers()
     _label(ax, 0.45, 4.90, "same scoring, every system:", fs=8.0, color=MUT,
            va="center")
-    _label(ax, 2.55, 4.90, "bare LLM  0–12% usable  ·  hallucination ~1.0",
-           fs=9.0, color=INK, va="center")
-    _label(ax, 11.60, 4.90,
-           "Labwright  88–100% usable  ·  hallucination 0.000", fs=10.0,
+    _label(ax, 2.55, 4.90, bare_hd, fs=9.0, color=INK, va="center")
+    _label(ax, 11.60, 4.90, lab_hd, fs=10.0,
            color=BLUE_EDGE, va="center", weight="bold", ha="right")
 
     # ------------------------------------------------------------------
@@ -221,6 +255,10 @@ def main() -> int:
     # ------------------------------------------------------------------
     # Overlap check before writing
     # ------------------------------------------------------------------
+    print("headline (derived from results/eval_flash.json + eval_pro.json, "
+          "24-goal reading set):")
+    print(f"  {bare_hd}")
+    print(f"  {lab_hd}")
     problems = check_overlaps(fig, ax)
     if problems:
         print("LAYOUT PROBLEMS:")
