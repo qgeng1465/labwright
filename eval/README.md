@@ -196,6 +196,50 @@ tolerance, and not required to prove its numbers. We do not claim the systems
 are matched; we claim the comparison isolates what the calculators and the
 verifier add to the bare model.
 
+## Gold data: provenance & the three buckets
+
+Every gold `expected` value carries a stated origin; none is invented. Each
+falls into exactly one of three buckets — no bucket may be empty and no number
+may sit in an unnamed fourth bucket:
+
+1. **Pinned to a citable source** — a DOI or PMID is named (e.g. Jang et al.,
+   *Lab Chip* 2013; Papaioannou & Stefanadis, PMID 15807389; Koutsiaris, *Int J
+   Nanomedicine*; HepG2 seeding, Sci Rep 10.1038/s41598-021-81733-3;
+   primary-hepatocyte sandwich plating, Bioengineering
+   10.3390/bioengineering10020131; Sumida 10.1177/0960327111399325; the PK
+   equations to Rowland & Tozer and Gibaldi & Perrier; the propranolol
+   intrinsic-clearance design target to J Pharm Sci 2014,
+   doi:10.1002/jps.23796).
+2. **Explicit `design-target` / `self-consistent` label** — a construction
+   target the system should be able to derive from the goal's own stated
+   inputs; it must never be phrased as if it came from a paper.
+3. **`prompt-backed` blind entries** — the canonical target *is* listed in the
+   Labwright system prompt (as a range or an anchor value), but the model must
+   still select the right value within it.
+
+A value that cannot be sourced is removed or relabelled, never silently kept.
+(One earlier draft cited a "PhysioMimix LC-12 media-exchange flow of 60 µL/min"
+from "Docci et al., Lab Chip 2022"; that DOI does not exist on Crossref, the
+real Docci paper is doi:10.1039/d1lc01161h, and the flow numbers could not be
+independently verified in accessible full text, so the entry was removed rather
+than kept on an unverifiable claim.)
+
+### Adding a goal
+
+1. Write the `goal` and `expected`, and pin `source` to one of the three
+   buckets above — no new bucket, no empty source.
+2. For a reading goal, add the raw inputs to the harness so the anchors derive
+   from the calculators. Each design domain's keys (`raw_keys`, `derived_keys`,
+   `consistency_keys`, plus `field_map` / `sanity_bands` / `canonical_units`)
+   are declared once in `labwright/blocks.py`; `benchmark.py` imports them from
+   there, so adding a goal's inputs means editing that domain's `Block`, not a
+   per-system list.
+3. Re-run the benchmark and commit the new `results/eval_*.json`.
+4. Add a regression test that re-derives the entry's `expected` from the goal's
+   stated numbers (`tests/test_gold_culture.py`,
+   `tests/test_gold_spheroid.py`, `tests/test_gold_pk.py` each do this for
+   their domain through the domain calculators).
+
 ## Metrics (from `benchmark.evaluate`)
 
 - **hallucination rate** — the fraction of a plan's *derived* fields the
