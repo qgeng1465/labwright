@@ -371,12 +371,12 @@ differs.
 | `flash` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
 | `flash` | 15-blind | self-verify | 0 % | 0 % | 0.611 |
 | `flash` | 15-blind | **Labwright** | **100 %** | **40 %** | **0.000** |
-| `flash` | 15-blind | Labwright fast-path (novel) | 100 % | 27 % | 0.000 |
+| `flash` | 15-blind | Labwright fast-path (targets in train) | 100 % | 27 % | 0.000 |
 | `pro` | 15-blind | bare-LLM | 7 % | 0 % | 0.933 |
 | `pro` | 15-blind | soft-gate | 13 % | 0 % | 0.867 |
 | `pro` | 15-blind | self-verify | 0 % | 0 % | 0.733 |
 | `pro` | 15-blind | **Labwright** | **100 %** | **47 %** | **0.000** |
-| `pro` | 15-blind | Labwright fast-path (novel) | 100 % | 27 % | 0.000 |
+| `pro` | 15-blind | Labwright fast-path (targets in train) | 100 % | 27 % | 0.000 |
 | `flash` | 15-3D-spheroid | bare-LLM | 20 % | 20 % | 0.800 |
 | `flash` | 15-3D-spheroid | soft-gate | 13 % | 13 % | 0.867 |
 | `flash` | 15-3D-spheroid | self-verify | 20 % | 20 % | 0.569 |
@@ -478,7 +478,14 @@ supervised (7 recover; `plate-12well-seed-hepg2` regresses vs v5) and 1 of
 the 6 never-seen goals recovers. The blind set drops to **27 % usable** — the
 goal does not state the target, so a clean design can miss the physiology —
 with v6 holding self-consistency at **100 %** and hallucination **0.000**
-(v5 had one 0.067-silence row); 4 of 15 never-seen goals recover. Against
+(v5 had one 0.067-silence row); 4 of 15 blind goals recover. That 27 % is
+**in-distribution value recall, not novel physiology**: the synthetic
+generators reuse the blind golds' target values, so 11 of the 15 blind goals
+carry a target that also appears in the fast-path's training goals (see the
+value-provenance audit below), and 3 of the 4 recoveries — BBB 1.0 Pa,
+renal-PTEC 0.02 Pa and BBB-residence 1.0 Pa — land on such goals; only
+`blind-24well-medium-partial` (4.08 mL) is a genuinely unseen-value recovery.
+The never-trained agent loop (40–47 %) carries the novel-recall claim. Against
 lora_v5, the v6 natural-register retrain recovers the 400×100-shear reading
 goal and the `barrier-hcmec-teer` new-domain goal but swaps a regression in
 `barrier-caco2-teer-papp`, leaving the 14 new-domain goals at **29 % usable**
@@ -495,16 +502,24 @@ as a cell-free blank and a seeded total, an oxygen goal states a tissue
 `pO2`, and so on (the per-domain comments in
 `labwright/extract/synthetic.py` say so explicitly). This is deliberate: the
 synthetic goals exercise the vocabulary a user or the benchmark would use. It
-is **not** leakage into the eval set, on three machine-checkable grounds
-(re-verified by `eval/audit_claims.py` on every run):
+is **not** leakage into the eval set, on two machine-checkable grounds
+(re-verified by `eval/audit_claims.py` on every run) plus one disclosed
+overlap:
 1. the 14 new-domain gold goals are complete-info, but the 46 supervised gold
    pairs contain **zero** new-domain goals (`gold_pairs.jsonl` = 24 flow +
    8 culture + 8 spheroid + 6 pk), so the fast-path is never trained toward the
    eval set's own rows;
-2. every synthetic instance samples *values* in physiological ranges — no gold
-   number appears verbatim in a training goal;
-3. the held-out `extractor_clean400` eval set has zero raw/goal overlap with
-   `train.jsonl`.
+2. the held-out `extractor_clean400` eval set has zero raw/goal overlap with
+   `train.jsonl`;
+3. **disclosed, not asserted:** the synthetic generators sample target
+   *values* from the gold sets' source-pinned DOIs (`synthetic.py`), so gold
+   values **do** appear verbatim in training goal prose — 11/15 blind goals
+   carry a gold target value (matched with its unit), and the new-domain
+   generators likewise sample the golds' values and mirror their phrasing
+   (counts re-verified by `eval/audit_claims.py`). The fast-path blind score is
+   therefore in-distribution *value recall* (the extractor saw these targets
+   while training), not novel-target recovery; the never-trained agent loop
+   carries the novel-recall claim.
 
 What the mirroring *does* mean: the 4/14 (29 %) fast-path score on new domains
 is **not** a "never-seen phrasing" number — the training register was written

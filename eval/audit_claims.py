@@ -17,6 +17,7 @@ so a future run that changes a number can point at the exact claim it breaks.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -316,6 +317,112 @@ def audit_schema_prompt() -> None:
            f"{sum(bool(e.get('finetuned', {}).get('valid')) for e in spr['per_entry'])}/14 valid")
 
 
+# ---------------------------------------------------------------------------
+# I. Value-level provenance of the gold target values in training goals
+# ---------------------------------------------------------------------------
+# The docs used to claim "no gold number appears verbatim in a training goal".
+# That is false for the blind set: the flow generator samples the blind golds'
+# shear values (labwright/extract/synthetic.py's vessel table), so 11 of the 15
+# blind goals carry a gold target in their training-goal prose. These checks
+# lock the honest counts and the doc labels so the claim cannot quietly return.
+
+_BLIND_UNSEEN = {
+    "blind-seed-hepg2-log",   # 4,000 cells  — value absent from training goals
+    "blind-phh-seed",         # 12,000 cells
+    "blind-gut-epithelial-shear",  # 0.002 Pa
+    "blind-24well-medium-partial",  # 4.08 mL
+}
+
+
+def _gold_unit(key: str) -> str:
+    kl = key.lower()
+    if "ml" in kl or "volume" in kl:
+        return "mL"
+    if "cell" in kl or "seed" in kl:
+        return "cells"
+    if "time" in kl or "residence" in kl:
+        return "s"
+    if "diam" in kl:
+        return "um"
+    return "Pa"
+
+
+# New-domain keys that carry a real unit in goal prose (dimensionless counts
+# like pulsatility index or a shear fraction are skipped — the fast-path has
+# to compute those regardless of any training-value overlap).
+_ND_UNIT = {
+    "teer_ohm_cm2": "ohm", "papp_cm_s": "cm/s", "clearance_mL_min": "mL/min",
+    "dissolved_o2_mM": "mM", "penetration_depth_um": "um",
+    "demand_umol_min": "umol", "hydrostatic_head_pa": "Pa",
+    "peak_wall_shear_pa": "Pa", "volume_per_half_cycle_ul": "uL",
+    "breaths_per_minute": "per minute", "cyclic_displacement_um": "um",
+    "strain_rate_per_s": "per second", "ali_liquid_film_um": "um",
+    "peak_shear_pa": "Pa", "organ_flow_rate_mlmin": "mL/min",
+    "cells_in_organ": "cells", "transit_time_s": "second",
+    "residence_time_match_error_s": "second", "steepness_um_per_mm": "µM/mm",
+    "midpoint_conc_um": "µM", "relaxation_time_s": "second", "flux_mol_m2s": "mol/",
+}
+
+
+def _load_gold(name: str) -> list[dict]:
+    gold = json.load(open(ROOT / "eval" / name))
+    if isinstance(gold, dict):
+        gold = list(gold.values())[0] if gold else []
+    return gold
+
+
+def _goals() -> list[str]:
+    with (RESULTS / "extractor_11dom_v4/train.jsonl").open() as f:
+        return [json.loads(line).get("goal") or "" for line in f]
+
+
+def _verbatim_goals(goals: list[str], value: float, unit: str) -> int:
+    pat = re.compile(r"(?<![\w.])" + re.escape(f"{value:g} {unit}") + r"(?![\w.])")
+    return sum(1 for g in goals if pat.search(g))
+
+
+def audit_value_provenance() -> None:
+    goals = _goals()
+
+    # Blind: how many goals carry a gold target verbatim (value + unit)?
+    leak_goals: set[str] = set()
+    for r in _load_gold("gold_blind.json"):
+        for k, v in (r.get("expected") or {}).items():
+            if isinstance(v, (int, float)) and _verbatim_goals(goals, float(v), _gold_unit(k)) > 0:
+                leak_goals.add(r.get("id"))
+    _check("I  blind: 11/15 goals carry a gold target verbatim in training goals (value+unit)",
+           len(leak_goals) == 11, f"{len(leak_goals)}/15: {sorted(leak_goals)}")
+    all_ids = {r.get("id") for r in _load_gold("gold_blind.json")}
+    _check("I  blind: the 4 fully-unseen targets are seed-hepg2, phh-seed, gut, 24-well",
+           all_ids - leak_goals == _BLIND_UNSEEN, f"unseen={sorted(all_ids - leak_goals)}")
+
+    # New-domain: the docs disclose that the generators sample the golds'
+    # values. Assert at least one new-domain gold value is verifiable verbatim,
+    # so the disclosure is a real, checked claim rather than hand-waving.
+    nd_hits = 0
+    for r in _load_gold("gold_new_domains.json"):
+        for k, v in (r.get("expected") or {}).items():
+            if isinstance(v, (int, float)) and k in _ND_UNIT:
+                nd_hits += _verbatim_goals(goals, float(v), _ND_UNIT[k])
+    _check("I  new-domain: at least one gold target value verbatim in training goals",
+           nd_hits > 0, f"{nd_hits} verbatim occurrences")
+
+
+def audit_doc_labels() -> None:
+    """The honest blind label and the dropped 'no gold number verbatim' claim
+    are part of the reproducibility contract — an edit that resurrects the old
+    framing fails the audit."""
+    for name in ("README.md", "eval/README.md", "README.zh-CN.md"):
+        text = (ROOT / name).read_text(encoding="utf-8")
+        _check(f"I  {name}: fast-path blind row is 'targets in train'",
+               "fast-path (targets in train)" in text, "'targets in train' absent")
+        _check(f"I  {name}: no resurrected '(novel)' fast-path label",
+               "fast-path (novel)" not in text, "'fast-path (novel)' present")
+        _check(f"I  {name}: no resurrected 'no gold number appears verbatim' claim",
+               "no gold number appears verbatim" not in text,
+               "the overclaim is back in the docs")
+
+
 def main() -> int:
     audit_agent_rows()
     audit_fast_rows()
@@ -325,6 +432,8 @@ def main() -> int:
     audit_leak_free()
     audit_seed_intervals()
     audit_schema_prompt()
+    audit_value_provenance()
+    audit_doc_labels()
     print(f"audit_claims: {_passes} passed, {len(_failures)} failed")
     for f in _failures:
         print(f)

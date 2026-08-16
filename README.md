@@ -332,12 +332,19 @@ writes the narrative; the arithmetic is exiled to unit-tested code.
 
   **Register provenance.** The post-v1 generators deliberately write their
   goals in a hand-written register that *mirrors how the benchmark's own goals
-  phrase the same inputs*. That is **not** leakage: the 46 supervised gold
-  pairs contain zero new-domain goals, synthetic instances sample values (no
-  gold number appears verbatim), and the held-out `extractor_clean400` set has
-  zero raw/goal overlap with `train.jsonl` — all machine-checked by
-  `eval/audit_claims.py`. What the mirroring means for the fast-path numbers is
-  stated honestly in the benchmark note below: the new-domain score measures
+  phrase the same inputs*. Two leak checks hold and are machine-checked by
+  `eval/audit_claims.py`: the 46 supervised gold pairs contain zero new-domain
+  goals, and the held-out `extractor_clean400` set has zero raw/goal overlap
+  with `train.jsonl`. One overlap is **disclosed, not asserted**: the
+  generators sample target *values* from the gold sets' source-pinned DOIs
+  (`labwright/extract/synthetic.py`), so gold values **do** appear verbatim in
+  training goals — 11 of the 15 blind goals carry a gold target (value matched
+  with its unit), and the new-domain generators likewise sample the golds'
+  values and mirror their phrasing (counts re-verified by
+  `eval/audit_claims.py`). The benchmark note below labels the
+  fast-path blind row accordingly (`targets in train`): the row measures
+  in-distribution value recall, not novel-target generalization. What the
+  mirroring means for the new-domain score is also stated below: it measures
   schema absorption from mirror-register templates, not never-seen phrasing
   (and a prompt-level fix for it was falsified — see
   [`eval/README.md`](eval/README.md)).
@@ -533,15 +540,20 @@ exact same gate as the agent loop's `submit_design` — the calculators derive,
 the verifier re-proves, rejected designs come back for re-extraction. Its bars
 are identical under flash and pro by construction (a fixed local model). Read
 alongside the agent-loop rows, the pattern is the architecture doing its job:
-in-distribution phrasing the fast path is stronger and cheaper; never-seen
-phrasing and withheld physiology it is weaker (blind 27% usable vs the agent
-loop's 40–47%). Honest caveat: the reading and plate-culture columns still
-overstate generalization: all 24 reading and 8/14 plate-culture gold goals
-appear in the gold-pair supervision (46 pairs = 24 reading + 8 spheroid +
-8 culture + 6 PK; blind and new-domains have none by design), so those rows
-measure memorization more than transfer. On the goals that have **no** gold
-pair, the recoveries are spheroid 3/7, plate-culture 1/6, PK 2/8, blind 4/15
-and new-domains 4/14 (5/14 with schema repair).
+in-distribution phrasing the fast path is stronger and cheaper; on never-seen
+phrasing it is weaker, and on the blind set the honest reading is **value
+recall, not novel physiology** — the generators reuse the gold target values,
+so 11 of the 15 blind goals carry a target that also appears in the fast
+path's training goals (see `eval/audit_claims.py`), and 3 of its 4 blind
+recoveries land on such goals (`blind-24well-medium-partial`, 4.08 mL, is the
+one genuinely unseen-value recovery). The never-trained agent loop (40–47 %)
+carries the novel-recall claim. Honest caveat: the reading and plate-culture
+columns still overstate generalization: all 24 reading and 8/14 plate-culture
+gold goals appear in the gold-pair supervision (46 pairs = 24 reading + 8
+spheroid + 8 culture + 6 PK; blind and new-domains have none by design), so
+those rows measure memorization more than transfer. On the goals that have
+**no** gold pair, the recoveries are spheroid 3/7, plate-culture 1/6, PK 2/8,
+blind 4/15 and new-domains 4/14 (5/14 with schema repair).
 
 **New failure-mode metrics.** Each entry is also classified *why* it failed
 (`ok` / `silence` / `calculation_error` / `wrong_target`), whether a
@@ -551,7 +563,7 @@ blind-set cells are split by hint strength (cold vs prompt-backed). The `eval.re
 renderer prints all of it; the classification and misread logic are unit-tested
 (`tests/test_metrics.py`).
 
-![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind, 15-3D-spheroid, 14-culture and 14-PK sets (flash & pro; the fast-path row is model-independent, identical under both). The memory systems (stone / ochre / sage) reach a usable design only on the single-step goals the goal hands over; the Labwright agent loop (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on spheroid, culture and PK; the Labwright fast-path — the fine-tuned extractor front-end of the same gate (lilac) — reaches 23/24 on the reading set (the 400×100-shear regression is recovered; all 24 reading goals are supervised gold pairs) and reaches spheroid (73%), culture (57%) and PK (50%) usable — 3/7, 1/6 and 2/8 of the truly never-seen goals recover — blind (27%; self-consistent 100%, hallucination 0.000), and answers 4/14 of the hand-written post-v1 domains (5/14 with schema repair, see below).](paper/fig_benchmark.png)
+![Benchmark: self-consistent rate, usable rate and hallucination rate on the 24-reading, 15-blind, 15-3D-spheroid, 14-culture and 14-PK sets (flash & pro; the fast-path row is model-independent, identical under both). The memory systems (stone / ochre / sage) reach a usable design only on the single-step goals the goal hands over; the Labwright agent loop (deep blue) holds the gate, misses the blind-set physiology, and stays near the reading-set ceiling on spheroid, culture and PK; the Labwright fast-path — the fine-tuned extractor front-end of the same gate (lilac) — reaches 23/24 on the reading set (the 400×100-shear regression is recovered; all 24 reading goals are supervised gold pairs) and reaches spheroid (73%), culture (57%) and PK (50%) usable — 3/7, 1/6 and 2/8 of the truly never-seen goals recover — blind (27%; self-consistent 100%, hallucination 0.000; value recall — 11/15 blind targets also appear in its training goals), and answers 4/14 of the hand-written post-v1 domains (5/14 with schema repair, see below).](paper/fig_benchmark.png)
 
 A *usable* design is internally consistent **and** hits every target within
 ±5%. This is an *ablation*, not an equal-resource race: Labwright's
@@ -606,12 +618,12 @@ usable).*
 | 15-blind | `flash` | soft-gate | 13% | 0% | 0.867 |
 | 15-blind | `flash` | self-verify | 0% | 0% | 0.611 |
 | 15-blind | `flash` | **Labwright** | **100%** | **40%** | **0.000** |
-| 15-blind | `flash` | Labwright fast-path (novel) | 100% | 27% | 0.000 |
+| 15-blind | `flash` | Labwright fast-path (targets in train) | 100% | 27% | 0.000 |
 | 15-blind | `pro` | bare-LLM | 7% | 0% | 0.933 |
 | 15-blind | `pro` | soft-gate | 13% | 0% | 0.867 |
 | 15-blind | `pro` | self-verify | 0% | 0% | 0.733 |
 | 15-blind | `pro` | **Labwright** | **100%** | **47%** | **0.000** |
-| 15-blind | `pro` | Labwright fast-path (novel) | 100% | 27% | 0.000 |
+| 15-blind | `pro` | Labwright fast-path (targets in train) | 100% | 27% | 0.000 |
 | 15-3D-spheroid | `flash` | bare-LLM | 20% | 20% | 0.800 |
 | 15-3D-spheroid | `flash` | soft-gate | 13% | 13% | 0.867 |
 | 15-3D-spheroid | `flash` | self-verify | 20% | 20% | 0.569 |

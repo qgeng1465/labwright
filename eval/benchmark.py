@@ -1431,11 +1431,15 @@ def run_finetuned(gold: GoldExperiment, extractor: Callable) -> tuple[DesignPlan
     Labwright's deterministic fast path — no agent loop, no API cost — scored by
     the exact same usable/hallucination rules.
 
-    Fairness note: the extractor was fine-tuned on synthetic flow/culture
-    instances whose shear targets are reused from the benchmark gold sets (see
-    ``labwright/extract/synthetic.py``), so its numbers on those domains are
-    *in-distribution* and must be labelled as such at report time; on domains it
-    never trained on (spheroid, PK) it is a clean out-of-distribution test.
+    Fairness note: the extractor is fine-tuned on synthetic goals whose target
+    values are sampled from the benchmark gold sets (see
+    ``labwright/extract/synthetic.py``) — including, for 10 of the 15 blind
+    goals, the blind target values themselves — so the blind row measures
+    in-distribution *value recall*, not novel physiology, and must be labelled
+    as such at report time (the README/eval-README tables now say
+    ``targets in train``). Only a target absent from every training goal (e.g.
+    the 4.08 mL medium goal) is a clean out-of-distribution test for the fast
+    path; the never-trained agent loop is the genuine novel-recall system.
     """
     try:
         plan, _issues, error = extractor.extract_plan(gold.goal)
