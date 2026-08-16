@@ -883,12 +883,16 @@ ablation ordering.
 **Robustness, and the honest boundary of the gate: three further results**
 
 - **The Labwright gap is not a sampling artifact.** Every set is now re-run over
-  seeds (24-reading ×5; blind / spheroid / culture / PK ×3; Wilson 95% CI). On
-  every set the Labwright interval and the memory-system interval never overlap:
-  usable 92.5% [0.864, 0.960] / 95.8% [0.906, 0.982] (reading, flash/pro),
-  44% [0.309, 0.588] / 49% [0.350, 0.630] (blind), 93% / 96% (spheroid),
-  90% / 79% (culture), 81% / 76% (PK). The blind-set interval is honestly
-  wide (n=45 trials), which is how much headroom remains. Tables in
+  seeds (24-reading ×5; blind / spheroid / culture / PK ×3; new-domains ×5;
+  Wilson 95% CI). On every set the Labwright interval and the memory-system
+  interval never overlap: usable 92.5% [0.864, 0.960] / 95.8% [0.906, 0.982]
+  (reading, flash/pro), 44% [0.309, 0.588] / 49% [0.350, 0.630] (blind),
+  93% / 96% (spheroid), 90% / 79% (culture), 81% / 76% (PK), and 98.6%
+  [0.923, 0.997] / 78.6% [0.676, 0.866] (new-domains). The new-domains set is
+  the one place `flash` beats `pro` by a wide margin (a complete-information
+  calculator set, where `pro`'s extra reasoning slightly hurts integration).
+  The blind-set interval is honestly wide (n=45 trials), which is how much
+  headroom remains. Tables in
   [`eval/README.md`](eval/README.md#statistical-precision-single-runs-vs-seed-intervals).
 - **The verifier does not raise the usable rate; it guarantees consistency.**
   An ablation (`tool_no_gate`: same calculators + ReAct loop, verifier switched
@@ -1056,8 +1060,10 @@ system/model) gives Wilson 95% CIs (`eval/ci.py`):
 | `pro` | **Labwright** | 115/120 = 0.958 | [0.906, 0.982] |
 
 The qualitative ordering (Labwright ≫ bare; flash vs pro within ~5%) is
-stable across seeds; the blind-set cells are single-run point estimates and
-should be read as such.
+stable across seeds, with one exception: the new-domains set, where `flash`
+beats `pro` by a wide margin (98.6% [0.923, 0.997] vs 78.6% [0.676, 0.866], a
+complete-information calculator set; see the Robustness bullet above). The
+blind-set cells are single-run point estimates and should be read as such.
 
 The bare model's own numbers are worse than the earliest commits reported, for
 two reasons, both reported honestly. First, the earliest figures (62%/50%
