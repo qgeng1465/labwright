@@ -78,7 +78,8 @@ def derive(result: dict) -> dict:
     their reported numbers are self-consistent *and* recover the gold target.
     """
     per_entry = result["per_entry"]
-    systems = [s for s in ("bare", "soft_gate", "self_verify", "labwright", "finetuned")
+    systems = [s for s in ("bare", "code_interpreter", "soft_gate", "self_verify",
+                           "labwright", "finetuned")
                if per_entry and s in per_entry[0]]
     out: dict = {}
     for system in systems:
