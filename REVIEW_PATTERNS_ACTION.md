@@ -102,3 +102,18 @@ labwright_iter usable 0.912 / halluc 0.010 胜出 → 硬 verifier 门是数字�
 
 落地顺序：flash-core 完 → 起跑 pro-core 610 + commit flash 结果；最终 pytest/audit 绿 +
 文档 + 本地 commit（不推）。
+
+**2026-08-17 05:22 更新**：
+- **flash-core 已落地（783ff9e）—— 主线核心数字（610 条全量）**：
+
+| 系统 | usable | halluc | TBA(0.05) | 混淆矩阵 CER |
+|---|---|---|---|---|
+| bare-LLM | 0.051 | 0.765 | 0.406 | 536/610 计算错（87.9%） |
+| code_interpreter | 0.180 | 0.602 | 0.664 | 484/610 计算错（79.3%） |
+| **labwright** | **0.934** | **0.000** | **0.965** | **0/610（CER→0）** |
+
+  按 level：labwright TBA L1 0.950[0.930,0.964] / L2 0.955[0.936,0.968] /
+  L3 1.000[0.992,1.000]，全部 > bare（0.512/0.451/0.191）。labwright 40/610
+  wrong_target = 诚实参数提取 miss，非计算错。另修：derive() 补 code_interpreter
+  （7e5f5cc）+ audit_labmath_results 全量诚实门（e386cb7）。
+- **pro-core 已起跑**：pid 2320909（05:18 起，610×3，~09:10 预计，05:49 时 80/610）。
