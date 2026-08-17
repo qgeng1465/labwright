@@ -1,0 +1,144 @@
+{
+  "entry_id": "plate-6well-phh-seed",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_per_well": 0.0,
+      "total_medium_ml": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cells_per_well",
+    "medium_volume_per_well",
+    "cell_physiology",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Plate primary human hepatocytes in collagen-sandwich culture in a 6-well plate at 1.5e5 cells/cm² across 6 wells and determine per-well seeding and total medium volume.",
+    "rationale": "Primary human hepatocytes (phh) do not divide in vitro, so the 1.5e5 cells/cm² seeding is a terminal plating density for a confluent, functional monolayer. This sits mid-range of the literature seeding density for phh (1e5-2e5 cells/cm², per cell_physiology registry). 6-well plate growth area ≈ 9.6 cm²/well; standard working medium volume ≈ 2.7 mL/well. Human primary material warrants BSL-2 containment.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "6",
+      "wells": 6,
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "seed_per_well": 1440000.0,
+      "total_seed_count": 8640000.0,
+      "medium_volume_per_well_ml": 2.7,
+      "total_medium_ml": 16.200000000000003,
+      "viability_pct": 90.0,
+      "confluent_density_cells_cm2": 150000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": 72.0,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Primary human hepatocytes do not divide in vitro - expect no expansion; plan assay window accordingly",
+      "Human primary material warrants BSL-2 containment",
+      "Prepare ~18-20 mL medium to account for pipetting losses and collagen-sandwich overlay steps",
+      "Confirm actual 6-well growth area (9.6 cm² nominal) from the plate lot certificate"
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "6",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1440000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 1440000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 8640000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "6",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 2.7,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 2.7,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 16.200000000000003,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

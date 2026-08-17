@@ -1,0 +1,84 @@
+{
+  "entry_id": "power-80-effect-half",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_per_group": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "sample_size_per_group",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Determine the number of biological replicates per group needed to detect a 0.5-sigma difference between two groups with 80% power at alpha 0.05.",
+    "rationale": "Two-sample two-sided t-test power analysis. Effect size expressed in sigma units (0.5 standard deviations), so std_dev is set to 1.0 to make effect_size directly interpretable as a 0.5-sigma difference.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": {
+      "effect_size": 0.5,
+      "std_dev": 1.0,
+      "alpha": 0.05,
+      "power": 0.8,
+      "n_per_group": 63,
+      "note": null
+    },
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": []
+  },
+  "provenance": [
+    {
+      "field": "stats.n_per_group",
+      "formula": "n from two-sample t-test power equation",
+      "inputs": [
+        {
+          "name": "effect_size",
+          "value": 0.5,
+          "unit": ""
+        },
+        {
+          "name": "std_dev",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "alpha",
+          "value": 0.05,
+          "unit": ""
+        },
+        {
+          "name": "power",
+          "value": 0.8,
+          "unit": ""
+        }
+      ],
+      "unit": "n",
+      "value": 63.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

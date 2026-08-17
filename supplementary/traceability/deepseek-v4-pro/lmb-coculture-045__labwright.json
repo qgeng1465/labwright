@@ -1,0 +1,177 @@
+{
+  "entry_id": "lmb-coculture-045",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": false,
+    "recovery": {
+      "total_cells_a": 0.979167,
+      "seeding_ratio_ab": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "wrong_target"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "coculture_seeding_ratio",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed HUVEC-T1 and HepG2 in a 48-well plate at 1.11e5 cells/cm² total density across 1.32 cm² per well, with 0.693 of the total assigned to HUVEC-T1, and report the A:B seeding ratio and total A cells.",
+    "rationale": "Co-culture of an endothelial line (HUVEC-T1) with a hepatic line (HepG2) to model a vascularized liver interface. Total seeding density 1.11e5 cells/cm² over 1.32 cm² per well (48-well format). Fraction 0.693 assigned to HUVEC-T1 (population A), remainder 0.307 to HepG2 (population B). Per-well counts and A:B ratio are computed from these raw inputs.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "HUVEC-T1",
+      "cell_type_b": "HepG2",
+      "total_density_cells_cm2": 111000.0,
+      "area_cm2": 1.32,
+      "fraction_a": 0.693,
+      "wells": 1,
+      "cells_per_well_a": 101538.35999999999,
+      "cells_per_well_b": 44981.640000000014,
+      "total_cells_a": 101538.35999999999,
+      "total_cells_b": 44981.640000000014,
+      "seeding_ratio_ab": 2.257328990228012
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "1.11e5 cells/cm² is a high total density — confirm both lines tolerate it without over-confluence or nutrient depletion over the culture duration.",
+      "HUVEC-T1 is a telomerase-immortalized endothelial line, not primary HUVEC; confirm doubling time and monolayer formation at this density.",
+      "The 0.693 fraction is unusually precise — verify it reflects a deliberate endothelial:hepatocyte stoichiometry rather than a stock-count artifact.",
+      "Total A cells scales with well count; only 1 well was submitted — multiply by the actual number of wells seeded."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 111000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 1.32,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.693,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 101538.35999999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 111000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 1.32,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.693,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 44981.640000000014,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 101538.35999999999,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 101538.35999999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 44981.640000000014,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 44981.640000000014,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 101538.35999999999,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 44981.640000000014,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 2.257328990228012,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

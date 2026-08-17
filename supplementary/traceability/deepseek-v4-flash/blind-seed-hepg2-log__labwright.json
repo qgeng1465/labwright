@@ -1,0 +1,87 @@
+{
+  "entry_id": "blind-seed-hepg2-log",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": false,
+    "recovery": {
+      "seed_count": 0.5
+    },
+    "hallucination_rate": 0.0,
+    "failure": "wrong_target"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "seeding_cell_count",
+    "seeding_cell_count",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed HepG2 cells in logarithmic growth phase onto the culture area of a 400 µm wide, 20 mm long channel.",
+    "rationale": "HepG2 (immortalized hepatoma, BSL-1) is seeded in logarithmic growth phase at the catalog-supported density of 50,000–100,000 cells/cm² (DSMZ ACC-180; ENCODE4 SOP). The channel culture area is width × length = 400 µm × 20 mm = 0.08 cm². At the low end of the range this gives 4,000 cells/channel; at the high end 8,000 cells/channel. A mid-range density (e.g. 75,000 cells/cm² ≈ 6,000 cells/channel) is a reasonable default for a confluent monolayer within the growth phase. Shear target for HepG2 is 0.05–0.15 Pa.",
+    "chip": {
+      "width_um": 400.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": null,
+    "derived": null,
+    "cells": {
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 75000.0,
+      "culture_area_cm2": 0.08,
+      "seed_count": 6000.0,
+      "doubling_time_h": 54.0,
+      "culture_duration_h": 72.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Channel height not specified by the user — assumed 100 µm for the chip geometry; confirm the actual channel height before perfusion.",
+      "Seeding density chosen at mid-range (75,000 cells/cm² ≈ 6,000 cells/channel); the defensible range is 4,000–8,000 cells/channel (50,000–100,000 cells/cm²).",
+      "Confirm the channel is a single channel (channel_count=1); if multiple parallel channels, multiply the per-channel seed count accordingly.",
+      "Verify the actual culture area in the lab (channel width × length) before seeding."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 75000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.08,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 6000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

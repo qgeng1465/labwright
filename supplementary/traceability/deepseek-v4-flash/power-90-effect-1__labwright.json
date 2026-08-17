@@ -1,0 +1,88 @@
+{
+  "entry_id": "power-90-effect-1",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_per_group": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "sample_size_per_group",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Detect a 1.0-sigma difference between two groups with 90% power at alpha 0.05",
+    "rationale": "Two-sample t-test design. Effect size of 1.0 sigma (effect_size = 1.0, std_dev = 1.0 in the same units) with two-sided alpha 0.05 and target power 0.9. The sample size calculator returns the required biological replicates per group.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": {
+      "effect_size": 1.0,
+      "std_dev": 1.0,
+      "alpha": 0.05,
+      "power": 0.9,
+      "n_per_group": 22,
+      "note": null
+    },
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "n_per_group is computed from the raw inputs; the 22 per group assumes a two-sample t-test with equal group sizes and normally distributed data.",
+      "If the true effect is smaller than 1.0 sigma or the variance is larger than assumed, more replicates will be needed.",
+      "Consider whether a one-sided test is justified; the two-sided default is more conservative."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "stats.n_per_group",
+      "formula": "n from two-sample t-test power equation",
+      "inputs": [
+        {
+          "name": "effect_size",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "std_dev",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "alpha",
+          "value": 0.05,
+          "unit": ""
+        },
+        {
+          "name": "power",
+          "value": 0.9,
+          "unit": ""
+        }
+      ],
+      "unit": "n",
+      "value": 22.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

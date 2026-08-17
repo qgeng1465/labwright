@@ -1,0 +1,286 @@
+{
+  "entry_id": "blind-liver-sinusoid",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": false,
+    "recovery": {
+      "shear_pa": 1.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "wrong_target"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "cell_physiology",
+    "flow_rate_for_shear_stress",
+    "seeding_cell_count",
+    "reynolds_number",
+    "residence_time",
+    "pressure_drop",
+    "o2_supply_vs_demand",
+    "wall_shear_stress",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Perfuse a liver-on-chip so hepatocytes experience the in vivo hepatic sinusoidal wall shear stress (~0.1 Pa, mid-range of 0.05-0.15 Pa).",
+    "rationale": "Hepatic sinusoidal wall shear stress is very low, 0.05-0.15 Pa (cell_physiology registry for HepG2, liver). I target the mid-range 0.1 Pa. A wide, shallow channel (1000 um wide x 100 um high x 20 mm long) is a standard liver-OOC geometry. flow_rate_for_shear_stress gives 10 uL/min for 0.1 Pa at water-like medium viscosity (1e-3 Pa.s). Verified: wall_shear_stress(10 uL/min) = 0.100 Pa; Reynolds ~0.30 (deeply laminar, <<2300); residence time ~12 s per pass; pressure drop ~40 Pa (trivially supplied by a syringe pump); O2 supply/demand ratio ~56 (no hypoxia for 20,000 cells at ~0.03 fmol/s/cell). Cells: HepG2 (BSL-1, liver) seeded at 1e5 cells/cm2 on 0.2 cm2 = 20,000 cells, cultured 72 h (within the 48-60 h doubling window to reach a confluent monolayer). Medium viscosity assumed water-like (1e-3 Pa.s).",
+    "chip": {
+      "width_um": 1000.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 10.0,
+      "viscosity_pas": 0.001,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 0.10000000000000005,
+      "reynolds": 0.30303030303030315,
+      "pressure_drop_pa": 40.000000000000014,
+      "residence_time_s": 11.999999999999998,
+      "channel_volume_ul": 2.0,
+      "mean_velocity_mms": 1.6666666666666672
+    },
+    "cells": {
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 100000.0,
+      "culture_area_cm2": 0.2,
+      "seed_count": 20000.0,
+      "doubling_time_h": 54.0,
+      "culture_duration_h": 72.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Verify actual medium viscosity in the lab (supplemented medium can be 0.9-1.1e-3 Pa.s); shear scales linearly with viscosity.",
+      "Confirm the syringe pump delivers 10 uL/min accurately at this low rate; use a glass syringe and low-dead-volume tubing.",
+      "Prime the channel and check for bubbles before seeding; bubbles disrupt the monolayer and flow.",
+      "HepG2 is an immortalized hepatoma line, not primary hepatocytes; for a more physiological model consider primary human hepatocytes (BSL-2) at 1-2e5 cells/cm2.",
+      "Confirm the 0.1 Pa target against your specific literature source; sinusoidal shear is reported 0.05-0.15 Pa.",
+      "Check O2 delivery empirically if the culture is long or dense; the calculated supply/demand ratio (~56) assumes maximal extraction."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 10.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 0.10000000000000005,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 10.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.30303030303030315,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 10.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 40.000000000000014,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 10.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 11.999999999999998,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 2.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 10.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 1.6666666666666672,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 100000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.2,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 20000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

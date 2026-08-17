@@ -1,0 +1,147 @@
+{
+  "entry_id": "blind-6well-phh-sandwich-seed",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_per_well": 0.0,
+      "total_medium_ml": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "cells_per_well",
+    "medium_volume_per_well",
+    "cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed primary human hepatocytes in collagen-sandwich culture on a 6-well plate at the standard published plating density across 6 wells.",
+    "rationale": "Primary human hepatocytes (PHH) are seeded in collagen-sandwich configuration at the standard published plating density of 1.5e5 cells/cm2, which falls within the physiology registry range of 1e5-2e5 cells/cm2 for PHH. PHH do not divide in vitro, so the plating density directly determines the working cell number. A 6-well plate has ~9.6 cm2 growth area per well, giving 1.44e6 cells/well. Standard working medium volume for a 6-well is 2.7 mL/well, giving 16.2 mL total for 6 wells. Collagen-sandwich (thin collagen overlay after attachment) maintains differentiated phenotype.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "6",
+      "wells": 6,
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "seed_per_well": 1440000.0,
+      "total_seed_count": 8640000.0,
+      "medium_volume_per_well_ml": 2.7,
+      "total_medium_ml": 16.200000000000003,
+      "viability_pct": 90.0,
+      "confluent_density_cells_cm2": 150000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": 168.0,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "PHH are primary human material — BSL-2 containment required.",
+      "Confirm the actual 6-well growth area (typically ~9.6 cm2) against your plate lot; some vendors differ slightly.",
+      "Collagen-sandwich: allow cells to attach ~2-4 h, then apply a thin collagen overlay (e.g. 0.1-0.2 mg/mL) to restore in vivo-like polarity.",
+      "PHH do not divide in vitro — seed at the target density directly; viability should be checked by trypan blue before plating.",
+      "Medium volume 2.7 mL/well is the standard working volume; collagen overlay may reduce the effective apical volume.",
+      "Verify the specific published protocol's plating density (1e5-2e5 cells/cm2) for the collagen-sandwich method you follow."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "6",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1440000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 1440000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 8640000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "6",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 2.7,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 2.7,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 16.200000000000003,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

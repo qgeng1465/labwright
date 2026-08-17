@@ -1,0 +1,116 @@
+{
+  "entry_id": "lmb-plink-015",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "bed_size_mb": 0.0,
+      "n_per_chr_files": 0.0,
+      "per_chr_bed_size_mb": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "plink_bed_size_mb",
+    "plink_per_chr_bed_size_mb",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Size a GWAS PLINK binary genotype dataset: report per-chromosome file count, total .bed size (MB), and per-chromosome .bed size (MB).",
+    "rationale": "PLINK binary .bed packs 2 bits per sample per variant (4 samples per byte). Total .bed size = n_samples × n_variants / 4 / 1e6. Per-chromosome .bed uses the same rule applied to one chromosome's variant count. The largest chromosome carries 207,382 variants. Per-chromosome file count follows the split scheme: a standard autosomal split (chromosomes 1-22) yields 22 files.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": {
+      "n_samples": 9234,
+      "n_variants": 2353732,
+      "n_variants_chr": 207382,
+      "bed_size_mb": 5433.590322,
+      "n_per_chr_files": 25,
+      "per_chr_bed_size_mb": 478.741347
+    },
+    "solvent": null,
+    "caveats": [
+      "Per-chromosome file count depends on the split scheme: 22 files assumes a standard autosomal split (chr 1-22); include X/Y/MT if those variants are present.",
+      "The per-chromosome .bed size reported is for the largest chromosome (207,382 variants); other chromosomes will be smaller.",
+      "Verify the variant count includes or excludes indels/duplicates as appropriate for your QC pipeline."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "plink.bed_size_mb",
+      "formula": "B = n_samples·n_variants / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 9234,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants",
+          "value": 2353732,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 5433.590322,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "plink.n_per_chr_files",
+      "formula": "25 standard files (1–22, X, Y, MT)",
+      "inputs": [
+        {
+          "name": "chromosomes",
+          "value": "1-22, X, Y, MT",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 25.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "plink.per_chr_bed_size_mb",
+      "formula": "B_chr = n_samples·n_variants_chr / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 9234,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants_chr",
+          "value": 207382,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 478.741347,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

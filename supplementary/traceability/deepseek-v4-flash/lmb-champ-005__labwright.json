@@ -1,0 +1,126 @@
+{
+  "entry_id": "lmb-champ-005",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_arrays": 0.0,
+      "n_chips": 0.0,
+      "n_expected_failed_arrays": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "champ_chips_for_samples",
+    "champ_expected_failed_arrays",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Process 304 HumanMethylation450K samples and report the physical chip count, array count, and expected QC-failed arrays at a 5.1% fail rate.",
+    "rationale": "The 450K BeadChip platform holds 12 arrays per physical chip, so 304 samples require ceil(304/12) = 26 chips. Each sample is one array, giving 304 arrays. At a 5.1% QC fail rate, the expected number of failed arrays is 304 × 0.051 ≈ 15.5 arrays, leaving roughly 288-289 usable arrays after QC. The 26 chips provide 312 array slots, leaving 8 spare slots beyond the 304 samples if attrition compensation is desired.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": {
+      "n_samples": 304,
+      "platform": "450k",
+      "fail_rate_pct": 5.1,
+      "n_arrays": 304,
+      "n_chips": 26,
+      "n_expected_failed_arrays": 15.504
+    },
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "The expected failed arrays (~15.5) is a statistical expectation, not a guarantee — actual failures will vary around this mean.",
+      "If a specific number of post-QC samples is required, consider filling the 8 spare array slots on the 26 chips to buffer against attrition.",
+      "Confirm the exact QC gate (detection p-value, bisulfite conversion, etc.) used for the 5.1% fail-rate estimate before budgeting."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "champ.n_arrays",
+      "formula": "n_arrays = n_samples",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 304,
+          "unit": "—"
+        },
+        {
+          "name": "platform",
+          "value": "450k",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 304.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "champ.n_chips",
+      "formula": "n_chips = ⌈n_samples / capacity⌉  (12× 450k, 8× EPIC)",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 304,
+          "unit": "—"
+        },
+        {
+          "name": "platform",
+          "value": "450k",
+          "unit": "—"
+        },
+        {
+          "name": "chip_capacity",
+          "value": 12,
+          "unit": "samples/chip"
+        }
+      ],
+      "unit": "n",
+      "value": 26.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "champ.n_expected_failed_arrays",
+      "formula": "n_fail = n_arrays × p",
+      "inputs": [
+        {
+          "name": "n_arrays",
+          "value": 304.0,
+          "unit": "—"
+        },
+        {
+          "name": "fail_rate_pct",
+          "value": 5.1,
+          "unit": "%"
+        }
+      ],
+      "unit": "n",
+      "value": 15.504,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

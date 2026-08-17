@@ -1,0 +1,116 @@
+{
+  "entry_id": "lmb-plink-012",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "bed_size_mb": 0.0,
+      "n_per_chr_files": 0.0,
+      "per_chr_bed_size_mb": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "plink_bed_size_mb",
+    "plink_per_chr_bed_size_mb",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Size a PLINK binary genotype dataset: report per-chromosome file count, whole-dataset .bed size (MB), and per-chromosome .bed size (MB).",
+    "rationale": "PLINK binary .bed files pack 2 bits per sample per variant (4 samples/byte). Whole-dataset size = n_samples × n_variants / 4 / 1e6. Per-chromosome size uses the largest chromosome's variant count (313,418). The number of per-chromosome files equals the number of chromosomes in the split (22 autosomes + X, optionally Y/MT), which is not derivable from the given inputs and must be confirmed from the actual split scheme.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": {
+      "n_samples": 17913,
+      "n_variants": 4070585,
+      "n_variants_chr": 313418,
+      "bed_size_mb": 18229.09727625,
+      "n_per_chr_files": 25,
+      "per_chr_bed_size_mb": 1403.5641585
+    },
+    "solvent": null,
+    "caveats": [
+      "The number of per-chromosome files depends on the actual chromosome split (typically 22 autosomes + X, optionally Y/MT); confirm against the dataset's chromosome list.",
+      "The .bed sizes exclude the companion .bim and .fam files, which add small overhead.",
+      "Per-chromosome size is computed for the largest chromosome (313,418 variants); other chromosomes will be smaller."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "plink.bed_size_mb",
+      "formula": "B = n_samples·n_variants / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 17913,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants",
+          "value": 4070585,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 18229.09727625,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "plink.n_per_chr_files",
+      "formula": "25 standard files (1–22, X, Y, MT)",
+      "inputs": [
+        {
+          "name": "chromosomes",
+          "value": "1-22, X, Y, MT",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 25.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "plink.per_chr_bed_size_mb",
+      "formula": "B_chr = n_samples·n_variants_chr / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 17913,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants_chr",
+          "value": 313418,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 1403.5641585,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

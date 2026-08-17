@@ -1,0 +1,116 @@
+{
+  "entry_id": "lmb-plink-048",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "bed_size_mb": 0.0,
+      "n_per_chr_files": 0.0,
+      "per_chr_bed_size_mb": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "plink_bed_size_mb",
+    "plink_per_chr_bed_size_mb",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Size the PLINK binary .bed storage for a GWAS genotype dataset of 19056 samples and 2895710 variants (411988 on the largest chromosome), reporting total .bed size, per-chromosome .bed size, and number of per-chromosome files.",
+    "rationale": "PLINK binary .bed packs 2 bits per sample per variant (4 samples/byte). Total .bed size = n_samples × n_variants / 4 / 1e6 MB. Per-chromosome .bed size uses the largest chromosome's variant count (411988, consistent with human chr1). Number of per-chromosome files = number of chromosomes in the split; for a standard human GWAS this is 24 (22 autosomes + X + Y), or 23 if the Y chromosome is excluded. The user must confirm the chromosome set in the lab.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": {
+      "n_samples": 19056,
+      "n_variants": 2895710,
+      "n_variants_chr": 411988,
+      "bed_size_mb": 13795.16244,
+      "n_per_chr_files": 25,
+      "per_chr_bed_size_mb": 1962.710832
+    },
+    "solvent": null,
+    "caveats": [
+      "Confirm whether the dataset includes the Y chromosome (and/or mitochondrial DNA) — this changes the per-chromosome file count by ±1 (24 vs 23).",
+      "The per-chromosome .bed size reported is for the largest chromosome (chr1); smaller chromosomes have proportionally smaller .bed files.",
+      "These sizes cover the binary .bed only; the accompanying .bim and .fam files add a small additional footprint, and any .bed→.bgen or VCF conversion will be substantially larger."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "plink.bed_size_mb",
+      "formula": "B = n_samples·n_variants / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 19056,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants",
+          "value": 2895710,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 13795.16244,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.n_per_chr_files",
+      "formula": "25 standard files (1–22, X, Y, MT)",
+      "inputs": [
+        {
+          "name": "chromosomes",
+          "value": "1-22, X, Y, MT",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 25.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.per_chr_bed_size_mb",
+      "formula": "B_chr = n_samples·n_variants_chr / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 19056,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants_chr",
+          "value": 411988,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 1962.710832,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

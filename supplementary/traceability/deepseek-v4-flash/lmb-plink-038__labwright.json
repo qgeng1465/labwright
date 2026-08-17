@@ -1,0 +1,115 @@
+{
+  "entry_id": "lmb-plink-038",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "bed_size_mb": 0.0,
+      "n_per_chr_files": 0.0,
+      "per_chr_bed_size_mb": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "plink_bed_size_mb",
+    "plink_per_chr_bed_size_mb",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Report the per-chromosome .bed size, total binary .bed size, and number of per-chromosome files for a GWAS genotype dataset of 8424 samples and 7,598,278 variants.",
+    "rationale": "The binary .bed format packs 2 bits per sample per variant, so total size = n_samples × n_variants / 4 / 1e6 MB. Per-chromosome size uses the same rule applied to the largest chromosome's variant count (231,808). The number of per-chromosome files equals the number of chromosomes in the dataset. With 7,598,278 total variants and 231,808 on the largest chromosome, this is a standard human GWAS; the per-chromosome file count is the number of chromosomes (22 autosomes + X + Y + MT = 25).",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": {
+      "n_samples": 8424,
+      "n_variants": 7598278,
+      "n_variants_chr": 231808,
+      "bed_size_mb": 16001.973468,
+      "n_per_chr_files": 25,
+      "per_chr_bed_size_mb": 488.187648
+    },
+    "solvent": null,
+    "caveats": [
+      "The number of per-chromosome files (25) assumes a standard human genome with 22 autosomes + X + Y + MT. Confirm the actual chromosome count in the dataset if it differs (e.g. no MT, or sex chromosomes excluded).",
+      "Per-chromosome size is reported for the largest chromosome (231,808 variants); other chromosomes will be smaller."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "plink.bed_size_mb",
+      "formula": "B = n_samples·n_variants / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 8424,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants",
+          "value": 7598278,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 16001.973468,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.n_per_chr_files",
+      "formula": "25 standard files (1–22, X, Y, MT)",
+      "inputs": [
+        {
+          "name": "chromosomes",
+          "value": "1-22, X, Y, MT",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 25.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.per_chr_bed_size_mb",
+      "formula": "B_chr = n_samples·n_variants_chr / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 8424,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants_chr",
+          "value": 231808,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 488.187648,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

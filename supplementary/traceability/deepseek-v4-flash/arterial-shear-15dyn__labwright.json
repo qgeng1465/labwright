@@ -1,0 +1,283 @@
+{
+  "entry_id": "arterial-shear-15dyn",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "shear_pa": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "flow_rate_for_shear_stress",
+    "wall_shear_stress",
+    "reynolds_number",
+    "pressure_drop",
+    "residence_time",
+    "seeding_cell_count",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Reproduce mid-range arterial wall shear stress (15 dyn/cm² = 1.5 Pa) on a HUVEC-lined arterial microchannel.",
+    "rationale": "Target wall shear 1.5 Pa (15 dyn/cm²) is mid-range arterial shear. Chose a standard arterial OOC channel geometry of 1000 µm wide × 200 µm tall × 20 mm long. Using flow_rate_for_shear_stress, 600 µL/min achieves exactly 1.5 Pa at medium viscosity 1e-3 Pa·s. Verified: wall_shear_stress returns 1.5 Pa; Reynolds ≈ 16.7 (well-laminar, ≪2300); pressure drop over 20 mm ≈ 300 Pa (well within syringe-pump capability); residence time ≈ 0.4 s. HUVEC seeded at 15,000 cells/cm² (mid-range of the 1e4–2e4 registry range) over the 2 cm² channel area = 30,000 cells/channel. Note: HUVEC registry shear range is microvascular (0.1–1 Pa); 1.5 Pa is above that and represents arterial shear, which is the explicit goal here — endothelial morphology/junction markers are the readout, not TEER.",
+    "chip": {
+      "width_um": 1000.0,
+      "height_um": 200.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 600.0,
+      "viscosity_pas": 0.001,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 1.5000000000000007,
+      "reynolds": 16.66666666666667,
+      "pressure_drop_pa": 300.00000000000006,
+      "residence_time_s": 0.39999999999999997,
+      "channel_volume_ul": 4.0,
+      "mean_velocity_mms": 50.000000000000014
+    },
+    "cells": {
+      "cell_type": "HUVEC",
+      "seeding_density_cells_cm2": 15000.0,
+      "culture_area_cm2": 2.0,
+      "seed_count": 30000.0,
+      "doubling_time_h": 48.0,
+      "culture_duration_h": 72.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "600 µL/min is a high flow for a microfluidic chip — confirm the syringe pump can deliver it steadily and that the PDMS/tubing connections hold at the ~300 Pa pressure drop.",
+      "1.5 Pa exceeds the HUVEC registry microvascular shear range (0.1–1 Pa); this is intentional (arterial shear) but verify HUVEC attachment/viability at this shear in a pilot run.",
+      "Confirm medium viscosity ≈ 1e-3 Pa·s at 37 °C; serum-containing medium can be slightly higher, which would raise the shear at fixed flow.",
+      "Seed HUVEC at 15,000 cells/cm² and allow attachment/confluence before starting flow; ramp flow up gradually to avoid shear-induced detachment.",
+      "Verify endothelial health by morphology and junctional markers (VE-cadherin), not TEER, which is low for HUVEC."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 600.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 1.5000000000000007,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 600.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 16.66666666666667,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 600.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 300.00000000000006,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 600.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 0.39999999999999997,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 4.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 600.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 50.000000000000014,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 15000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 2.0,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 30000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

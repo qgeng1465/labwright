@@ -1,0 +1,119 @@
+{
+  "entry_id": "lmb-champ-021",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_arrays": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "champ_expected_failed_arrays",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Size the expected QC attrition for a HumanMethylation450K cohort of 264 samples at a 4.5% fail rate.",
+    "rationale": "Expected failed arrays = n_arrays × fail_rate. With 264 arrays and a 4.5% (0.045) QC fail rate, the expected number of arrays failing the QC gate is computed by the champ_expected_failed_arrays tool.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": {
+      "n_samples": 264,
+      "platform": "450k",
+      "fail_rate_pct": 4.5,
+      "n_arrays": 264,
+      "n_chips": 22,
+      "n_expected_failed_arrays": 11.879999999999999
+    },
+    "plink": null,
+    "solvent": null,
+    "caveats": []
+  },
+  "provenance": [
+    {
+      "field": "champ.n_arrays",
+      "formula": "n_arrays = n_samples",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 264,
+          "unit": "—"
+        },
+        {
+          "name": "platform",
+          "value": "450k",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 264.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "champ.n_chips",
+      "formula": "n_chips = ⌈n_samples / capacity⌉  (12× 450k, 8× EPIC)",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 264,
+          "unit": "—"
+        },
+        {
+          "name": "platform",
+          "value": "450k",
+          "unit": "—"
+        },
+        {
+          "name": "chip_capacity",
+          "value": 12,
+          "unit": "samples/chip"
+        }
+      ],
+      "unit": "n",
+      "value": 22.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "champ.n_expected_failed_arrays",
+      "formula": "n_fail = n_arrays × p",
+      "inputs": [
+        {
+          "name": "n_arrays",
+          "value": 264.0,
+          "unit": "—"
+        },
+        {
+          "name": "fail_rate_pct",
+          "value": 4.5,
+          "unit": "%"
+        }
+      ],
+      "unit": "n",
+      "value": 11.879999999999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

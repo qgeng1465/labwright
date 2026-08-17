@@ -1,0 +1,283 @@
+{
+  "entry_id": "blind-pulmonary-artery-shear",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": false,
+    "recovery": {
+      "shear_pa": 0.25
+    },
+    "hallucination_rate": 0.0,
+    "failure": "wrong_target"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "flow_rate_for_shear_stress",
+    "flow_rate_for_shear_stress",
+    "reynolds_number",
+    "pressure_drop",
+    "residence_time",
+    "seeding_cell_count",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Recapitulate the resting wall shear stress of the human proximal pulmonary artery in a perfused endothelial channel.",
+    "rationale": "The proximal (main) pulmonary artery is a large elastic artery whose resting wall shear stress is lower than microvascular values, typically ~1-2 Pa (10-20 dyn/cm2). I target 1.5 Pa as a representative resting value. A wide, shallow channel (1000 x 200 um) approximates the large-vessel geometry (high width:height aspect ratio) and keeps the flow laminar (Re ~17). Using the wall_shear_stress relation tau = 6*mu*Q/(w*h^2), 600 uL/min in this geometry yields 1.5 Pa. HUVEC is used as the endothelial model (seeding density 1-2e4 cells/cm2 per registry); shear range for HUVEC is 0.1-1 Pa, so 1.5 Pa is slightly above the registry's microvascular range but appropriate for a large-artery target — this is flagged as a caveat. Channel area = 1000 um x 20 mm = 0.2 cm2, giving ~3000 cells at 1.5e4 cells/cm2.",
+    "chip": {
+      "width_um": 1000.0,
+      "height_um": 200.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 600.0,
+      "viscosity_pas": 0.001,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 1.5000000000000007,
+      "reynolds": 16.66666666666667,
+      "pressure_drop_pa": 300.00000000000006,
+      "residence_time_s": 0.39999999999999997,
+      "channel_volume_ul": 4.0,
+      "mean_velocity_mms": 50.000000000000014
+    },
+    "cells": {
+      "cell_type": "HUVEC",
+      "seeding_density_cells_cm2": 15000.0,
+      "culture_area_cm2": 0.2,
+      "seed_count": 3000.0,
+      "doubling_time_h": 48.0,
+      "culture_duration_h": 48.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Resting proximal pulmonary artery shear is literature-dependent (reported ~0.5-2 Pa); verify the 1.5 Pa target against your specific reference before committing.",
+      "1.5 Pa exceeds the HUVEC registry shear range (0.1-1 Pa, microvascular convention); confirm HUVEC tolerates large-artery shear or consider a pulmonary-artery endothelial cell (HPAEC) line.",
+      "600 uL/min is a high flow for a single channel — confirm the syringe pump and tubing can sustain it without leakage; pressure drop is only ~300 Pa so this is not limiting.",
+      "PDMS absorbs hydrophobic compounds and is gas-permeable; for shear-only studies this is fine, but account for it if dosing is added.",
+      "The 1000 um width assumes a wide-channel approximation for the shear formula; verify the aspect ratio assumption holds for your fabricated device."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 600.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 1.5000000000000007,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 600.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 16.66666666666667,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 600.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 300.00000000000006,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 600.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 0.39999999999999997,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 4.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 600.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 50.000000000000014,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 15000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.2,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 3000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

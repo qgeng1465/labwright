@@ -1,0 +1,300 @@
+{
+  "entry_id": "blind-pk-low-extraction-antipyrine",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": false,
+    "recovery": {
+      "extraction_ratio": 0.5,
+      "clearance_uLmin": 0.5
+    },
+    "hallucination_rate": 0.0,
+    "failure": "wrong_target"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "extraction_ratio",
+    "clearance_uLmin",
+    "wall_shear_stress",
+    "reynolds_number",
+    "residence_time",
+    "seeding_cell_count",
+    "o2_supply_vs_demand",
+    "half_life_h",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Perfused liver-on-chip metabolism study with antipyrine (low-extraction probe) to measure intrinsic hepatic metabolic capacity.",
+    "rationale": "Antipyrine is a low-extraction (E < 0.3) capacity-limited probe reflecting intrinsic enzyme activity (Rowland & Tozer). We target E = 0.15 (inlet 10 µM, outlet 8.5 µM), squarely in the low-extraction regime, so clearance Cl = E·Q reflects intrinsic metabolic capacity rather than flow. At 2 µL/min perfusion, Cl = 0.15 × 2 = 0.30 µL/min. Primary human hepatocytes (PHH) are the gold-standard liver cell (BSL-2, do not divide in vitro), seeded at 150,000 cells/cm² on a 0.08 cm² channel (12,000 cells). The 400×100 µm channel at 2 µL/min gives 0.05 Pa wall shear (low end of hepatic sinusoidal 0.05–0.15 Pa), Re = 0.13 (laminar), residence time ~24 s. O2 supply/demand ratio ≈ 14 (not hypoxic). Recirculating system volume 200 µL gives t½ ≈ 7.7 h, consistent with slow antipyrine clearance.",
+    "chip": {
+      "width_um": 400.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 2.0,
+      "viscosity_pas": 0.001,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 0.050000000000000024,
+      "reynolds": 0.1333333333333334,
+      "pressure_drop_pa": 20.000000000000007,
+      "residence_time_s": 23.999999999999996,
+      "channel_volume_ul": 0.7999999999999999,
+      "mean_velocity_mms": 0.8333333333333336
+    },
+    "cells": {
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "culture_area_cm2": 0.08,
+      "seed_count": 12000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": 24.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": {
+      "compound": "antipyrine",
+      "molecular_weight_g_mol": 188.23,
+      "inlet_concentration_uM": 10.0,
+      "outlet_concentration_uM": 8.5,
+      "flow_rate_uLmin": 2.0,
+      "extraction_ratio": 0.15000000000000002,
+      "clearance_uLmin": 0.30000000000000004,
+      "system_volume_uL": 200.0,
+      "half_life_h": 7.701635339554946,
+      "dose_interval_h": 24.0,
+      "accumulation_ratio": 1.1303587609194725,
+      "mass_cleared_ug_h": 0.033881400000000006
+    },
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "PHH are primary human cells (BSL-2); confirm institutional approval and supply before starting.",
+      "Antipyrine is capacity-limited (low E) — verify the outlet concentration is measured at steady state and that no significant PDMS/tubing binding confounds the readout; run a cell-free control to isolate cell-mediated clearance.",
+      "Shear of 0.05 Pa is at the low end of the hepatic sinusoidal range — acceptable for a low-flow metabolism study, but confirm hepatocyte viability at this flow.",
+      "System volume of 200 µL is an assumption (reservoir + chip + tubing); measure the actual recirculating volume in the lab.",
+      "Antipyrine clearance is slow (t½ ≈ 7.7 h at this volume); ensure the study duration is long enough to resolve a measurable drop in outlet concentration.",
+      "Confirm the 10 µM inlet concentration is below antipyrine's Km so the measurement reflects intrinsic capacity (capacity-limited regime)."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 2.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 0.050000000000000024,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 2.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.1333333333333334,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 2.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 20.000000000000007,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 2.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 23.999999999999996,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 0.7999999999999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 2.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 0.8333333333333336,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.08,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 12000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

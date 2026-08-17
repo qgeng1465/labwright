@@ -1,0 +1,178 @@
+{
+  "entry_id": "lmb-coculture-051",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "total_cells_b": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "cell_physiology",
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed HMEC-1 and primary human hepatocytes in a 48-well plate at 3.29e5 cells/cm² total across 2.43 cm² per well, with 14.8% of the total assigned to HMEC-1.",
+    "rationale": "Co-culture seeding of HMEC-1 (endothelial) and PHH (hepatocyte) in a 48-well plate. Total density 3.29e5 cells/cm² over 2.43 cm²/well gives ~7.99e5 cells/well; 14.8% (fraction_a=0.148) assigned to HMEC-1 (population A), remainder to PHH (population B). PHH are primary, non-dividing, BSL-2. Note: PHH seeding density exceeds the registry's recommended 1e5-2e5 cells/cm² range — flagged as a caveat. HMEC-1 has no physiology registry entry, so its physiological targets are unverified.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "HMEC-1",
+      "cell_type_b": "primary human hepatocytes",
+      "total_density_cells_cm2": 329000.0,
+      "area_cm2": 2.43,
+      "fraction_a": 0.148,
+      "wells": 48,
+      "cells_per_well_a": 118321.56,
+      "cells_per_well_b": 681148.44,
+      "total_cells_a": 5679434.88,
+      "total_cells_b": 32695125.119999997,
+      "seeding_ratio_ab": 0.17370892018779344
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "PHH seeding density (~2.8e5 cells/cm²) exceeds the registry-recommended 1e5-2e5 cells/cm² range — expect over-confluence and possible metabolic stress; confirm this dense seeding is intentional.",
+      "HMEC-1 has no physiology registry entry — its physiological targets (doubling, shear) are unverified; verify against literature.",
+      "PHH are primary, non-dividing, BSL-2 human material — seeded count is the final count; supply is limited.",
+      "Confirm the 2.43 cm² growth area against the specific 48-well plate manufacturer's spec sheet.",
+      "Well count assumed 48 for the total; adjust if fewer wells are used."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 329000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 2.43,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.148,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 118321.56,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 329000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 2.43,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.148,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 681148.44,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 118321.56,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 48,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 5679434.88,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 681148.44,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 48,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 32695125.119999997,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 118321.56,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 681148.44,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.17370892018779344,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

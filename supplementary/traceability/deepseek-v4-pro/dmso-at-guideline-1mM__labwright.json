@@ -1,0 +1,80 @@
+{
+  "entry_id": "dmso-at-guideline-1mM",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "dmso_fraction_vv": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "dmso_fraction",
+    "submit_design",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Dose a compound at 1 mM working concentration from a 200 mM DMSO stock and report the resulting DMSO volume fraction.",
+    "rationale": "Working concentration 1 mM diluted from a 200 mM DMSO stock gives a DMSO volume fraction of 1/200 = 0.005 (0.5% v/v), which sits exactly at the 0.5% v/v solvent-toxicity guideline ceiling. A matched vehicle-only control at 0.5% DMSO is required to subtract solvent effects. Molecular weight is a placeholder (300 g/mol) and must be confirmed for the actual compound.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": {
+      "compound": "compound",
+      "molecular_weight_g_mol": 300.0,
+      "stock_mM": 200.0,
+      "working_mM": 1.0,
+      "dmso_fraction_vv": 0.005,
+      "vehicle_control": true,
+      "exposure_h": null
+    },
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Confirm the stock is 200 mM in pure DMSO (not a diluted DMSO stock), otherwise the DMSO fraction changes.",
+      "0.5% v/v is at the solvent-toxicity ceiling; verify the cell line's DMSO tolerance (some primary cultures should stay <=0.1% v/v).",
+      "Run a matched vehicle-only control at 0.5% DMSO to subtract solvent effects."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "dosing.dmso_fraction_vv",
+      "formula": "f = C_working / C_stock",
+      "inputs": [
+        {
+          "name": "working_mM",
+          "value": 1.0,
+          "unit": "mM"
+        },
+        {
+          "name": "stock_mM",
+          "value": 200.0,
+          "unit": "mM"
+        }
+      ],
+      "unit": "v/v",
+      "value": 0.005,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

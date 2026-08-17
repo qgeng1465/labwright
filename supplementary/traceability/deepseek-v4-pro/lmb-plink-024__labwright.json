@@ -1,0 +1,114 @@
+{
+  "entry_id": "lmb-plink-024",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_per_chr_files": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "plink_per_chr_bed_size_mb",
+    "plink_bed_size_mb",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Size a GWAS genotype dataset's per-chromosome PLINK binary file layout.",
+    "rationale": "PLINK binary .bed files pack 2 bits per sample per variant. The dataset has 16799 samples and 1931336 variants, with 498278 variants on the largest chromosome. The number of per-chromosome files is a filesystem/organization property (one .bed/.bim/.fam trio per chromosome when split), not a derived number from sample/variant counts. The plink tools compute file sizes, not file counts.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": {
+      "n_samples": 16799,
+      "n_variants": 1931336,
+      "n_variants_chr": 498278,
+      "bed_size_mb": 8111.128366,
+      "n_per_chr_files": 25,
+      "per_chr_bed_size_mb": 2092.6430305
+    },
+    "solvent": null,
+    "caveats": [
+      "The number of per-chromosome files is determined by how the dataset is physically split on disk (single combined trio vs. one trio per chromosome), not by sample/variant counts — check the directory listing to confirm the actual file count.",
+      "A per-chromosome split typically yields one .bed/.bim/.fam trio per chromosome (up to ~25 chromosomes for autosomes + X + Y + MT).",
+      "The largest chromosome (498278 variants) is consistent with chromosome 2 in a standard human build, confirming the data spans multiple chromosomes."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "plink.bed_size_mb",
+      "formula": "B = n_samples·n_variants / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 16799,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants",
+          "value": 1931336,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 8111.128366,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "plink.n_per_chr_files",
+      "formula": "25 standard files (1–22, X, Y, MT)",
+      "inputs": [
+        {
+          "name": "chromosomes",
+          "value": "1-22, X, Y, MT",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 25.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "plink.per_chr_bed_size_mb",
+      "formula": "B_chr = n_samples·n_variants_chr / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 16799,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants_chr",
+          "value": 498278,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 2092.6430305,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

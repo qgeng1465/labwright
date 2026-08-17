@@ -1,0 +1,79 @@
+{
+  "entry_id": "dmso-at-guideline-1mM",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "dmso_fraction_vv": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "dmso_fraction",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Dose a compound at 1 mM working concentration from a 200 mM DMSO stock and flag the DMSO solvent burden at the 0.5% v/v toxicity guideline.",
+    "rationale": "Working concentration of 1 mM from a 200 mM DMSO stock gives a DMSO volume fraction of 0.005 (0.5% v/v), which sits exactly at the solvent-toxicity guideline threshold. This is the upper edge of acceptable for most cell types; a matched vehicle control at the same DMSO level is required to separate solvent effects from compound effects. The user should verify cell viability at this DMSO level in a pilot run before committing.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": {
+      "compound": "test compound",
+      "molecular_weight_g_mol": 300.0,
+      "stock_mM": 200.0,
+      "working_mM": 1.0,
+      "dmso_fraction_vv": 0.005,
+      "vehicle_control": true,
+      "exposure_h": 24.0
+    },
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "DMSO sits exactly at 0.5% v/v, the solvent-toxicity guideline threshold — verify cell viability at this level in a pilot run before committing",
+      "Include a matched vehicle-only control at 0.5% v/v DMSO to separate solvent effects from compound effects",
+      "Consider lowering working concentration or using a more concentrated stock to reduce DMSO burden if potency allows"
+    ]
+  },
+  "provenance": [
+    {
+      "field": "dosing.dmso_fraction_vv",
+      "formula": "f = C_working / C_stock",
+      "inputs": [
+        {
+          "name": "working_mM",
+          "value": 1.0,
+          "unit": "mM"
+        },
+        {
+          "name": "stock_mM",
+          "value": 200.0,
+          "unit": "mM"
+        }
+      ],
+      "unit": "v/v",
+      "value": 0.005,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

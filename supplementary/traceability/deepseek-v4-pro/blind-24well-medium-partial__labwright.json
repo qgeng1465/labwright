@@ -1,0 +1,141 @@
+{
+  "entry_id": "blind-24well-medium-partial",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "total_medium_ml": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "medium_volume_per_well",
+    "cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Plate primary human hepatocytes onto 6 wells of a 24-well plate at 1.5e5 cells/cm² for a sandwich-culture toxicity study, and report the total medium volume needed for all 6 wells.",
+    "rationale": "Sandwich-culture toxicity study using primary human hepatocytes (PHH), which do not divide in vitro and are seeded at 1.5e5 cells/cm² to form a confluent monolayer. Standard 24-well working volume is 0.68 mL/well (Corning/Falcon recommended), giving 4.08 mL for 6 wells. Seeding density of 1.5e5 cells/cm² is the literature-recommended value for primary hepatocyte sandwich culture.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "24",
+      "wells": 6,
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "seed_per_well": 285000.0,
+      "total_seed_count": 1710000.0,
+      "medium_volume_per_well_ml": 0.68,
+      "total_medium_ml": 4.08,
+      "viability_pct": null,
+      "confluent_density_cells_cm2": null,
+      "doubling_time_h": null,
+      "culture_duration_h": null,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Confirm the plate vendor's actual growth area (24-well ranges ~1.8-2.0 cm²/well), which affects the exact per-well cell count.",
+      "Budget additional medium beyond the 4.08 mL working volume for the collagen overlay and initial seeding/attachment steps of the sandwich culture.",
+      "Primary human hepatocytes are BSL-2 material and do not divide in vitro; the 1.5e5 cells/cm² density is for a confluent monolayer, not expansion."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "24",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 285000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 285000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1710000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "24",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.68,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 0.68,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 4.08,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

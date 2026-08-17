@@ -1,0 +1,251 @@
+{
+  "entry_id": "lmb-flow-079",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "shear_pa": 0.0,
+      "reynolds": 0.0,
+      "residence_time_s": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "residence_time",
+    "wall_shear_stress",
+    "reynolds_number",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Report residence time, wall shear stress, and Reynolds number for a microfluidic channel of 964 µm × 167 µm × 38.4 mm perfused at 12.68 µL/min with medium (μ = 0.0035 Pa·s, ρ = 1000 kg/m³).",
+    "rationale": "Pure calculation from the stated geometry and flow inputs; no physiological target is being matched, only the derived flow metrics are requested.",
+    "chip": {
+      "width_um": 964.0,
+      "height_um": 167.0,
+      "length_mm": 38.4,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 12.68,
+      "viscosity_pas": 0.0035,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 0.1650734855976918,
+      "reynolds": 0.10677445160203784,
+      "pressure_drop_pa": 75.91403409522592,
+      "residence_time_s": 29.252078233438485,
+      "channel_volume_ul": 6.1819391999999995,
+      "mean_velocity_mms": 1.3127272426102155
+    },
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Viscosity of 0.0035 Pa·s is ~3.5× water-like medium; confirm this is the intended medium viscosity.",
+      "Wall shear stress (0.165 Pa) is above the hepatic sinusoidal range (0.05–0.15 Pa) and within microvascular endothelial range (0.1–1 Pa)."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 12.68,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 964.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 167.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.0035,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 0.1650734855976918,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 12.68,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 964.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 167.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.0035,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.10677445160203784,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 12.68,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 964.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 167.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 38.4,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.0035,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 75.91403409522592,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 12.68,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 964.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 167.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 38.4,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 29.252078233438485,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 964.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 167.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 38.4,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 6.1819391999999995,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 12.68,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 964.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 167.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 1.3127272426102155,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

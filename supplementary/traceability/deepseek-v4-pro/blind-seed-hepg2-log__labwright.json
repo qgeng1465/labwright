@@ -1,0 +1,87 @@
+{
+  "entry_id": "blind-seed-hepg2-log",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_count": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "seeding_cell_count",
+    "seeding_cell_count",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed HepG2 cells in logarithmic growth phase onto the culture area of a 400 µm wide, 20 mm long channel and determine cells to seed per channel.",
+    "rationale": "HepG2 log-phase seeding density is 50,000–100,000 cells/cm² (DSMZ ACC-180; ENCODE4 SOP). Channel floor culture area = width × length = 400 µm × 20 mm = 0.08 cm². Seeding count = density × area, giving 4,000–8,000 cells per channel. Assumes cells attach to the channel floor only.",
+    "chip": {
+      "width_um": 400.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": null,
+    "derived": null,
+    "cells": {
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 50000.0,
+      "culture_area_cm2": 0.08,
+      "seed_count": 4000.0,
+      "doubling_time_h": 48.0,
+      "culture_duration_h": 24.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Channel height (100 µm) is assumed for geometry completeness; it does not affect floor-area seeding count but matters for later perfusion/shear calculations.",
+      "Assumes cells attach to the channel floor only (width × length). If the device has a wider culture chamber or cells coat all walls, the area and seed count change.",
+      "Verify the actual channel footprint in your device before seeding.",
+      "Seed from a culture at ~50–70% confluence to ensure true logarithmic growth phase."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 50000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.08,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 4000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

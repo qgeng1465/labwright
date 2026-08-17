@@ -1,0 +1,116 @@
+{
+  "entry_id": "lmb-plink-028",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "bed_size_mb": 0.0,
+      "n_per_chr_files": 0.0,
+      "per_chr_bed_size_mb": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "plink_bed_size_mb",
+    "plink_per_chr_bed_size_mb",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Size the PLINK binary .bed dataset for a GWAS cohort of 14,894 samples and 5,795,421 variants, including per-chromosome file sizing.",
+    "rationale": "The .bed binary format packs 2 bits per sample per variant, so total size = n_samples × n_variants / 4 / 1e6 MB. Per-chromosome files follow the same rule for each chromosome's variant count. The largest chromosome carries 632,493 variants (consistent with human chr 1 on a dense imputation panel). The number of per-chromosome files assumes a standard human genome build with 22 autosomes + X + Y + MT = 25 chromosomes.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": {
+      "n_samples": 14894,
+      "n_variants": 5795421,
+      "n_variants_chr": 632493,
+      "bed_size_mb": 21579.2500935,
+      "n_per_chr_files": 25,
+      "per_chr_bed_size_mb": 2355.0876855
+    },
+    "solvent": null,
+    "caveats": [
+      "Per-chromosome file count of 25 assumes a standard human build (chr 1-22, X, Y, MT); if sex chromosomes or mitochondria are excluded, the file count will be lower (e.g. 22 for autosomes only).",
+      "Disk budget should also include the .bim and .fam companion files (small, tens of MB) plus any backup copies of the .bed.",
+      "Per-chromosome .bed sizes vary; chr 1 (632,493 variants) is the largest and its size is reported here."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "plink.bed_size_mb",
+      "formula": "B = n_samples·n_variants / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 14894,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants",
+          "value": 5795421,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 21579.2500935,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.n_per_chr_files",
+      "formula": "25 standard files (1–22, X, Y, MT)",
+      "inputs": [
+        {
+          "name": "chromosomes",
+          "value": "1-22, X, Y, MT",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 25.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.per_chr_bed_size_mb",
+      "formula": "B_chr = n_samples·n_variants_chr / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 14894,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants_chr",
+          "value": 632493,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 2355.0876855,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

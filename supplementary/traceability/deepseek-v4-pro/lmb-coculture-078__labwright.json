@@ -1,0 +1,176 @@
+{
+  "entry_id": "lmb-coculture-078",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "cells_per_well_a": 0.0,
+      "cells_per_well_b": 0.0,
+      "total_cells_a": 0.0,
+      "total_cells_b": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed ECFC and Huh7 in a 6-well plate at 3.84e5 cells/cm² total across 8.88 cm² per well, with 0.557 of the total assigned to ECFC.",
+    "rationale": "Co-culture seeding budget: total density 3.84e5 cells/cm² over 8.88 cm²/well, fraction A (ECFC) = 0.557, so fraction B (Huh7) = 0.443. Per-well counts and totals across 6 wells are computed from these raw inputs.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "ECFC",
+      "cell_type_b": "Huh7",
+      "total_density_cells_cm2": 384000.0,
+      "area_cm2": 8.88,
+      "fraction_a": 0.557,
+      "wells": 6,
+      "cells_per_well_a": 1899325.4400000004,
+      "cells_per_well_b": 1510594.56,
+      "total_cells_a": 11395952.640000002,
+      "total_cells_b": 9063567.36,
+      "seeding_ratio_ab": 1.2573363431151243
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Verify the actual 6-well plate growth area (8.88 cm² assumed); standard Corning 6-well is ~9.6 cm², which would scale all counts proportionally.",
+      "Confirm ECFC and Huh7 seeding densities are compatible with their respective physiological ranges before committing."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 384000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 8.88,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.557,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1899325.4400000004,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 384000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 8.88,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.557,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1510594.56,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 1899325.4400000004,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 11395952.640000002,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 1510594.56,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 9063567.36,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 1899325.4400000004,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 1510594.56,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 1.2573363431151243,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

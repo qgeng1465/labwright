@@ -1,0 +1,177 @@
+{
+  "entry_id": "plate-12well-seed-hepg2",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_per_well": 0.0,
+      "medium_volume_per_well_ml": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cells_per_well",
+    "medium_volume_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed HepG2 cells in a 12-well plate at 1e5 cells/cm^2 and determine the standard working medium volume per well.",
+    "rationale": "HepG2 is a liver cell line. Seeding at 1e5 cells/cm^2 is at the upper end of the growth-phase range and appropriate for a confluent/sandwich-style culture. The 12-well plate has a 3.8 cm^2 growth area, so 1e5 cells/cm^2 requires 3.8e5 cells/well. Standard working medium volume for a 12-well plate is used.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "12",
+      "wells": 1,
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 100000.0,
+      "seed_per_well": 380000.0,
+      "total_seed_count": 380000.0,
+      "medium_volume_per_well_ml": 1.35,
+      "total_medium_ml": 1.35,
+      "viability_pct": 90.0,
+      "confluent_density_cells_cm2": 1000000.0,
+      "doubling_time_h": 48.0,
+      "culture_duration_h": 48.0,
+      "expected_confluence_pct": 20.0
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "1e5 cells/cm^2 is at the upper end of the HepG2 growth-phase range (2e4-6.3e4); confirm whether a proliferating monolayer or a confluent/sandwich culture is intended.",
+      "Verify cell viability at seeding and adjust the counted suspension volume accordingly.",
+      "Standard 12-well working volume is 1.35 mL/well; reduce only for low-volume protocols with attention to edge-well evaporation."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 100000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "12",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 380000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 380000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 380000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "12",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 1.35,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 1.35,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 1.35,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.expected_confluence_pct",
+      "formula": "conf = N(t) / (ρ_conv·A_well) × 100,  N(t) = N_0·2^(t/t_d)",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 380000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "doubling_time_h",
+          "value": 48.0,
+          "unit": "h"
+        },
+        {
+          "name": "culture_duration_h",
+          "value": 48.0,
+          "unit": "h"
+        },
+        {
+          "name": "confluent_density_cells_cm2",
+          "value": 1000000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "12",
+          "unit": "—"
+        }
+      ],
+      "unit": "%",
+      "value": 20.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

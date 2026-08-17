@@ -1,0 +1,80 @@
+{
+  "entry_id": "dmso-vehicle-check",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "dmso_fraction_vv": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "dmso_fraction",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Dose APAP at a 0.5 mM working concentration from a 500 mM DMSO stock and verify the DMSO vehicle fraction stays within solvent-toxicity limits.",
+    "rationale": "APAP is dosed at 0.5 mM working concentration from a 500 mM DMSO stock. The 1/1000 dilution gives 0.1% v/v DMSO in the final medium, which is below the ~0.5% v/v solvent-toxicity guideline (effects begin at 0.5%) and at the 0.1% recommended ceiling for primary cells. A matched vehicle control (0.1% DMSO) is required to isolate APAP-specific effects from any solvent contribution. This is a plate-based dosing design; no chip geometry or perfusion is involved.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": {
+      "compound": "APAP (acetaminophen)",
+      "molecular_weight_g_mol": 151.16,
+      "stock_mM": 500.0,
+      "working_mM": 0.5,
+      "dmso_fraction_vv": 0.001,
+      "vehicle_control": true,
+      "exposure_h": 24.0
+    },
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "0.1% v/v DMSO is at the recommended ceiling for primary cells — consider a higher-concentration stock or lower working dose if primary hepatocytes are used.",
+      "Confirm the APAP stock is fully dissolved in DMSO before dilution.",
+      "Include a matched 0.1% DMSO vehicle control to isolate APAP-specific effects.",
+      "Verify the actual DMSO lot/stock concentration in the lab before preparing the dilution."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "dosing.dmso_fraction_vv",
+      "formula": "f = C_working / C_stock",
+      "inputs": [
+        {
+          "name": "working_mM",
+          "value": 0.5,
+          "unit": "mM"
+        },
+        {
+          "name": "stock_mM",
+          "value": 500.0,
+          "unit": "mM"
+        }
+      ],
+      "unit": "v/v",
+      "value": 0.001,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

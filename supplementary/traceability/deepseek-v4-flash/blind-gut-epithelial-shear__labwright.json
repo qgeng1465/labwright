@@ -1,0 +1,323 @@
+{
+  "entry_id": "blind-gut-epithelial-shear",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": false,
+    "recovery": {
+      "shear_pa": 1.5
+    },
+    "hallucination_rate": 0.0,
+    "failure": "wrong_target"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "flow_rate_for_shear_stress",
+    "flow_rate_for_shear_stress",
+    "reynolds_number",
+    "residence_time",
+    "pressure_drop",
+    "wall_shear_stress",
+    "seeding_cell_count",
+    "seeding_cell_count",
+    "sample_size_per_group",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Recapitulate the very low fluid shear that Caco-2 / intestinal epithelial cells experience under physiological gut flow in an intestinal lumen-on-chip channel.",
+    "rationale": "Intestinal epithelial cells experience very low luminal shear under physiological gut flow, far below vascular shear. The literature anchor for intestinal lumen shear is ~0.002-0.02 Pa (0.02-0.2 dyn/cm²); I target 0.005 Pa (0.05 dyn/cm²), the low end of this range, to reproduce the quiescent, low-shear gut lumen. A 1000 µm wide x 100 µm high x 20 mm long PDMS channel at 0.5 µL/min gives 0.005 Pa wall shear (verified via flow_rate_for_shear_stress), Re = 0.015 (deeply laminar), residence time ~240 s/pass, and a negligible 2 Pa pressure drop. Caco-2 is seeded at 100,000 cells/cm² (upper end of the 5e4-1e5 registry range) on the 0.2 cm² channel floor = 20,000 cells/channel. Caco-2 is a barrier line (TEER 250-1000 Ω·cm²); the low shear is chosen to avoid disrupting tight junctions. Medium viscosity taken as water-like 1e-3 Pa·s. Statistical design: 7 biological replicates per group detects a 1.5-SD effect at 80% power (two-sided, alpha 0.05).",
+    "chip": {
+      "width_um": 1000.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 0.5,
+      "viscosity_pas": 0.001,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 0.005000000000000002,
+      "reynolds": 0.015151515151515159,
+      "pressure_drop_pa": 2.0000000000000004,
+      "residence_time_s": 239.99999999999997,
+      "channel_volume_ul": 2.0,
+      "mean_velocity_mms": 0.08333333333333337
+    },
+    "cells": {
+      "cell_type": "Caco-2",
+      "seeding_density_cells_cm2": 100000.0,
+      "culture_area_cm2": 0.2,
+      "seed_count": 20000.0,
+      "doubling_time_h": 25.0,
+      "culture_duration_h": 240.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": {
+      "effect_size": 1.5,
+      "std_dev": 1.0,
+      "alpha": 0.05,
+      "power": 0.8,
+      "n_per_group": 7,
+      "note": null
+    },
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Verify the 0.005 Pa (0.05 dyn/cm²) shear target against the specific literature you cite for intestinal lumen shear; the registry does not list a Caco-2 shear range, so confirm the physiological anchor before finalizing.",
+      "Caco-2 must be fully differentiated (mature 21-day monolayer, TEER >= ~300 Ω·cm²) before perfusion; low shear is intended to preserve tight junctions.",
+      "Confirm the syringe pump can deliver 0.5 µL/min accurately (use a low-volume glass syringe and prime the line to avoid pulsation).",
+      "Check PDMS oxygen permeability and medium gas equilibration; at this low flow the residence time is ~4 min/pass, so ensure O2 delivery is adequate for the cell load.",
+      "Validate the actual wall shear empirically (e.g., bead tracking) since the 6·μQ/wh² formula assumes a wide rectangular channel and Newtonian medium."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 0.5,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 0.005000000000000002,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 0.5,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.015151515151515159,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 0.5,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 2.0000000000000004,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 0.5,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 239.99999999999997,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 2.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 0.5,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 0.08333333333333337,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 100000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.2,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 20000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "stats.n_per_group",
+      "formula": "n from two-sample t-test power equation",
+      "inputs": [
+        {
+          "name": "effect_size",
+          "value": 1.5,
+          "unit": ""
+        },
+        {
+          "name": "std_dev",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "alpha",
+          "value": 0.05,
+          "unit": ""
+        },
+        {
+          "name": "power",
+          "value": 0.8,
+          "unit": ""
+        }
+      ],
+      "unit": "n",
+      "value": 7.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

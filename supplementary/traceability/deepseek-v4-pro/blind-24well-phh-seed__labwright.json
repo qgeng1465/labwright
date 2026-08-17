@@ -1,0 +1,142 @@
+{
+  "entry_id": "blind-24well-phh-seed",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_per_well": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Plate primary human hepatocytes in collagen-sandwich culture in a single well of a 24-well plate at the standard published plating density, and determine the cells per well.",
+    "rationale": "Primary human hepatocytes (PHH) are the gold-standard liver cell and do not divide in vitro, so the seeded count is the final count. The registry seeding-density range is 100,000–200,000 cells/cm²; the standard published collagen-sandwich plating density is 150,000 cells/cm² (midpoint, Dunn et al. sandwich protocol). A 24-well plate has ~1.9 cm² growth area per well.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "24",
+      "wells": 1,
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "seed_per_well": 285000.0,
+      "total_seed_count": 285000.0,
+      "medium_volume_per_well_ml": 0.68,
+      "total_medium_ml": 0.68,
+      "viability_pct": null,
+      "confluent_density_cells_cm2": null,
+      "doubling_time_h": null,
+      "culture_duration_h": 0.0,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Confirm the exact growth area of your 24-well plate (commonly 1.9 cm²; some brands differ).",
+      "Confirm the exact density from your collagen-sandwich protocol (typically 1.5e5 cells/cm²).",
+      "Primary human hepatocytes are BSL-2 material — use appropriate containment.",
+      "PHH do not proliferate in vitro; no growth correction applies."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "24",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 285000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 285000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 285000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "24",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.68,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 0.68,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.68,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

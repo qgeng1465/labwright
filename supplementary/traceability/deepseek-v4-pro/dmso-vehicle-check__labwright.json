@@ -1,0 +1,79 @@
+{
+  "entry_id": "dmso-vehicle-check",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "dmso_fraction_vv": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "dmso_fraction",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Dose APAP at 0.5 mM working concentration from a 500 mM DMSO stock and verify the DMSO volume fraction stays under the solvent-toxicity guideline.",
+    "rationale": "APAP (acetaminophen) working concentration of 0.5 mM prepared by dilution from a 500 mM DMSO stock. The DMSO fraction is computed as stock/working ratio = 0.5/500 = 0.1% v/v, which is 5× below the ~0.5% v/v solvent-toxicity onset and at the ≤0.1% recommended ceiling for primary cells. A vehicle-only control (0.1% DMSO, no APAP) is required to subtract solvent effects.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": {
+      "compound": "APAP (acetaminophen)",
+      "molecular_weight_g_mol": 151.16,
+      "stock_mM": 500.0,
+      "working_mM": 0.5,
+      "dmso_fraction_vv": 0.001,
+      "vehicle_control": true,
+      "exposure_h": null
+    },
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Include a vehicle-only control (0.1% DMSO in medium, no APAP) to subtract solvent effects.",
+      "0.1% v/v is at the recommended ceiling for primary cells (e.g., primary human hepatocytes); consider a more concentrated stock or lower dose for extra margin.",
+      "Verify the 500 mM stock is fully dissolved in DMSO before dilution."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "dosing.dmso_fraction_vv",
+      "formula": "f = C_working / C_stock",
+      "inputs": [
+        {
+          "name": "working_mM",
+          "value": 0.5,
+          "unit": "mM"
+        },
+        {
+          "name": "stock_mM",
+          "value": 500.0,
+          "unit": "mM"
+        }
+      ],
+      "unit": "v/v",
+      "value": 0.001,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

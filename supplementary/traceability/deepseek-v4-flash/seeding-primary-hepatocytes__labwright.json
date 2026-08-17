@@ -1,0 +1,84 @@
+{
+  "entry_id": "seeding-primary-hepatocytes",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_count": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "seeding_cell_count",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed primary human hepatocytes at 1.5e5 cells/cm^2 onto the 0.16 cm^2 culture area of an 800 µm x 20 mm channel.",
+    "rationale": "Primary human hepatocytes are seeded at 1.5e5 cells/cm^2 (within the registry range of 1e5-2e5 cells/cm^2 for primary hepatocytes). The culture area is 0.16 cm^2 (800 µm wide x 20 mm long channel). Primary human hepatocytes do not divide in vitro, so this is a terminal seeding density. BSL-2 applies as these are human primary cells.",
+    "chip": {
+      "width_um": 800.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": null,
+    "derived": null,
+    "cells": {
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "culture_area_cm2": 0.16,
+      "seed_count": 24000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": null
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Primary human hepatocytes are BSL-2 human primary cells - follow institutional biosafety requirements.",
+      "Primary hepatocytes do not divide in vitro; seed at the target density directly and verify viability at thaw (trypan blue).",
+      "Confirm the channel height assumption (100 µm) with the actual device; only width and length were specified."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.16,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 24000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

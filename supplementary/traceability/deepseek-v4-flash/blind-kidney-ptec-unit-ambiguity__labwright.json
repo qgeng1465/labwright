@@ -1,0 +1,283 @@
+{
+  "entry_id": "blind-kidney-ptec-unit-ambiguity",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "shear_pa": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "flow_rate_for_shear_stress",
+    "reynolds_number",
+    "pressure_drop",
+    "residence_time",
+    "seeding_cell_count",
+    "wall_shear_stress",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Culture human proximal tubular epithelial cells in a microchannel reproducing the in vivo apical fluid shear of ~0.2 dyn/cm² (0.02 Pa).",
+    "rationale": "PTEC apical shear target of 0.2 dyn/cm² = 0.02 Pa (user-specified physiological value; PTEC not in the physiology registry, so this target is treated as unverified and should be confirmed against literature). A 1000 µm × 100 µm × 20 mm rectangular channel was chosen as a proximal-tubule-like lumen. Using the flow-rate-for-shear inverse calculator, 2.0 µL/min gives exactly 0.02 Pa (0.2 dyn/cm²) at culture-medium viscosity 1e-3 Pa·s. Flow is laminar (Re ≈ 0.06), pressure drop is negligible (~8 Pa), and residence time is ~60 s. Cells are seeded at 5e4 cells/cm² (typical epithelial seeding density) over the 0.2 cm² channel floor → 10,000 cells. Culture medium viscosity assumed water-like (1e-3 Pa·s).",
+    "chip": {
+      "width_um": 1000.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 2.0,
+      "viscosity_pas": 0.001,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 0.020000000000000007,
+      "reynolds": 0.060606060606060635,
+      "pressure_drop_pa": 8.000000000000002,
+      "residence_time_s": 59.99999999999999,
+      "channel_volume_ul": 2.0,
+      "mean_velocity_mms": 0.3333333333333335
+    },
+    "cells": {
+      "cell_type": "human proximal tubular epithelial cells",
+      "seeding_density_cells_cm2": 50000.0,
+      "culture_area_cm2": 0.2,
+      "seed_count": 10000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": 72.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "PTEC line not in the physiology registry — confirm the 0.2 dyn/cm² apical shear target against the relevant literature for the specific PTEC source (primary vs. immortalized, e.g. HK-2/RPTEC).",
+      "Culture medium viscosity assumed water-like (1e-3 Pa·s); if a protein-supplemented medium is used, re-derive the flow rate from the actual viscosity.",
+      "Confirm the channel floor is coated (e.g. collagen IV / fibronectin) for PTEC attachment before seeding.",
+      "Verify the syringe pump delivers 2.0 µL/min accurately at low flow; use a gas-tight syringe and primed lines.",
+      "Seeding density 5e4 cells/cm² is a general epithelial value — adjust to the PTEC line's recommended density if known."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 2.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 0.020000000000000007,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 2.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.060606060606060635,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 2.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 8.000000000000002,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 2.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 59.99999999999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 2.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 2.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 1000.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 0.3333333333333335,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 50000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.2,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 10000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

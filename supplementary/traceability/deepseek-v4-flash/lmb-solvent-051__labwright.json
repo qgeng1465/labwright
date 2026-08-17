@@ -1,0 +1,156 @@
+{
+  "entry_id": "lmb-solvent-051",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "evaporation_rate_ul_hr": 0.009615,
+      "residual_volume_ul": 0.02167,
+      "edge_evaporation_factor": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "solvent_evaporation_rate",
+    "solvent_edge_well_factor",
+    "solvent_drop_volume_after_time",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Characterize evaporation of a 1.71 µL hanging drop at 12.7 °C and 58% RH in an interior 96-well position (E8) over 0.413 h.",
+    "rationale": "Hanging-drop screen at 12.7 °C, 58% RH. Well E8 is an interior position (not rows A/H or columns 1/12), so the plate-edge evaporation factor is 1.0. The d²-law governs drop shrinkage, so residual volume is projected from the initial 1.71 µL drop over 0.413 h. This is a pure evaporation/volume characterization with no cell, flow, or dosing components.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": {
+      "drop_volume_ul": 1.71,
+      "hours": 0.413,
+      "temp_c": 12.7,
+      "rh": 0.58,
+      "well_row": "E",
+      "well_col": 8,
+      "edge_factor": 1.5,
+      "evaporation_rate_ul_hr": 3.7701509440523253,
+      "residual_volume_ul": 0.4212201141543845,
+      "edge_evaporation_factor": 1.0
+    },
+    "caveats": [
+      "Well E8 is an interior position, so the edge factor applies as 1.0 (the default 1.5 edge factor is only for rows A/H and columns 1/12).",
+      "The drop loses ~75% of its starting volume over 0.413 h at this low humidity — verify the drop survives the intended incubation window.",
+      "12.7 °C is a plating/handling temperature, not a 37 °C culture condition; re-check evaporation if the drop is later incubated at 37 °C."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "solvent.edge_evaporation_factor",
+      "formula": "f_edge = 1.5 (rows A/H, cols 1/12) else 1.0",
+      "inputs": [
+        {
+          "name": "well_row",
+          "value": "E",
+          "unit": "—"
+        },
+        {
+          "name": "well_col",
+          "value": 8,
+          "unit": "—"
+        },
+        {
+          "name": "edge_factor",
+          "value": 1.5,
+          "unit": "—"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 1.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "solvent.evaporation_rate_ul_hr",
+      "formula": "V̇ = K·r(V)·f_edge,  K = 4π·D·C_sat(1−RH)/ρ",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 1.71,
+          "unit": "uL"
+        },
+        {
+          "name": "temp_c",
+          "value": 12.7,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.58,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL/hr",
+      "value": 3.7701509440523253,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "solvent.residual_volume_ul",
+      "formula": "V(t) = (V₀^(2/3) − c·f·t)^(3/2)  (d²-law)",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 1.71,
+          "unit": "uL"
+        },
+        {
+          "name": "hours",
+          "value": 0.413,
+          "unit": "h"
+        },
+        {
+          "name": "temp_c",
+          "value": 12.7,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.58,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL",
+      "value": 0.4212201141543845,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

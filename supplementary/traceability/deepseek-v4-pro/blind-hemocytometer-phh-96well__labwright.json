@@ -1,0 +1,142 @@
+{
+  "entry_id": "blind-hemocytometer-phh-96well",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "wells": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "hemocytometer_count",
+    "cell_physiology",
+    "cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Determine how many 96-well plate wells can be plated from 0.36 mL of a primary human hepatocyte suspension at the standard sandwich-culture seeding density.",
+    "rationale": "Hemocytometer count of 40 cells per 1 mm² corner square at 1:2 dilution gives 800,000 cells/mL. Total cells in 0.36 mL = 288,000. Primary human hepatocyte sandwich-culture seeding density is 150,000 cells/cm² (registry range 100,000–200,000). A 96-well plate has 0.32 cm² growth area, so 48,000 cells/well. 288,000 ÷ 48,000 = 6 wells.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "96",
+      "wells": 6,
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "seed_per_well": 48000.0,
+      "total_seed_count": 288000.0,
+      "medium_volume_per_well_ml": 0.17,
+      "total_medium_ml": 1.02,
+      "viability_pct": null,
+      "confluent_density_cells_cm2": null,
+      "doubling_time_h": null,
+      "culture_duration_h": null,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Registry seeding-density range is 100,000–200,000 cells/cm²; at 100,000 you get 9 wells, at 200,000 you get 4.5 wells — confirm your lab's specific sandwich density.",
+      "Assumes 100% viability and no handling loss; run a trypan-blue viability check before plating.",
+      "Primary human hepatocytes are BSL-2 material — handle accordingly."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 48000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 48000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 288000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.17,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 0.17,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 1.02,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "entry_id": "lmb-plink-023",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_per_chr_files": 0.0,
+      "per_chr_bed_size_mb": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "plink_per_chr_bed_size_mb",
+    "plink_bed_size_mb",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Report per-chromosome .bed size (MB) and number of per-chromosome files for a GWAS genotype dataset.",
+    "rationale": "The dataset has 10869 samples and 9838421 variants, with 662966 variants on the largest chromosome. Per-chromosome .bed size uses the 2-bits-per-sample-per-variant rule applied to the largest chromosome's variant count. The number of per-chromosome files is derived from the total variant count relative to the per-chromosome variant count.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": {
+      "n_samples": 10869,
+      "n_variants": 9838421,
+      "n_variants_chr": 662966,
+      "bed_size_mb": 26733.44946225,
+      "n_per_chr_files": 25,
+      "per_chr_bed_size_mb": 1801.4443635
+    },
+    "solvent": null,
+    "caveats": [
+      "Per-chromosome size assumes the largest chromosome's variant count as the per-file basis; actual per-chromosome files vary with each chromosome's variant count."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "plink.bed_size_mb",
+      "formula": "B = n_samples·n_variants / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 10869,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants",
+          "value": 9838421,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 26733.44946225,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.n_per_chr_files",
+      "formula": "25 standard files (1–22, X, Y, MT)",
+      "inputs": [
+        {
+          "name": "chromosomes",
+          "value": "1-22, X, Y, MT",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 25.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.per_chr_bed_size_mb",
+      "formula": "B_chr = n_samples·n_variants_chr / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 10869,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants_chr",
+          "value": 662966,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 1801.4443635,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

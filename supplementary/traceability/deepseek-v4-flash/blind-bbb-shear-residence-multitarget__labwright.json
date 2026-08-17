@@ -1,0 +1,314 @@
+{
+  "entry_id": "blind-bbb-shear-residence-multitarget",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "shear_pa": 0.0,
+      "residence_time_s": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "flow_rate_for_shear_stress",
+    "residence_time",
+    "reynolds_number",
+    "pressure_drop",
+    "seeding_cell_count",
+    "wall_shear_stress",
+    "o2_supply_vs_demand",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Design a blood-brain barrier perfusion channel reproducing 1.0 Pa shear on human brain microvascular endothelial cells (HCMEC/D3) with mean residence time ≥ 6 s for a drug perfusion study.",
+    "rationale": "Target shear of 1.0 Pa is at the upper end of the microvascular endothelial physiological range (0.1-1 Pa) and is a defensible BBB shear target. In a 400 µm × 100 µm channel, 1.0 Pa requires 40 µL/min (viscosity 1e-3 Pa·s, water-like medium). At 40 µL/min the channel volume (4 µL) gives a mean residence time of exactly 6.0 s, meeting the ≥6 s requirement. Reynolds ≈ 2.7 (laminar), pressure drop ≈ 2000 Pa (~20 mbar) is well within syringe-pump range. HCMEC/D3 is a human BBB line (BSL-1); note it forms only a moderately restrictive barrier (TEER 100-240 Ω·cm², ~10× below physiological BBB ~1800-2000 Ω·cm²), so barrier readouts should be interpreted accordingly. Cells seeded at 15,000 cells/cm² over the 0.04 cm² channel floor (~600 cells) to form a monolayer. O2 supply at 40 µL/min vastly exceeds demand (ratio ~7400), no hypoxia risk.",
+    "chip": {
+      "width_um": 400.0,
+      "height_um": 100.0,
+      "length_mm": 100.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 40.0,
+      "viscosity_pas": 0.001,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 1.0000000000000002,
+      "reynolds": 2.6666666666666674,
+      "pressure_drop_pa": 2000.0000000000005,
+      "residence_time_s": 5.999999999999999,
+      "channel_volume_ul": 4.0,
+      "mean_velocity_mms": 16.66666666666667
+    },
+    "cells": {
+      "cell_type": "HCMEC/D3",
+      "seeding_density_cells_cm2": 15000.0,
+      "culture_area_cm2": 0.04,
+      "seed_count": 600.0,
+      "doubling_time_h": null,
+      "culture_duration_h": 72.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": {
+      "compound": "test drug",
+      "molecular_weight_g_mol": 400.0,
+      "stock_mM": 10.0,
+      "working_mM": 0.01,
+      "dmso_fraction_vv": 0.001,
+      "vehicle_control": true,
+      "exposure_h": 24.0
+    },
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Residence time is exactly 6.0 s at 40 µL/min — this meets the ≥6 s requirement but leaves zero margin; if any flow pulsation or drift occurs the residence time drops below 6 s. Consider a slightly lower flow (e.g. 35 µL/min → ~6.9 s) if the shear target can tolerate a small reduction, or confirm the pump holds 40 µL/min precisely.",
+      "HCMEC/D3 forms only a moderately restrictive BBB (TEER 100-240 Ω·cm², ~10× below physiological BBB ~1800-2000 Ω·cm²). Do not claim in-vivo BBB integrity; interpret permeability/TEER accordingly.",
+      "Confirm the syringe pump can deliver 40 µL/min against ~2000 Pa (~20 mbar) backpressure — standard syringe pumps handle this easily, but verify tubing/connector ratings.",
+      "Verify medium viscosity ≈ 1e-3 Pa·s (water-like); serum-supplemented medium may be slightly higher, which would raise shear above 1.0 Pa at fixed flow.",
+      "Seed density 15,000 cells/cm² is an endothelial-typical assumption (HCMEC/D3 registry has no seeding density); verify monolayer formation and coverage in the lab.",
+      "Confirm the drug does not bind significantly to PDMS/tubing (non-specific binding) before interpreting perfusion clearance data."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 40.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 1.0000000000000002,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 40.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 2.6666666666666674,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 40.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 100.0,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 2000.0000000000005,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 40.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 100.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 5.999999999999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 100.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 4.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 40.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 16.66666666666667,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 15000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.04,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 600.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "dosing.dmso_fraction_vv",
+      "formula": "f = C_working / C_stock",
+      "inputs": [
+        {
+          "name": "working_mM",
+          "value": 0.01,
+          "unit": "mM"
+        },
+        {
+          "name": "stock_mM",
+          "value": 10.0,
+          "unit": "mM"
+        }
+      ],
+      "unit": "v/v",
+      "value": 0.001,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

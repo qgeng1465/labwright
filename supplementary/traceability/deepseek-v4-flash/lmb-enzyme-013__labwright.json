@@ -1,0 +1,206 @@
+{
+  "entry_id": "lmb-enzyme-013",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "ic50_um": 0.0,
+      "apparent_km_um": 0.0,
+      "velocity_umol_min": 0.0,
+      "inhibitor_substrate_ratio": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "enzyme_molar_ratio",
+    "enzyme_fractional_activity",
+    "enzyme_ic50_from_ki",
+    "enzyme_apparent_km",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-incubate CYP2D6 with 4-methylumbelliferone at 1855.9 µM in the presence of a competitive inhibitor (Ki = 233.5 µM) at 310.2 µM and report the inhibition metrics.",
+    "rationale": "Competitive inhibition of CYP2D6-mediated 4-methylumbelliferone metabolism. Substrate [S]=1855.9 µM, Km=905.9 µM, inhibitor [I]=310.2 µM, Ki=233.5 µM, Vmax=3.5739 µmol/min. The inhibitor:substrate ratio is [I]/[S]=310.2/1855.9=0.167. Fractional activity under competitive inhibition = [S]/(Km(1+[I]/Ki)+[S]) = 1855.9/(905.9(1+310.2/233.5)+1855.9) = 0.468, giving inhibited velocity = 0.468×3.5739 = 1.673 µmol/min. Run-condition IC50 (Cheng-Prusoff) = Ki(1+[S]/Km) = 233.5(1+1855.9/905.9) = 711.9 µM. Apparent Km = Km(1+[I]/Ki) = 905.9(1+310.2/233.5) = 2109.4 µM.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": {
+      "enzyme": "CYP2D6",
+      "substrate": "4-methylumbelliferone",
+      "km_um": 905.9,
+      "s_conc_um": 1855.9,
+      "ki_um": 233.5,
+      "i_conc_um": 310.2,
+      "vmax_umol_min": 3.5739,
+      "fractional_activity": 0.46803877927333265,
+      "percent_inhibition": 53.19612207266673,
+      "ic50_um": 711.8669831107186,
+      "apparent_km_um": 2109.369721627409,
+      "velocity_umol_min": 1.6727237932449637,
+      "inhibitor_substrate_ratio": 0.16714262621908507
+    },
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Assumes pure competitive inhibition (Lineweaver-Burk lines intersect on the 1/V axis); verify with a Ki determination across multiple [S] and [I].",
+      "Assumes single-enzyme kinetics with no substrate inhibition or non-specific binding at these high µM concentrations.",
+      "4-methylumbelliferone is a fluorogenic probe; confirm the assay buffer and protein concentration give a linear Vmax readout."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "enzyme.fractional_activity",
+      "formula": "v_i/v_0 = [S] / (Km(1 + [I]/Ki) + [S])",
+      "inputs": [
+        {
+          "name": "km_um",
+          "value": 905.9,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 1855.9,
+          "unit": "uM"
+        },
+        {
+          "name": "ki_um",
+          "value": 233.5,
+          "unit": "uM"
+        },
+        {
+          "name": "i_conc_um",
+          "value": 310.2,
+          "unit": "uM"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.46803877927333265,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.percent_inhibition",
+      "formula": "%I = (1 − v_i/v_0)·100",
+      "inputs": [
+        {
+          "name": "fractional_activity",
+          "value": 0.46803877927333265,
+          "unit": "—"
+        }
+      ],
+      "unit": "%",
+      "value": 53.19612207266673,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.ic50_um",
+      "formula": "IC50 = Ki(1 + [S]/Km)  (Cheng–Prusoff)",
+      "inputs": [
+        {
+          "name": "ki_um",
+          "value": 233.5,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 1855.9,
+          "unit": "uM"
+        },
+        {
+          "name": "km_um",
+          "value": 905.9,
+          "unit": "uM"
+        }
+      ],
+      "unit": "uM",
+      "value": 711.8669831107186,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.apparent_km_um",
+      "formula": "Km^app = Km(1 + [I]/Ki)",
+      "inputs": [
+        {
+          "name": "km_um",
+          "value": 905.9,
+          "unit": "uM"
+        },
+        {
+          "name": "i_conc_um",
+          "value": 310.2,
+          "unit": "uM"
+        },
+        {
+          "name": "ki_um",
+          "value": 233.5,
+          "unit": "uM"
+        }
+      ],
+      "unit": "uM",
+      "value": 2109.369721627409,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.velocity_umol_min",
+      "formula": "v = Vmax · v_i/v_0",
+      "inputs": [
+        {
+          "name": "vmax_umol_min",
+          "value": 3.5739,
+          "unit": "umol/min"
+        },
+        {
+          "name": "fractional_activity",
+          "value": 0.46803877927333265,
+          "unit": "—"
+        }
+      ],
+      "unit": "umol/min",
+      "value": 1.6727237932449637,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.inhibitor_substrate_ratio",
+      "formula": "[I]/[S]",
+      "inputs": [
+        {
+          "name": "i_conc_um",
+          "value": 310.2,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 1855.9,
+          "unit": "uM"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.16714262621908507,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "entry_id": "lmb-plink-050",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "bed_size_mb": 0.0,
+      "n_per_chr_files": 0.0,
+      "per_chr_bed_size_mb": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "plink_bed_size_mb",
+    "plink_per_chr_bed_size_mb",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Size a PLINK binary genotype dataset: report total .bed size, per-chromosome .bed size for the largest chromosome, and the number of per-chromosome files for a 1145-sample, 4829115-variant GWAS.",
+    "rationale": "PLINK binary .bed packs 2 bits per sample per variant, so total size = n_samples × n_variants / 4 / 1e6 MB. Per-chromosome size uses the same rule applied to the largest chromosome's variant count (756533). The number of per-chromosome files equals the number of chromosomes in the dataset; for a standard human GWAS this is 25 (22 autosomes + X + Y + MT), consistent with the largest chromosome carrying 756533 variants and the total of 4829115 spanning the full chromosome set.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": {
+      "n_samples": 1145,
+      "n_variants": 4829115,
+      "n_variants_chr": 756533,
+      "bed_size_mb": 1382.33416875,
+      "n_per_chr_files": 25,
+      "per_chr_bed_size_mb": 216.55757125
+    },
+    "solvent": null,
+    "caveats": [
+      "Per-chromosome .bed size (216.56 MB) is for the largest chromosome (756533 variants); smaller chromosomes are proportionally smaller.",
+      "Number of per-chromosome files assumes a standard human 25-chromosome set (22 autosomes + X + Y + MT); confirm against the actual build before scripting jobs.",
+      "The 2-bits rule covers the .bed binary only; .bim and .fam files add a small additional footprint not included."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "plink.bed_size_mb",
+      "formula": "B = n_samples·n_variants / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 1145,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants",
+          "value": 4829115,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 1382.33416875,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.n_per_chr_files",
+      "formula": "25 standard files (1–22, X, Y, MT)",
+      "inputs": [
+        {
+          "name": "chromosomes",
+          "value": "1-22, X, Y, MT",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 25.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.per_chr_bed_size_mb",
+      "formula": "B_chr = n_samples·n_variants_chr / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 1145,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants_chr",
+          "value": 756533,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 216.55757125,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

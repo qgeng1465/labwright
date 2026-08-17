@@ -1,0 +1,177 @@
+{
+  "entry_id": "plate-thaw-viability-6well",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "wells": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "trypan_blue_viability",
+    "cells_per_well",
+    "spheroids_from_suspension",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Determine how many 6-well plate wells can be seeded at 1e4 cells/cm^2 using all viable cells from a HepG2 vial that banks 1e6 cells at 96% viability.",
+    "rationale": "A vial banks 1e6 HepG2 cells at 96% viability, giving 960,000 viable cells after thaw. A standard 6-well plate has 9.6 cm^2 growth area per well; at 1e4 cells/cm^2 that is 96,000 cells/well. 960,000 / 96,000 = 10 wells. This uses every viable cell with no margin for pipetting loss.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "6",
+      "wells": 10,
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 10000.0,
+      "seed_per_well": 96000.0,
+      "total_seed_count": 960000.0,
+      "medium_volume_per_well_ml": 2.7,
+      "total_medium_ml": 27.0,
+      "viability_pct": 96.0,
+      "confluent_density_cells_cm2": 1000000.0,
+      "doubling_time_h": 48.0,
+      "culture_duration_h": 24.0,
+      "expected_confluence_pct": 1.4142135623730951
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Uses all viable cells with zero margin; expect 5-15% loss during pipetting/plating, so plan ~9 wells or a lower density for a safety buffer.",
+      "Confirm the 6-well growth area (standard 9.6 cm^2) for your specific plate brand, as it directly scales the per-well cell count.",
+      "Verify thaw viability in the lab with a trypan-blue count rather than relying on the banked 96% figure."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 10000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "6",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 96000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 96000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 10,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 960000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "6",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 2.7,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 2.7,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 10,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 27.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.expected_confluence_pct",
+      "formula": "conf = N(t) / (ρ_conv·A_well) × 100,  N(t) = N_0·2^(t/t_d)",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 96000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "doubling_time_h",
+          "value": 48.0,
+          "unit": "h"
+        },
+        {
+          "name": "culture_duration_h",
+          "value": 24.0,
+          "unit": "h"
+        },
+        {
+          "name": "confluent_density_cells_cm2",
+          "value": 1000000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "6",
+          "unit": "—"
+        }
+      ],
+      "unit": "%",
+      "value": 1.4142135623730951,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

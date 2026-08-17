@@ -1,0 +1,247 @@
+{
+  "entry_id": "lmb-flow-040",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "pressure_drop_pa": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "pressure_drop",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Report the pressure drop in a 396 µm × 63 µm × 7.7 mm microfluidic channel perfused with medium (μ = 0.002 Pa·s, ρ = 1000 kg/m³) at 6.04 µL/min.",
+    "rationale": "Pure calculation of laminar pressure drop along a rectangular microchannel using ΔP = 12·μ·Q·L/(w·h³). Geometry and flow are given; viscosity is 0.002 Pa·s (double water-like medium).",
+    "chip": {
+      "width_um": 396.0,
+      "height_um": 63.0,
+      "length_mm": 7.7,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 6.04,
+      "viscosity_pas": 0.002,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 0.7685827791647901,
+      "reynolds": 0.2193173565722586,
+      "pressure_drop_pa": 187.87579046250423,
+      "residence_time_s": 1.9082741721854304,
+      "channel_volume_ul": 0.1920996,
+      "mean_velocity_mms": 4.035059590615147
+    },
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Pressure drop assumes fully developed laminar flow in a wide rectangular channel; entrance effects near the inlet are neglected.",
+      "The elevated viscosity (0.002 Pa·s) is the user-specified value; confirm it matches the actual medium before relying on the number."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 6.04,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 396.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 63.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.002,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 0.7685827791647901,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 6.04,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 396.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 63.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.002,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.2193173565722586,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 6.04,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 396.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 63.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 7.7,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.002,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 187.87579046250423,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 6.04,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 396.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 63.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 7.7,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 1.9082741721854304,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 396.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 63.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 7.7,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 0.1920996,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 6.04,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 396.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 63.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 4.035059590615147,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

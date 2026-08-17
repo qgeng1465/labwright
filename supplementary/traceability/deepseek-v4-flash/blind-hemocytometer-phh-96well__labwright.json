@@ -1,0 +1,143 @@
+{
+  "entry_id": "blind-hemocytometer-phh-96well",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": false,
+    "recovery": {
+      "wells": 0.833333
+    },
+    "hallucination_rate": 0.0,
+    "failure": "wrong_target"
+  },
+  "tool_trace": [
+    "hemocytometer_count",
+    "cell_physiology",
+    "cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Determine how many 96-well plate wells can be plated from a counted primary human hepatocyte suspension at standard sandwich-culture density.",
+    "rationale": "Hemocytometer count: 40 cells/square at 1:2 dilution gives 8e5 cells/mL (40 × 2 × 1e4). Total cells in 0.36 mL = 2.88e5. Primary human hepatocytes (phh) seed at 1e5-2e5 cells/cm2; standard sandwich culture uses the midpoint 1.5e5 cells/cm2. 96-well area = 0.32 cm2 → 48,000 cells/well → 6 wells. Assumes 100% viability; viability must be confirmed in the lab.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "96",
+      "wells": 1,
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "seed_per_well": 48000.0,
+      "total_seed_count": 48000.0,
+      "medium_volume_per_well_ml": 0.17,
+      "total_medium_ml": 0.17,
+      "viability_pct": 100.0,
+      "confluent_density_cells_cm2": 200000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": 24.0,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Seeding density assumed at the 1.5e5 cells/cm2 midpoint of the phh range (1e5-2e5); at 2e5 cells/cm2 only 4 wells, at 1e5 cells/cm2 9 wells — confirm the lab's exact sandwich density.",
+      "Assumes 100% viability from the hemocytometer; multiply total cells by viability fraction if lower (e.g. 80% → ~4 wells).",
+      "96-well growth area taken as 0.32 cm2 (standard Corning/Falcon); confirm the actual plate area.",
+      "Primary human hepatocytes are BSL-2 human primary material — handle under appropriate containment."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 48000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 48000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 48000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.17,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 0.17,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.17,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

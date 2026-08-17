@@ -1,0 +1,89 @@
+{
+  "entry_id": "power-80-effect-02",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_per_group": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "sample_size_per_group",
+    "submit_design",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Determine the number of biological replicates per group needed to detect a small 0.2-sigma difference between two groups with 80% power at alpha 0.05 (two-sided).",
+    "rationale": "This is a pure statistical power calculation for a two-sample comparison. The effect size is 0.2 sigma (Cohen's d = 0.2, expressed as effect_size = 0.2 with std_dev = 1.0 in the same units), with conventional 80% power and alpha 0.05, two-sided. The sample size per group is computed by the sample_size_per_group calculator; no other experimental parameters are involved.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": {
+      "effect_size": 0.2,
+      "std_dev": 1.0,
+      "alpha": 0.05,
+      "power": 0.8,
+      "n_per_group": 393,
+      "note": null
+    },
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "393 per group is a large biological replicate count; confirm the effect of interest is truly 0.2 sigma before committing, as small-effect detection is rarely feasible in perfused chip experiments.",
+      "The calculation assumes normally distributed data and equal variances across groups; verify these assumptions or use a non-parametric alternative if violated.",
+      "Biological (not technical) replicates are required for this power calculation to be valid."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "stats.n_per_group",
+      "formula": "n from two-sample t-test power equation",
+      "inputs": [
+        {
+          "name": "effect_size",
+          "value": 0.2,
+          "unit": ""
+        },
+        {
+          "name": "std_dev",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "alpha",
+          "value": 0.05,
+          "unit": ""
+        },
+        {
+          "name": "power",
+          "value": 0.8,
+          "unit": ""
+        }
+      ],
+      "unit": "n",
+      "value": 393.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

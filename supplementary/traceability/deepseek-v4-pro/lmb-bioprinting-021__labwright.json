@@ -1,0 +1,175 @@
+{
+  "entry_id": "lmb-bioprinting-021",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": false,
+    "recovery": {
+      "print_time_s": 0.0,
+      "extrusion_rate_nl_min": 3.0,
+      "filament_mass_ug": 3.0,
+      "lines_to_cover": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "wrong_target"
+  },
+  "tool_trace": [
+    "bioprinting_extrusion_volume_nl",
+    "bioprinting_lines_to_cover",
+    "bioprinting_print_time",
+    "bioprinting_extrusion_volume_nl",
+    "submit_design",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Extrude bioink through the cryo-1 (250 µm) nozzle along a 45553 µm G-code path at 24.6 mm/min, filling a 49905 µm footprint at 923 µm line pitch.",
+    "rationale": "Single-pass extrusion sizing for a cryo-1 nozzle print. Raw inputs: nozzle diameter 250 µm, travel distance 45553 µm, feed rate 24.6 mm/min, ink density 0.989 g/cm³, footprint width 49905 µm, line pitch 923 µm. Derived quantities (extrusion volume, fill lines, print time, deposition rate, filament mass) are computed by the tools.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": {
+      "nozzle_id": "cryo3",
+      "travel_distance_um": 45553.0,
+      "feed_rate_mm_min": 24.6,
+      "density_g_cm3": 0.989,
+      "footprint_width_um": 49905.0,
+      "line_pitch_um": 923.0,
+      "extrusion_volume_nl": 8944.310634310988,
+      "print_time_s": 111.10487804878049,
+      "extrusion_rate_nl_min": 4830.198704894306,
+      "filament_mass_ug": 8845.923217333568,
+      "lines_to_cover": 55.0
+    },
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "55 fill lines slightly overhang the footprint edge (~0.9 mm); trim the final line or reduce pitch if edge fidelity matters",
+      "Assumes a single straight extruding pass; retractions or non-extruding travel moves reduce actual deposited volume/mass",
+      "Deposition rate and filament mass derived from tool-computed extrusion volume and print time"
+    ]
+  },
+  "provenance": [
+    {
+      "field": "bioprinting.extrusion_volume_nl",
+      "formula": "V = π·(d/2)²·L,  d = nozzle table (equipment spec)",
+      "inputs": [
+        {
+          "name": "nozzle_id",
+          "value": "cryo3",
+          "unit": "—"
+        },
+        {
+          "name": "nozzle_diameter_um",
+          "value": 500.0,
+          "unit": "um"
+        },
+        {
+          "name": "travel_distance_um",
+          "value": 45553.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "nL",
+      "value": 8944.310634310988,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "bioprinting.print_time_s",
+      "formula": "t = L / v",
+      "inputs": [
+        {
+          "name": "travel_distance_um",
+          "value": 45553.0,
+          "unit": "um"
+        },
+        {
+          "name": "feed_rate_mm_min",
+          "value": 24.6,
+          "unit": "mm/min"
+        }
+      ],
+      "unit": "s",
+      "value": 111.10487804878049,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "bioprinting.extrusion_rate_nl_min",
+      "formula": "V̇ = V / t",
+      "inputs": [
+        {
+          "name": "extrusion_volume_nl",
+          "value": 8944.310634310988,
+          "unit": "nL"
+        },
+        {
+          "name": "print_time_s",
+          "value": 111.10487804878049,
+          "unit": "s"
+        }
+      ],
+      "unit": "nL/min",
+      "value": 4830.198704894306,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "bioprinting.filament_mass_ug",
+      "formula": "m = ρ·V",
+      "inputs": [
+        {
+          "name": "extrusion_volume_nl",
+          "value": 8944.310634310988,
+          "unit": "nL"
+        },
+        {
+          "name": "density_g_cm3",
+          "value": 0.989,
+          "unit": "g/cm^3"
+        }
+      ],
+      "unit": "ug",
+      "value": 8845.923217333568,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "bioprinting.lines_to_cover",
+      "formula": "n = ⌈w / pitch⌉",
+      "inputs": [
+        {
+          "name": "footprint_width_um",
+          "value": 49905.0,
+          "unit": "um"
+        },
+        {
+          "name": "line_pitch_um",
+          "value": 923.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "n",
+      "value": 55.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

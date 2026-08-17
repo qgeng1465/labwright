@@ -1,0 +1,252 @@
+{
+  "entry_id": "lmb-flow-031",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "shear_pa": 0.0,
+      "reynolds": 0.0,
+      "pressure_drop_pa": 0.0,
+      "residence_time_s": 0.0,
+      "channel_volume_ul": 0.0,
+      "mean_velocity_mms": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "reynolds_number",
+    "pressure_drop",
+    "wall_shear_stress",
+    "residence_time",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Report the Reynolds number, pressure drop, wall shear stress, mean velocity, channel volume, and residence time for a microfluidic channel perfused at a given flow rate.",
+    "rationale": "Pure calculation from stated geometry (971 µm × 182 µm × 32.8 mm) and flow (19.49 µL/min, μ = 0.001 Pa·s, ρ = 1000 kg/m³). All derived values computed by the calculator tools.",
+    "chip": {
+      "width_um": 971.0,
+      "height_um": 182.0,
+      "length_mm": 32.8,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 19.49,
+      "viscosity_pas": 0.001,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 0.06059681991371313,
+      "reynolds": 0.5634576467187051,
+      "pressure_drop_pa": 21.84149113373396,
+      "residence_time_s": 17.844479014879425,
+      "channel_volume_ul": 5.796481599999999,
+      "mean_velocity_mms": 1.8381035373826315
+    },
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": []
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 19.49,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 971.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 182.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 0.06059681991371313,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 19.49,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 971.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 182.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.5634576467187051,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 19.49,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 971.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 182.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 32.8,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 21.84149113373396,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 19.49,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 971.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 182.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 32.8,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 17.844479014879425,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 971.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 182.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 32.8,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 5.796481599999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 19.49,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 971.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 182.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 1.8381035373826315,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

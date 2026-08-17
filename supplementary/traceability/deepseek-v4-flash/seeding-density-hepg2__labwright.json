@@ -1,0 +1,83 @@
+{
+  "entry_id": "seeding-density-hepg2",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_count": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "seeding_cell_count",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed HepG2 at 5e4 cells/cm² on the 0.08 cm² culture area of a 400 µm × 20 mm channel.",
+    "rationale": "HepG2 seeding density of 5e4 cells/cm² is within the growth-phase range for this line. The 400 µm × 20 mm channel with 100 µm height gives a 0.08 cm² culture area (400 µm × 20 mm = 8 mm² = 0.08 cm²). Seeding 5e4 cells/cm² × 0.08 cm² yields the per-channel seed count, which is computed by the tool.",
+    "chip": {
+      "width_um": 400.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": null,
+    "derived": null,
+    "cells": {
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 50000.0,
+      "culture_area_cm2": 0.08,
+      "seed_count": 4000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": null
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Confirm the channel height is 100 µm (only width and length were given; the 0.08 cm² area assumes a 400 µm × 20 mm footprint).",
+      "Verify the actual culture area of the chip from the manufacturer datasheet before seeding."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 50000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.08,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 4000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

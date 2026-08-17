@@ -1,0 +1,143 @@
+{
+  "entry_id": "plate-24well-seed-from-count",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_per_well": 0.0,
+      "medium_volume_per_well_ml": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cells_per_well",
+    "medium_volume_per_well",
+    "submit_design",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Reseed a counted cell suspension onto a 24-well plate at a subconfluent recovery density of 8e4 cells/cm².",
+    "rationale": "Subconfluent recovery seeding at 8e4 cells/cm² on a 24-well plate (1.9 cm² growth area) to allow cells to recover and expand after passaging. Standard Corning/Falcon recommended working volume of 0.68 mL/well is used.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "24",
+      "wells": 1,
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 80000.0,
+      "seed_per_well": 152000.0,
+      "total_seed_count": 152000.0,
+      "medium_volume_per_well_ml": 0.68,
+      "total_medium_ml": 0.68,
+      "viability_pct": null,
+      "confluent_density_cells_cm2": null,
+      "doubling_time_h": null,
+      "culture_duration_h": null,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Confirm the exact well growth area for your plate brand (1.9 cm² is the standard 24-well value; low-profile plates may differ).",
+      "Verify 8e4 cells/cm² is within the recommended seeding range for your specific cell line before plating.",
+      "Use the standard 0.68 mL/well working volume; adjust only if your protocol specifies a low-volume override."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 80000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "24",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 152000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 152000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 152000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "24",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.68,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 0.68,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.68,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "entry_id": "power-80-effect-half",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_per_group": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "sample_size_per_group",
+    "submit_design",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Determine the number of biological replicates per group needed to detect a 0.5-sigma difference between two groups with 80% power at alpha 0.05 (two-sided).",
+    "rationale": "This is a pure power-analysis design. The effect size is 0.5 standard deviations (effect_size = 0.5, std_dev = 1.0 in the same units), with the standard defaults of alpha = 0.05, power = 0.8, and a two-sided two-sample t-test. The sample size per group is computed by the calculator from these raw inputs; no derived n is supplied.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": {
+      "effect_size": 0.5,
+      "std_dev": 1.0,
+      "alpha": 0.05,
+      "power": 0.8,
+      "n_per_group": 63,
+      "note": null
+    },
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "63 replicates per group is a large commitment; confirm the platform (chips/wells) can accommodate ~126 total biological replicates plus technical replicates and controls.",
+      "A 0.5-sigma effect is small; verify the effect size is biologically meaningful and that assay variability (sigma) is well characterized before committing.",
+      "If 63/group is not feasible, the study will be underpowered and risks a false negative — consider a larger effect size or accept lower power."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "stats.n_per_group",
+      "formula": "n from two-sample t-test power equation",
+      "inputs": [
+        {
+          "name": "effect_size",
+          "value": 0.5,
+          "unit": ""
+        },
+        {
+          "name": "std_dev",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "alpha",
+          "value": 0.05,
+          "unit": ""
+        },
+        {
+          "name": "power",
+          "value": 0.8,
+          "unit": ""
+        }
+      ],
+      "unit": "n",
+      "value": 63.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

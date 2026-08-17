@@ -1,0 +1,90 @@
+{
+  "entry_id": "power-80-effect-1",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_per_group": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "sample_size_per_group",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Detect a 1.0-sigma difference between treated and control group means in a liver chip with 80% power at alpha 0.05.",
+    "rationale": "Two-sample t-test power analysis for a treated-vs-control comparison. Effect size of 1.0 pooled SD (Cohen's d = 1.0, a large effect) with 80% power at alpha 0.05, two-sided. Biological replicates are independent chips seeded from independent cell preparations.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": {
+      "effect_size": 1.0,
+      "std_dev": 1.0,
+      "alpha": 0.05,
+      "power": 0.8,
+      "n_per_group": 16,
+      "note": null
+    },
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Effect size of 1.0 sigma is a large effect; if the true effect is smaller (e.g. 0.5 sigma), required n rises sharply (~64/group). Confirm expected effect from pilot data or literature.",
+      "Pooled SD must be estimated from the lab's own assay variability, not assumed.",
+      "Two-sided test assumed; one-sided would slightly reduce n but is only justified a priori.",
+      "These are biological replicates (independent chips/cell preparations), not technical replicates on the same chip.",
+      "Budget +10-20% extra chips for attrition (seeding failure, QC dropout)."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "stats.n_per_group",
+      "formula": "n from two-sample t-test power equation",
+      "inputs": [
+        {
+          "name": "effect_size",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "std_dev",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "alpha",
+          "value": 0.05,
+          "unit": ""
+        },
+        {
+          "name": "power",
+          "value": 0.8,
+          "unit": ""
+        }
+      ],
+      "unit": "n",
+      "value": 16.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

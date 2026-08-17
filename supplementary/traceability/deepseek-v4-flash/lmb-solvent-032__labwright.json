@@ -1,0 +1,151 @@
+{
+  "entry_id": "lmb-solvent-032",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "edge_evaporation_factor": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "solvent_edge_well_factor",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Determine the plate-edge evaporation factor for a hanging-drop screen well at row E, column 6.",
+    "rationale": "The plate-edge evaporation factor depends only on the well's position on the plate. Row E is an interior row (only A and H are edge rows) and column 6 is an interior column (only 1 and 12 are edge columns), so the well is not on the plate edge. The drop volume (8.87 µL), temperature (11.4 °C), humidity (51%), and time (0.719 h) do not affect the edge factor itself, which is 1.0× for interior wells.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": {
+      "drop_volume_ul": 8.87,
+      "hours": 0.719,
+      "temp_c": 11.4,
+      "rh": 0.51,
+      "well_row": "E",
+      "well_col": 6,
+      "edge_factor": null,
+      "evaporation_rate_ul_hr": 7.021467729183544,
+      "residual_volume_ul": 4.336110932532674,
+      "edge_evaporation_factor": 1.0
+    },
+    "caveats": [
+      "The edge factor is position-dependent only; row E/col 6 is an interior well so the factor is 1.0×.",
+      "The drop volume, temperature, humidity, and time inputs are carried for completeness but do not affect the edge factor."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "solvent.edge_evaporation_factor",
+      "formula": "f_edge = 1.5 (rows A/H, cols 1/12) else 1.0",
+      "inputs": [
+        {
+          "name": "well_row",
+          "value": "E",
+          "unit": "—"
+        },
+        {
+          "name": "well_col",
+          "value": 6,
+          "unit": "—"
+        },
+        {
+          "name": "edge_factor",
+          "value": 1.5,
+          "unit": "—"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 1.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "solvent.evaporation_rate_ul_hr",
+      "formula": "V̇ = K·r(V)·f_edge,  K = 4π·D·C_sat(1−RH)/ρ",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 8.87,
+          "unit": "uL"
+        },
+        {
+          "name": "temp_c",
+          "value": 11.4,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.51,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL/hr",
+      "value": 7.021467729183544,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "solvent.residual_volume_ul",
+      "formula": "V(t) = (V₀^(2/3) − c·f·t)^(3/2)  (d²-law)",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 8.87,
+          "unit": "uL"
+        },
+        {
+          "name": "hours",
+          "value": 0.719,
+          "unit": "h"
+        },
+        {
+          "name": "temp_c",
+          "value": 11.4,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.51,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL",
+      "value": 4.336110932532674,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

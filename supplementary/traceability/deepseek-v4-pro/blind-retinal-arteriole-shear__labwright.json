@@ -1,0 +1,287 @@
+{
+  "entry_id": "blind-retinal-arteriole-shear",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": false,
+    "recovery": {
+      "shear_pa": 0.62963
+    },
+    "hallucination_rate": 0.0,
+    "failure": "wrong_target"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "cell_physiology",
+    "flow_rate_for_shear_stress",
+    "flow_rate_for_shear_stress",
+    "wall_shear_stress",
+    "reynolds_number",
+    "pressure_drop",
+    "residence_time",
+    "seeding_cell_count",
+    "o2_supply_vs_demand",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Recapitulate the high wall shear stress of first-order human retinal arterioles in a perfused endothelial chip.",
+    "rationale": "First-order human retinal arterioles (~100-150 µm diameter) experience unusually high wall shear stress relative to most microvascular beds, with literature values on the order of 10-50 dyn/cm² (1-5 Pa). I target 2 Pa (20 dyn/cm²) as a defensible mid-range value within this high-shear regime. A 100×100 µm square channel approximates the arteriolar lumen cross-section. Using the wall-shear relation tau = 6·mu·Q/(w·h²), a 20 µL/min flow delivers 2.0 Pa at medium viscosity 1e-3 Pa·s. This flow is laminar (Re ≈ 3.3), produces a modest 800 Pa pressure drop over 20 mm, and gives a 0.6 s residence time. HUVEC is the standard endothelial line for shear-response studies (registry shear range 0.1-1 Pa, so 2 Pa is a deliberate high-shear stress condition); a retinal-specific endothelial line (e.g. primary human retinal microvascular endothelial cells) would be more physiologically faithful and should be considered. Seeding at 2e4 cells/cm² over the 0.02 cm² channel floor yields ~400 cells. Oxygen supply at 20 µL/min vastly exceeds demand (ratio ~556×), so the high flow required for shear also guarantees oxygenation.",
+    "chip": {
+      "width_um": 100.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 20.0,
+      "viscosity_pas": 0.001,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 2.0000000000000004,
+      "reynolds": 3.333333333333335,
+      "pressure_drop_pa": 800.0000000000002,
+      "residence_time_s": 0.6,
+      "channel_volume_ul": 0.19999999999999998,
+      "mean_velocity_mms": 33.33333333333334
+    },
+    "cells": {
+      "cell_type": "HUVEC",
+      "seeding_density_cells_cm2": 20000.0,
+      "culture_area_cm2": 0.02,
+      "seed_count": 400.0,
+      "doubling_time_h": 48.0,
+      "culture_duration_h": 48.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Verify the exact physiological shear target against primary literature for first-order human retinal arterioles (reported range ~1-5 Pa); 2 Pa is a mid-range assumption.",
+      "Confirm medium viscosity (assumed 1e-3 Pa·s); serum-containing medium is slightly higher (~0.9-1.1e-3), which would shift shear by the same factor.",
+      "HUVEC is a generic endothelial line; for retinal fidelity use primary human retinal microvascular endothelial cells (HRMEC) or a retinal-specific line, and re-validate the shear-response phenotype.",
+      "The 100×100 µm square channel is an approximation of a ~100-150 µm round arteriole; a round or semi-circular cross-section would better match the true lumen geometry and shear distribution.",
+      "Confirm the syringe pump can deliver 20 µL/min stably and that the 800 Pa (~6 mmHg) pressure drop is within the device/tubing sealing limits.",
+      "High shear (2 Pa) is a stress condition for HUVEC (registry range 0.1-1 Pa); include a low-shear (e.g. 0.1-0.5 Pa) control to isolate shear-specific responses."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 20.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 2.0000000000000004,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 20.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 3.333333333333335,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 20.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 800.0000000000002,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 20.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 0.6,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 0.19999999999999998,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 20.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 33.33333333333334,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 20000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.02,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 400.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

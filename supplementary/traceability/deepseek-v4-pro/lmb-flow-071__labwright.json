@@ -1,0 +1,254 @@
+{
+  "entry_id": "lmb-flow-071",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "shear_pa": 0.0,
+      "reynolds": 0.0,
+      "pressure_drop_pa": 0.0,
+      "residence_time_s": 0.0,
+      "mean_velocity_mms": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "reynolds_number",
+    "residence_time",
+    "wall_shear_stress",
+    "pressure_drop",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Compute flow metrics (Reynolds number, residence time, wall shear stress, mean velocity, pressure drop) for a microfluidic channel of 433 µm × 200 µm × 21.3 mm perfused with medium (μ = 0.002 Pa·s, ρ = 1000 kg/m³) at 4.4 µL/min.",
+    "rationale": "Pure calculation request: report the derived flow quantities from the stated channel geometry and perfusion inputs. All derived values are computed by the verification engine from the raw inputs below.",
+    "chip": {
+      "width_um": 433.0,
+      "height_um": 200.0,
+      "length_mm": 21.3,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 4.4,
+      "viscosity_pas": 0.002,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 0.05080831408775984,
+      "reynolds": 0.11585044760400214,
+      "pressure_drop_pa": 10.822170900692845,
+      "residence_time_s": 25.153363636363633,
+      "channel_volume_ul": 1.8445799999999999,
+      "mean_velocity_mms": 0.8468052347959972
+    },
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Viscosity of 0.002 Pa·s is higher than typical culture medium (~1e-3 Pa·s); confirm this reflects the actual medium used.",
+      "Mean velocity is Q/A and is derived by the engine; verify units (mm/s) in the returned design."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 4.4,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 433.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.002,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 0.05080831408775984,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 4.4,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 433.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.002,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.11585044760400214,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 4.4,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 433.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 21.3,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.002,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 10.822170900692845,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 4.4,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 433.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 21.3,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 25.153363636363633,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 433.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 21.3,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 1.8445799999999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 4.4,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 433.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 200.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 0.8468052347959972,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

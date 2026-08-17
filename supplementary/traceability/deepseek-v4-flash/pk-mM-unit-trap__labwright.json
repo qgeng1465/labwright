@@ -1,0 +1,293 @@
+{
+  "entry_id": "pk-mM-unit-trap",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "inlet_concentration_uM": 0.0,
+      "outlet_concentration_uM": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "extraction_ratio",
+    "cell_physiology",
+    "flow_rate_for_shear_stress",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Measure first-pass hepatic extraction of diclofenac in a perfused liver-on-chip: dose at 0.5 mM (500 µM) inlet, quantify outlet at 0.35 mM (350 µM), and derive extraction ratio, clearance, and half-life.",
+    "rationale": "Perfused liver-on-chip using primary human hepatocytes (PHH, BSL-2, gold-standard liver cell). Channel geometry 400 µm × 100 µm × 20 mm gives a flow rate of ~4 µL/min for a physiological hepatic sinusoidal shear of ~0.1 Pa (within the 0.05-0.15 Pa hepatic range). Diclofenac is dosed at 0.5 mM inlet (500 µM) with 0.35 mM outlet (350 µM), implying a first-pass extraction ratio E = 0.30 (intermediate extraction, Rowland & Tozer). Clearance Cl = E·Q and half-life t½ = ln2·V/Cl are computed from the flow rate and system volume. Medium viscosity taken as water-like (1e-3 Pa·s).",
+    "chip": {
+      "width_um": 400.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 4.0,
+      "viscosity_pas": 0.001,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 0.10000000000000005,
+      "reynolds": 0.2666666666666668,
+      "pressure_drop_pa": 40.000000000000014,
+      "residence_time_s": 11.999999999999998,
+      "channel_volume_ul": 0.7999999999999999,
+      "mean_velocity_mms": 1.6666666666666672
+    },
+    "cells": {
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "culture_area_cm2": 0.08,
+      "seed_count": 12000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": 48.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": {
+      "compound": "diclofenac",
+      "molecular_weight_g_mol": 296.15,
+      "inlet_concentration_uM": 500.0,
+      "outlet_concentration_uM": 350.0,
+      "flow_rate_uLmin": 4.0,
+      "extraction_ratio": 0.30000000000000004,
+      "clearance_uLmin": 1.2000000000000002,
+      "system_volume_uL": 500.0,
+      "half_life_h": 4.813522087221841,
+      "dose_interval_h": 24.0,
+      "accumulation_ratio": 1.0325839430416228,
+      "mass_cleared_ug_h": 10.661400000000002
+    },
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Verify PHH viability and attachment after seeding; primary hepatocytes do not divide in vitro.",
+      "Confirm the 0.5 mM diclofenac dose is not cytotoxic to PHH over the exposure window (diclofenac can be hepatotoxic at high concentrations).",
+      "Check for non-specific drug binding to PDMS/tubing with a cell-free control to isolate cell-mediated clearance.",
+      "Confirm the flow rate of ~4 µL/min delivers the intended shear in the actual device; verify with a syringe-pump calibration.",
+      "BSL-2 containment required for human primary hepatocytes."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 4.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 0.10000000000000005,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 4.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.2666666666666668,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 4.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 40.000000000000014,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 4.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 11.999999999999998,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 0.7999999999999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 4.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 1.6666666666666672,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.08,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 12000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

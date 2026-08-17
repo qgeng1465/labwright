@@ -1,0 +1,126 @@
+{
+  "entry_id": "lmb-champ-018",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_arrays": 0.0,
+      "n_chips": 0.0,
+      "n_expected_failed_arrays": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "champ_chips_for_samples",
+    "champ_expected_failed_arrays",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Process 115 samples on the HumanMethylation450K platform with a 6.6% expected QC fail rate, and report the number of arrays, expected failed arrays, and physical chips required.",
+    "rationale": "A HumanMethylation450K study of 115 samples requires one array per sample (115 arrays). The 450k BeadChip holds 12 arrays per physical chip, so the chip count is ceil(115/12) = 10 chips. At a 6.6% QC fail rate, the expected number of failed arrays is 115 × 0.066 = 7.59 arrays, leaving approximately 107-108 passing arrays for downstream analysis.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": {
+      "n_samples": 115,
+      "platform": "450k",
+      "fail_rate_pct": 6.6,
+      "n_arrays": 115,
+      "n_chips": 10,
+      "n_expected_failed_arrays": 7.590000000000001
+    },
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "The expected failed arrays (7.59) is a statistical expectation, not a guarantee — actual failures may vary around this value.",
+      "If downstream analysis requires a specific number of passing samples, consider budgeting an extra chip or oversampling to account for QC attrition.",
+      "Confirm the exact array capacity of the specific 450k BeadChip lot (12 arrays/chip is standard)."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "champ.n_arrays",
+      "formula": "n_arrays = n_samples",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 115,
+          "unit": "—"
+        },
+        {
+          "name": "platform",
+          "value": "450k",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 115.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "champ.n_chips",
+      "formula": "n_chips = ⌈n_samples / capacity⌉  (12× 450k, 8× EPIC)",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 115,
+          "unit": "—"
+        },
+        {
+          "name": "platform",
+          "value": "450k",
+          "unit": "—"
+        },
+        {
+          "name": "chip_capacity",
+          "value": 12,
+          "unit": "samples/chip"
+        }
+      ],
+      "unit": "n",
+      "value": 10.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "champ.n_expected_failed_arrays",
+      "formula": "n_fail = n_arrays × p",
+      "inputs": [
+        {
+          "name": "n_arrays",
+          "value": 115.0,
+          "unit": "—"
+        },
+        {
+          "name": "fail_rate_pct",
+          "value": 6.6,
+          "unit": "%"
+        }
+      ],
+      "unit": "n",
+      "value": 7.590000000000001,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

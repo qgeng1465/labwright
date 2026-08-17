@@ -1,0 +1,181 @@
+{
+  "entry_id": "lmb-coculture-042",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "cells_per_well_a": 0.0,
+      "cells_per_well_b": 0.0,
+      "total_cells_a": 0.0,
+      "total_cells_b": 0.0,
+      "seeding_ratio_ab": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "coculture_cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed HUVEC and primary human hepatocytes (PHH) in a 24-well plate at 3.9e4 cells/cm² total across 2.16 cm²/well, with 0.079 of the total assigned to HUVEC.",
+    "rationale": "Co-culture seeding of HUVEC (population A) and PHH (population B) in a 24-well plate. Total density 3.9e4 cells/cm² over 2.16 cm²/well; HUVEC fraction 0.079, PHH fraction 0.921. PHH are primary, non-dividing cells so they are seeded directly at target density. A 7.9% HUVEC share is a low endothelial fraction; flagged as a caveat since typical liver-lobule co-cultures use higher HUVEC fractions.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "HUVEC",
+      "cell_type_b": "primary human hepatocytes",
+      "total_density_cells_cm2": 39000.0,
+      "area_cm2": 2.16,
+      "fraction_a": 0.079,
+      "wells": 24,
+      "cells_per_well_a": 6654.96,
+      "cells_per_well_b": 77585.04,
+      "total_cells_a": 159719.04,
+      "total_cells_b": 1862040.96,
+      "seeding_ratio_ab": 0.08577633007600435
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Confirm the number of wells actually seeded (totals scale linearly with well count; 24 assumed for a full plate).",
+      "PHH are primary, non-dividing cells - seed directly at target density; do not expect expansion.",
+      "Verify HUVEC viability post-thaw (trypan blue) before seeding, as the low fraction leaves little margin for loss.",
+      "Confirm the 2.16 cm²/well area matches the specific 24-well plate/insert geometry used.",
+      "A 7.9% HUVEC fraction is a low endothelial share; confirm this sparse-endothelial condition is intentional."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 39000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 2.16,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.079,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 6654.96,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 39000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 2.16,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.079,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 77585.04,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 6654.96,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 24,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 159719.04,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 77585.04,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 24,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1862040.96,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 6654.96,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 77585.04,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.08577633007600435,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

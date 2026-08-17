@@ -1,0 +1,177 @@
+{
+  "entry_id": "plate-confluence-hepg2-72h",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "expected_confluence_pct": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_count_after_time",
+    "cells_per_well",
+    "cell_count_to_confluence",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Predict the confluence (%) of HepG2 seeded in a 96-well plate at 2e4 cells/cm^2 after 72 h of culture.",
+    "rationale": "HepG2 (liver line, doubling 48-60 h per registry; here assumed 30 h as stated) is seeded at 2e4 cells/cm^2 in a 96-well plate (0.32 cm^2 growth area) and cultured 72 h. Confluence at harvest is computed from the post-growth cell count relative to the stated confluent density of 1e6 cells/cm^2. The low seeding density and short duration are expected to yield a sub-confluent monolayer (~10%).",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "96",
+      "wells": 1,
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 20000.0,
+      "seed_per_well": 6400.0,
+      "total_seed_count": 6400.0,
+      "medium_volume_per_well_ml": 0.17,
+      "total_medium_ml": 0.17,
+      "viability_pct": null,
+      "confluent_density_cells_cm2": 1000000.0,
+      "doubling_time_h": 30.0,
+      "culture_duration_h": 72.0,
+      "expected_confluence_pct": 10.556063286183152
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Doubling time assumed 30 h as stated; the HepG2 registry range is 48-60 h, so actual confluence may be lower if growth is slower.",
+      "Confluent density of 1e6 cells/cm^2 is an assumption; verify for the specific HepG2 stock and plate coating.",
+      "Predicted confluence is ~10%, well below confluent — confirm this is the intended endpoint."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 20000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 6400.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 6400.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 6400.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.17,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 0.17,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.17,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.expected_confluence_pct",
+      "formula": "conf = N(t) / (ρ_conv·A_well) × 100,  N(t) = N_0·2^(t/t_d)",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 6400.0,
+          "unit": "cells"
+        },
+        {
+          "name": "doubling_time_h",
+          "value": 30.0,
+          "unit": "h"
+        },
+        {
+          "name": "culture_duration_h",
+          "value": 72.0,
+          "unit": "h"
+        },
+        {
+          "name": "confluent_density_cells_cm2",
+          "value": 1000000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "%",
+      "value": 10.556063286183152,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

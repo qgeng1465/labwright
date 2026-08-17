@@ -1,0 +1,206 @@
+{
+  "entry_id": "lmb-enzyme-051",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "fractional_activity": 0.0,
+      "ic50_um": 0.0,
+      "apparent_km_um": 0.0,
+      "inhibitor_substrate_ratio": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "enzyme_apparent_km",
+    "enzyme_fractional_activity",
+    "enzyme_molar_ratio",
+    "enzyme_ic50_from_ki",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-incubate CYP3A4 with UDPGA at 1064.9 µM ([S]) in the presence of a competitive inhibitor (Ki = 196.2 µM) at 92.4 µM, and characterize the inhibition kinetics.",
+    "rationale": "CYP3A4 glucuronidation of UDPGA is modeled as a Michaelis-Menten reaction with competitive inhibition. Km = 416.2 µM, [S] = 1064.9 µM, Ki = 196.2 µM, [I] = 92.4 µM, Vmax = 6.1538 µmol/min. The apparent Km, fractional activity, inhibitor:substrate ratio, and run-condition IC50 are computed from these raw inputs.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": {
+      "enzyme": "CYP3A4",
+      "substrate": "UDPGA",
+      "km_um": 416.2,
+      "s_conc_um": 1064.9,
+      "ki_um": 196.2,
+      "i_conc_um": 92.4,
+      "vmax_umol_min": 6.1538,
+      "fractional_activity": 0.634961876463879,
+      "percent_inhibition": 36.5038123536121,
+      "ic50_um": 698.2023546371937,
+      "apparent_km_um": 612.2085626911315,
+      "velocity_umol_min": 3.907428395383419,
+      "inhibitor_substrate_ratio": 0.08676871067705888
+    },
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Verify the competitive-inhibition assumption holds for this CYP3A4/UDPGA pair (confirm via Lineweaver-Burk or Hanes plot that apparent Km rises with [I] while Vmax is unchanged).",
+      "Confirm the UDPGA concentration is truly the substrate ([S]) and the inhibitor is a distinct species with the stated Ki.",
+      "Check that the assay can resolve the ~36% inhibition at [I]=92.4 µM given assay precision."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "enzyme.fractional_activity",
+      "formula": "v_i/v_0 = [S] / (Km(1 + [I]/Ki) + [S])",
+      "inputs": [
+        {
+          "name": "km_um",
+          "value": 416.2,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 1064.9,
+          "unit": "uM"
+        },
+        {
+          "name": "ki_um",
+          "value": 196.2,
+          "unit": "uM"
+        },
+        {
+          "name": "i_conc_um",
+          "value": 92.4,
+          "unit": "uM"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.634961876463879,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.percent_inhibition",
+      "formula": "%I = (1 − v_i/v_0)·100",
+      "inputs": [
+        {
+          "name": "fractional_activity",
+          "value": 0.634961876463879,
+          "unit": "—"
+        }
+      ],
+      "unit": "%",
+      "value": 36.5038123536121,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.ic50_um",
+      "formula": "IC50 = Ki(1 + [S]/Km)  (Cheng–Prusoff)",
+      "inputs": [
+        {
+          "name": "ki_um",
+          "value": 196.2,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 1064.9,
+          "unit": "uM"
+        },
+        {
+          "name": "km_um",
+          "value": 416.2,
+          "unit": "uM"
+        }
+      ],
+      "unit": "uM",
+      "value": 698.2023546371937,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.apparent_km_um",
+      "formula": "Km^app = Km(1 + [I]/Ki)",
+      "inputs": [
+        {
+          "name": "km_um",
+          "value": 416.2,
+          "unit": "uM"
+        },
+        {
+          "name": "i_conc_um",
+          "value": 92.4,
+          "unit": "uM"
+        },
+        {
+          "name": "ki_um",
+          "value": 196.2,
+          "unit": "uM"
+        }
+      ],
+      "unit": "uM",
+      "value": 612.2085626911315,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.velocity_umol_min",
+      "formula": "v = Vmax · v_i/v_0",
+      "inputs": [
+        {
+          "name": "vmax_umol_min",
+          "value": 6.1538,
+          "unit": "umol/min"
+        },
+        {
+          "name": "fractional_activity",
+          "value": 0.634961876463879,
+          "unit": "—"
+        }
+      ],
+      "unit": "umol/min",
+      "value": 3.907428395383419,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.inhibitor_substrate_ratio",
+      "formula": "[I]/[S]",
+      "inputs": [
+        {
+          "name": "i_conc_um",
+          "value": 92.4,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 1064.9,
+          "unit": "uM"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.08676871067705888,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

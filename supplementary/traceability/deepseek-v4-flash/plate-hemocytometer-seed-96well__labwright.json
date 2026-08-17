@@ -1,0 +1,141 @@
+{
+  "entry_id": "plate-hemocytometer-seed-96well",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": false,
+    "recovery": {
+      "wells": 0.988889
+    },
+    "hallucination_rate": 0.0,
+    "failure": "wrong_target"
+  },
+  "tool_trace": [
+    "hemocytometer_count",
+    "cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed 96-well plate wells at 1e4 cells/cm^2 from a thawed suspension counted on a hemocytometer (32 cells/square at 1:2 dilution, 0.45 mL available).",
+    "rationale": "Hemocytometer count gives 6.4e5 cells/mL (32 × 2 × 1e4). With 0.45 mL that is 2.88e5 total cells. At 1e4 cells/cm^2 on a standard 96-well area (0.32 cm^2), each well needs 3,200 cells, so 90 wells can be seeded. Assumes standard 96-well growth area of 0.32 cm^2 and 100% viability of the thawed suspension.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "96",
+      "wells": 1,
+      "cell_type": "thawed suspension",
+      "seeding_density_cells_cm2": 10000.0,
+      "seed_per_well": 3200.0,
+      "total_seed_count": 3200.0,
+      "medium_volume_per_well_ml": 0.17,
+      "total_medium_ml": 0.17,
+      "viability_pct": 100.0,
+      "confluent_density_cells_cm2": 100000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": null,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Assumes standard 96-well growth area of 0.32 cm^2; verify against the specific plate brand.",
+      "Assumes 100% viability of the thawed suspension; if viability is lower, effective viable cells per well drop and fewer wells should be seeded to maintain target density.",
+      "0.45 mL at 6.4e5 cells/mL gives 2.88e5 total cells; 90 wells at 3,200 cells/well uses 2.88e5 cells, leaving no surplus for dead volume in pipetting."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 10000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 3200.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 3200.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 3200.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.17,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 0.17,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.17,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

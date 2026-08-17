@@ -1,0 +1,154 @@
+{
+  "entry_id": "lmb-solvent-042",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "evaporation_rate_ul_hr": 0.008043,
+      "residual_volume_ul": 0.029619,
+      "edge_evaporation_factor": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "solvent_edge_well_factor",
+    "solvent_evaporation_rate",
+    "solvent_drop_volume_after_time",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Report evaporation metrics for a hanging-drop well (row D, column 5) at 10.3 °C and 63% RH over 2.012 h.",
+    "rationale": "Interior well (row D, col 5) so edge factor is 1.0. Evaporation rate and residual volume computed from the d²-law at the stated temperature and relative humidity.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": {
+      "drop_volume_ul": 9.72,
+      "hours": 2.012,
+      "temp_c": 10.3,
+      "rh": 0.63,
+      "well_row": "D",
+      "well_col": 5,
+      "edge_factor": null,
+      "evaporation_rate_ul_hr": 5.100547630842588,
+      "residual_volume_ul": 1.566420642978324,
+      "edge_evaporation_factor": 1.0
+    },
+    "caveats": [
+      "~84% volume loss over 2 h — for live hanging-drop spheroid culture this would concentrate medium and stress cells; consider humidified incubation or shorter interval."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "solvent.edge_evaporation_factor",
+      "formula": "f_edge = 1.5 (rows A/H, cols 1/12) else 1.0",
+      "inputs": [
+        {
+          "name": "well_row",
+          "value": "D",
+          "unit": "—"
+        },
+        {
+          "name": "well_col",
+          "value": 5,
+          "unit": "—"
+        },
+        {
+          "name": "edge_factor",
+          "value": 1.5,
+          "unit": "—"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 1.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "solvent.evaporation_rate_ul_hr",
+      "formula": "V̇ = K·r(V)·f_edge,  K = 4π·D·C_sat(1−RH)/ρ",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 9.72,
+          "unit": "uL"
+        },
+        {
+          "name": "temp_c",
+          "value": 10.3,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.63,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL/hr",
+      "value": 5.100547630842588,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "solvent.residual_volume_ul",
+      "formula": "V(t) = (V₀^(2/3) − c·f·t)^(3/2)  (d²-law)",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 9.72,
+          "unit": "uL"
+        },
+        {
+          "name": "hours",
+          "value": 2.012,
+          "unit": "h"
+        },
+        {
+          "name": "temp_c",
+          "value": 10.3,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.63,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL",
+      "value": 1.566420642978324,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

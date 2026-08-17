@@ -1,0 +1,155 @@
+{
+  "entry_id": "lmb-solvent-047",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "evaporation_rate_ul_hr": 0.0,
+      "residual_volume_ul": 0.0,
+      "edge_evaporation_factor": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "solvent_edge_well_factor",
+    "solvent_evaporation_rate",
+    "solvent_drop_volume_after_time",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Report evaporation metrics for a hanging-drop well (row E, column 4) at 18.7 °C and 54% RH over 0.813 h.",
+    "rationale": "Evaporation metrics computed from the raw drop volume, ambient temperature, relative humidity, well position, and elapsed time using the solvent evaporation calculators.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": {
+      "drop_volume_ul": 7.95,
+      "hours": 0.813,
+      "temp_c": 18.7,
+      "rh": 0.54,
+      "well_row": "E",
+      "well_col": 4,
+      "edge_factor": null,
+      "evaporation_rate_ul_hr": 9.909592494577966,
+      "residual_volume_ul": 1.4689048612908568,
+      "edge_evaporation_factor": 1.0
+    },
+    "caveats": [
+      "54% RH is low for hanging-drop culture; the drop loses ~6.5 µL over 0.813 h, leaving ~18% of the original volume — confirm humidity control and account for solute concentration effects.",
+      "Edge factor of 1.0 applies because row E, column 4 is an interior well; only rows A/H and columns 1/12 are edge wells."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "solvent.edge_evaporation_factor",
+      "formula": "f_edge = 1.5 (rows A/H, cols 1/12) else 1.0",
+      "inputs": [
+        {
+          "name": "well_row",
+          "value": "E",
+          "unit": "—"
+        },
+        {
+          "name": "well_col",
+          "value": 4,
+          "unit": "—"
+        },
+        {
+          "name": "edge_factor",
+          "value": 1.5,
+          "unit": "—"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 1.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "solvent.evaporation_rate_ul_hr",
+      "formula": "V̇ = K·r(V)·f_edge,  K = 4π·D·C_sat(1−RH)/ρ",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 7.95,
+          "unit": "uL"
+        },
+        {
+          "name": "temp_c",
+          "value": 18.7,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.54,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL/hr",
+      "value": 9.909592494577966,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "solvent.residual_volume_ul",
+      "formula": "V(t) = (V₀^(2/3) − c·f·t)^(3/2)  (d²-law)",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 7.95,
+          "unit": "uL"
+        },
+        {
+          "name": "hours",
+          "value": 0.813,
+          "unit": "h"
+        },
+        {
+          "name": "temp_c",
+          "value": 18.7,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.54,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL",
+      "value": 1.4689048612908568,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

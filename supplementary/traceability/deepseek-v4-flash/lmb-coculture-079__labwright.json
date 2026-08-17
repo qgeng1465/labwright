@@ -1,0 +1,180 @@
+{
+  "entry_id": "lmb-coculture-079",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "cells_per_well_a": 0.0,
+      "cells_per_well_b": 0.0,
+      "total_cells_a": 0.0,
+      "total_cells_b": 0.0,
+      "seeding_ratio_ab": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "coculture_seeding_ratio",
+    "coculture_cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed HUVEC and Huh7 in a 6-well plate at 3.02e5 cells/cm² total across 7.6 cm² per well, with 0.135 of the total assigned to HUVEC.",
+    "rationale": "Co-culture seeding of HUVEC (population A) and Huh7 (population B) in a 6-well plate. Total seeding density 3.02e5 cells/cm² over 7.6 cm²/well, with HUVEC assigned 0.135 of the total. Per-well counts and totals are computed from these raw inputs.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "HUVEC",
+      "cell_type_b": "Huh7",
+      "total_density_cells_cm2": 302000.0,
+      "area_cm2": 7.6,
+      "fraction_a": 0.135,
+      "wells": 6,
+      "cells_per_well_a": 309852.0,
+      "cells_per_well_b": 1985348.0,
+      "total_cells_a": 1859112.0,
+      "total_cells_b": 11912088.0,
+      "seeding_ratio_ab": 0.15606936416184972
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Verify viability by trypan blue before plating and adjust suspension volume so live-cell count matches the per-well target.",
+      "HUVEC and Huh7 grow at different rates; the 0.135 HUVEC fraction is a starting stoichiometry that drifts over culture time.",
+      "A:B ratio is reported as A/B = 0.156; invert if the protocol quotes B/A."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 302000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 7.6,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.135,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 309852.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 302000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 7.6,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.135,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1985348.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 309852.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1859112.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 1985348.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 11912088.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 309852.0,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 1985348.0,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.15606936416184972,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "entry_id": "lmb-coculture-002",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "cells_per_well_a": 0.0,
+      "cells_per_well_b": 0.0,
+      "total_cells_b": 0.0,
+      "seeding_ratio_ab": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed ECFC and PHH in a 6-well plate at 4.66e5 cells/cm² total across 3.46 cm² per well, with 0.872 of the total assigned to ECFC, and report per-well and total seeding counts.",
+    "rationale": "Co-culture seeding budget for an ECFC (population A) + PHH (population B) liver-vascular model. Total density 4.66e5 cells/cm² over 3.46 cm²/well gives 1,612,360 cells/well; fraction_a = 0.872 assigns 87.2% to ECFC and 12.8% to PHH, yielding an A:B ratio of 6.81:1.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "ECFC",
+      "cell_type_b": "PHH",
+      "total_density_cells_cm2": 466000.0,
+      "area_cm2": 3.46,
+      "fraction_a": 0.872,
+      "wells": 6,
+      "cells_per_well_a": 1405977.92,
+      "cells_per_well_b": 206382.08000000007,
+      "total_cells_a": 8435867.52,
+      "total_cells_b": 1238292.4800000004,
+      "seeding_ratio_ab": 6.812499999999997
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Verify the actual growth area of your 6-well plate; 3.46 cm² is smaller than the standard ~9.5 cm² 6-well growth area, so confirm against the manufacturer's specification.",
+      "Confirm the ECFC:PHH ratio of ~6.8:1 is the intended stoichiometry for the liver-vascular model.",
+      "These are seeding counts; confirm attachment and viability (e.g., trypan blue) before dosing."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 466000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 3.46,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.872,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1405977.92,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 466000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 3.46,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.872,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 206382.08000000007,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 1405977.92,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 8435867.52,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 206382.08000000007,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1238292.4800000004,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 1405977.92,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 206382.08000000007,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 6.812499999999997,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

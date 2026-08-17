@@ -1,0 +1,84 @@
+{
+  "entry_id": "seeding-endothelial-5e4",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_count": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "seeding_cell_count",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed HUVEC endothelial cells at 5e4 cells/cm^2 onto the 0.08 cm^2 culture area of a 400 um x 20 mm channel and determine the cells per channel.",
+    "rationale": "Seeding count follows from seeding density × culture area. HUVEC seeding density 5e4 cells/cm^2 is within the literature range (1e4-2e4 cells/cm^2 typical, but 5e4 is a defensible higher-density choice for a confluent monolayer). Channel area 0.08 cm^2 corresponds to a 400 um wide × 20 mm long channel.",
+    "chip": {
+      "width_um": 400.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": null,
+    "derived": null,
+    "cells": {
+      "cell_type": "HUVEC",
+      "seeding_density_cells_cm2": 50000.0,
+      "culture_area_cm2": 0.08,
+      "seed_count": 4000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": null
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Verify the channel culture area is actually 0.08 cm^2 (400 um x 20 mm = 0.08 cm^2, assuming the full channel floor is the growth surface).",
+      "HUVEC typical seeding density is 1e4-2e4 cells/cm^2; 5e4 is a higher-density choice — confirm it matches your monolayer target.",
+      "Channel height (100 um) is assumed; it does not affect the seeding count but matters for any subsequent shear/perfusion calculations."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 50000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.08,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 4000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

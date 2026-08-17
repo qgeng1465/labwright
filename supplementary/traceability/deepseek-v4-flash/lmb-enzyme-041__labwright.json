@@ -1,0 +1,202 @@
+{
+  "entry_id": "lmb-enzyme-041",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "ic50_um": 0.0,
+      "apparent_km_um": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "enzyme_ic50_from_ki",
+    "enzyme_apparent_km",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-incubate UGT1A1 with 4-methylumbelliferone (substrate) and a competitive inhibitor to characterize run-condition IC50 and apparent Km.",
+    "rationale": "Competitive inhibition of UGT1A1 by a small-molecule inhibitor against 4-methylumbelliferone conjugation. Substrate [S]=152.6 µM at Km=276.5 µM; competitive inhibitor at [I]=81.7 µM with Ki=127.6 µM; Vmax=7.0073 µmol/min. Run-condition IC50 follows Cheng–Prusoff (IC50 = Ki·(1+[S]/Km)) and apparent Km = Km·(1+[I]/Ki).",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": {
+      "enzyme": "UGT1A1",
+      "substrate": "4-methylumbelliferone",
+      "km_um": 276.5,
+      "s_conc_um": 152.6,
+      "ki_um": 127.6,
+      "i_conc_um": 81.7,
+      "vmax_umol_min": 7.0073,
+      "fractional_activity": 0.25175784661639977,
+      "percent_inhibition": 74.82421533836002,
+      "ic50_um": 198.02227848101262,
+      "apparent_km_um": 453.5380094043888,
+      "velocity_umol_min": 1.7641427585950982,
+      "inhibitor_substrate_ratio": 0.535386631716907
+    },
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Confirm the inhibitor is truly competitive (Lineweaver–Burk lines intersect on the 1/V axis) before relying on Cheng–Prusoff IC50.",
+      "Verify UGT1A1 cofactor (UDPGA) is saturating so the measured kinetics reflect the conjugation step.",
+      "Check inhibitor solubility in the assay buffer at 81.7 µM and that the vehicle (DMSO) stays ≤0.1% v/v."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "enzyme.fractional_activity",
+      "formula": "v_i/v_0 = [S] / (Km(1 + [I]/Ki) + [S])",
+      "inputs": [
+        {
+          "name": "km_um",
+          "value": 276.5,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 152.6,
+          "unit": "uM"
+        },
+        {
+          "name": "ki_um",
+          "value": 127.6,
+          "unit": "uM"
+        },
+        {
+          "name": "i_conc_um",
+          "value": 81.7,
+          "unit": "uM"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.25175784661639977,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.percent_inhibition",
+      "formula": "%I = (1 − v_i/v_0)·100",
+      "inputs": [
+        {
+          "name": "fractional_activity",
+          "value": 0.25175784661639977,
+          "unit": "—"
+        }
+      ],
+      "unit": "%",
+      "value": 74.82421533836002,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.ic50_um",
+      "formula": "IC50 = Ki(1 + [S]/Km)  (Cheng–Prusoff)",
+      "inputs": [
+        {
+          "name": "ki_um",
+          "value": 127.6,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 152.6,
+          "unit": "uM"
+        },
+        {
+          "name": "km_um",
+          "value": 276.5,
+          "unit": "uM"
+        }
+      ],
+      "unit": "uM",
+      "value": 198.02227848101262,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.apparent_km_um",
+      "formula": "Km^app = Km(1 + [I]/Ki)",
+      "inputs": [
+        {
+          "name": "km_um",
+          "value": 276.5,
+          "unit": "uM"
+        },
+        {
+          "name": "i_conc_um",
+          "value": 81.7,
+          "unit": "uM"
+        },
+        {
+          "name": "ki_um",
+          "value": 127.6,
+          "unit": "uM"
+        }
+      ],
+      "unit": "uM",
+      "value": 453.5380094043888,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.velocity_umol_min",
+      "formula": "v = Vmax · v_i/v_0",
+      "inputs": [
+        {
+          "name": "vmax_umol_min",
+          "value": 7.0073,
+          "unit": "umol/min"
+        },
+        {
+          "name": "fractional_activity",
+          "value": 0.25175784661639977,
+          "unit": "—"
+        }
+      ],
+      "unit": "umol/min",
+      "value": 1.7641427585950982,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.inhibitor_substrate_ratio",
+      "formula": "[I]/[S]",
+      "inputs": [
+        {
+          "name": "i_conc_um",
+          "value": 81.7,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 152.6,
+          "unit": "uM"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.535386631716907,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

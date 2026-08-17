@@ -1,0 +1,200 @@
+{
+  "entry_id": "lmb-enzyme-043",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "fractional_activity": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "enzyme_fractional_activity",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-incubate UGT2B7 with testosterone at 1191.3 µM in the presence of a competitive inhibitor (Ki = 201.3 µM) at 396.8 µM and report the fractional activity remaining.",
+    "rationale": "Competitive inhibition of UGT2B7-mediated testosterone glucuronidation. Substrate [S] = 1191.3 µM, Km = 1539.4 µM; competitive inhibitor [I] = 396.8 µM, Ki = 201.3 µM; Vmax = 9.7155 µmol/min. Fractional activity is computed via v_i/v0 = [S]/(Km(1+[I]/Ki)+[S]).",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": {
+      "enzyme": "UGT2B7",
+      "substrate": "testosterone",
+      "km_um": 1539.4,
+      "s_conc_um": 1191.3,
+      "ki_um": 201.3,
+      "i_conc_um": 396.8,
+      "vmax_umol_min": 9.7155,
+      "fractional_activity": 0.20663831607835229,
+      "percent_inhibition": 79.33616839216478,
+      "ic50_um": 357.0806223203846,
+      "apparent_km_um": 4573.845702930949,
+      "velocity_umol_min": 2.0075945598592315,
+      "inhibitor_substrate_ratio": 0.3330815075967431
+    },
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Confirm the inhibitor is truly competitive (Lineweaver-Burk / Hanes pattern) before relying on the Ki-based prediction.",
+      "Verify substrate and inhibitor concentrations in the final reaction mix, not the stock.",
+      "Vmax is provided but not needed for the fractional-activity ratio; it only scales the absolute velocity."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "enzyme.fractional_activity",
+      "formula": "v_i/v_0 = [S] / (Km(1 + [I]/Ki) + [S])",
+      "inputs": [
+        {
+          "name": "km_um",
+          "value": 1539.4,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 1191.3,
+          "unit": "uM"
+        },
+        {
+          "name": "ki_um",
+          "value": 201.3,
+          "unit": "uM"
+        },
+        {
+          "name": "i_conc_um",
+          "value": 396.8,
+          "unit": "uM"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.20663831607835229,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.percent_inhibition",
+      "formula": "%I = (1 − v_i/v_0)·100",
+      "inputs": [
+        {
+          "name": "fractional_activity",
+          "value": 0.20663831607835229,
+          "unit": "—"
+        }
+      ],
+      "unit": "%",
+      "value": 79.33616839216478,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.ic50_um",
+      "formula": "IC50 = Ki(1 + [S]/Km)  (Cheng–Prusoff)",
+      "inputs": [
+        {
+          "name": "ki_um",
+          "value": 201.3,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 1191.3,
+          "unit": "uM"
+        },
+        {
+          "name": "km_um",
+          "value": 1539.4,
+          "unit": "uM"
+        }
+      ],
+      "unit": "uM",
+      "value": 357.0806223203846,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.apparent_km_um",
+      "formula": "Km^app = Km(1 + [I]/Ki)",
+      "inputs": [
+        {
+          "name": "km_um",
+          "value": 1539.4,
+          "unit": "uM"
+        },
+        {
+          "name": "i_conc_um",
+          "value": 396.8,
+          "unit": "uM"
+        },
+        {
+          "name": "ki_um",
+          "value": 201.3,
+          "unit": "uM"
+        }
+      ],
+      "unit": "uM",
+      "value": 4573.845702930949,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.velocity_umol_min",
+      "formula": "v = Vmax · v_i/v_0",
+      "inputs": [
+        {
+          "name": "vmax_umol_min",
+          "value": 9.7155,
+          "unit": "umol/min"
+        },
+        {
+          "name": "fractional_activity",
+          "value": 0.20663831607835229,
+          "unit": "—"
+        }
+      ],
+      "unit": "umol/min",
+      "value": 2.0075945598592315,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "enzyme.inhibitor_substrate_ratio",
+      "formula": "[I]/[S]",
+      "inputs": [
+        {
+          "name": "i_conc_um",
+          "value": 396.8,
+          "unit": "uM"
+        },
+        {
+          "name": "s_conc_um",
+          "value": 1191.3,
+          "unit": "uM"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.3330815075967431,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

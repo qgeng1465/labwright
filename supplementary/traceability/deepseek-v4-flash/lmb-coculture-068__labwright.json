@@ -1,0 +1,176 @@
+{
+  "entry_id": "lmb-coculture-068",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "total_cells_a": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "cell_physiology",
+    "cell_physiology",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed HUVEC and HepG2 in a 24-well plate at 1.45e5 cells/cm² total across 4.25 cm² per well, with 27.1% of the total assigned to HUVEC, and report total HUVEC (A) cells across all wells.",
+    "rationale": "Co-culture of HUVEC (endothelial) and HepG2 (hepatoma) in a 24-well plate. Total seeding density 1.45e5 cells/cm² over 4.25 cm²/well, with fraction_a = 0.271 assigned to HUVEC (population A). Per-well counts are computed from density × area × fraction. \"All wells\" is interpreted as the full 24-well plate (24 wells) to report the total A cells; the per-well A count is 167,004 cells. Note: HUVEC at 3.93e4 cells/cm² is ~2× above its recommended seeding range (1e4-2e4), and HepG2 at 1.06e5 cells/cm² is at the top of its range (5e4-1e5) — a dense co-culture, flagged in caveats.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "HUVEC",
+      "cell_type_b": "HepG2",
+      "total_density_cells_cm2": 145000.0,
+      "area_cm2": 4.25,
+      "fraction_a": 0.271,
+      "wells": 24,
+      "cells_per_well_a": 167003.75,
+      "cells_per_well_b": 449246.25,
+      "total_cells_a": 4008090.0,
+      "total_cells_b": 10781910.0,
+      "seeding_ratio_ab": 0.3717421124828532
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Well count not explicitly stated; 'all wells' interpreted as the full 24-well plate (24 wells). Confirm the intended well count.",
+      "HUVEC fraction (3.93e4 cells/cm²) is ~2× above its recommended seeding range (1e4-2e4 cells/cm²) — verify this high endothelial density is intentional.",
+      "HepG2 fraction (1.06e5 cells/cm²) is at the top of its recommended seeding range (5e4-1e5 cells/cm²).",
+      "HUVEC is BSL-1 and not primary; HepG2 is an immortalized hepatoma line, not primary material."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 145000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 4.25,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.271,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 167003.75,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 145000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 4.25,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.271,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 449246.25,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 167003.75,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 24,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 4008090.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 449246.25,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 24,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 10781910.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 167003.75,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 449246.25,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.3717421124828532,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

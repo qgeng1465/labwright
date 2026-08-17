@@ -1,0 +1,89 @@
+{
+  "entry_id": "blind-phh-seed",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_count": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "seeding_cell_count",
+    "seeding_cell_count",
+    "seeding_cell_count",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed primary human hepatocytes onto the culture area of a 400 µm wide, 20 mm long channel.",
+    "rationale": "Primary human hepatocytes (phh) do not divide in vitro, so the seeding density must be set at the target working density directly. The physiology registry gives a seeding range of 100,000–200,000 cells/cm² for phh. The channel culture area is 400 µm × 20 mm = 0.08 cm². I chose the midpoint density of 150,000 cells/cm², giving 12,000 cells per channel (range 8,000–16,000). Primary human material warrants BSL-2 containment.",
+    "chip": {
+      "width_um": 400.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": null,
+    "derived": null,
+    "cells": {
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "culture_area_cm2": 0.08,
+      "seed_count": 12000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": 24.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Primary human hepatocytes do not divide in vitro — seed at the target working density directly; there is no growth to fill the channel.",
+      "Primary human material requires BSL-2 containment per institutional policy.",
+      "Confirm the channel culture area is truly 0.08 cm² (400 µm × 20 mm) before seeding; a mm² vs cm² error is 100×.",
+      "Verify viability of the thawed hepatocyte suspension (trypan blue) before plating and correct the seed count for viability.",
+      "For a perfused channel, confirm the chosen shear (0.05–0.15 Pa hepatic range) is compatible with the flow you plan to run."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.08,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 12000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

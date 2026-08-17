@@ -1,0 +1,151 @@
+{
+  "entry_id": "lmb-solvent-028",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "evaporation_rate_ul_hr": 0.006849
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "solvent_evaporation_rate",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Report the evaporation rate (µL/h) of a 3.69 µL hanging-drop well at row H, column 2, at 30.6 °C and 71% RH over 0.064 h.",
+    "rationale": "The evaporation rate is computed from the drop volume, ambient temperature (30.6 °C), relative humidity (71% = 0.71), and the well position. Row H is an edge row, so the plate-edge evaporation factor (~1.5×) applies to the interior Langmuir rate. The result is the per-well effective evaporation rate in µL/h.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": {
+      "drop_volume_ul": 3.69,
+      "hours": 0.064,
+      "temp_c": 30.6,
+      "rh": 0.71,
+      "well_row": "H",
+      "well_col": 2,
+      "edge_factor": 1.5,
+      "evaporation_rate_ul_hr": 14.203963579132726,
+      "residual_volume_ul": 2.819361813316458,
+      "edge_evaporation_factor": 1.5
+    },
+    "caveats": [
+      "Row H is an edge row; the ~1.5× edge evaporation factor is applied. Verify the actual plate position and that the drop survives the 0.064 h exposure (≈25% volume loss expected).",
+      "Confirm the incubator/ambient RH is stable at 71% during the exposure window."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "solvent.edge_evaporation_factor",
+      "formula": "f_edge = 1.5 (rows A/H, cols 1/12) else 1.0",
+      "inputs": [
+        {
+          "name": "well_row",
+          "value": "H",
+          "unit": "—"
+        },
+        {
+          "name": "well_col",
+          "value": 2,
+          "unit": "—"
+        },
+        {
+          "name": "edge_factor",
+          "value": 1.5,
+          "unit": "—"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 1.5,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "solvent.evaporation_rate_ul_hr",
+      "formula": "V̇ = K·r(V)·f_edge,  K = 4π·D·C_sat(1−RH)/ρ",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 3.69,
+          "unit": "uL"
+        },
+        {
+          "name": "temp_c",
+          "value": 30.6,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.71,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.5,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL/hr",
+      "value": 14.203963579132726,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "solvent.residual_volume_ul",
+      "formula": "V(t) = (V₀^(2/3) − c·f·t)^(3/2)  (d²-law)",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 3.69,
+          "unit": "uL"
+        },
+        {
+          "name": "hours",
+          "value": 0.064,
+          "unit": "h"
+        },
+        {
+          "name": "temp_c",
+          "value": 30.6,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.71,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.5,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL",
+      "value": 2.819361813316458,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

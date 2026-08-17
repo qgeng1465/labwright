@@ -1,0 +1,174 @@
+{
+  "entry_id": "lmb-coculture-044",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seeding_ratio_ab": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed ECFC and LX-2 in a 12-well plate at 4.98e5 cells/cm² total across 1.75 cm² per well, with 94% of the total assigned to ECFC, and report the A:B seeding ratio.",
+    "rationale": "ECFC (endothelial colony-forming cells) are seeded as the dominant population (94%) with LX-2 hepatic stellate cells as a sparse minority (6%) to model endothelial–stellate paracrine crosstalk. Total seeding density 4.98e5 cells/cm² over 1.75 cm²/well in a 12-well plate. The A:B ratio (ECFC:LX-2) is computed from the per-well counts.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "ECFC",
+      "cell_type_b": "LX-2",
+      "total_density_cells_cm2": 498000.0,
+      "area_cm2": 1.75,
+      "fraction_a": 0.94,
+      "wells": 1,
+      "cells_per_well_a": 819210.0,
+      "cells_per_well_b": 52290.0,
+      "total_cells_a": 819210.0,
+      "total_cells_b": 52290.0,
+      "seeding_ratio_ab": 15.666666666666666
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Total density 4.98e5 cells/cm² is high (well above typical endothelial seeding densities) — verify cells reach confluence without overgrowth at 24-48 h.",
+      "Confirm ECFC and LX-2 are maintained in compatible media; LX-2 (immortalized stellate) may require different serum conditions than ECFC.",
+      "Verify the 12-well growth area is actually 1.75 cm² for the specific plate brand used."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 498000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 1.75,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.94,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 819210.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 498000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 1.75,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.94,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 52290.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 819210.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 819210.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 52290.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 52290.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 819210.0,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 52290.0,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 15.666666666666666,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

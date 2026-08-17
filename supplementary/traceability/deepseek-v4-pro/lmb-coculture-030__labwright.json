@@ -1,0 +1,172 @@
+{
+  "entry_id": "lmb-coculture-030",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "cells_per_well_a": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed ECFC and Huh7 in a 12-well plate at 2.82e5 cells/cm² total across 6.39 cm² per well, with 0.554 of the total assigned to ECFC; report the per-well count of population A (ECFC).",
+    "rationale": "Co-culture seeding budget computed from total density, well area, and ECFC fraction using the coculture_cells_per_well calculator (N_A = f·ρ·A).",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "ECFC",
+      "cell_type_b": "Huh7",
+      "total_density_cells_cm2": 282000.0,
+      "area_cm2": 6.39,
+      "fraction_a": 0.554,
+      "wells": 1,
+      "cells_per_well_a": 998296.92,
+      "cells_per_well_b": 803683.08,
+      "total_cells_a": 998296.92,
+      "total_cells_b": 803683.08,
+      "seeding_ratio_ab": 1.242152466367713
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "A standard 12-well plate growth area is ~3.8 cm², not 6.39 cm² (which matches a 6-well plate); verify the actual well area before seeding.",
+      "Confirm ECFC and Huh7 seeding densities and the 0.554 ECFC fraction against your protocol."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 282000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 6.39,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.554,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 998296.92,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 282000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 6.39,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.554,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 803683.08,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 998296.92,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 998296.92,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 803683.08,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 803683.08,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 998296.92,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 803683.08,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 1.242152466367713,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

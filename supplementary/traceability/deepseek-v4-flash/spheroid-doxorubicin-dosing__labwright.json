@@ -1,0 +1,102 @@
+{
+  "entry_id": "spheroid-doxorubicin-dosing",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "dmso_fraction_vv": 0.0,
+      "cells_total": 0.0,
+      "total_medium_ml": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "spheroid_diameter_from_cells",
+    "medium_volume_per_spheroid",
+    "dmso_fraction",
+    "cell_physiology",
+    "spheroid_volume",
+    "spheroid_necrotic_fraction",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Doxorubicin dose-response on HepG2 spheroids: one spheroid per well in a 96-well ULA plate, 1000 cells/spheroid, dosed from a 5 mM DMSO stock at 5 µM working concentration.",
+    "rationale": "HepG2 spheroids formed at 1000 cells/spheroid of 20 µm cells give ~200 µm diameter at solid packing (~221 µm at realistic 0.74 packing), which is within the ≤~200-400 µm range that avoids necrotic cores (O2 penetration ~200 µm; necrotic fraction = 0). One spheroid per well in a 96-well ULA plate uses the standard 100 µL working volume. Doxorubicin is delivered from a 5 mM DMSO stock at 5 µM working concentration, giving a 0.1% v/v DMSO vehicle fraction — at the upper edge of the ≤0.1% guideline and well below the ~0.5% cytotoxic threshold. HepG2 is an immortalized hepatoma line (BSL-1), not primary material; doubling 48-60 h.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": {
+      "cell_type": "HepG2",
+      "spheroid_format": "96-ula",
+      "spheroid_count": 96,
+      "cells_per_spheroid": 1000.0,
+      "cell_diameter_um": 20.0,
+      "spheroid_volume_ul": 0.0041887902047863905,
+      "expected_diameter_um": 199.99999999999994,
+      "cells_total": 96000.0,
+      "medium_volume_per_spheroid_ul": 100.0,
+      "total_medium_ml": 9.6,
+      "doubling_time_h": 54.0,
+      "culture_duration_h": 72.0,
+      "expected_cells_after_growth": 2519.8420997897465
+    },
+    "dosing": {
+      "compound": "Doxorubicin",
+      "molecular_weight_g_mol": 543.5,
+      "stock_mM": 5.0,
+      "working_mM": 0.005,
+      "dmso_fraction_vv": 0.001,
+      "vehicle_control": true,
+      "exposure_h": 72.0
+    },
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "DMSO vehicle fraction is 0.1% v/v — at the upper edge of the ≤0.1% guideline; include a matched vehicle-only control (0.1% DMSO) to isolate solvent effects.",
+      "Spheroid diameter ~221 µm at realistic packing is near the ~200 µm O2 penetration limit; monitor for core necrosis if spheroids grow larger over the 72 h culture.",
+      "HepG2 is an immortalized hepatoma line (BSL-1), not primary hepatocytes — metabolic phenotype differs from primary material.",
+      "Confirm spheroid formation (single spheroid per well, no aggregation) by microscopy before dosing.",
+      "Doxorubicin is light-sensitive and a cytotoxic agent — handle per institutional safety and light-protection protocols."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "dosing.dmso_fraction_vv",
+      "formula": "f = C_working / C_stock",
+      "inputs": [
+        {
+          "name": "working_mM",
+          "value": 0.005,
+          "unit": "mM"
+        },
+        {
+          "name": "stock_mM",
+          "value": 5.0,
+          "unit": "mM"
+        }
+      ],
+      "unit": "v/v",
+      "value": 0.001,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

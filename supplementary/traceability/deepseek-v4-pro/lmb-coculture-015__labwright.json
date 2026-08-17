@@ -1,0 +1,177 @@
+{
+  "entry_id": "lmb-coculture-015",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "total_cells_a": 0.0,
+      "total_cells_b": 0.0,
+      "seeding_ratio_ab": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "coculture_seeding_ratio",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed HUVEC-T1 and LX-2 in a 6-well plate at 2.05e5 cells/cm² total across 1.31 cm² per well, with 0.512 of the total assigned to HUVEC-T1, and report per-well and total cell counts plus the A:B seeding ratio.",
+    "rationale": "Mixed seeding of HUVEC-T1 (population A) and LX-2 (population B) at a total density of 2.05e5 cells/cm² over 1.31 cm² per well. Fraction A = 0.512 assigns 51.2% of the total to HUVEC-T1, giving a near-1:1 co-culture stoichiometry. Per-well counts are computed as f·ρ·A and (1−f)·ρ·A; totals scale by the 6 wells.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "HUVEC-T1",
+      "cell_type_b": "LX-2",
+      "total_density_cells_cm2": 205000.0,
+      "area_cm2": 1.31,
+      "fraction_a": 0.512,
+      "wells": 6,
+      "cells_per_well_a": 137497.6,
+      "cells_per_well_b": 131052.4,
+      "total_cells_a": 824985.6000000001,
+      "total_cells_b": 786314.3999999999,
+      "seeding_ratio_ab": 1.0491803278688525
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Per-well counts are fractional (137,497.6 and 131,052.4); round to whole cells per well in the lab while preserving the 0.512 fraction.",
+      "Confirm the 1.31 cm² growth area matches your actual 6-well plate insert/well footprint.",
+      "Verify HUVEC-T1 and LX-2 seeding densities are compatible with their respective growth requirements before co-seeding."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 205000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 1.31,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.512,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 137497.6,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 205000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 1.31,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.512,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 131052.4,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 137497.6,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 824985.6000000001,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 131052.4,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 786314.3999999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 137497.6,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 131052.4,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 1.0491803278688525,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

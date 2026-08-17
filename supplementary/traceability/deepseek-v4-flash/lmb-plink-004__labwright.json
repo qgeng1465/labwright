@@ -1,0 +1,117 @@
+{
+  "entry_id": "lmb-plink-004",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "bed_size_mb": 0.0,
+      "n_per_chr_files": 0.0,
+      "per_chr_bed_size_mb": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "plink_bed_size_mb",
+    "plink_per_chr_bed_size_mb",
+    "plink_per_chr_bed_size_mb",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Size the binary .bed storage for a GWAS genotype dataset of 8232 samples and 9913735 variants, and report the per-chromosome file count and per-chromosome .bed size.",
+    "rationale": "The binary PLINK .bed format packs 2 bits per sample per variant. Total .bed size = n_samples × n_variants / 4 / 1e6 MB. Per-chromosome .bed size uses the same 2-bits rule applied to the largest chromosome's variant count (644433). The number of per-chromosome files corresponds to the number of chromosomes in a standard human reference build (25: 22 autosomes + X + Y + MT).",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": {
+      "n_samples": 8232,
+      "n_variants": 9913735,
+      "n_variants_chr": 644433,
+      "bed_size_mb": 20402.46663,
+      "n_per_chr_files": 25,
+      "per_chr_bed_size_mb": 1326.243114
+    },
+    "solvent": null,
+    "caveats": [
+      "Confirm the reference build's chromosome list (GRCh37 vs GRCh38) to fix the exact per-chromosome file count; 25 assumes a standard human build (22 autosomes + X + Y + MT).",
+      "The 2-bits/sample/variant rule assumes a fully binary .bed with no missingness encoding overhead, which holds for PLINK's .bed format.",
+      "Per-chromosome file count assumes one file per chromosome; if splitting by other criteria (e.g., chunks), the count changes."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "plink.bed_size_mb",
+      "formula": "B = n_samples·n_variants / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 8232,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants",
+          "value": 9913735,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 20402.46663,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.n_per_chr_files",
+      "formula": "25 standard files (1–22, X, Y, MT)",
+      "inputs": [
+        {
+          "name": "chromosomes",
+          "value": "1-22, X, Y, MT",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 25.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "plink.per_chr_bed_size_mb",
+      "formula": "B_chr = n_samples·n_variants_chr / 4 / 1e6",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 8232,
+          "unit": "—"
+        },
+        {
+          "name": "n_variants_chr",
+          "value": 644433,
+          "unit": "—"
+        }
+      ],
+      "unit": "MB",
+      "value": 1326.243114,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

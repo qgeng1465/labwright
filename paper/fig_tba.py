@@ -135,7 +135,11 @@ def main(argv: list[str]) -> int:
                 xl = x + (LEVELS.index(level) - 1) * 0.32
                 ax.bar(xl, tba, width * 0.8, color=color, edgecolor=edge,
                        hatch=hatch, zorder=3, linewidth=0.5)
-                ax.errorbar(xl, tba, yerr=[[tba - lo], [hi - tba]],
+                # Clamp to >= 0: at tba=1.0 the Wilson upper bound can round
+                # to 1.0 - 1e-16, making hi - tba a tiny negative float.
+                ylo = max(0.0, tba - lo)
+                yhi = max(0.0, hi - tba)
+                ax.errorbar(xl, tba, yerr=[[ylo], [yhi]],
                             fmt="none", ecolor=INK, elinewidth=0.8,
                             capsize=2, zorder=4)
                 ax.text(xl, tba + 0.015, f"{100 * tba:.0f}%", ha="center",

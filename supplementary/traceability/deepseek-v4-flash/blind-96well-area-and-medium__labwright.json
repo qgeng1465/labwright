@@ -1,0 +1,175 @@
+{
+  "entry_id": "blind-96well-area-and-medium",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "medium_volume_per_well_ml": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "medium_volume_per_well",
+    "submit_design",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Report the standard recommended working medium volume per well for a 96-well plate-based assay.",
+    "rationale": "The user asked for the standard recommended working medium volume for a 96-well plate. This is a pure reference value from the plate medium-volume calculator (Corning/Falcon recommended working volume), which returns 0.17 mL per well. A minimal culture block is provided to satisfy the schema; the medium volume per well is computed from the plate format.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "96",
+      "wells": 1,
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 50000.0,
+      "seed_per_well": 16000.0,
+      "total_seed_count": 16000.0,
+      "medium_volume_per_well_ml": 0.17,
+      "total_medium_ml": 0.17,
+      "viability_pct": 90.0,
+      "confluent_density_cells_cm2": 1000000.0,
+      "doubling_time_h": 48.0,
+      "culture_duration_h": 72.0,
+      "expected_confluence_pct": 14.142135623730951
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "0.17 mL is the standard Corning/Falcon recommended working volume for a 96-well plate; low-volume or shallow-well protocols may require a custom mL/cm² override.",
+      "Confirm the specific plate manufacturer's recommended volume if using a non-standard 96-well plate."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 50000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 16000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 16000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 16000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.17,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 0.17,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.17,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.expected_confluence_pct",
+      "formula": "conf = N(t) / (ρ_conv·A_well) × 100,  N(t) = N_0·2^(t/t_d)",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 16000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "doubling_time_h",
+          "value": 48.0,
+          "unit": "h"
+        },
+        {
+          "name": "culture_duration_h",
+          "value": 72.0,
+          "unit": "h"
+        },
+        {
+          "name": "confluent_density_cells_cm2",
+          "value": 1000000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "%",
+      "value": 14.142135623730951,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

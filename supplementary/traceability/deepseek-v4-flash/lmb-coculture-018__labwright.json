@@ -1,0 +1,177 @@
+{
+  "entry_id": "lmb-coculture-018",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "total_cells_b": 0.0,
+      "seeding_ratio_ab": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "coculture_cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed ECFC and LX-2 in a 48-well plate at 3.2e5 cells/cm² total across 0.6 cm² per well, with 0.486 of the total assigned to ECFC.",
+    "rationale": "Co-culture seeding of ECFC (population A) and LX-2 (population B) in a 48-well plate. Total density 3.2e5 cells/cm² over 0.6 cm²/well gives 1.92e5 cells/well total; fraction A = 0.486 assigns 93,312 ECFC and 98,688 LX-2 per well. A:B seeding ratio ≈ 0.946. All 48 wells seeded gives ~4.74e6 total LX-2 cells. ECFC density is on the high end for endothelial lines — verify against the specific ECFC protocol.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "ECFC",
+      "cell_type_b": "LX-2",
+      "total_density_cells_cm2": 320000.0,
+      "area_cm2": 0.6,
+      "fraction_a": 0.486,
+      "wells": 48,
+      "cells_per_well_a": 93312.0,
+      "cells_per_well_b": 98688.0,
+      "total_cells_a": 4478976.0,
+      "total_cells_b": 4737024.0,
+      "seeding_ratio_ab": 0.9455252918287937
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Verify the number of wells actually seeded — I assumed all 48; total B cells scales linearly with well count.",
+      "ECFC seeding density of 3.2e5 cells/cm² is high for endothelial lines (HUVEC reference ~1-2e4 cells/cm²); confirm against the specific ECFC protocol to avoid over-confluence.",
+      "LX-2 (hepatic stellate cells) are slow-growing and shear-sensitive; ensure even distribution when plating the mixed suspension.",
+      "Confirm both cell types are compatible in the same medium formulation before plating."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 320000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 0.6,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.486,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 93312.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 320000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 0.6,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.486,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 98688.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 93312.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 48,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 4478976.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 98688.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 48,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 4737024.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 93312.0,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 98688.0,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.9455252918287937,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

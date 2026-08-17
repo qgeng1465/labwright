@@ -1,0 +1,143 @@
+{
+  "entry_id": "blind-24well-medium-partial",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "total_medium_ml": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cells_per_well",
+    "medium_volume_per_well",
+    "cell_physiology",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Plate primary human hepatocytes onto 6 wells of a 24-well plate at 1.5e5 cells/cm² for a sandwich-culture toxicity study and report total medium volume.",
+    "rationale": "Primary human hepatocytes (PHH) are the gold-standard liver cell; they do not divide in vitro, so seeding density is set directly at 1.5e5 cells/cm², within the registry range of 1e5–2e5 cells/cm². A 24-well plate has 0.32 cm² growth area, giving 285,000 cells/well. Standard 24-well working medium volume is 0.68 mL/well; 6 wells require 6 × 0.68 = 4.08 mL. PHH are human primary material (BSL-2).",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "24",
+      "wells": 6,
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "seed_per_well": 285000.0,
+      "total_seed_count": 1710000.0,
+      "medium_volume_per_well_ml": 0.68,
+      "total_medium_ml": 4.08,
+      "viability_pct": 90.0,
+      "confluent_density_cells_cm2": 200000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": 72.0,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "PHH are human primary material — handle under BSL-2 containment.",
+      "PHH do not divide in vitro; verify post-thaw viability (target ≥80-90%) before plating and correct the seeded volume for viable cells.",
+      "Sandwich culture requires a collagen/Matrigel overlay after attachment — confirm the overlay does not displace the 0.68 mL working volume.",
+      "Confirm the 24-well growth area (0.32 cm²) matches your plate lot before trusting the 285,000 cells/well figure."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "24",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 285000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 285000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1710000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "24",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.68,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 0.68,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 4.08,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

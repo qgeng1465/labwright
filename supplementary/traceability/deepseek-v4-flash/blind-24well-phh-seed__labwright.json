@@ -1,0 +1,146 @@
+{
+  "entry_id": "blind-24well-phh-seed",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_per_well": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "cells_per_well",
+    "cells_per_well",
+    "cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Plate primary human hepatocytes in collagen-sandwich culture in a single well of a 24-well plate at the standard published plating density.",
+    "rationale": "Primary human hepatocytes (PHH) are the gold-standard liver cell and do not divide in vitro, so the plating density is the working density. The physiology registry lists the PHH seeding density range as 100,000-200,000 cells/cm2; the standard published collagen-sandwich plating density is ~150,000 cells/cm2 (within that range). A 24-well plate has ~1.9 cm2 growth area, giving ~285,000 cells/well. PHH are human primary material (BSL-2).",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "24",
+      "wells": 1,
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "seed_per_well": 285000.0,
+      "total_seed_count": 285000.0,
+      "medium_volume_per_well_ml": 0.68,
+      "total_medium_ml": 0.68,
+      "viability_pct": 90.0,
+      "confluent_density_cells_cm2": 150000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": 24.0,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Confirm the 24-well plate's actual growth area (manufacturer spec, typically 1.9-2.0 cm2) and adjust the cell count accordingly.",
+      "Verify viability of the thawed PHH suspension by trypan blue before plating (target >=80-90%); plate only viable cells.",
+      "PHH do not divide in vitro - the plating density is the working density; no growth to confluence is expected.",
+      "PHH are human primary material - handle under BSL-2 containment per institutional policy.",
+      "Collagen-sandwich: plate onto collagen type I-coated surface, allow attachment ~2-4 h, then overlay with a second collagen layer.",
+      "Adjust the counted viable cells/mL so the plating volume delivers the target count per well."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "24",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 285000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 285000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 285000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "24",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.68,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 0.68,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.68,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

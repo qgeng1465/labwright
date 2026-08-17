@@ -1,0 +1,88 @@
+{
+  "entry_id": "power-90-effect-1",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_per_group": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "sample_size_per_group",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Determine the number of biological replicates per group needed to detect a 1.0-sigma difference between two groups with 90% power at alpha 0.05 (two-sided t-test).",
+    "rationale": "Sample size computed from a two-sample two-sided t-test power analysis: effect size 1.0 (in units of pooled SD), std dev 1.0, alpha 0.05, power 0.90. This yields 22 replicates per group.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": {
+      "effect_size": 1.0,
+      "std_dev": 1.0,
+      "alpha": 0.05,
+      "power": 0.9,
+      "n_per_group": 22,
+      "note": null
+    },
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "22 is the biological replicate count per group; technical replicates do not substitute for biological replicates.",
+      "Assumes a two-sided two-sample t-test and equal variance; adjust if the design is paired, one-sided, or uses a different test.",
+      "Effect size is expressed in units of the pooled standard deviation (1.0-sigma); confirm the actual measurement units and expected SD in the lab."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "stats.n_per_group",
+      "formula": "n from two-sample t-test power equation",
+      "inputs": [
+        {
+          "name": "effect_size",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "std_dev",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "alpha",
+          "value": 0.05,
+          "unit": ""
+        },
+        {
+          "name": "power",
+          "value": 0.9,
+          "unit": ""
+        }
+      ],
+      "unit": "n",
+      "value": 22.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

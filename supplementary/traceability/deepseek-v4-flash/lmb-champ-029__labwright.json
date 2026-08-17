@@ -1,0 +1,125 @@
+{
+  "entry_id": "lmb-champ-029",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_arrays": 0.0,
+      "n_chips": 0.0,
+      "n_expected_failed_arrays": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "champ_chips_for_samples",
+    "champ_expected_failed_arrays",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Process a 27-sample HumanMethylationEPIC cohort and report expected QC failures, physical chips, and arrays.",
+    "rationale": "A HumanMethylationEPIC (EPIC) BeadChip holds 8 arrays per physical chip. For 27 samples, the number of chips is ceil(27/8) = 4. The expected number of arrays failing QC is n_arrays × fail_rate = 27 × 0.144 = 3.888, i.e. ~4 arrays. This is a pure cohort-sizing calculation; no cell culture, perfusion, or dosing is involved.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": {
+      "n_samples": 27,
+      "platform": "epic",
+      "fail_rate_pct": 14.4,
+      "n_arrays": 27,
+      "n_chips": 4,
+      "n_expected_failed_arrays": 3.8880000000000003
+    },
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "The 14.4% fail rate is an assumption; actual QC attrition depends on sample quality, bisulfite conversion, and array handling.",
+      "With ~4 expected failures, ~23 samples are expected to pass QC; if downstream analysis needs a minimum usable N, consider adding samples to fill the 4-chip batch (32 slots)."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "champ.n_arrays",
+      "formula": "n_arrays = n_samples",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 27,
+          "unit": "—"
+        },
+        {
+          "name": "platform",
+          "value": "epic",
+          "unit": "—"
+        }
+      ],
+      "unit": "n",
+      "value": 27.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "champ.n_chips",
+      "formula": "n_chips = ⌈n_samples / capacity⌉  (12× 450k, 8× EPIC)",
+      "inputs": [
+        {
+          "name": "n_samples",
+          "value": 27,
+          "unit": "—"
+        },
+        {
+          "name": "platform",
+          "value": "epic",
+          "unit": "—"
+        },
+        {
+          "name": "chip_capacity",
+          "value": 8,
+          "unit": "samples/chip"
+        }
+      ],
+      "unit": "n",
+      "value": 4.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "champ.n_expected_failed_arrays",
+      "formula": "n_fail = n_arrays × p",
+      "inputs": [
+        {
+          "name": "n_arrays",
+          "value": 27.0,
+          "unit": "—"
+        },
+        {
+          "name": "fail_rate_pct",
+          "value": 14.4,
+          "unit": "%"
+        }
+      ],
+      "unit": "n",
+      "value": 3.8880000000000003,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

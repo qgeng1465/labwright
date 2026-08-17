@@ -1,0 +1,177 @@
+{
+  "entry_id": "plate-96well-total-medium",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "total_medium_ml": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "medium_volume_per_well",
+    "submit_design",
+    "cell_physiology",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Determine the total medium volume across all 96 wells of a 96-well plate at the standard recommended working volume.",
+    "rationale": "A 96-well plate has 96 wells, each at the standard recommended working volume of 0.17 mL (Corning/Falcon recommended volume). The total medium volume is the per-well working volume multiplied by the number of wells. This is a plate-only culture design (no chip/flow). HepG2 is used as a representative screening cell line with a mid-range seeding density (75,000 cells/cm², within the 50,000–100,000 range) and a 54 h doubling time (midpoint of the 48–60 h catalog range).",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "96",
+      "wells": 96,
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 75000.0,
+      "seed_per_well": 24000.0,
+      "total_seed_count": 2304000.0,
+      "medium_volume_per_well_ml": 0.17,
+      "total_medium_ml": 16.32,
+      "viability_pct": 90.0,
+      "confluent_density_cells_cm2": 100000.0,
+      "doubling_time_h": 54.0,
+      "culture_duration_h": 48.0,
+      "expected_confluence_pct": 138.88120684309357
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "The 0.17 mL/well is the standard recommended working volume for a 96-well plate; actual fill volumes may differ for low-volume or shallow-well protocols.",
+      "Confirm the plate manufacturer's recommended volume if using a non-standard plate.",
+      "Seeding density and cell type are assumptions for the screening assay; adjust to the actual cell line used."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 75000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 24000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 24000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 96,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 2304000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 0.17,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 0.17,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 96,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 16.32,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.expected_confluence_pct",
+      "formula": "conf = N(t) / (ρ_conv·A_well) × 100,  N(t) = N_0·2^(t/t_d)",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 24000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "doubling_time_h",
+          "value": 54.0,
+          "unit": "h"
+        },
+        {
+          "name": "culture_duration_h",
+          "value": 48.0,
+          "unit": "h"
+        },
+        {
+          "name": "confluent_density_cells_cm2",
+          "value": 100000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "96",
+          "unit": "—"
+        }
+      ],
+      "unit": "%",
+      "value": 138.88120684309357,
+      "status": "warning",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

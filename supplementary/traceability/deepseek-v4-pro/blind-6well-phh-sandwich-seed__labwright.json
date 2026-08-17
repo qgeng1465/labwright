@@ -1,0 +1,145 @@
+{
+  "entry_id": "blind-6well-phh-sandwich-seed",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_per_well": 0.0,
+      "total_medium_ml": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "cells_per_well",
+    "medium_volume_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed primary human hepatocytes in collagen-sandwich culture on a 6-well plate at standard plating density across 6 wells.",
+    "rationale": "Primary human hepatocytes (PHH) do not divide in vitro, so they are seeded at final density. The registry seeding-density range is 1.0–2.0e5 cells/cm²; the standard published collagen-sandwich plating density is 1.5e5 cells/cm² (midpoint). Standard 6-well working medium volume is 2.7 mL/well.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "6",
+      "wells": 6,
+      "cell_type": "primary human hepatocytes",
+      "seeding_density_cells_cm2": 150000.0,
+      "seed_per_well": 1440000.0,
+      "total_seed_count": 8640000.0,
+      "medium_volume_per_well_ml": 2.7,
+      "total_medium_ml": 16.200000000000003,
+      "viability_pct": null,
+      "confluent_density_cells_cm2": 200000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": 24.0,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Primary human hepatocytes are human-derived primary material — confirm BSL-2 containment with your institution.",
+      "Seeding density is the midpoint of the 1.0–2.0e5 cells/cm² range; adjust if your lab protocol uses a different value.",
+      "Primary hepatocytes do not divide in vitro — seed at final density, no expansion phase.",
+      "Apply the top collagen overlay after cell attachment (~2–4 h post-seeding) before adding full medium volume.",
+      "Check thaw viability with trypan blue (typically 70–90%) and adjust suspension volume to deliver the target live-cell count."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 150000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "6",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1440000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 1440000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 8640000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "6",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 2.7,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 2.7,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 6,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 16.200000000000003,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "entry_id": "plate-split-replating",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "total_seed_count": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cells_per_well",
+    "submit_design",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Reseed four fresh 6-well wells at 2e4 cells/cm^2 from a confluent 6-well harvest.",
+    "rationale": "Standard 6-well growth area is 9.6 cm^2. Seeding at 2e4 cells/cm^2 gives 192,000 cells/well; across four wells that is 768,000 cells reseeded. This is a plate-based subculture step, so only the culture block is populated.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "6",
+      "wells": 4,
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 20000.0,
+      "seed_per_well": 192000.0,
+      "total_seed_count": 768000.0,
+      "medium_volume_per_well_ml": 2.7,
+      "total_medium_ml": 10.8,
+      "viability_pct": null,
+      "confluent_density_cells_cm2": null,
+      "doubling_time_h": null,
+      "culture_duration_h": null,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Confirm the 6-well growth area is 9.6 cm^2 for your plate brand (Corning/Falcon standard).",
+      "Verify harvested cell viability before reseeding so the viable reseeded count matches the target."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 20000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "6",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 192000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 192000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 4,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 768000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "6",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 2.7,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 2.7,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 4,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 10.8,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

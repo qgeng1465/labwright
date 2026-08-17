@@ -1,0 +1,177 @@
+{
+  "entry_id": "lmb-coculture-083",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "total_cells_a": 0.0,
+      "total_cells_b": 0.0,
+      "seeding_ratio_ab": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "cells_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed HMEC-1 and HepG2 in a 12-well plate at 4.97e5 cells/cm² total across 6.85 cm² per well, with 0.681 of the total assigned to HMEC-1, and report the A:B seeding ratio and total cell counts across all wells.",
+    "rationale": "Co-culture seeding of HMEC-1 (population A) and HepG2 (population B) at a total density of 4.97e5 cells/cm² over a custom 6.85 cm² growth area per well. Fraction A = 0.681, so fraction B = 0.319. Per-well counts are N_A = f·ρ·A and N_B = (1−f)·ρ·A. Totals across all wells assume the full 12-well plate (12 wells). The 6.85 cm²/well area exceeds the standard 12-well area (~3.8 cm²), so this is a custom geometry that must be verified in the lab.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "HMEC-1",
+      "cell_type_b": "HepG2",
+      "total_density_cells_cm2": 497000.0,
+      "area_cm2": 6.85,
+      "fraction_a": 0.681,
+      "wells": 12,
+      "cells_per_well_a": 2318430.45,
+      "cells_per_well_b": 1086019.5499999998,
+      "total_cells_a": 27821165.400000002,
+      "total_cells_b": 13032234.599999998,
+      "seeding_ratio_ab": 2.1347962382445145
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "The 6.85 cm²/well area is larger than the standard 12-well area (~3.8 cm²) — verify the actual growth area in the lab before seeding.",
+      "Confirm the number of wells used; totals scale linearly with well count (12 assumed here).",
+      "HMEC-1 and HepG2 have different growth rates and media requirements — verify co-culture medium compatibility and that the seeding ratio is maintained over the culture duration."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 497000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 6.85,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.681,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 2318430.45,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 497000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 6.85,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.681,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1086019.5499999998,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 2318430.45,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 12,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 27821165.400000002,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 1086019.5499999998,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 12,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 13032234.599999998,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 2318430.45,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 1086019.5499999998,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 2.1347962382445145,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "entry_id": "lmb-coculture-056",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "total_cells_a": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "coculture_cells_per_well",
+    "coculture_seeding_ratio",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Co-seed HMEC-1 and PHH in a 48-well plate at 4.47e5 cells/cm² total across 5.35 cm² per well, with 22% of the total assigned to HMEC-1, and report total A cells across all wells.",
+    "rationale": "Co-culture of microvascular endothelial cells (HMEC-1) with primary human hepatocytes (PHH) in a 48-well plate. Total seeding density 4.47e5 cells/cm² over 5.35 cm²/well, with fraction_a = 0.22 assigned to HMEC-1 (population A) and the remainder (0.78) to PHH (population B). PHH are primary cells that do not divide in vitro (BSL-2), so they are seeded at the intended density directly. Per-well and total cell counts are computed by the coculture calculator.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": {
+      "cell_type_a": "HMEC-1",
+      "cell_type_b": "PHH",
+      "total_density_cells_cm2": 447000.0,
+      "area_cm2": 5.35,
+      "fraction_a": 0.22,
+      "wells": 48,
+      "cells_per_well_a": 526119.0,
+      "cells_per_well_b": 1865331.0,
+      "total_cells_a": 25253712.0,
+      "total_cells_b": 89535888.0,
+      "seeding_ratio_ab": 0.28205128205128205
+    },
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Total A cells figure assumes all 48 wells of the plate are seeded; scale if using a subset of wells.",
+      "PHH are primary human hepatocytes (BSL-2) that do not divide in vitro — seed at intended density directly, no expansion.",
+      "Confirm the 5.35 cm²/well growth area matches the specific 48-well plate manufacturer (Corning/Falcon areas can differ).",
+      "Verify HMEC-1 doubling time and shear tolerance under the intended culture conditions before committing to the co-culture ratio."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "coculture.cells_per_well_a",
+      "formula": "N_A = f·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 447000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 5.35,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.22,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 526119.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.cells_per_well_b",
+      "formula": "N_B = (1−f)·ρ·A",
+      "inputs": [
+        {
+          "name": "total_density_cells_cm2",
+          "value": 447000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "area_cm2",
+          "value": 5.35,
+          "unit": "cm^2"
+        },
+        {
+          "name": "fraction_a",
+          "value": 0.22,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 1865331.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_a",
+      "formula": "N_A,total = N_A,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 526119.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 48,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 25253712.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.total_cells_b",
+      "formula": "N_B,total = N_B,well × wells",
+      "inputs": [
+        {
+          "name": "cells_per_well_b",
+          "value": 1865331.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 48,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 89535888.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    },
+    {
+      "field": "coculture.seeding_ratio_ab",
+      "formula": "r = N_A / N_B",
+      "inputs": [
+        {
+          "name": "cells_per_well_a",
+          "value": 526119.0,
+          "unit": "cells"
+        },
+        {
+          "name": "cells_per_well_b",
+          "value": 1865331.0,
+          "unit": "cells"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.28205128205128205,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

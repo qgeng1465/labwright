@@ -1,0 +1,88 @@
+{
+  "entry_id": "power-80-effect-1",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "n_per_group": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "sample_size_per_group",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Detect a 1.0-sigma difference between treated and control group means in a liver chip with 80% power at alpha 0.05.",
+    "rationale": "Two-sample comparison of treated vs control in a perfused liver chip. Effect size is expressed in sigma units (effect_size = 1.0, std_dev = 1.0), so the required n is the classic 16 per group for a two-sided t-test at 80% power, alpha 0.05. This is a biological-replicate count (independent chip cultures per group), not technical replicates.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": {
+      "effect_size": 1.0,
+      "std_dev": 1.0,
+      "alpha": 0.05,
+      "power": 0.8,
+      "n_per_group": 16,
+      "note": null
+    },
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "n=16 is per biological replicate (independent chip cultures), not technical replicates of the same culture.",
+      "Confirm the 1.0-sigma effect size is realistic for the endpoint (e.g. extraction ratio, albumin, CYP activity) before committing to the cohort.",
+      "If the assay CV is high, consider adding technical replicates within each biological replicate to bound the SEM."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "stats.n_per_group",
+      "formula": "n from two-sample t-test power equation",
+      "inputs": [
+        {
+          "name": "effect_size",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "std_dev",
+          "value": 1.0,
+          "unit": ""
+        },
+        {
+          "name": "alpha",
+          "value": 0.05,
+          "unit": ""
+        },
+        {
+          "name": "power",
+          "value": 0.8,
+          "unit": ""
+        }
+      ],
+      "unit": "n",
+      "value": 16.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

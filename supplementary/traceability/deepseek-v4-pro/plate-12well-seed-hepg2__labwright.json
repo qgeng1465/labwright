@@ -1,0 +1,141 @@
+{
+  "entry_id": "plate-12well-seed-hepg2",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_per_well": 0.0,
+      "medium_volume_per_well_ml": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cells_per_well",
+    "medium_volume_per_well",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed HepG2 cells in a 12-well plate at 1e5 cells/cm² and determine cells per well and standard working medium volume per well.",
+    "rationale": "HepG2 seeding density of 1e5 cells/cm² is within the literature range (5e4–1e5 cells/cm²) for a confluent monolayer. A 12-well plate (Corning/Falcon standard growth area ≈3.8 cm²) is used; standard working medium volume for the format is applied.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": {
+      "plate_format": "12",
+      "wells": 1,
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 100000.0,
+      "seed_per_well": 380000.0,
+      "total_seed_count": 380000.0,
+      "medium_volume_per_well_ml": 1.35,
+      "total_medium_ml": 1.35,
+      "viability_pct": null,
+      "confluent_density_cells_cm2": null,
+      "doubling_time_h": null,
+      "culture_duration_h": null,
+      "expected_confluence_pct": null
+    },
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Confirm the 12-well growth area against your specific plate brand (3.5–3.8 cm²); the computed cells/well assumes the Corning/Falcon standard.",
+      "1e5 cells/cm² is at the upper end of the HepG2 seeding range; seed lower if the culture will grow for several days before assay to avoid over-confluence."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "culture.seed_per_well",
+      "formula": "N_well = ρ·A_well",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 100000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "plate_format",
+          "value": "12",
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 380000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_seed_count",
+      "formula": "N_total = N_well × wells",
+      "inputs": [
+        {
+          "name": "seed_per_well",
+          "value": 380000.0,
+          "unit": "cells"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "cells",
+      "value": 380000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.medium_volume_per_well_ml",
+      "formula": "V_well = standard working volume (format table)",
+      "inputs": [
+        {
+          "name": "plate_format",
+          "value": "12",
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 1.35,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "culture.total_medium_ml",
+      "formula": "V_total = V_well × wells",
+      "inputs": [
+        {
+          "name": "medium_volume_per_well_ml",
+          "value": 1.35,
+          "unit": "mL"
+        },
+        {
+          "name": "wells",
+          "value": 1,
+          "unit": "—"
+        }
+      ],
+      "unit": "mL",
+      "value": 1.35,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

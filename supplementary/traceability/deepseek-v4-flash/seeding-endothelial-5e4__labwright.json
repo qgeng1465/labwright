@@ -1,0 +1,84 @@
+{
+  "entry_id": "seeding-endothelial-5e4",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-flash",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "seed_count": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "seeding_cell_count",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Seed HUVEC endothelial cells at 5e4 cells/cm^2 onto the 0.08 cm^2 culture area of a 400 um x 20 mm channel.",
+    "rationale": "HUVEC seeding at 5e4 cells/cm^2 onto a 0.08 cm^2 channel culture area. This density is at the upper end of the HUVEC seeding range (1e4-2e4 cells/cm^2 per registry), chosen for rapid monolayer formation before perfusion. Channel geometry: 400 um wide, 20 mm long (height not specified for seeding).",
+    "chip": {
+      "width_um": 400.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": null,
+    "derived": null,
+    "cells": {
+      "cell_type": "HUVEC",
+      "seeding_density_cells_cm2": 50000.0,
+      "culture_area_cm2": 0.08,
+      "seed_count": 4000.0,
+      "doubling_time_h": null,
+      "culture_duration_h": null
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "5e4 cells/cm^2 is at the upper end of the HUVEC seeding range (1e4-2e4 cells/cm^2); confirm the line tolerates this density without over-confluence",
+      "Channel height assumed 100 um for geometry; verify actual device height",
+      "Confirm the 0.08 cm^2 culture area matches the actual channel footprint before seeding"
+    ]
+  },
+  "provenance": [
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 50000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.08,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 4000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 3b0a26f)"
+    }
+  ]
+}

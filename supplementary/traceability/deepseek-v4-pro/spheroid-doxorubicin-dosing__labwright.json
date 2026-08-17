@@ -1,0 +1,139 @@
+{
+  "entry_id": "spheroid-doxorubicin-dosing",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": false,
+    "recovery": {
+      "dmso_fraction_vv": 0.0,
+      "cells_total": 0.708333,
+      "total_medium_ml": 0.708333
+    },
+    "hallucination_rate": 0.0,
+    "failure": "wrong_target"
+  },
+  "tool_trace": [
+    "spheroid_diameter_from_cells",
+    "medium_volume_per_spheroid",
+    "dmso_fraction",
+    "cell_physiology",
+    "sample_size_per_group",
+    "spheroids_from_suspension",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Doxorubicin dose-response on HepG2 spheroids (one spheroid per well, 96-well ULA plate) to determine cytotoxicity across a concentration series.",
+    "rationale": "HepG2 spheroids formed at 1000 cells/spheroid of 20 µm cells give a ~200 µm spheroid (solid-packing convention), at the upper limit for avoiding a necrotic core (O2 diffuses ~200 µm). One spheroid per well in a 96-well ULA plate with 100 µL working volume per well. Dose-response layout: 6 doxorubicin doses + 1 vehicle control = 7 conditions, 4 biological replicates per group (n=4 from sample-size calc for effect 50 / SD 25 at 80% power). Doxorubicin delivered from a 5 mM DMSO stock at 5 µM working concentration, giving 0.1% v/v DMSO (below the ~0.5% cytotoxic threshold).",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": {
+      "cell_type": "HepG2",
+      "spheroid_format": "96-ula",
+      "spheroid_count": 28,
+      "cells_per_spheroid": 1000.0,
+      "cell_diameter_um": 20.0,
+      "spheroid_volume_ul": 0.0041887902047863905,
+      "expected_diameter_um": 199.99999999999994,
+      "cells_total": 28000.0,
+      "medium_volume_per_spheroid_ul": 100.0,
+      "total_medium_ml": 2.8,
+      "doubling_time_h": 48.0,
+      "culture_duration_h": 72.0,
+      "expected_cells_after_growth": 2828.42712474619
+    },
+    "dosing": {
+      "compound": "doxorubicin",
+      "molecular_weight_g_mol": 543.52,
+      "stock_mM": 5.0,
+      "working_mM": 0.005,
+      "dmso_fraction_vv": 0.001,
+      "vehicle_control": true,
+      "exposure_h": 48.0
+    },
+    "stats": {
+      "effect_size": 50.0,
+      "std_dev": 25.0,
+      "alpha": 0.05,
+      "power": 0.8,
+      "n_per_group": 4,
+      "note": null
+    },
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Spheroid count (28 wells = 7 conditions × 4 replicates) is an assumption — adjust if your dose series or replicate plan differs; totals scale linearly.",
+      "1000 cells of 20 µm at solid packing ≈ 200 µm, at the necrotic-core threshold; real aggregates pack looser (~0.65-0.75), giving ~222 µm — verify spheroid diameter and consider 500-800 cells/spheroid if you want a smaller, fully oxygenated spheroid.",
+      "DMSO at 0.1% v/v is below the cytotoxic threshold, but include a vehicle-only control (already planned) to confirm no solvent effect.",
+      "Doxorubicin MW 543.52 g/mol is the HCl salt; confirm the exact salt form if you prepare the stock by mass.",
+      "Verify doxorubicin stability over the 48 h exposure and use fresh medium for dosing."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "dosing.dmso_fraction_vv",
+      "formula": "f = C_working / C_stock",
+      "inputs": [
+        {
+          "name": "working_mM",
+          "value": 0.005,
+          "unit": "mM"
+        },
+        {
+          "name": "stock_mM",
+          "value": 5.0,
+          "unit": "mM"
+        }
+      ],
+      "unit": "v/v",
+      "value": 0.001,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "stats.n_per_group",
+      "formula": "n from two-sample t-test power equation",
+      "inputs": [
+        {
+          "name": "effect_size",
+          "value": 50.0,
+          "unit": ""
+        },
+        {
+          "name": "std_dev",
+          "value": 25.0,
+          "unit": ""
+        },
+        {
+          "name": "alpha",
+          "value": 0.05,
+          "unit": ""
+        },
+        {
+          "name": "power",
+          "value": 0.8,
+          "unit": ""
+        }
+      ],
+      "unit": "n",
+      "value": 4.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

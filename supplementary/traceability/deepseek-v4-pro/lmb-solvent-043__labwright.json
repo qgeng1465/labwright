@@ -1,0 +1,155 @@
+{
+  "entry_id": "lmb-solvent-043",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "evaporation_rate_ul_hr": 0.002695,
+      "residual_volume_ul": 0.006369,
+      "edge_evaporation_factor": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "solvent_edge_well_factor",
+    "solvent_evaporation_rate",
+    "solvent_drop_volume_after_time",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Report the plate-edge evaporation factor, evaporation rate, and residual drop volume for a hanging-drop well (row F, column 2) at 24.9 °C and 63% RH over 0.576 h.",
+    "rationale": "Interior well (row F, col 2) so edge factor is 1.0; evaporation rate and residual volume computed from the d²-law at the stated temperature and relative humidity.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": {
+      "drop_volume_ul": 6.82,
+      "hours": 0.576,
+      "temp_c": 24.9,
+      "rh": 0.63,
+      "well_row": "F",
+      "well_col": 2,
+      "edge_factor": null,
+      "evaporation_rate_ul_hr": 10.830329458618237,
+      "residual_volume_ul": 1.6623126082713793,
+      "edge_evaporation_factor": 1.0
+    },
+    "caveats": [
+      "The d²-law assumes a free, unobstructed drop surface; hanging-drop geometry and lid/incubator airflow can shift the actual rate.",
+      "6.82 µL is small for a hanging drop (standard is ~20 µL); verify the residual volume still supports spheroid formation."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "solvent.edge_evaporation_factor",
+      "formula": "f_edge = 1.5 (rows A/H, cols 1/12) else 1.0",
+      "inputs": [
+        {
+          "name": "well_row",
+          "value": "F",
+          "unit": "—"
+        },
+        {
+          "name": "well_col",
+          "value": 2,
+          "unit": "—"
+        },
+        {
+          "name": "edge_factor",
+          "value": 1.5,
+          "unit": "—"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 1.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "solvent.evaporation_rate_ul_hr",
+      "formula": "V̇ = K·r(V)·f_edge,  K = 4π·D·C_sat(1−RH)/ρ",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 6.82,
+          "unit": "uL"
+        },
+        {
+          "name": "temp_c",
+          "value": 24.9,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.63,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL/hr",
+      "value": 10.830329458618237,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "solvent.residual_volume_ul",
+      "formula": "V(t) = (V₀^(2/3) − c·f·t)^(3/2)  (d²-law)",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 6.82,
+          "unit": "uL"
+        },
+        {
+          "name": "hours",
+          "value": 0.576,
+          "unit": "h"
+        },
+        {
+          "name": "temp_c",
+          "value": 24.9,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.63,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL",
+      "value": 1.6623126082713793,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

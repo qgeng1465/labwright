@@ -1,0 +1,299 @@
+{
+  "entry_id": "blind-pk-high-extraction-propranolol",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "extraction_ratio": 0.0,
+      "clearance_uLmin": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "cell_physiology",
+    "cell_physiology",
+    "extraction_ratio",
+    "clearance_uLmin",
+    "wall_shear_stress",
+    "reynolds_number",
+    "residence_time",
+    "seeding_cell_count",
+    "o2_supply_vs_demand",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Perfused liver-on-chip clearance study of propranolol in the flow-limited (high-extraction) regime, targeting E ≈ 0.8 so clearance reflects perfusion rather than intrinsic enzyme capacity.",
+    "rationale": "Propranolol is a high-extraction drug (Rowland & Tozer: E > 0.7, flow-limited). In the flow-limited regime, clearance Cl = E·Q is set by perfusion rate, not enzyme capacity — this is the regime where a liver-on-chip can report perfusion-dependent clearance. I set the target extraction ratio at E = 0.8 (outlet 2 µM from a 10 µM inlet), squarely in the high-extraction regime. At Q = 1 µL/min, Cl = E·Q = 0.8 µL/min. Channel geometry 400×100 µm × 20 mm (≈0.08 cm² growth area) seeded with HepG2 at 1e5 cells/cm² gives ~8000 cells. At 1 µL/min the wall shear is 0.025 Pa (below the HepG2 physiological 0.05–0.15 Pa range) — acceptable for a PK study where flow rate is the controlled variable, and O2 supply exceeds demand ~10× (no hypoxia). Re = 0.067 (laminar), residence time 48 s. A cell-free (blank) chip control is essential to subtract PDMS/tubing binding from cell-mediated clearance.",
+    "chip": {
+      "width_um": 400.0,
+      "height_um": 100.0,
+      "length_mm": 20.0,
+      "channel_count": 1,
+      "material": "PDMS"
+    },
+    "flow": {
+      "flow_rate_uLmin": 1.0,
+      "viscosity_pas": 0.001,
+      "density_kgm3": 1000.0
+    },
+    "derived": {
+      "shear_pa": 0.025000000000000012,
+      "reynolds": 0.0666666666666667,
+      "pressure_drop_pa": 10.000000000000004,
+      "residence_time_s": 47.99999999999999,
+      "channel_volume_ul": 0.7999999999999999,
+      "mean_velocity_mms": 0.4166666666666668
+    },
+    "cells": {
+      "cell_type": "HepG2",
+      "seeding_density_cells_cm2": 100000.0,
+      "culture_area_cm2": 0.08,
+      "seed_count": 8000.0,
+      "doubling_time_h": 48.0,
+      "culture_duration_h": 48.0
+    },
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": {
+      "compound": "propranolol",
+      "molecular_weight_g_mol": 259.34,
+      "inlet_concentration_uM": 10.0,
+      "outlet_concentration_uM": 2.0,
+      "flow_rate_uLmin": 1.0,
+      "extraction_ratio": 0.8,
+      "clearance_uLmin": 0.8,
+      "system_volume_uL": 200.0,
+      "half_life_h": 2.8881132523331052,
+      "dose_interval_h": 24.0,
+      "accumulation_ratio": 1.0031610724906332,
+      "mass_cleared_ug_h": 0.12448319999999999
+    },
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": null,
+    "caveats": [
+      "Verify propranolol's high-extraction classification against your specific cell line — HepG2 has lower CYP activity than primary human hepatocytes (PHH); PHH is the gold standard for hepatic clearance and may be needed to actually achieve E ≈ 0.8 at 1 µL/min. If HepG2 gives E < 0.7, the study is capacity-limited, not flow-limited.",
+      "Run a cell-free (blank) PDMS chip control to subtract drug loss from PDMS adsorption/tubing binding — propranolol is lipophilic and binds PDMS; uncorrected, this inflates apparent extraction.",
+      "Confirm the outlet concentration (2 µM) by LC-MS/MS; a negative or near-zero E indicates the flow rate is too high relative to metabolic capacity.",
+      "The 0.025 Pa shear is below the HepG2 physiological range (0.05–0.15 Pa); if shear-sensitive endpoints matter, consider a higher flow with a correspondingly lower target E, but that moves away from the flow-limited regime.",
+      "PHH are BSL-2 human primary material — confirm institutional containment if you switch cell types."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "derived.shear_pa",
+      "formula": "τ = 6·μ·Q / (w·h²)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 1.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 0.025000000000000012,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.reynolds",
+      "formula": "Re = ρ·u·D_h / μ",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 1.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        },
+        {
+          "name": "density_kgm3",
+          "value": 1000.0,
+          "unit": "kg/m^3"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 0.0666666666666667,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.pressure_drop_pa",
+      "formula": "ΔP = 12·μ·Q·L / (w·h³)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 1.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        },
+        {
+          "name": "viscosity_pas",
+          "value": 0.001,
+          "unit": "Pa*s"
+        }
+      ],
+      "unit": "Pa",
+      "value": 10.000000000000004,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.residence_time_s",
+      "formula": "t = V / Q",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 1.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "s",
+      "value": 47.99999999999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.channel_volume_ul",
+      "formula": "V = w·h·L",
+      "inputs": [
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        },
+        {
+          "name": "length_mm",
+          "value": 20.0,
+          "unit": "mm"
+        }
+      ],
+      "unit": "uL",
+      "value": 0.7999999999999999,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "derived.mean_velocity_mms",
+      "formula": "ū = Q / (w·h)",
+      "inputs": [
+        {
+          "name": "flow_rate_uLmin",
+          "value": 1.0,
+          "unit": "uL/min"
+        },
+        {
+          "name": "width_um",
+          "value": 400.0,
+          "unit": "um"
+        },
+        {
+          "name": "height_um",
+          "value": 100.0,
+          "unit": "um"
+        }
+      ],
+      "unit": "mm/s",
+      "value": 0.4166666666666668,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "cells.seed_count",
+      "formula": "N = ρ·A",
+      "inputs": [
+        {
+          "name": "seeding_density_cells_cm2",
+          "value": 100000.0,
+          "unit": "cells/cm^2"
+        },
+        {
+          "name": "culture_area_cm2",
+          "value": 0.08,
+          "unit": "cm^2"
+        }
+      ],
+      "unit": "cells",
+      "value": 8000.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}

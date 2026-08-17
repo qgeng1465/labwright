@@ -1,0 +1,155 @@
+{
+  "entry_id": "lmb-solvent-052",
+  "goal": "",
+  "system": "labwright",
+  "model": "deepseek-v4-pro",
+  "verdict": {
+    "valid": true,
+    "recovery": {
+      "evaporation_rate_ul_hr": 0.014085,
+      "residual_volume_ul": 0.013263,
+      "edge_evaporation_factor": 0.0
+    },
+    "hallucination_rate": 0.0,
+    "failure": "ok"
+  },
+  "tool_trace": [
+    "solvent_edge_well_factor",
+    "solvent_evaporation_rate",
+    "solvent_drop_volume_after_time",
+    "submit_design"
+  ],
+  "plan": {
+    "goal": "Report evaporation metrics for a hanging-drop well (row G, column 2) at 23.5 °C and 64% RH over 0.399 h.",
+    "rationale": "Interior well (row G, col 2) so no edge multiplier applies. Evaporation rate and residual volume follow the d²-law from the stated drop volume, temperature, and relative humidity.",
+    "chip": null,
+    "flow": null,
+    "derived": null,
+    "cells": null,
+    "culture": null,
+    "spheroid": null,
+    "dosing": null,
+    "stats": null,
+    "pk": null,
+    "barrier": null,
+    "oxygen": null,
+    "pumpless": null,
+    "breathing": null,
+    "pulsatile": null,
+    "scaling": null,
+    "gradient": null,
+    "bioprinting": null,
+    "coculture": null,
+    "enzyme": null,
+    "champ": null,
+    "plink": null,
+    "solvent": {
+      "drop_volume_ul": 6.51,
+      "hours": 0.399,
+      "temp_c": 23.5,
+      "rh": 0.64,
+      "well_row": "G",
+      "well_col": 2,
+      "edge_factor": null,
+      "evaporation_rate_ul_hr": 9.584823945848173,
+      "residual_volume_ul": 3.089044336084936,
+      "edge_evaporation_factor": 1.0
+    },
+    "caveats": [
+      "Evaporation rate is high (~9.6 µL/h); a hanging-drop culture at these conditions dries quickly — use a humidified chamber or sealed plate.",
+      "d²-law assumes a free-standing drop; actual hanging-drop geometry and lid/condensation will alter the real rate."
+    ]
+  },
+  "provenance": [
+    {
+      "field": "solvent.edge_evaporation_factor",
+      "formula": "f_edge = 1.5 (rows A/H, cols 1/12) else 1.0",
+      "inputs": [
+        {
+          "name": "well_row",
+          "value": "G",
+          "unit": "—"
+        },
+        {
+          "name": "well_col",
+          "value": 2,
+          "unit": "—"
+        },
+        {
+          "name": "edge_factor",
+          "value": 1.5,
+          "unit": "—"
+        }
+      ],
+      "unit": "dimensionless",
+      "value": 1.0,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "solvent.evaporation_rate_ul_hr",
+      "formula": "V̇ = K·r(V)·f_edge,  K = 4π·D·C_sat(1−RH)/ρ",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 6.51,
+          "unit": "uL"
+        },
+        {
+          "name": "temp_c",
+          "value": 23.5,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.64,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL/hr",
+      "value": 9.584823945848173,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    },
+    {
+      "field": "solvent.residual_volume_ul",
+      "formula": "V(t) = (V₀^(2/3) − c·f·t)^(3/2)  (d²-law)",
+      "inputs": [
+        {
+          "name": "drop_volume_ul",
+          "value": 6.51,
+          "unit": "uL"
+        },
+        {
+          "name": "hours",
+          "value": 0.399,
+          "unit": "h"
+        },
+        {
+          "name": "temp_c",
+          "value": 23.5,
+          "unit": "degC"
+        },
+        {
+          "name": "rh",
+          "value": 0.64,
+          "unit": "—"
+        },
+        {
+          "name": "edge_evaporation_factor",
+          "value": 1.0,
+          "unit": "—"
+        }
+      ],
+      "unit": "uL",
+      "value": 3.089044336084936,
+      "status": "ok",
+      "code_version": "labwright-0.2.0 (git 783ff9e)"
+    }
+  ]
+}
