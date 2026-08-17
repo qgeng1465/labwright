@@ -2,6 +2,13 @@
 
 import pytest
 
+# The SciRecipe audit script imports pandas at module level for its parquet
+# funnel. The pure helper functions under test here (domain routing, claim
+# harvesting) do not need it, so skip the module cleanly when pandas is absent
+# (a bare requirements.txt + requirements-plot.txt venv) — reproduce_all.sh's
+# test step stays green without pulling the heavy eval stack.
+pd = pytest.importorskip("pandas")
+
 from eval.run_scirecipe_audit import (
     audit_row,
     harvest_claims,

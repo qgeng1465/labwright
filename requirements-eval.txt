@@ -1,17 +1,18 @@
-# Labwright evaluation & figure reproduction — everything `scripts/reproduce_all.sh`
-# needs beyond the runtime requirements.
+# Labwright evaluation extras — everything beyond the runtime + plotting deps.
 #
-#   python -m pip install -r requirements.txt -r requirements-eval.txt
+#   python -m pip install -r requirements.txt -r requirements-plot.txt -r requirements-eval.txt
 #
-# The fine-tuned extractor fast path (eval --systems finetuned) and the
+# Decoupled on purpose:
+#   - requirements.txt      — the agent + calculators runtime
+#   - requirements-plot.txt — figures + tests (matplotlib, pytest)
+#   - requirements-eval.txt — THIS file: the optional heavy stack
+#
+# The fine-tuned raw-input extractor (eval --systems finetuned) and the
 # SciRecipe model audit need the torch/peft/pandas stack. On a CPU-only box,
 # install torch CPU wheels (`--index-url https://download.pytorch.org/whl/cpu`)
 # — the extractor and audit run fine without a GPU; only the LLM benchmark
-# needs an API key.
-
-pytest>=8
-matplotlib>=3.8
-networkx>=3.2
+# needs an API key. networkx is deliberately *not* pinned: the protocol DAG
+# (paper/fig_protocol_dag.py) is drawn with matplotlib patches directly.
 
 # Fine-tuned extractor + SciRecipe audit (optional heavy stack)
 torch>=2.1

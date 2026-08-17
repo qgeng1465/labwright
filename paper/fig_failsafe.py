@@ -41,6 +41,9 @@ from matplotlib.patches import Patch  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _font import setup_font  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from eval.ci import wilson_ci  # noqa: E402
+
 setup_font()
 
 MODELS = ["deepseek-v4-flash", "deepseek-v4-pro"]
@@ -49,14 +52,23 @@ SYSTEMS = ["bare", "code_interpreter", "labwright"]
 SYSTEM_LABEL = {"bare": "bare-LLM", "code_interpreter": "code-interp",
                 "labwright": "Labwright"}
 #: (outcome, label, color) for the stacked composition bars.
+# Colorblind-friendly Okabe–Ito palette — vermillion anchors the failure mode,
+# bluish-green the desired elicitation — with the "produced nothing" class left
+# achromatic. Categorical outcomes, so the qualitative (not sequential) variant
+# of the reviewer's colorblind-safe requirement is the right tool here.
 OUTCOMES = [
-    ("elicit", "elicit", "#4E7A5A"),        # sage-green (ask, don't guess)
-    ("reject", "verifier reject", "#2E5598"),  # deep blue (gate caught it)
-    ("refuse", "refuse", "#7A8B99"),        # slate (declined)
-    ("fabricate", "fabricate", "#C05B4A"),  # rust (the failure mode)
-    ("code_error", "code error", "#8A5A9E"),  # violet
-    ("no_answer", "no answer", "#C9C2B6"),  # stone
+    ("elicit", "elicit", "#009E73"),        # Okabe–Ito bluish green (ask)
+    ("reject", "verifier reject", "#0072B2"),  # Okabe–Ito blue (gate caught it)
+    ("refuse", "refuse", "#56B4E9"),        # Okabe–Ito sky blue (declined)
+    ("fabricate", "fabricate", "#D55E00"),  # Okabe–Ito vermillion (failure mode)
+    ("code_error", "code error", "#CC79A7"),# Okabe–Ito reddish purple
+    ("no_answer", "no answer", "#B3B3B3"),  # achromatic (produced nothing)
 ]
+SYS_COLORS = {
+    "bare": "#B8B8B8",                 # neutral gray (Okabe–Ito neutral)
+    "code_interpreter": "#E69F00",     # Okabe–Ito orange
+    "labwright": "#0072B2",            # Okabe–Ito blue
+}
 INK = "#262522"
 MUT = "#8a8782"
 GRID = "#d9d7d3"
@@ -66,6 +78,24 @@ WHITE = "#ffffff"
 def _stack_counts(summary: dict, system: str) -> dict[str, int]:
     counts = summary["systems"][system]["outcome_counts"]
     return {o: counts.get(o, 0) for o, _l, _c in OUTCOMES}
+
+
+def _rate_ci(summary: dict, system: str, key: str) -> tuple[float, float]:
+    """Wilson score interval over the per-system Bernoulli trials.
+
+    ``fail_safe_rate`` = (elicit + reject + refuse) / N and
+    ``fabrication_rate`` = fabricate / N are read straight from the committed
+    outcome counts, so the interval sits on the exact number the bar shows.
+    """
+    counts = summary.get("systems", {}).get(system, {}).get("outcome_counts", {})
+    n = sum(counts.values())
+    if n <= 0:
+        return 0.0, 0.0
+    if key == "fail_safe_rate":
+        k = counts.get("elicit", 0) + counts.get("reject", 0) + counts.get("refuse", 0)
+    else:  # fabrication_rate
+        k = counts.get("fabricate", 0)
+    return wilson_ci(k, n)
 
 
 def main(argv: list[str]) -> int:
@@ -87,7 +117,6 @@ def main(argv: list[str]) -> int:
     metrics = [("fail_safe_rate", "fail-safe"), ("fabrication_rate", "fabricate")]
     width = 0.8 / len(SYSTEMS)
     offsets = [(i - (len(SYSTEMS) - 1) / 2) * width for i in range(len(SYSTEMS))]
-    sys_color = {"bare": "#C9C2B6", "code_interpreter": "#C07C2B", "labwright": "#2E5598"}
     for m, model in enumerate(MODELS):
         summary = runs[model].get("summary", {})
         pos = m * (len(metrics) + 1)
@@ -99,7 +128,12 @@ def main(argv: list[str]) -> int:
                 if v != v:
                     continue
                 x = pos + mi * 0.35 + off * 0.8
-                ax.bar(x, v, width * 0.8, color=sys_color[s], zorder=3)
+                lo, hi = _rate_ci(summary, s, key)
+                ylo = max(0.0, v - lo)
+                yhi = max(0.0, hi - v)
+                ax.bar(x, v, width * 0.8, color=SYS_COLORS[s], zorder=3)
+                ax.errorbar(x, v, yerr=[[ylo], [yhi]], fmt="none", ecolor=INK,
+                            elinewidth=0.8, capsize=2, zorder=4)
                 ax.text(x, v + 0.02, f"{100 * v:.0f}%", ha="center", va="bottom",
                         fontsize=6.8, color=INK)
     ax.set_xticks([0.5 + m * (len(metrics) + 1) for m in range(len(MODELS))])
@@ -119,7 +153,7 @@ def main(argv: list[str]) -> int:
         for mi, label in enumerate(["fail-safe", "fabricate"]):
             ax.text(base + mi * 0.35, -0.09, label, ha="center", va="top",
                     fontsize=6.8, color=MUT)
-    handles = [Patch(facecolor=sys_color[s], edgecolor="none", label=SYSTEM_LABEL[s])
+    handles = [Patch(facecolor=SYS_COLORS[s], edgecolor="none", label=SYSTEM_LABEL[s])
                for s in SYSTEMS]
     ax.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.0, 1.16),
               ncol=3, frameon=False, fontsize=8)
@@ -167,6 +201,7 @@ def main(argv: list[str]) -> int:
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_failsafe.pdf", bbox_inches="tight", facecolor="white")
+    fig.savefig(out / "fig_failsafe.svg", bbox_inches="tight", facecolor="white")
     fig.savefig(out / "fig_failsafe.png", dpi=300, bbox_inches="tight", facecolor="white")
     print(f"wrote {out / 'fig_failsafe.pdf'} and {out / 'fig_failsafe.png'}")
     return 0

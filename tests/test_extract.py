@@ -6,6 +6,14 @@ import json
 import random
 
 import pytest
+
+# LoRA-fine-tuned extractor stack — skip cleanly when torch/peft/transformers
+# are not installed (a bare requirements.txt + requirements-plot.txt venv), so
+# the reproduce_all.sh test step stays green on a fresh clone.
+pytest.importorskip("torch")
+pytest.importorskip("peft")
+pytest.importorskip("transformers")
+
 import torch
 from pydantic import ValidationError
 

@@ -203,9 +203,9 @@ def main() -> int:
     _label(ax, 9.05, 7.10, "the loop ends only when submit_design is called",
            fs=7.0)
     _label(ax, 9.05, 6.90, "prose answer (no tool call) → "
-           "“numbers you type are not trusted”", fs=6.8)
+           "“numbers you type are not trusted”", fs=6.3)
     _label(ax, 9.05, 6.66, "LLM: deepseek-v4-flash / deepseek-v4-pro · T=0.2 · "
-           "thinking off", fs=7.0)
+           "thinking off", fs=6.3)
     _label(ax, 9.05, 6.46, "any OpenAI-compatible model via LABWRIGHT_MODEL",
            fs=7.0)
 
@@ -322,6 +322,7 @@ def main() -> int:
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_pipeline.pdf", bbox_inches="tight", facecolor="white")
+    fig.savefig(out / "fig_pipeline.svg", bbox_inches="tight", facecolor="white")
     fig.savefig(out / "fig_pipeline.png", dpi=300, bbox_inches="tight", facecolor="white")
     print(f"wrote {out / 'fig_pipeline.pdf'} and {out / 'fig_pipeline.png'}")
     return 0

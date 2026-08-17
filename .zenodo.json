@@ -1,0 +1,28 @@
+{
+  "title": "Labwright: a verifiable wet-lab design copilot — LabMath-Bench test set, evaluation pipeline and one-click reproduction",
+  "description": "Labwright is a verifiable wet-lab design copilot: a deterministic calculator layer behind an LLM ReAct agent, where no number enters a design unless a calculator computed it and a verifier re-proved it. This deposit is the reproducibility bundle for the LabMath-Bench evaluation (DeepSeek flash/pro models): the gold test set (eval/gold_labmath_combined.json, 610 entries across three difficulty levels L1-L3), all evaluation scripts (eval/), the one-click reproduction driver (scripts/reproduce_all.sh), the committed benchmark result JSONs the paper's reported numbers are derived from, and the runtime requirements.\n\nOn a bare checkout (python3 only) run scripts/reproduce_all.sh: it bootstraps a clean virtualenv, regenerates the gold sets, renders the figures, rebuilds the supplementary traceability log, and runs the full test suite plus the claims audit. The live-LLM benchmark loops require a DeepSeek API key and cost tokens; the deterministic pipeline (gold generation, offline analysis, figures, tests, audit) runs entirely offline. The fine-tuned raw-input extractor (torch/peft stack, requirements-eval.txt) is optional and not required for reproduction.\n\nSee github.com/qgeng1465/labwright for the live repository; this Zenodo deposit is the immutable snapshot referenced by the paper's Data and Code Availability statement.",
+  "upload_type": "software",
+  "license": "Apache-2.0",
+  "creators": [
+    {
+      "name": "Geng, Qiushuo",
+      "affiliation": ""
+    }
+  ],
+  "keywords": [
+    "organ-on-chip",
+    "microfluidics",
+    "LLM agents",
+    "deterministic calculator",
+    "verification",
+    "benchmark"
+  ],
+  "version": "1.0.0",
+  "related_identifiers": [
+    {
+      "relation": "isSupplementTo",
+      "identifier": "https://github.com/qgeng1465/labwright",
+      "resource_type": "software"
+    }
+  ]
+}

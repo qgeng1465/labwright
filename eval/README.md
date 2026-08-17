@@ -1177,7 +1177,7 @@ benchmark outputs, so the figures are fully reproducible:
 | figure | script | data |
 |---|---|---|
 | system framework (Fig 1) | `paper/fig_pipeline.py` | `eval/` + `labwright/` |
-| graphical abstract | `paper/fig_abstract.py` | headline numbers synced from `results/eval_{flash,pro}.json` (in-code `BENCH` band) |
+| graphical abstract (three zones: red chaos → gate → blue determinism) | `paper/fig_abstract.py` | headline numbers synced from `results/eval_{flash,pro}.json` (in-code `_headline_numbers`) |
 | architecture anatomy (a)–(e) | `paper/fig_architecture.py` | 46-tool registry from `labwright/tools.py` + `BENCH` dict synced from `results/eval_*.json` |
 | blind-goal shear recovery | `paper/fig_blind_goals.py` | `results/eval_blind_{flash,pro}.json` |
 | benchmark small multiples | `paper/fig_benchmark.py` | `results/eval_{flash,pro}.json`, `eval_blind_*`, `eval_spheroid_*`, `eval_culture_*`, `eval_pk_*` |

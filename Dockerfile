@@ -20,9 +20,13 @@ RUN apt-get update \
 
 WORKDIR /app
 
-# Install runtime deps first (better layer caching).
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install runtime + plotting/test deps first (better layer caching). The
+# figure pipeline (paper/fig_*.py + _check_render.py) needs matplotlib, which
+# lives in requirements-plot.txt — kept out of requirements.txt so the slim
+# runtime stays torch-free. The heavy optional extractor stack (torch/peft)
+# is NOT installed here; see requirements-eval.txt.
+COPY requirements.txt requirements-plot.txt .
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-plot.txt
 
 # Copy the package and eval/paper tooling.
 COPY labwright ./labwright

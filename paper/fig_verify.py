@@ -184,6 +184,7 @@ def main(argv: list[str]) -> int:
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_verify.pdf", bbox_inches="tight", facecolor="white")
+    fig.savefig(out / "fig_verify.svg", bbox_inches="tight", facecolor="white")
     fig.savefig(out / "fig_verify.png", dpi=300, bbox_inches="tight", facecolor="white")
     print(f"wrote {out / 'fig_verify.pdf'} and {out / 'fig_verify.png'}")
     return 0

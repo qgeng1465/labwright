@@ -28,6 +28,7 @@ ROOT = _HERE.parent
 RESULTS = ROOT / "results"
 
 _failures: list[str] = []
+_skips: list[str] = []
 _passes = 0
 
 
@@ -42,6 +43,14 @@ def _check(label: str, ok: bool, detail: str = "") -> None:
         _passes += 1
         return
     _failures.append(f"  FAIL {label}" + (f"  —  {detail}" if detail else ""))
+
+
+def _check_skip(label: str, reason: str) -> None:
+    """Record an audit item that cannot be verified in this checkout (e.g. a
+    data file excluded from the FAIR bundle). A skip is neither a pass nor a
+    failure: it is reported explicitly so a silent gap cannot look like
+    coverage."""
+    _skips.append(f"  SKIP {label}  —  {reason}")
 
 
 def _pct(x: float | None) -> int:
@@ -365,6 +374,10 @@ def audit_gold_pairs() -> None:
 # ---------------------------------------------------------------------------
 
 def audit_leak_free() -> None:
+    if not (RESULTS / "extractor_11dom_v4/train.jsonl").exists():
+        _check_skip("F  held-out eval set is leak-free (raw AND goal)",
+                    "extractor train.jsonl not in this checkout (archived in the Zenodo deposit)")
+        return
     train_raw: set[str] = set()
     train_goal: set[str] = set()
     with (RESULTS / "extractor_11dom_v4/train.jsonl").open() as f:
@@ -502,7 +515,10 @@ def _load_gold(name: str) -> list[dict]:
 
 
 def _goals() -> list[str]:
-    with (RESULTS / "extractor_11dom_v4/train.jsonl").open() as f:
+    train_path = RESULTS / "extractor_11dom_v4/train.jsonl"
+    if not train_path.exists():
+        return []
+    with train_path.open() as f:
         return [json.loads(line).get("goal") or "" for line in f]
 
 
@@ -512,6 +528,10 @@ def _verbatim_goals(goals: list[str], value: float, unit: str) -> int:
 
 
 def audit_value_provenance() -> None:
+    if not (RESULTS / "extractor_11dom_v4/train.jsonl").exists():
+        _check_skip("I  verbatim-value provenance (blind + new-domain)",
+                    "extractor train.jsonl not in this checkout (archived in the Zenodo deposit)")
+        return
     goals = _goals()
 
     # Blind: how many goals carry a gold target verbatim (value + unit)?
@@ -834,9 +854,11 @@ def main() -> int:
     audit_code_interpreter()
     audit_traceability()
     audit_labmath_results()
-    print(f"audit_claims: {_passes} passed, {len(_failures)} failed")
+    print(f"audit_claims: {_passes} passed, {len(_failures)} failed, {len(_skips)} skipped")
     for f in _failures:
         print(f)
+    for s in _skips:
+        print(s)
     return 1 if _failures else 0
 
 

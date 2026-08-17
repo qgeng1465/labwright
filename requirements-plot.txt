@@ -1,0 +1,12 @@
+# Labwright figure & test tooling — the light, CPU-only layer that the Docker
+# image and `scripts/reproduce_all.sh` install in a clean environment so the
+# 11-paper-figure pipeline and the test suite run without the heavy torch/peft
+# stack (which lives in requirements-eval.txt).
+#
+#   python -m pip install -r requirements.txt -r requirements-plot.txt
+#
+# matplotlib is the only runtime dependency the figure scripts import that is
+# not already in requirements.txt; pytest covers `python -m pytest`.
+
+matplotlib>=3.8
+pytest>=8

@@ -198,8 +198,10 @@ def main(argv: list[str]) -> int:
                     if v > 0.30:
                         # Inside the bar, sunk far enough that two tall adjacent
                         # bars' labels never touch (5 bars/group is tight).
-                        ax.text(pos + off, v - 0.03, txt, ha="center", va="top",
-                                fontsize=7.5, color=_label_color(color))
+                        # 6.7 pt: Arial's digits are wider than TNR's, so the
+                        # 7.5 pt face grazed its neighbour's "100%" by ~3 px.
+                        ax.text(pos + off, v - 0.035, txt, ha="center", va="top",
+                                fontsize=6.7, color=_label_color(color))
                     else:
                         ax.text(pos + off, v + 0.015, txt, ha="center", va="bottom",
                                 fontsize=8.0, color=INK)
@@ -243,6 +245,7 @@ def main(argv: list[str]) -> int:
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_benchmark.pdf", bbox_inches="tight", facecolor="white")
+    fig.savefig(out / "fig_benchmark.svg", bbox_inches="tight", facecolor="white")
     fig.savefig(out / "fig_benchmark.png", dpi=300, bbox_inches="tight", facecolor="white")
     print(f"wrote {out / 'fig_benchmark.pdf'} and {out / 'fig_benchmark.png'}")
     return 0

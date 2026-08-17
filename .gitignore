@@ -49,3 +49,10 @@ results/evals_v1_backup/
 
 # Transient run logs at repo root
 logs/
+
+# Zenodo / FAIR build artifacts (regenerable from tracked files via git ls-files;
+# the .zenodo.json metadata at the repo root IS committed)
+/archive/
+
+# Marathon progress tracker — local working notes only, never staged or pushed
+/MARATHON_50H.md

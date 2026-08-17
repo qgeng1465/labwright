@@ -421,6 +421,7 @@ def main() -> int:
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_protocol_dag.pdf", bbox_inches="tight", facecolor="white")
+    fig.savefig(out / "fig_protocol_dag.svg", bbox_inches="tight", facecolor="white")
     fig.savefig(out / "fig_protocol_dag.png", dpi=300, bbox_inches="tight",
                 facecolor="white")
     print(f"wrote {out / 'fig_protocol_dag.pdf'} and {out / 'fig_protocol_dag.png'}")

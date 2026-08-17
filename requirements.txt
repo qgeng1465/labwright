@@ -3,6 +3,7 @@
 # Tested with the versions resolved in the project venv; floors are lower bounds.
 #
 # Optional stacks (not needed for the core runtime, listed for completeness):
+#   - figures + tests (one-click reproduction):  requirements-plot.txt (matplotlib/pytest)
 #   - fine-tuned raw-input extractor + SciRecipe audit:  requirements-eval.txt (torch/peft)
 #   - knowledge-base retrieval (chromadb / sentence-transformers): not used by the eval
 #   - web demo (gradio): not used by the eval

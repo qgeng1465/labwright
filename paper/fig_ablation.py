@@ -57,6 +57,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _font import setup_font  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from eval.ci import wilson_ci  # noqa: E402
 from eval.report import derive  # noqa: E402
 
 setup_font()
@@ -67,13 +68,24 @@ SYSTEMS = ["bare", "code_interpreter", "labwright"]
 SYSTEM_LABEL = {"bare": "bare-LLM", "code_interpreter": "code-interp",
                 "labwright": "Labwright"}
 #: (class key, label, color) for the confusion-matrix stacked bars.
+# The outcome classes are ordinal (best → worst), so the right panel uses the
+# colorblind-friendly *cividis* sequential colormap (reversed: correct = bright,
+# silence = dark) that the reviewer asked for; the left panel uses the
+# Okabe–Ito qualitative palette for the three categorical systems.
+_cividis = matplotlib.colormaps["cividis"]
+_class_fracs = [1.0, 0.75, 0.5, 0.25, 0.0]  # correct → silence
 CLASSES = [
-    ("ok", "correct", "#5F7668"),                    # sage
-    ("wrong_target", "wrong target", "#C07C2B"),     # ochre
-    ("calculation_error", "calculation error", "#B45A4B"),  # rust
-    ("code_exec_error", "code exec error", "#8A5A9E"),      # violet
-    ("silence", "silence", "#C9C2B6"),               # stone
+    ("ok", "correct", _cividis(_class_fracs[0])),
+    ("wrong_target", "wrong target", _cividis(_class_fracs[1])),
+    ("calculation_error", "calculation error", _cividis(_class_fracs[2])),
+    ("code_exec_error", "code exec error", _cividis(_class_fracs[3])),
+    ("silence", "silence", _cividis(_class_fracs[4])),
 ]
+SYS_COLORS = {
+    "bare": "#B8B8B8",                 # neutral gray (Okabe–Ito neutral)
+    "code_interpreter": "#E69F00",     # Okabe–Ito orange
+    "labwright": "#0072B2",            # Okabe–Ito blue
+}
 INK = "#262522"
 MUT = "#8a8782"
 GRID = "#d9d7d3"
@@ -86,6 +98,36 @@ def _class_counts(entries: list[dict], system: str) -> dict[str, int]:
         out[e.get(system, {}).get("failure", "silence")] = out.get(
             e.get(system, {}).get("failure", "silence"), 0) + 1
     return out
+
+
+def _rate_ci(entries: list[dict], system: str, metric: str) -> tuple[float, float]:
+    """Wilson score interval matching ``derive()``'s definitions exactly.
+
+    ``tba`` is a Bernoulli trial per scored (entry, key) recovery pair (each
+    key weighs equally); ``self_consistent`` / ``usable`` are Bernoulli trials
+    per entry. Both mirror the counting inside ``eval.report.derive`` /
+    ``eval.benchmark.tba`` so the error bars sit on the exact same number the
+    bar shows.
+    """
+    recs = [e.get(system, {}) for e in entries]
+    if metric == "tba":
+        k = n = 0
+        for r in recs:
+            for err in r.get("recovery", {}).values():
+                n += 1
+                k += 1 if err <= 0.05 else 0
+    else:  # self_consistent | usable — one Bernoulli per entry
+        n = len(recs)
+        if metric == "self_consistent":
+            k = sum(1 for r in recs if r.get("hallucination_rate") == 0.0)
+        else:  # usable
+            k = sum(
+                1 for r in recs
+                if r.get("hallucination_rate") == 0.0
+                and bool(r.get("recovery"))
+                and all(err <= 0.05 for err in r["recovery"].values())
+            )
+    return wilson_ci(k, n)
 
 
 def main(argv: list[str]) -> int:
@@ -108,10 +150,10 @@ def main(argv: list[str]) -> int:
                ("tba", "TBA(0.05)")]
     width = 0.8 / len(SYSTEMS)
     offsets = [(i - (len(SYSTEMS) - 1) / 2) * width for i in range(len(SYSTEMS))]
-    sys_colors = {"bare": "#C9C2B6", "code_interpreter": "#C07C2B", "labwright": "#2E5598"}
     sys_hatch = {"bare": None, "code_interpreter": "o", "labwright": "//"}
     for m, model in enumerate(MODELS):
         d = derive(results[model])
+        entries = results[model]["per_entry"]
         pos = m * (len(metrics) + 1)
         for mi, (key, _label) in enumerate(metrics):
             for (sys_key, off) in zip(SYSTEMS, offsets):
@@ -121,9 +163,14 @@ def main(argv: list[str]) -> int:
                 if v != v:
                     continue
                 x = pos + mi * 0.35 + off * 0.8
-                ax.bar(x, v, width * 0.8, color=sys_colors[sys_key],
+                lo, hi = _rate_ci(entries, sys_key, key)
+                ylo = max(0.0, v - lo)
+                yhi = max(0.0, hi - v)
+                ax.bar(x, v, width * 0.8, color=SYS_COLORS[sys_key],
                        edgecolor="none", hatch=sys_hatch[sys_key],
                        zorder=3, linewidth=0.5)
+                ax.errorbar(x, v, yerr=[[ylo], [yhi]], fmt="none", ecolor=INK,
+                            elinewidth=0.8, capsize=2, zorder=4)
                 ax.text(x, v + 0.015, f"{100 * v:.0f}%", ha="center",
                         va="bottom", fontsize=6.8, color=INK)
     ax.set_xticks([0.5 + m * (len(metrics) + 1) for m in range(len(MODELS))])
@@ -185,6 +232,7 @@ def main(argv: list[str]) -> int:
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_ablation.pdf", bbox_inches="tight", facecolor="white")
+    fig.savefig(out / "fig_ablation.svg", bbox_inches="tight", facecolor="white")
     fig.savefig(out / "fig_ablation.png", dpi=300, bbox_inches="tight", facecolor="white")
     print(f"wrote {out / 'fig_ablation.pdf'} and {out / 'fig_ablation.png'}")
     return 0

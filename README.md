@@ -55,7 +55,7 @@ the gate as internally consistent (that is exactly what the blind-set recall
 gap above shows), so the target and the safety-critical numbers are yours to
 verify, not the tool's to warrant.
 
-![Labwright graphical abstract: goal → LLM proposes raw inputs → deterministic calculators → verifier re-proves every number → SOP + design JSON; naive alternatives rejected at the hard gate](paper/fig_abstract.png)
+![Labwright graphical abstract, three zones: red — the fluent LLM black box leaks underived numbers and broken chemistry; the gate — deterministic calculators and the verifier (funnel, hard gate, P(Solver Error) ≡ 0); blue — a field DAG recomputes every derived value into a verified SOP + design JSON](paper/fig_abstract.png)
 
 **Built for organ-on-chip and perfused cell culture first. General wet-lab by design.**
 

@@ -372,7 +372,7 @@ def main() -> int:
            "(e)  internal components · benchmark systems · honest boundary")
     ey_top = 1.86
     c1 = _charcap(3.85, 6.2)   # column 1 text width (x 0.3 -> 4.15)
-    c2 = _charcap(3.6, 6.2)    # column 2 text width (x 4.5 -> 8.10)
+    c2 = _charcap(3.6, 6.2)    # column 2 text width (x 4.7 -> 8.30)
     c3 = _charcap(3.55, 6.0)   # column 3 label width
 
     # column 1 — the agent & brain
@@ -392,20 +392,20 @@ def main() -> int:
            "points into the same verified pipeline", fs=6.2, cap=c1)
 
     # column 2 — fine-tuned extractor subsystem
-    _label(ax, 4.5, ey_top, "fine-tuned extractor (single-pass, not an agent)",
+    _label(ax, 4.7, ey_top, "fine-tuned extractor (single-pass, not an agent)",
            fs=6.8, color=BLUE_EDGE, weight="bold")
-    _label(ax, 4.5, 1.60, "Qwen2.5-1.5B-Instruct + LoRA (r=16) tuned on goal -> "
+    _label(ax, 4.7, 1.60, "Qwen2.5-1.5B-Instruct + LoRA (r=16) tuned on goal -> "
            "raw-inputs; goes through the SAME gate (reject derived -> DesignInput -> "
            "build_design -> verify)", fs=6.2, cap=c2)
-    _label(ax, 4.5, 1.28, f"committed eval: {BENCH['extractor']}", fs=6.2,
+    _label(ax, 4.7, 1.28, f"committed eval: {BENCH['extractor']}", fs=6.2,
            color=INK, weight="bold", cap=c2)
-    _label(ax, 4.5, 1.02, "the agent and the extractor are the two independent paths "
+    _label(ax, 4.7, 1.02, "the agent and the extractor are the two independent paths "
            "that produce raw inputs; both feed the identical calculators and verifier",
            fs=6.2, cap=c2)
-    _label(ax, 4.5, 0.72, "gold sets: 24-reading · 15-blind (8 cold + 5 prompt-backed "
+    _label(ax, 4.7, 0.72, "gold sets: 24-reading · 15-blind (8 cold + 5 prompt-backed "
            "+ 2 scenario) · 15-3D-spheroid · 14-plate-culture · 14-perfused-PK",
            fs=6.2, cap=c2)
-    _label(ax, 4.5, 0.42, "metrics: usable · self-consistent · hallucination · failure "
+    _label(ax, 4.7, 0.42, "metrics: usable · self-consistent · hallucination · failure "
            "reason · unit-misread · target-selection · cold-split", fs=6.2, cap=c2)
 
     # column 3 — honest boundary + committed numbers
@@ -438,6 +438,7 @@ def main() -> int:
 
     out = Path(__file__).resolve().parent
     fig.savefig(out / "fig_architecture.pdf", bbox_inches="tight", facecolor="white")
+    fig.savefig(out / "fig_architecture.svg", bbox_inches="tight", facecolor="white")
     fig.savefig(out / "fig_architecture.png", dpi=300, bbox_inches="tight",
                 facecolor="white")
     print(f"wrote {out / 'fig_architecture.pdf'} and {out / 'fig_architecture.png'}")

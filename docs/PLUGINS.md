@@ -184,7 +184,7 @@ shows their `Block` + bands. Copy either one.
 Run the project checks after adding a domain:
 
 ```bash
-python -m pytest                                   # 576 tests, all green
+python -m pytest                                   # 580 tests, all green
 python -m eval.audit_claims                        # every README number re-derived
 python paper/fig_tba.py results/eval_labmath_flash.json results/eval_labmath_pro.json
 python paper/fig_ablation.py results/eval_labmath_flash.json results/eval_labmath_pro.json

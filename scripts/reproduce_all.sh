@@ -20,6 +20,12 @@
 # Everything deterministic (gold generation, offline analysis, figures, tests,
 # audit) always runs in full regardless of FULL. Only the live-LLM benchmark
 # loops are gated.
+#
+# Clean environment: if no `.venv` exists the script creates one and installs
+# requirements.txt + requirements-plot.txt, so the whole pipeline (gold →
+# benchmark → figures → traceability → tests → audit) reproduces on a bare
+# clone with python3 only. The heavy extractor stack (requirements-eval.txt)
+# is not needed by this pipeline.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -31,9 +37,19 @@ PY="${PY:-.venv/bin/python}"
 
 step() { printf '\n\033[1m== %s\033[0m\n' "$1"; }
 
+# Bootstrap a clean virtualenv if none is present — one-click reproduction.
+# Creates `.venv` from the system python3 and installs the runtime + plotting /
+# test deps. Pass PY=/path/to/python to reuse an existing interpreter instead.
 if [ ! -x "$PY" ]; then
-    echo "no venv at $PY — create one and install requirements.txt first"
-    exit 1
+    if command -v python3 >/dev/null 2>&1; then
+        echo "no interpreter at $PY — bootstrapping a clean .venv"
+        python3 -m venv .venv
+        "$PY" -m pip install --upgrade pip >/dev/null
+        "$PY" -m pip install -r requirements.txt -r requirements-plot.txt
+    else
+        echo "no python3 found and no venv at $PY — install python3 first"
+        exit 1
+    fi
 fi
 if [ -f .env ]; then
     set -a; . ./.env; set +a
