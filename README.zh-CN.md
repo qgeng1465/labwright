@@ -5,7 +5,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)]()
 [![CI](https://github.com/qgeng1465/labwright/actions/workflows/tests.yml/badge.svg)](https://github.com/qgeng1465/labwright/actions)
-[![Tests](https://img.shields.io/badge/tests-516%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-580%20passing-brightgreen)]()
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
 当一个大语言模型（LLM）被要求撰写湿实验设计时，它会凭记忆产生数字，而记忆不会做算术。Labwright拒绝让任何数字进入设计，除非它是由确定性计算器算出来的、并且验证器（verifier）重新证明过。这一条规则换来两个独立的性质，而把两者区分开来很重要：
