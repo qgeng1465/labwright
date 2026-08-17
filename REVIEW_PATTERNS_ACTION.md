@@ -118,3 +118,23 @@ labwright_iter usable 0.912 / halluc 0.010 胜出 → 硬 verifier 门是数字�
   wrong_target = 诚实参数提取 miss，非计算错。另修：derive() 补 code_interpreter
   （7e5f5cc）+ audit_labmath_results 全量诚实门（e386cb7）。
 - **pro-core 已起跑**：pid 2320909（05:18 起，610×3，~09:10 预计，05:49 时 80/610）。
+
+**2026-08-17 09:05 更新（pro-core 全链落地 + P4e 文档同步完成）**：
+- **pro-core 610/610 已落地（commit 02e35e0）**。pro 主线数字：bare usable 0.072/
+  halluc 0.735/TBA 0.512（549 计算错）；code_interpreter 0.216/0.579/0.754（470 计算错）；
+  **labwright 0.918/0.003/0.963（CER=0）**。按 level labwright TBA L1 0.967[0.949,0.978]/
+  L2 0.935[0.913,0.951]/L3 1.000[0.992,1.000]，全部 > bare 与 code_interpreter。
+- **fig_tba + fig_ablation 渲染成功**（修 fig_tba yerr 负值浮点伪影：labwright L3 hi 舍入
+  到 1-1e-16，yerr 裁剪 ≥0）；接入 paper/_check_render.py → **11 图 0 overlap**。
+- **溯源日志重建**（commit d9223c7）：flash 568 traced/2674 records、pro 564 traced/
+  2631 records（pro 2 no-plan = 2 条 labwright silence，诚实）；→ supplementary/traceability/。
+- **audit_claims 208 通过 / 0 失败**（audit_labmath_results 逐条重算门全绿）。
+- **pytest 580 全绿**。
+- **P4e 文档同步完成**：README/README.zh-CN/eval-README 加 LabMath-Bench 节（610 条
+  L1=213/L2=223/L3=174、TBA τ=0.05 按 level 表含 Wilson CI、混淆矩阵 CER→0）+ fail-safe
+  对抗节（flash/pro：labwright fail_safe 0.933/0.900、bare 0.833/0.967、code_interpreter
+  0.733/0.500 fabricate 0.233/0.433；elicitation labwright 0.667/0.600）+ GPT-4/Claude
+  3.5 Sonnet 以 DeepSeek flash/pro+Thoth-8B 同等可复现替代诚实注（Thoth prose 出不来
+  LabMath schema，只报阅读级）+ 插件/Docker/复现链接（docs/PLUGINS.md、requirements.txt、
+  Dockerfile、scripts/reproduce_all.sh）。
+- **待办**：最终本地 commit（不推）。

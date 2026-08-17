@@ -161,6 +161,8 @@ labwright verify-protocol examples/verify_protocol.json
 
 Web演示（Hugging Face Space）：[`hf_space/`](hf_space/)，部署见 [`hf_space/PUBLISH.md`](hf_space/PUBLISH.md)。
 
+**可复现环境。** 钉死的依赖清单是 [`requirements.txt`](requirements.txt)；非 root 容器（[`Dockerfile`](Dockerfile)）构建出完全一致的运行时。一键复现整个基准（生成数据集 → 全量基准 → TBA/消融/对抗分析 → 出图 → 溯源日志 → 测试+审计门）是 [`scripts/reproduce_all.sh`](scripts/reproduce_all.sh)（`FULL=1` 跑全部 610 条 × 模型 × 系统；默认是 5 条冒烟）。
+
 ## 工作原理
 
 ![Labwright架构：（a）8层堆栈——LLM提出原始输入，确定性计算器计算，验证器重新证明；（b）有界的agentic工作流；（c）5层验证器；（d）10个类中的46个工具计算器工具箱；（e）内部组件、基准系统与诚实边界](paper/fig_architecture.png)
@@ -218,7 +220,7 @@ Web演示（Hugging Face Space）：[`hf_space/`](hf_space/)，部署见 [`hf_sp
 
 agent、验证器和演示都读取同一个注册表；新计算器立即可调用、可验证、可演示。
 
-添加一个完整的*设计领域*（设计的一个新可选部分，如3D球状体方案）同样只是一次声明：一个 `calc/` 模块、一个schema模型、一个derive函数，以及 `labwright/blocks.py` 里的一个 `Block`；这一个条目拥有该领域的raw/derived/consistency键、字段映射、合理性区间和规范单位，而设计门禁、验证器、单位层和基准测试都从它导入。忘记区间或单位的领域会在导入时报错失败。规则与开发命令见英文 README 的
+添加一个完整的*设计领域*（设计的一个新可选部分，如3D球状体方案）同样只是一次声明：一个 `calc/` 模块、一个schema模型、一个derive函数，以及 `labwright/blocks.py` 里的一个 `Block`；这一个条目拥有该领域的raw/derived/consistency键、字段映射、合理性区间和规范单位，而设计门禁、验证器、单位层和基准测试都从它导入。忘记区间或单位的领域会在导入时报错失败。完整的第三方契约——calc 模块 → `Tool` → `Block` → 验证器 → gold 条目，端到端，含一个工作示例——见 [`docs/PLUGINS.md`](docs/PLUGINS.md)。规则与开发命令见英文 README 的
 「Extending Labwright」节。
 
 ## 基准测试
@@ -314,6 +316,70 @@ hallucination rate                 1.000         0.125
 
 诚实地读这些数字，以及它们含义的边界。
 
+### LabMath-Bench：610 个生成问答对上的容差边界准确率
+
+审稿意见要求一个把*算术*和*生理*分开打分的基准。`eval/gold_labmath_combined.json` 就是它：**610 个设计问句**，横跨五个新计算器域（生物打印、共培养、酶动力学、生信流程参数化、溶剂处理），按难度分成三级——**L1** 流体与空间工程（**213**）、**L2** 生化配比（**223**）、**L3** 流程参数化（**174**）。每条都用合法参数区间抽样生成，期望值由 agent 调用的*同一个确定性计算器*算出，因此每条自洽、数字全部可追溯（`eval/make_labmath_bench.py`，确定性种子；五个新 `calc/` 模块和注册表里其他模块一样 source-pinned）。
+
+头条指标就是审稿人的公式 **TBA**——容差边界准确率：
+
+$$\mathrm{TBA}(\tau) = \frac{1}{N}\sum_{(e,k)} \mathbb{I}\!\left(\frac{|y_{pred} - y_{true}|}{y_{true}} \le \tau\right)$$
+
+在严格 `τ = 0.05` 下报告，对每个已打分的 (条目, 金标准目标) key-pair 求平均，并按等级分组给出 Wilson 95% CI（`eval/report.py`；`paper/fig_tba.py`）。
+
+| 模型 | 系统 | usable | 幻觉率 | TBA(0.05) | 计算错率（CER） |
+|---|---|---|---|---|---|
+| `flash` | bare-LLM | 5% | 0.765 | 0.406 | 536/610（88%） |
+| `flash` | code-interp | 18% | 0.602 | 0.664 | 484/610（79%） |
+| `flash` | **Labwright** | **93%** | **0.000** | **0.965** | **0/610（0%）** |
+| `pro` | bare-LLM | 7% | 0.735 | 0.512 | 549/610（90%） |
+| `pro` | code-interp | 22% | 0.579 | 0.754 | 470/610（77%） |
+| `pro` | **Labwright** | **92%** | **0.003** | **0.963** | **0/610（0%）** |
+
+TBA(0.05) 分等级，Wilson CI 基于打分 key-pair：
+
+| 等级 | 模型 | bare-LLM | code-interp | Labwright |
+|---|---|---|---|---|
+| L1 | `flash` | 51% [47–55] | 65% [62–69] | **95% [93–96]** |
+| L1 | `pro` | 55% [52–59] | 73% [69–76] | **97% [95–98]** |
+| L2 | `flash` | 45% [41–49] | 82% [78–84] | **96% [94–97]** |
+| L2 | `pro` | 64% [61–68] | 82% [79–85] | **94% [91–95]** |
+| L3 | `flash` | 19% [16–23] | 46% [41–50] | **100% [99–100]** |
+| L3 | `pro` | 26% [22–30] | 70% [65–74] | **100% [99–100]** |
+
+CER 列背后的混淆矩阵——每条都分类*为什么*失败（`ok` / `silence` / `calculation_error` / `code_exec_error` / `wrong_target`），所以审稿人要的 **CER→0** 是直接可审计的计数：
+
+| 模型 | 系统 | ok | silence | 计算错 | 代码执行错 | 目标错 |
+|---|---|---|---|---|---|---|
+| `flash` | bare-LLM | 31 | 2 | **536** | 0 | 41 |
+| `flash` | code-interp | 110 | 0 | **484** | 0 | 16 |
+| `flash` | **Labwright** | **570** | 0 | **0** | 0 | 40 |
+| `pro` | bare-LLM | 44 | 0 | **549** | 0 | 17 |
+| `pro` | code-interp | 132 | 0 | **470** | 0 | 8 |
+| `pro` | **Labwright** | **560** | 2 | **0** | 0 | 48 |
+
+诚实的读法正是审稿人要的。基线 A（bare-LLM）在 88–90% 的条目上犯了计算错：模型凭记忆写数字，算术是错的。基线 B（LLM + 代码解释器，`code_interpreter`）执行模型*自己*写的 Python 来算 `RESULT`，有帮助（TBA 0.664/0.754，计算错降到 79%/77%），但无法消除算术错——代码同样来自记忆，照样算错。只有 Labwright，其算术活在确定性、source-pinned 的计算器里、由重新证明的验证器把关，才能把 **CER 打到 0**、TBA(0.05) 打到 0.965/0.963。而且 Labwright 的 miss 恰恰是**参数提取失败**（`wrong_target`，剩余 40/48 条）——绝不是计算错。该归因给 NLU 提取的残余，不属于数学。pro 的 2 条 Labwright `silence` 是未提交运行，按和其他集合一致的约定计 1.0。
+
+![LabMath-Bench TBA(0.05) 分等级（左）与 TBA–τ 曲线（右），flash & pro × bare-LLM / code-interpreter / Labwright。Labwright 每级 93–100% 且带 Wilson-CI 误差棒；bare 跌到 19–64%，代码解释器基线有改善但永远追不上门控计算器。](paper/fig_tba.png)
+
+![消融混淆矩阵：610 条上每系统每模型的失败类别计数（ok / silence / calculation_error / code_exec_error / wrong_target）。计算错那一列就是审稿要求打到零的 CER——两个基线是 536/484（flash）与 549/470（pro），Labwright 两个模型都是 0。](paper/fig_ablation.png)
+
+### 对抗输入下的 fail-safe
+
+第二条对抗轴（`eval/gold_adversarial.json`，30 条输入）逼到边界：**缺参数**（少了必需的输入）、**物理冲突**（目标给出不可能的几何/体积）、**致死条件**（目标隐含细胞死亡的剪切/流速）。`request_info` 工具让 Labwright agent 在猜之前*先问*，验证器硬拒不可能的方案。每条运行用四个诚实数字打分（30 条平均；`paper/fig_failsafe.py`）：
+
+| 模型 | 系统 | 主动提问 | 异常拦截 | fail-safe | 捏造 |
+|---|---|---|---|---|---|
+| `flash` | bare-LLM | 0% | 0% | 83% | 17% |
+| `flash` | code-interp | 0% | 0% | 73% | 23% |
+| `flash` | **Labwright** | **67%** | **23%** | **93%** | **7%** |
+| `pro` | bare-LLM | 0% | 0% | 97% | 3% |
+| `pro` | code-interp | 0% | 0% | 50% | **43%** |
+| `pro` | **Labwright** | **60%** | **17%** | **90%** | **10%** |
+
+诚实的边界：bare-LLM 的"fail-safe"是*不带信息的拒绝*——它拒答而不是捏造（flash），或大部分拒答（pro），但从不提问，所以缺参数直接卡死任务（两个模型主动提问都是 0%）。pro 上的代码解释器基线是**最差的捏造者（43%）**：给了"去算"的指令，它就算得信心满满，哪怕对致死/缺参数输入也写出数字。Labwright 在 60–67% 的缺参数输入上主动提问，其余靠验证器硬拒（异常拦截 17–23%），捏造率控制在 ≤ 10%——那点没提问就作答的残余诚实报告为余量。门是 fail-safe 的，不是万无一失的。
+
+![各系统各模型的对抗行为：elicit / reject（异常拦截）/ refuse / fabricate，作用于 30 条边界输入。](paper/fig_failsafe.png)
+
 ### 新领域集成：七个post-v1器官芯片领域
 
 七个post-v1领域（barrier、oxygen、pumpless、breathing、pulsatile、scaling、gradient）在14个新领域目标上用 **Labwright** 系统做了端到端基准测试——完整的agent循环、计算器和硬门禁，跑在实时模型上：
@@ -381,6 +447,8 @@ hallucination rate                 1.000         0.125
 基准测试是固定模型上对*提示与阶段结构*的消融，因此两者都被钉死并提交。以下一切仅凭仓库即可复现；没有任何未记录的提示、模型或打分选择。
 
 **模型。** 所有基准行都使用DeepSeek v4 API（`https://api.deepseek.com`，OpenAI兼容）：**`deepseek-v4-flash`**（便宜、关闭思考）和 **`deepseek-v4-pro`**。温度 **0.2**、思考 **关闭**（`LLMClient(disable_thinking=True)` 默认）；算术在计算器里，不在模型里。Labwright的agent以温度0.2运行同一个客户端，带12次迭代的工具预算（`--max-iterations 12`）。`LABWRIGHT_MODEL` / `LABWRIGHT_BASE_URL` 可覆盖模型；任何OpenAI兼容模型都能用，但已提交的数字正是这两个。这些是API模型，因此无法钉住权重；API快照就是运行日期当天提供服务的模型，见结果JSON里的（`generated_at`）。
+
+**模型替代（诚实注）。** 若审稿人问这与原始评估里使用的封闭前沿模型（GPT-4 / Claude 3.5 Sonnet）相比如何，本工作报告 **DeepSeek `deepseek-v4-flash` / `deepseek-v4-pro`** 作为同等可复现的替代：协议、钉死的提示和打分原样迁移到任何OpenAI兼容模型（`LABWRIGHT_MODEL`），已提交的数字正是这两个。模型线还包括一个本地 **Thoth-8B**（`manglu3935/Thoth`，cc-by-4.0）；它的原生输出是协议*散文*而非设计JSON，硬塞进结构化 raw-input schema 会变成 harness 适配伪影而非能力结果——因此只在阅读级分析里诚实报告（不作 LabMath 全量行），和 [`eval/README.md`](eval/README.md#benchmarking-scope-why-these-systems-and-not-the-named-ones) 里记载的一致。
 
 对同一组五个集合的跨提供方扫描在 **Kimi Code** 端点（`https://api.kimi.com/coding/v1`）上运行，模型 `kimi-for-coding` 和 `k3`，因此同一协议可以在不同提供方家族之间读取（温度 **0.6**；该端点的普通补全路径把温度校验到1.0，而Labwright的请求形态（关闭思考）接受0.6；`LABWRIGHT_TEMPERATURE` 覆盖0.2的DeepSeek默认值）。行落在 `results/eval_*_kimicode.json` / `results/eval_*_k3.json`，并汇总在上面的跨提供方表格中。
 
